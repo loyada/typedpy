@@ -1,4 +1,4 @@
-# typed-py
+# typedpy
 
 Typesafe Python structures
 

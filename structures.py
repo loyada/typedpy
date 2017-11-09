@@ -24,10 +24,21 @@ def make_signature(names, required, additionalProperties, bases_params_by_name):
 
 class Field(object):
     def __init__(self, name=None):
-        self.name = name
+        self._name = name
 
     def __set__(self, instance, value):
-        instance.__dict__[self.name] = value
+        instance.__dict__[self._name] = value
+
+    def __str__(self):
+        name = self.__class__.__name__
+        props = []
+        for k,v in self.__dict__.items():
+            if v is not None and not k.startswith('_'):
+                strv = "'{}'".format(v) if isinstance(v, str) else str(v)
+                props.append('{} = {}'.format(k, strv))
+
+        propst = '. Properties: {}>'.format(', '.join(props)) if props  else ''
+        return '<{}{}>'.format(name, propst)
 
 
 class StructMeta(type):
@@ -51,7 +62,7 @@ class StructMeta(type):
 
         fields = [key for key, val in cls_dict.items() if isinstance(val, Field)]
         for field_name in fields:
-            cls_dict[field_name].name = field_name
+            cls_dict[field_name]._name = field_name
         clsobj = super().__new__(cls, name, bases, dict(cls_dict))
         clsobj._fields = fields
         default_required = list(set(bases_required + fields)) if bases_params else fields
@@ -60,6 +71,15 @@ class StructMeta(type):
         sig = make_signature(clsobj._fields, required, additionalProps, bases_params)
         setattr(clsobj, '__signature__', sig)
         return clsobj
+
+    def __str__(self):
+        name = self.__name__
+        props = []
+        for k,v in self.__dict__.items():
+            if v is not None and not k.startswith('_'):
+                strv = "'{}'".format(v) if isinstance(v, str) else str(v)
+                props.append('{} = {}'.format(k, strv))
+        return '<Structure: {}. Properties: {}>'.format(name, ', '.join(props))
 
 
 class Structure(metaclass=StructMeta):
@@ -70,4 +90,11 @@ class Structure(metaclass=StructMeta):
         for name, val in bound.arguments.items():
             setattr(self, name, val)
 
-
+    def __str__(self):
+        name = self.__class__.__name__
+        props = []
+        for k, v in self.__dict__.items():
+            if v is not None and not k.startswith('_'):
+                strv = "'{}'".format(v) if isinstance(v, str) else str(v)
+                props.append('{} = {}'.format(k, strv))
+        return '<Instance of {}. Properties: {}>'.format(name, ', '.join(props))

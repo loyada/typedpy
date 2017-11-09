@@ -59,9 +59,14 @@ class Trade(Structure):
 
 
 op = OldPerson(children = 1, num=1, ssid = "aaa")
+print(Person)
 
 p = Person(name="fo", ssid="fff", num=25, foo = {'a': 'aaa', 'b': {'c': 10, 'd': 1}})
 p.foo.b.c = 15
 t = Trade(tradable="foo", quantity='ddd', price=10.0, category= 'a', children = ['aa', 3, 2])
+t.person = p
+print (t.person.name)
+print(Person.name)
+print(p)
 t.children[1] = 8
-print(t.__dict__)
+print(t)

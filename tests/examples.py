@@ -1,4 +1,5 @@
 from fields import *
+from structures import StructureReference, Structure
 
 
 class Person(Structure):

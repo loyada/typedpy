@@ -1,3 +1,3 @@
 
-from structures import Structure, Field
+from structures import Structure, Field, StructureReference
 from fields import *

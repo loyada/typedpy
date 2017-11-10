@@ -92,9 +92,36 @@ class Structure(metaclass=StructMeta):
 
     def __str__(self):
         name = self.__class__.__name__
+        if name.startswith('StructureReference_') and self.__class__.__bases__ ==(Structure,) :
+            name = 'Structure'
         props = []
         for k, v in self.__dict__.items():
             if v is not None and not k.startswith('_'):
                 strv = "'{}'".format(v) if isinstance(v, str) else str(v)
                 props.append('{} = {}'.format(k, strv))
         return '<Instance of {}. Properties: {}>'.format(name, ', '.join(props))
+
+
+class StructureReference(Field):
+    counter = 0
+
+    def __init__(self,  **kwargs):
+        classname = "StructureReference_" + str(StructureReference.counter)
+        StructureReference.counter+=1
+
+        self._newclass = type(classname, (Structure,), kwargs)
+
+    def __set__(self, instance, value):
+        if not isinstance(value, dict):
+            raise TypeError("{}: Expected a dictionary".format(self._name))
+        newval = self._newclass(**value)
+        super().__set__(instance, newval)
+
+    def __str__(self):
+        props = []
+        for k, v in self._newclass.__dict__.items():
+            if v is not None and  not k.startswith('_'):
+                props.append('{} = {}'.format(k, str(v)))
+
+        propst = '. Properties: {}'.format(', '.join(props)) if  props  else ''
+        return '<Structure{}>'.format(propst)

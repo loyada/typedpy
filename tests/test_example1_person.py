@@ -77,11 +77,12 @@ def test_updating_embedded_field_to_an_invalid_val():
     assert 'd: Expected a maxmimum of 10' in str(excinfo.value)
 
 def test_str_Structure():
-    print(Person)
-    assert str(Person)=="<Structure: Person. Properties: name = <String. Properties: maxLength = 8, pattern = '[A-Za-z]+$'>, ssid = <String. Properties: minLength = 3, pattern = '[A-Za-z]+$'>, num = <Integer. Properties: multiplesOf = 'dd', minimum = 10, maximum = 30, exclusiveMaximum = False>, foo = <Structure. Properties: a = <String>, " \
-                        "b = <Structure. Properties: c = <Number. Properties: minimum = 10>, d = <Number. Properties: maximum = 10>>>>"
+    assert str(Person)=="<Structure: Person. Properties: foo = <Structure. Properties: a = <String>, b = <Structure. Properties: c = <Number. Properties: " \
+                        "minimum = 10>, d = <Number. Properties: maximum = 10>>>, name = <String. Properties: maxLength = 8, pattern = '[A-Za-z]+$'>, num =" \
+                        " <Integer. Properties: exclusiveMaximum = False, maximum = 30, minimum = 10, multiplesOf = 'dd'>, ssid = <String. Properties: minLength = 3, pattern = '[A-Za-z]+$'>>"
+
 
 def test_str_Structure_instance():
     p = Person(name="aaa", ssid="abc", num=10, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})
-    assert str(p)=="<Instance of Person. Properties: ssid = 'abc', name = 'aaa', num = 10, " \
-                   "foo = <Instance of Structure. Properties: a = 'aaa', b = <Instance of Structure. Properties: c = 10, d = 1>>>"
+    assert str(p)=="<Instance of Person. Properties: foo = <Instance of Structure. Properties: a = 'aaa', b = <Instance of Structure. Properties: c = 10, d " \
+                   "= 1>>, name = 'aaa', num = 10, ssid = 'abc'>"

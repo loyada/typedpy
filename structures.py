@@ -32,7 +32,7 @@ class Field(object):
     def __str__(self):
         name = self.__class__.__name__
         props = []
-        for k,v in self.__dict__.items():
+        for k,v in sorted(self.__dict__.items()):
             if v is not None and not k.startswith('_'):
                 strv = "'{}'".format(v) if isinstance(v, str) else str(v)
                 props.append('{} = {}'.format(k, strv))
@@ -75,7 +75,7 @@ class StructMeta(type):
     def __str__(self):
         name = self.__name__
         props = []
-        for k,v in self.__dict__.items():
+        for k,v in sorted(self.__dict__.items()):
             if v is not None and not k.startswith('_'):
                 strv = "'{}'".format(v) if isinstance(v, str) else str(v)
                 props.append('{} = {}'.format(k, strv))
@@ -95,7 +95,7 @@ class Structure(metaclass=StructMeta):
         if name.startswith('StructureReference_') and self.__class__.__bases__ ==(Structure,) :
             name = 'Structure'
         props = []
-        for k, v in self.__dict__.items():
+        for k, v in sorted(self.__dict__.items()):
             if v is not None and not k.startswith('_'):
                 strv = "'{}'".format(v) if isinstance(v, str) else str(v)
                 props.append('{} = {}'.format(k, strv))
@@ -119,7 +119,7 @@ class StructureReference(Field):
 
     def __str__(self):
         props = []
-        for k, v in self._newclass.__dict__.items():
+        for k, v in sorted(self._newclass.__dict__.items()):
             if v is not None and  not k.startswith('_'):
                 props.append('{} = {}'.format(k, str(v)))
 

@@ -37,7 +37,7 @@ class Field(object):
                 strv = "'{}'".format(v) if isinstance(v, str) else str(v)
                 props.append('{} = {}'.format(k, strv))
 
-        propst = '. Properties: {}>'.format(', '.join(props)) if props  else ''
+        propst = '. Properties: {}'.format(', '.join(props)) if props  else ''
         return '<{}{}>'.format(name, propst)
 
 

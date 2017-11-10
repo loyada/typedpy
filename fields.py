@@ -196,7 +196,7 @@ class StructureReference(Field):
             if v is not None and  not k.startswith('_'):
                 props.append('{} = {}'.format(k, str(v)))
 
-        propst = '. Properties: {}>'.format(', '.join(props)) if  props  else ''
+        propst = '. Properties: {}'.format(', '.join(props)) if  props  else ''
         return '<Structure{}>'.format(propst)
 
 

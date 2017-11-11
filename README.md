@@ -3,7 +3,8 @@
 Typesafe Python structures.
 * Supports json schema draft4 features
 * Class/Field definition. Easily extendable. 
-* Supports inheritance/mixins of fields and structures  
+* Supports inheritance/mixins of fields and structures
+* Embedded structures within structures  
 
 For examples, look at "tests/".
 

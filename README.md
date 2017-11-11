@@ -5,6 +5,7 @@ Typesafe Python structures.
 * Class/Field definition. Easily extendable. 
 * Supports inheritance/mixins of fields and structures
 * Embedded structures within structures  
+* No dependencies on third-party libs
 
 For examples, look at "tests/".
 

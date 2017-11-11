@@ -61,3 +61,25 @@ def test_str_of_Trade_instance():
     p = Person(ssid="aaa", name="dan")
     t = Trade(tradable="GOOG", person=p)
     assert str(t)=="<Instance of Trade. Properties: person = <Instance of Person. Properties: name = 'dan', ssid = 'aaa'>, tradable = 'GOOG'>"
+
+
+def test_several_layers():
+    class A(Structure):
+        i = Integer()
+
+    class B(Structure):
+        e = Enum(values=['X', 'Y', 'Z'])
+        a = ClassReference(A)
+
+    class C(Structure):
+        s = SizedString(maxlen=10)
+        b = ClassReference(B)
+
+    a = A(i = 5)
+    b = B(e = 'X', a = a)
+    c = C(b = b, s = "x")
+
+    assert c.b.a.i==5
+    assert str(c)=="<Instance of C. Properties: b = <Instance of B. Properties: " \
+                   "a = <Instance of A. Properties: i = 5>, e = 'X'>, s = 'x'>"
+

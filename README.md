@@ -1,10 +1,10 @@
 # typedpy
 
 Typesafe Python structures.
-* Supports json schema draft4 features
+* Supports JSON schema draft4 features
 * Class/Field definition. Easily extendable. 
-* Supports inheritance/mixins of fields and structures
-* Embedded structures within structures  
+* Inheritance/mixins of fields and structures
+* Embedded structures within structures/fields and fields within fields   
 * No dependencies on third-party libs
 
 For examples, look at "tests/".

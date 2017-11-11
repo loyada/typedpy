@@ -185,27 +185,37 @@ class SizedString(String, Sized):
     pass
 
 
-
+def _str_for_multioption_field(instance):
+        name = instance.__class__.__name__
+        if instance._fields:
+            fields_st = ', '.join([str(field) for field in instance._fields])
+            propst = ' [{}]'.format(fields_st)
+        else:
+            propst = ''
+        return '<{}{}>'.format(name, propst)
 
 
 class AllOf(Field):
     def __init__(self, fields):
-        self.fields = fields
+        self._fields = fields
 
     def __set__(self, instance, value):
-        for field in self.fields:
+        for field in self._fields:
             field._name = self._name
             field.__set__(instance, value)
         super().__set__(instance, value)
 
+    def __str__(self):
+        return _str_for_multioption_field(self)
+
 
 class AnyOf(Field):
     def __init__(self, fields):
-        self.fields = fields
+        self._fields = fields
 
     def __set__(self, instance, value):
         matched = False
-        for field in self.fields:
+        for field in self._fields:
             field._name = self._name
             try:
                field.__set__(instance, value)
@@ -214,37 +224,48 @@ class AnyOf(Field):
         if not matched:
             raise ValueError("{}: Did not match any field option".format(self._name))
         super().__set__(instance, value)
+
+    def __str__(self):
+        return _str_for_multioption_field(self)
+
 
 class OneOf(Field):
     def __init__(self, fields):
-        self.fields = fields
+        self._fields = fields
 
     def __set__(self, instance, value):
-        matched = False
-        for field in self.fields:
+        matched = 0
+        for field in self._fields:
             field._name = self._name
             try:
                field.__set__(instance, value)
-               if matched:
-                   raise ValueError("{}: Matched more than one field option".format(self._name))
-               matched = True
+               matched +=1
             except: pass
         if not matched:
             raise ValueError("{}: Did not match any field option".format(self._name))
+        if matched>1:
+            raise ValueError("{}: Matched more than one field option".format(self._name))
         super().__set__(instance, value)
+
+    def __str__(self):
+        return _str_for_multioption_field(self)
 
 
 class NotField(Field):
-    def __init__(self, field):
-        self.field = field
+    def __init__(self, fields):
+        self._fields = fields
 
     def __set__(self, instance, value):
-        self.field._name = self._name
-        try:
-            self.field.__set__(instance, value)
-        except:
-            pass
-        else:
-            raise ValueError("expected not to match field definition")
+        for field in self._fields:
+            field._name = self._name
+            try:
+                field._name = self._name
+                field.__set__(instance, value)
+            except:
+                pass
+            else:
+                raise ValueError("{}: Expected not to match any field definition".format(self._name))
         super().__set__(instance, value)
 
+    def __str__(self):
+        return _str_for_multioption_field(self)

@@ -1,3 +1,5 @@
+from functools import reduce
+
 from  structures import  Field, Structure
 import re
 
@@ -116,12 +118,17 @@ class Array(TypedField):
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):
+        if not isinstance(value, list):
+            raise TypeError("%s: Expected %s" % (self._name, list))
         if self.minItems is not None and len(value)<self.minItems:
             raise ValueError("{}: Expected length of at least {}".format(self._name, self.minItems))
         if self.maxItems is not None and len(value)>self.maxItems:
             raise ValueError("{}: Expected length of at most {}".format(self._name, self.maxItems))
-        if self.uniqueItems and len(set(value))<len(value):
-            raise ValueError("{}: Expected unique items".format(self.name))
+        if self.uniqueItems:
+            unique = reduce(lambda unique_vals, x: unique_vals.append(x) or unique_vals if x not in \
+                                                                    unique_vals else unique_vals, value, [])
+            if len(unique)<len(value):
+                raise ValueError("{}: Expected unique items".format(self._name))
         if self.items is not None:
             if isinstance(self.items, Field):
                 tempSt = Structure()
@@ -130,7 +137,7 @@ class Array(TypedField):
                 for i, v in enumerate(value):
                     self.items._name = self._name + "_{}".format(str(i))
                     self.items.__set__(tempSt, v)
-                    res.append(getattr(tempSt, self.items.name))
+                    res.append(getattr(tempSt, self.items._name))
                 value = res
             elif isinstance(self.items, list):
                 if len(self.items) > len(value) or (

@@ -101,6 +101,10 @@ class Structure(metaclass=StructMeta):
                 props.append('{} = {}'.format(k, strv))
         return '<Instance of {}. Properties: {}>'.format(name, ', '.join(props))
 
+    def __eq__(self, other):
+        return str(self) == str(other)
+
+
 
 class StructureReference(Field):
     counter = 0

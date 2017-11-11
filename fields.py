@@ -18,6 +18,9 @@ class ClassReference(TypedField):
         self._ty = cls
         super().__init__(cls)
 
+    def __str__(self):
+        return "<ClassReference: {}>".format(self._ty.__name__)
+
 
 class Number(Field):
     def __init__(self, *args, multiplesOf=None, minimum=None, maximum=None, exclusiveMaximum=None, **kwargs):

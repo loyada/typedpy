@@ -1,6 +1,6 @@
 from pytest import raises
 from fields import *
-from structures import StructureReference, Structure
+from structures import StructureReference, Structure, ClassReference
 
 
 class Person(Structure):
@@ -20,7 +20,7 @@ class Trade(Structure):
     _required = ['tradable']
     tradable = String()
     # class referece: to another Structure
-    person = ClassReference(Person)
+    person = Person
 
 
 def test_using_subtype_valid():
@@ -69,6 +69,27 @@ def test_several_layers():
 
     class B(Structure):
         e = Enum(values=['X', 'Y', 'Z'])
+        a = A
+
+    class C(Structure):
+        s = SizedString(maxlen=10)
+        b = B
+
+    a = A(i = 5)
+    b = B(e = 'X', a = a)
+    c = C(b = b, s = "x")
+
+    assert c.b.a.i==5
+    assert str(c)=="<Instance of C. Properties: b = <Instance of B. Properties: " \
+                   "a = <Instance of A. Properties: i = 5>, e = 'X'>, s = 'x'>"
+
+
+def test_several_layers_variation():
+    class A(Structure):
+        i = Integer()
+
+    class B(Structure):
+        e = Enum(values=['X', 'Y', 'Z'])
         a = ClassReference(A)
 
     class C(Structure):
@@ -82,4 +103,3 @@ def test_several_layers():
     assert c.b.a.i==5
     assert str(c)=="<Instance of C. Properties: b = <Instance of B. Properties: " \
                    "a = <Instance of A. Properties: i = 5>, e = 'X'>, s = 'x'>"
-

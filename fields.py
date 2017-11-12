@@ -1,25 +1,7 @@
 from functools import reduce
 
-from  structures import  Field, Structure
+from  structures import Field, Structure, TypedField
 import re
-
-
-class TypedField(Field):
-    _ty = object
-
-    def __set__(self, instance, value):
-        if not isinstance(value, self._ty):
-            raise TypeError("%s: Expected %s" % (self._name, self._ty))
-        super().__set__(instance, value)
-
-
-class ClassReference(TypedField):
-    def __init__(self, cls):
-        self._ty = cls
-        super().__init__(cls)
-
-    def __str__(self):
-        return "<ClassReference: {}>".format(self._ty.__name__)
 
 
 class Number(Field):
@@ -67,9 +49,9 @@ class String(TypedField):
     def __set__(self, instance, value):
         if not isinstance(value, str):
             raise TypeError("{}: Expected a string".format(self._name))
-        if self.maxLength is not None and len(value)> self.maxLength:
+        if self.maxLength is not None and len(value) > self.maxLength:
             raise ValueError("{}: Expected a maxmimum length of {}".format(self._name, self.maxLength))
-        if self.minLength is not None and len(value)< self.minLength:
+        if self.minLength is not None and len(value) < self.minLength:
             raise ValueError("{}: Expected a minimum length of {}".format(self._name, self.minLength))
         if self.pattern is not None and not self._compiledPattern.match(value):
             raise ValueError('{}: Does not match regular expression: {}'.format(self._name, self.pattern))
@@ -80,8 +62,10 @@ class String(TypedField):
 class Float(TypedField, Number):
     _ty = float
 
+
 class Boolean(TypedField):
     _ty = bool
+
 
 class Positive(Field):
     def __set__(self, instance, value):
@@ -109,10 +93,12 @@ class ListStruct(list):
         copied.__setitem__(key, value)
         self._array.__set__(self._instance, copied)
 
+
 class Array(TypedField):
     _ty = list
 
-    def __init__(self, *args, items=None, uniqueItems=None, minItems=None, maxItems=None, additionalItems = None, **kwargs):
+    def __init__(self, *args, items=None, uniqueItems=None, minItems=None, maxItems=None, additionalItems=None,
+                 **kwargs):
         self.minItems = minItems
         self.maxItems = maxItems
         self.uniqueItems = uniqueItems
@@ -123,14 +109,15 @@ class Array(TypedField):
     def __set__(self, instance, value):
         if not isinstance(value, list):
             raise TypeError("%s: Expected %s" % (self._name, list))
-        if self.minItems is not None and len(value)<self.minItems:
+        if self.minItems is not None and len(value) < self.minItems:
             raise ValueError("{}: Expected length of at least {}".format(self._name, self.minItems))
-        if self.maxItems is not None and len(value)>self.maxItems:
+        if self.maxItems is not None and len(value) > self.maxItems:
             raise ValueError("{}: Expected length of at most {}".format(self._name, self.maxItems))
         if self.uniqueItems:
             unique = reduce(lambda unique_vals, x: unique_vals.append(x) or unique_vals if x not in \
-                                                                    unique_vals else unique_vals, value, [])
-            if len(unique)<len(value):
+                                                                                           unique_vals else unique_vals,
+                            value, [])
+            if len(unique) < len(value):
                 raise ValueError("{}: Expected unique items".format(self._name))
         if self.items is not None:
             if isinstance(self.items, Field):
@@ -144,7 +131,8 @@ class Array(TypedField):
                 value = res
             elif isinstance(self.items, list):
                 if len(self.items) > len(value) or (
-                                    self.additionalItems is not None and self.additionalItems is False and len(self.items) > len(value)):
+                                    self.additionalItems is not None and self.additionalItems is False and len(
+                            self.items) > len(value)):
                     raise ValueError("{}: Expected an array of length {}".format(self._name, len(self.items)))
                 tempSt = Structure()
                 res = []
@@ -168,7 +156,10 @@ class Enum(Field):
             raise ValueError('{}: Must be one of {}'.format(self._name, self.values))
         super().__set__(instance, value)
 
-class EnumString(Enum, String): pass
+
+class EnumString(Enum, String):
+    pass
+
 
 class Sized(Field):
     def __init__(self, *args, maxlen, **kwargs):
@@ -186,18 +177,19 @@ class SizedString(String, Sized):
 
 
 def _str_for_multioption_field(instance):
-        name = instance.__class__.__name__
-        if instance._fields:
-            fields_st = ', '.join([str(field) for field in instance._fields])
-            propst = ' [{}]'.format(fields_st)
-        else:
-            propst = ''
-        return '<{}{}>'.format(name, propst)
+    name = instance.__class__.__name__
+    if instance._fields:
+        fields_st = ', '.join([str(field) for field in instance._fields])
+        propst = ' [{}]'.format(fields_st)
+    else:
+        propst = ''
+    return '<{}{}>'.format(name, propst)
 
 
 class AllOf(Field):
     def __init__(self, fields):
         self._fields = fields
+        super().__init__()
 
     def __set__(self, instance, value):
         for field in self._fields:
@@ -212,15 +204,17 @@ class AllOf(Field):
 class AnyOf(Field):
     def __init__(self, fields):
         self._fields = fields
+        super().__init__()
 
     def __set__(self, instance, value):
         matched = False
         for field in self._fields:
             field._name = self._name
             try:
-               field.__set__(instance, value)
-               matched = True
-            except: pass
+                field.__set__(instance, value)
+                matched = True
+            except:
+                pass
         if not matched:
             raise ValueError("{}: Did not match any field option".format(self._name))
         super().__set__(instance, value)
@@ -232,18 +226,20 @@ class AnyOf(Field):
 class OneOf(Field):
     def __init__(self, fields):
         self._fields = fields
+        super().__init__()
 
     def __set__(self, instance, value):
         matched = 0
         for field in self._fields:
             field._name = self._name
             try:
-               field.__set__(instance, value)
-               matched +=1
-            except: pass
+                field.__set__(instance, value)
+                matched += 1
+            except:
+                pass
         if not matched:
             raise ValueError("{}: Did not match any field option".format(self._name))
-        if matched>1:
+        if matched > 1:
             raise ValueError("{}: Matched more than one field option".format(self._name))
         super().__set__(instance, value)
 
@@ -254,6 +250,7 @@ class OneOf(Field):
 class NotField(Field):
     def __init__(self, fields):
         self._fields = fields
+        super().__init__()
 
     def __set__(self, instance, value):
         for field in self._fields:

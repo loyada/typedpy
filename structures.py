@@ -60,6 +60,9 @@ class StructMeta(type):
             if additionalProps and bases_params["kwargs"].kind==Parameter.VAR_KEYWORD:
                 del bases_params["kwargs"]
 
+        for key, val in cls_dict.items():
+            if isinstance(val, StructMeta)  and not isinstance(val, Field):
+                cls_dict[key] = ClassReference(val)
         fields = [key for key, val in cls_dict.items() if isinstance(val, Field)]
         for field_name in fields:
             cls_dict[field_name]._name = field_name
@@ -129,3 +132,22 @@ class StructureReference(Field):
 
         propst = '. Properties: {}'.format(', '.join(props)) if  props  else ''
         return '<Structure{}>'.format(propst)
+
+
+class TypedField(Field):
+    _ty = object
+
+    def __set__(self, instance, value):
+        if not isinstance(value, self._ty):
+            raise TypeError("%s: Expected %s" % (self._name, self._ty))
+        super().__set__(instance, value)
+
+
+class ClassReference(TypedField):
+    def __init__(self, cls):
+        self._ty = cls
+        super().__init__(cls)
+
+    def __str__(self):
+        return "<ClassReference: {}>".format(self._ty.__name__)
+

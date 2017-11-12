@@ -53,7 +53,7 @@ class Trade(Structure):
     category = EnumString(values = ['a','b'])
 
     #class referece: to another Structure
-    person = ClassReference(Person)
+    person = Person
 
     #array support, similar to json schema
     children = Array(uniqueItems=True, minItems= 3, items = [String(), Number(maximum=10)])

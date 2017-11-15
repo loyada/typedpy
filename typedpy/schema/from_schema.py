@@ -1,7 +1,6 @@
 import json
 from collections import namedtuple
 
-from fields import *
 
 def _to_namedtuple(mydict):
     return namedtuple('structure', mydict.keys())(**mydict)

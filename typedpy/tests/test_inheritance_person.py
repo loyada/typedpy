@@ -1,6 +1,7 @@
 from pytest import raises
-from fields import *
-from structures import StructureReference, Structure
+
+from typedpy import StructureReference, Structure, String, Integer, Number, PositiveInt
+
 
 class Person(Structure):
     _required = ['ssid']

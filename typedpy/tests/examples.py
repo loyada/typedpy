@@ -1,5 +1,5 @@
-from fields import *
-from structures import StructureReference, Structure
+
+from typedpy import *
 
 
 class Person(Structure):

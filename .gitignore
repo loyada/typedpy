@@ -1,9 +1,7 @@
-/version.txt
-
 _cache
 _static
-_templates
-
 TODO
 .idea/
 tests/.cache/
+venv/
+.tox/

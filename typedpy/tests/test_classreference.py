@@ -1,6 +1,7 @@
 from pytest import raises
-from fields import *
-from structures import StructureReference, Structure, ClassReference
+
+from typedpy import StructureReference, Structure, ClassReference, \
+    Number, String, Integer, PositiveInt, SizedString, Enum
 
 
 class Person(Structure):

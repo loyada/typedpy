@@ -1,6 +1,6 @@
 from pytest import raises
-from fields import *
-from structures import Structure
+
+from typedpy import Structure, AllOf, AnyOf, OneOf, Integer, String, Positive, Number, NotField
 
 
 class Trade(Structure):

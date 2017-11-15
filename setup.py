@@ -21,7 +21,7 @@ classifiers = [
 
 setup(
     name="typedpy",
-    packages=["typedpy"],
+    packages=["typedpy", "typedpy.tests"],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     author="Danny Loya",

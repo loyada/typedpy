@@ -1,7 +1,6 @@
 import pytest
-from fields import *
-from structures import StructureReference, Structure
 
+from typedpy import StructureReference, Structure, String, Number, PositiveInt, Integer
 
 
 class Person(Structure):

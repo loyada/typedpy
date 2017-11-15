@@ -1,7 +1,7 @@
+import re
 from functools import reduce
 
-from  structures import Field, Structure, TypedField
-import re
+from  typedpy.structures import Field, Structure, TypedField
 
 
 class Number(Field):

@@ -37,3 +37,7 @@ setup(
 
 # coverage run --source=typedpy/ setup.py test
 # coverage report -m
+
+# pylint - -rcfile = setup.cfg typedpy
+#    or
+# python3 setup.py lint

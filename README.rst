@@ -1,4 +1,3 @@
-=======
 typedpy
 =======
 
@@ -25,7 +24,9 @@ Examples
 ----------
 Basic example:
 
+
 .. code-block:: python
+
     >>> from typedpy.structures import StructureReference, Structure
     >>> from fields import *
     >>> class Person(Structure):
@@ -75,6 +76,7 @@ Basic example:
 Another example with Array, class reference, enum:
 
 .. code-block:: python
+
     >>> class Example(Structure):
     ...     _additionalProperties = True
     ...     _required = ['quantity', 'price']

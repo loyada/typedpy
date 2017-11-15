@@ -34,3 +34,6 @@ setup(
     keywords = ['testing', 'type-safe', 'schema', 'validation'],
     version = '0.1'
 )
+
+# coverage run --source=typedpy/ setup.py test
+# coverage report -m

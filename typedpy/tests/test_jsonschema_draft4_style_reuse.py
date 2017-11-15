@@ -11,6 +11,7 @@ class Trade(Structure):
     b = AnyOf([Number(maximum=20, minimum=-10), Integer(), Positive(), String()])
     c = OneOf([Number(multiplesOf=5, maximum=20, minimum=-10), Integer(), Positive(), String()])
     d = NotField([Number(multiplesOf=5, maximum=20, minimum=-10), String()])
+    e = AllOf([])
     broken = AllOf([String(), Integer()])
 
 
@@ -19,6 +20,11 @@ class Trade(Structure):
 
 def test_allof_str():
     assert str(Trade.a)=="<AllOf [<Number. Properties: maximum = 20, minimum = -10, multiplesOf = 5>, <Integer>, <Positive>]>"
+
+def test_allof_empty_str():
+        assert str(
+            Trade.e) == "<AllOf>"
+
 
 def test_anyoff_str():
     assert str(Trade.b)=="<AnyOf [<Number. Properties: maximum = 20, minimum = -10>, <Integer>, <Positive>, <String>]>"

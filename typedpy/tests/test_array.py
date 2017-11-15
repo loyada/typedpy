@@ -9,7 +9,9 @@ class Trade(Structure):
     #array support, similar to json schema
     a = Array(uniqueItems=True, minItems= 3, items = [String(), Number(maximum=10)])
     b = Array(minItems= 3, maxItems= 5, items = Number(maximum=10))
-
+    c = Array(items = [String(), String(), Number(maximum=10)])
+    d = Array(minItems=2, items = '')
+    e = Array(minItems=2)
 
 
 
@@ -90,3 +92,15 @@ def test_single_Field_for_all_items_err():
 def test_single_Field_for_all_items_valid():
     t = Trade(b=[1, 2, 3, 9])
     assert t.b==[1,2,3,9]
+
+def test_not_enough_items2_err():
+    with raises(ValueError) as excinfo:
+        t = Trade(c=['aa'])
+    assert "c: Expected an array of length 3" in str(excinfo.value)
+
+
+def test_items_can_be_ignored_schema_is_valid():
+    assert Trade(d = [1,2,3]).d[1] == 2
+
+def test_no_items_schema_is_valid():
+    assert Trade(e = [1,2,3]).e[1] == 2

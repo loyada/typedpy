@@ -2,7 +2,6 @@ import os
 
 from setuptools import setup
 
-
 with open(os.path.join(os.path.dirname(__file__), "README.rst")) as readme:
     long_description = readme.read()
 
@@ -18,12 +17,11 @@ classifiers = [
     "Programming Language :: Python :: 3.6",
 ]
 
-
 setup(
     name="typedpy",
     packages=["typedpy", "typedpy.tests"],
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    setup_requires=['pytest-runner', 'setuptools-lint'],
+    tests_require=['pytest', 'coverage', 'pytest-cov'],
     author="Danny Loya",
     author_email="dan.loya@gmail.com",
     classifiers=classifiers,
@@ -31,12 +29,13 @@ setup(
     license="Apache 2",
     long_description=long_description,
     url="http://github.com/loyada/typedpy",
-    keywords = ['testing', 'type-safe', 'schema', 'validation'],
-    version = '0.1'
+    keywords=['testing', 'type-safe', 'schema', 'validation'],
+    version='0.1'
 )
 
 # coverage run --source=typedpy/ setup.py test
-# coverage report -m
+# coverage html
+# load in browser from coverage_html_report
 
 # pylint - -rcfile = setup.cfg typedpy
 #    or

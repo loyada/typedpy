@@ -1,3 +1,7 @@
+.. image:: https://travis-ci.org/loyada/typedpy.svg?branch=master
+    :target: https://travis-ci.org/loyada/typedpy
+
+=======
 typedpy
 =======
 

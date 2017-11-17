@@ -37,6 +37,6 @@ setup(
 # coverage html
 # load in browser from coverage_html_report
 
-# pylint - -rcfile = setup.cfg typedpy
+# pylint --rcfile=setup.cfg typedpy
 #    or
 # python3 setup.py lint

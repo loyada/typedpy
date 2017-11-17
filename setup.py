@@ -19,7 +19,7 @@ classifiers = [
 
 setup(
     name="typedpy",
-    packages=["typedpy", "typedpy.tests"],
+    packages=["typedpy"],
     setup_requires=['pytest-runner', 'setuptools-lint'],
     tests_require=['pytest', 'coverage', 'pytest-cov'],
     author="Danny Loya",

@@ -16,7 +16,7 @@ Features
 
 * Easily extensible
 
-* `Inheritance/mixins of field <https://github.com/loyada/typedpy/tree/master/typedpy/tests/test_inheritance_person.py>`_
+* `Inheritance/mixins of field <https://github.com/loyada/typedpy/tree/master/tests/test_inheritance_person.py>`_
 
 * Embedded structures within structures/fields and fields within fields-
 

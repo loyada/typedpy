@@ -114,12 +114,18 @@ class ListStruct(list):
 
 class ArrayMeta(type):
     def __getitem__(cls, item):
-        if isinstance(item, Field):
-            return Array(items=item)
-        elif Field in item.__mro__:
-            return Array(items=item())
-        else:
-            raise TypeError("Expected a Field class or instance")
+        def validate_and_get_field(val):
+            if isinstance(val, Field):
+                return val
+            elif Field in val.__mro__:
+                return val()
+            else:
+                raise TypeError("Expected a Field class or instance")
+
+        if isinstance(item, tuple):
+            items = [validate_and_get_field(it) for it in item]
+            return Array(items=items)
+        return Array(items=validate_and_get_field(item))
 
 
 class Array(TypedField, metaclass=ArrayMeta):
@@ -132,7 +138,17 @@ class Array(TypedField, metaclass=ArrayMeta):
         self.maxItems = maxItems
         self.uniqueItems = uniqueItems
         self.additionalItems = additionalItems
-        self.items = items
+        if isinstance(items, list):
+            self.items = []
+            for item in items:
+                if isinstance(item, Field):
+                    self.items.append(item)
+                elif Field in item.__mro__:
+                    self.items.append(item())
+                else:
+                    raise TypeError("Expected a Field class or instance")
+        else:
+            self.items = items
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):

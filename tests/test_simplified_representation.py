@@ -8,6 +8,8 @@ class Example(Structure):
     b = String
     c = Array[String(minLength=3, pattern='[A-Za-z]+$')]
     d = Array[Integer]
+    e = Array[Integer, String]
+    f = Array(items = [String, Integer])
 
 
 def test_Integer_prop_err():
@@ -46,8 +48,28 @@ def test_array_generics_without_props_update_err():
         e.d[1] = []
     assert "d_1: Expected <class 'int'>" in str(excinfo.value)
 
-def test_class_definition_err():
+def test_class_definition_err1():
     with raises(TypeError) as excinfo:
         class Foo(Structure):
             a = Array[int]
     assert "Expected a Field class or instance" in str(excinfo.value)
+
+def test_class_definition_err2():
+    with raises(TypeError) as excinfo:
+        class Foo(Structure):
+            a = Array(items = [int])
+    assert "Expected a Field class or instance" in str(excinfo.value)
+
+def test_multiple_items_in_array_schema_definition_err():
+    with raises(TypeError) as excinfo:
+        class Foo(Structure):
+            a = Array[Integer, str]
+    assert "Expected a Field class or instance" in str(excinfo.value)
+
+def test_multiple_items_in_array_schema_err():
+    with raises(TypeError) as excinfo:
+        Example(e=[1,2])
+    assert "e_1: Expected a string" in str(excinfo.value)
+
+def test_multiple_items_in_array_schema_valid():
+    assert Example(e=[1,'xyz']).e[1] == 'xyz'

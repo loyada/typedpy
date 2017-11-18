@@ -1,6 +1,6 @@
 from pytest import raises
 
-from typedpy import Structure, Array, Number, String
+from typedpy import Structure, Array, Number, String, Integer
 
 
 class Trade(Structure):
@@ -12,6 +12,7 @@ class Trade(Structure):
     c = Array(items = [String(), String(), Number(maximum=10)])
     d = Array(minItems=2, items = '')
     e = Array(minItems=2)
+    f = Array[Integer]
 
 
 
@@ -95,7 +96,7 @@ def test_single_Field_for_all_items_valid():
 
 def test_not_enough_items2_err():
     with raises(ValueError) as excinfo:
-        t = Trade(c=['aa'])
+        Trade(c=['aa'])
     assert "c: Expected an array of length 3" in str(excinfo.value)
 
 
@@ -104,3 +105,11 @@ def test_items_can_be_ignored_schema_is_valid():
 
 def test_no_items_schema_is_valid():
     assert Trade(e = [1,2,3]).e[1] == 2
+
+def test_generics_version_err():
+    with raises(ValueError) as excinfo:
+        Trade(f=['aa', 'xx'])
+    assert "f: f_0: Expected <class 'int'>" in str(excinfo.value)
+
+def test_generics_version_err():
+    assert Trade(f=[4,5,6]).f == [4,5,6]

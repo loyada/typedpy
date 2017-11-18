@@ -112,7 +112,17 @@ class ListStruct(list):
         self._array.__set__(self._instance, copied)
 
 
-class Array(TypedField):
+class ArrayMeta(type):
+    def __getitem__(cls, item):
+        if isinstance(item, Field):
+            return Array(items=item)
+        elif Field in item.__mro__:
+            return Array(items=item())
+        else:
+            raise TypeError("Expected a Field class or instance")
+
+
+class Array(TypedField, metaclass=ArrayMeta):
     _ty = list
 
     def __init__(self, *args, items=None, uniqueItems=None, minItems=None,

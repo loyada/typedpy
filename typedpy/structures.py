@@ -100,7 +100,9 @@ class StructMeta(type):
 
     def __new__(mcs, name, bases, cls_dict):
         bases_params, bases_required = get_base_info(bases)
-
+        for key, val in cls_dict.items():
+            if not key.startswith('_') and not isinstance(val, Field) and Field in val.__mro__:
+                cls_dict[key] = val()
         for key, val in cls_dict.items():
             if isinstance(val, StructMeta) and not isinstance(val, Field):
                 cls_dict[key] = ClassReference(val)

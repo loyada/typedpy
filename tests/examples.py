@@ -7,6 +7,7 @@ class Person(Structure):
     name = String(pattern='[A-Za-z]+$', maxLength=8)
     ssid = String(minLength = 3, pattern = '[A-Za-z]+$')
     num = Integer(maximum=30, minimum=10, multiplesOf="dd", exclusiveMaximum=False)
+    aaa = String
     #embedding "inline" structures as fields
     #equivalent to :
     # foo: {
@@ -61,6 +62,8 @@ class Trade(Structure):
 
 op = OldPerson(children = 1, num=1, ssid = "aaa")
 print(Person)
+
+op.aaa = 3
 
 p = Person(name="fo", ssid="fff", num=25, foo = {'a': 'aaa', 'b': {'c': 10, 'd': 1}})
 p.foo.b.c = 15

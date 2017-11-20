@@ -44,7 +44,7 @@ Basic Structure definition:
     ...     foo = Array[PositiveFloat]
     ...
 
-
+Given this definition, any instance of Example will always have the above attributes withe their corresponding field definitions.
 
 Working with a Structure:
 
@@ -54,9 +54,9 @@ Working with a Structure:
     >>> from fields import *
     >>> class Person(Structure):
     ...     name = String(pattern='[A-Za-z]+$', maxLength=8)
-    ...     ssid = String()
+    ...     ssid = String
     ...     num = Integer(maximum=30, minimum=10, multiplesOf=5, exclusiveMaximum=False)
-    ...     foo = StructureReference(a=String(), b = StructureReference(c = Number(minimum=10), d = Number(maximum=10)))
+    ...     foo = StructureReference(a=String, b = StructureReference(c = Number(minimum=10), d = Number(maximum=10)))
     ...
     >>> Person(name="fo d", ssid="123", num=25, foo = {'a': 'aaa', 'b': {'c': 10, 'd': 1}})
     {ValueError}name: Does not match regular expression: [A-Za-z]+$
@@ -103,11 +103,11 @@ Another example with Array, class reference, enum:
     >>> class Example(Structure):
     ...     _additionalProperties = True
     ...     _required = ['quantity', 'price']
-    ...     quantity = AnyOf([PositiveInt(), Enum(values=['few', 'many', 'several'])])
-    ...     price = PositiveFloat()
+    ...     quantity = AnyOf([PositiveInt, Enum(values=['few', 'many', 'several'])])
+    ...     price = PositiveFloat
     ...     category = EnumString(values = ['cat1','cat2'])
     ...     person = Person
-    ...     children = Array(uniqueItems=True, minItems= 3, items = [String(), Number(maximum=10)])
+    ...     children = Array(uniqueItems=True, minItems= 3, items = [String, Number(maximum=10)])
 
     >>> t = Example(quantity='many', price=10.0, category= 'cat1', children = [ 3, 2])
     ValueError: children: Expected length of at least 3

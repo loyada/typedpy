@@ -156,6 +156,12 @@ def test_super_simplified_definition_with_updates_valid():
     del a.e['xyz']
     assert a.e == { 'def': 0, 'abc': 6, 'efg': 5}
 
-
+def test_str():
+    st = str(Example)
+    assert "a = <Map. Properties: items = [<Number. Properties: maximum = 10>, <String>], maxItems = 5, minItems = 3>" in st
+    assert "b = <Map. Properties: items = [<Number. Properties: maximum = 10>, <String>]>" in st
+    assert "c = <Map. Properties: maxItems = 5, minItems = 3>" in st
+    assert "d = <Map. Properties: items = [<String. Properties: minLength = 3>, <Number>]>" in st
+    assert "e = <Map. Properties: items = [<String>, <Number>]" in st
 
 

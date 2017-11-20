@@ -120,12 +120,14 @@ class _ListStruct(list):
         self._array.__set__(self._instance, copied)
 
 
-class _DickStruct(dict):
+class _DictStruct(dict):
     """
     This is a useful wrapper for the content of dict in an Map field.
     It ensures that an update of the form:
-     mystruct.my_map[i] = new_val
-    Will not bypass the validation of the Map.
+     mystruct.my_map[i] = new_val, or
+     mystruct.my_map.update(some_dict)
+
+    ...will not bypass the validation of the Map.
     """
 
     def __init__(self, the_map, struct_instance, mydict):
@@ -264,14 +266,27 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
                     temp_st, getattr(value_field, '_name'))
             value = res
 
-        super().__set__(instance, _DickStruct(self, instance, value))
+        super().__set__(instance, _DictStruct(self, instance, value))
 
 
 class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
+    """
+    An Array field, similar to a list. Supports the properties in JSON schema draft 4.
+    """
     _ty = list
 
     def __init__(self, *args, items=None, uniqueItems=None, additionalItems=None,
                  **kwargs):
+        """
+        Constructor
+        :param args: pass-through
+        :param items: either a single field, which will be enforced for all elements, or a list
+         of fields which enforce the elements with the correspondent index
+        :param uniqueItems: are elements required to be unique?
+        :param additionalItems: Relevant if "items" is a list. Is it allowed to have additional
+        elements beyond the ones defined in "items"?
+        :param kwargs: pass-through
+        """
         self.uniqueItems = uniqueItems
         self.additionalItems = additionalItems
         if isinstance(items, list):
@@ -327,6 +342,9 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
 
 
 class Enum(Field):
+    """
+    Enum field. value can be one of predefined values
+    """
     def __init__(self, *args, values, **kwargs):
         self.values = values
         super().__init__(*args, **kwargs)
@@ -367,6 +385,10 @@ def _str_for_multioption_field(instance):
 
 
 class MultiFieldWrapper(object):
+    """
+    An abstract base class for AllOf, AnyOf, OneOf, etc.
+    It provides flexibility in reading the "fields" argument.
+    """
     def __init__(self, *arg, fields, **kwargs):
         if isinstance(fields, list):
             self._fields = []
@@ -386,6 +408,9 @@ class MultiFieldWrapper(object):
 
 
 class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
+    """
+    Content must adhere to all requirements in the fields arguments.
+    """
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -400,6 +425,9 @@ class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
 
 class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
+    """
+    Content must adhere to any of the requirements in the fields arguments.
+    """
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -423,6 +451,9 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
 
 class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
+    """
+    Content must adhere to one, and only one, of the requirements in the fields arguments.
+    """
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -448,6 +479,9 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
 
 class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
+    """
+       Content *must not* adhere to any of the requirements in the fields arguments.
+       """
     def __init__(self, fields):
         super().__init__(fields=fields)
 

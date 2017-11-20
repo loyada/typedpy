@@ -8,7 +8,7 @@ with open(os.path.join(os.path.dirname(__file__), "README.rst")) as readme:
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache 2",
+    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.3",
@@ -29,7 +29,8 @@ setup(
     license="Apache 2",
     long_description=long_description,
     url="http://github.com/loyada/typedpy",
-    keywords=['testing', 'type-safe', 'schema', 'validation'],
+    download_url ="https://github.com/loyada/typedpy/archive/v0.1.tar.gz",
+    keywords=['testing', 'type-safe', 'strict', 'schema', 'validation'],
     version='0.1'
 )
 

@@ -79,11 +79,20 @@ class Field(object):
         instance.__dict__[self._name] = value
 
     def __str__(self):
+        def as_str(val):
+            """
+            convert to string or a list of strings
+            :param val: a Field or a list of Fields
+            :return: a string representation
+            """
+            if hasattr(val, '__iter__'):
+                return '[{}]'.format(', '.join([str(v) for v in val]))
+            return str(val)
         name = self.__class__.__name__
         props = []
         for k, val in sorted(self.__dict__.items()):
             if val is not None and not k.startswith('_'):
-                strv = "'{}'".format(val) if isinstance(val, str) else str(val)
+                strv = "'{}'".format(val) if isinstance(val, str) else as_str(val)
                 props.append('{} = {}'.format(k, strv))
 
         propst = '. Properties: {}'.format(', '.join(props)) if props else ''
@@ -145,9 +154,8 @@ class Structure(metaclass=StructMeta):
             name = 'Structure'
         props = []
         for k, val in sorted(self.__dict__.items()):
-            if val is not None and not k.startswith('_'):
-                strv = "'{}'".format(val) if isinstance(val, str) else str(val)
-                props.append('{} = {}'.format(k, strv))
+            strv = "'{}'".format(val) if isinstance(val, str) else str(val)
+            props.append('{} = {}'.format(k, strv))
         return '<Instance of {}. Properties: {}>'.format(name, ', '.join(props))
 
     def __eq__(self, other):

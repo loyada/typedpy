@@ -8,7 +8,7 @@ class Example(Structure):
     a = Map(minItems=3, maxItems=5, items=[Number(maximum=10), String()])
     b = Map(items=(Number(maximum=10), String))
     c = Map(minItems=3, maxItems=5)
-    d = Map[String(minLength=3), Number()]
+    d = Map[String(minLength=3), Number]
     e = Map[String, Number]
 
 
@@ -121,7 +121,7 @@ def test_no_items_definition_wrong_size_err():
 
 def test_simplified_definition_val_type_err():
     with raises(TypeError) as excinfo:
-        Example(d={ 'xyz': 'y', 4.5: 'x'})
+        Example(d={ 'xyz': 'y', 'a': 'x'})
     assert "d_value: Expected a number" in str(excinfo.value)
 
 def test_simplified_definition_key_type_err():

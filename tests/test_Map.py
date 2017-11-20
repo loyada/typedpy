@@ -121,7 +121,7 @@ def test_no_items_definition_wrong_size_err():
 
 def test_simplified_definition_val_type_err():
     with raises(TypeError) as excinfo:
-        Example(d={ 'xyz': 'y', 'a': 'x'})
+        Example(d={ 'xyz': 'y', 'abc': 'x'})
     assert "d_value: Expected a number" in str(excinfo.value)
 
 def test_simplified_definition_key_type_err():

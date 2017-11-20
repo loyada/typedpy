@@ -140,7 +140,7 @@ def test_simplified_definition_with_updates_valid():
 
 def test_super_simplified_definition_val_type_err():
     with raises(TypeError) as excinfo:
-        Example(e={ 'xyz': 'y', 4.5: 'x'})
+        Example(e={ 'xyz': 'y', 'abc': 'x'})
     assert "e_value: Expected a number" in str(excinfo.value)
 
 def test_super_simplified_definition_key_type_err():

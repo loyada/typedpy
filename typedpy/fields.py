@@ -11,6 +11,7 @@ class Number(Field):
     """
     Base class for numerical fields. Based on Json schema draft4.
     """
+
     def __init__(self, *args, multiplesOf=None, minimum=None,
                  maximum=None, exclusiveMaximum=None, **kwargs):
         self.multiplesOf = multiplesOf
@@ -25,8 +26,8 @@ class Number(Field):
 
         if not isinstance(value, float) and not isinstance(value, int):
             raise TypeError("{}: Expected a number".format(self._name))
-        if isinstance(self.multiplesOf, float) and int(
-                value / self.multiplesOf) != value / self.multiplesOf or \
+        if isinstance(self.multiplesOf, float) and \
+                        int(value / self.multiplesOf) != value / self.multiplesOf or \
                         isinstance(self.multiplesOf, int) and value % self.multiplesOf:
             raise ValueError("{}: Expected a a multiple of {}".format(
                 self._name, self.multiplesOf))
@@ -57,7 +58,7 @@ class String(TypedField):
         self.maxLength = maxLength
         self.pattern = pattern
         if self.pattern is not None:
-            self._compiledPattern = re.compile(self.pattern)
+            self._compiled_pattern = re.compile(self.pattern)
         self.format_type = format_type
         super().__init__(*args, **kwargs)
 
@@ -70,7 +71,7 @@ class String(TypedField):
         if self.minLength is not None and len(value) < self.minLength:
             raise ValueError("{}: Expected a minimum length of {}".format(
                 self._name, self.minLength))
-        if self.pattern is not None and not self._compiledPattern.match(value):
+        if self.pattern is not None and not self._compiled_pattern.match(value):
             raise ValueError('{}: Does not match regular expression: {}'.format(
                 self._name, self.pattern))
 
@@ -107,6 +108,7 @@ class _ListStruct(list):
      mystruct.my_array[i] = new_val
     Will not bypass the validation of the Array.
     """
+
     def __init__(self, array, struct_instance, mylist):
         self._array = array
         self._instance = struct_instance
@@ -125,6 +127,7 @@ class _DickStruct(dict):
      mystruct.my_map[i] = new_val
     Will not bypass the validation of the Map.
     """
+
     def __init__(self, the_map, struct_instance, mydict):
         self._map = the_map
         self._instance = struct_instance
@@ -161,6 +164,22 @@ class _CollectionMeta(type):
             items = [validate_and_get_field(it) for it in item]
             return cls(items=items)
         return cls(items=validate_and_get_field(item))
+
+
+class _JSONSchemaDraft4ReuseMeta(type):
+    def __getitem__(cls, item):
+        def validate_and_get_field(val):
+            if isinstance(val, Field):
+                return val
+            elif Field in val.__mro__:
+                return val()
+            else:
+                raise TypeError("Expected a Field class or instance")
+
+        if isinstance(item, tuple):
+            fields = [validate_and_get_field(it) for it in item]
+            return cls(fields)
+        return cls([validate_and_get_field(item)])
 
 
 class SizedCollection(object):
@@ -291,8 +310,8 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
             elif isinstance(self.items, list):
                 additional_properties_forbidden = self.additionalItems is not None and \
                                                   self.additionalItems is False
-                if len(self.items) > len(value) or (
-                        additional_properties_forbidden and len(self.items) > len(value)):
+                if len(self.items) > len(value) or \
+                        (additional_properties_forbidden and len(self.items) > len(value)):
                     raise ValueError("{}: Expected an array of length {}".format(
                         self._name, len(self.items)))
                 temp_st = Structure()
@@ -339,21 +358,39 @@ class SizedString(String, Sized):
 
 def _str_for_multioption_field(instance):
     name = instance.__class__.__name__
-    if instance._fields:
-        fields_st = ', '.join([str(field) for field in instance._fields])
+    if instance.get_fields():
+        fields_st = ', '.join([str(field) for field in instance.get_fields()])
         propst = ' [{}]'.format(fields_st)
     else:
         propst = ''
     return '<{}{}>'.format(name, propst)
 
 
-class AllOf(Field):
+class MultiFieldWrapper(object):
+    def __init__(self, *arg, fields, **kwargs):
+        if isinstance(fields, list):
+            self._fields = []
+            for item in fields:
+                if isinstance(item, Field):
+                    self._fields.append(item)
+                elif Field in item.__mro__:
+                    self._fields.append(item())
+                else:
+                    raise TypeError("Expected a Field class or instance")
+        else:
+            raise TypeError("Expected a Field class or instance")
+        super().__init__(*arg, **kwargs)
+
+    def get_fields(self):
+        return self._fields
+
+
+class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     def __init__(self, fields):
-        self._fields = fields
-        super().__init__()
+        super().__init__(fields=fields)
 
     def __set__(self, instance, value):
-        for field in self._fields:
+        for field in self.get_fields():
             setattr(field, '_name', self._name)
             field.__set__(instance, value)
         super().__set__(instance, value)
@@ -362,14 +399,13 @@ class AllOf(Field):
         return _str_for_multioption_field(self)
 
 
-class AnyOf(Field):
+class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     def __init__(self, fields):
-        self._fields = fields
-        super().__init__()
+        super().__init__(fields=fields)
 
     def __set__(self, instance, value):
         matched = False
-        for field in self._fields:
+        for field in self.get_fields():
             setattr(field, '_name', self._name)
             try:
                 field.__set__(instance, value)
@@ -386,14 +422,13 @@ class AnyOf(Field):
         return _str_for_multioption_field(self)
 
 
-class OneOf(Field):
+class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     def __init__(self, fields):
-        self._fields = fields
-        super().__init__()
+        super().__init__(fields=fields)
 
     def __set__(self, instance, value):
         matched = 0
-        for field in self._fields:
+        for field in self.get_fields():
             setattr(field, '_name', self._name)
             try:
                 field.__set__(instance, value)
@@ -412,13 +447,12 @@ class OneOf(Field):
         return _str_for_multioption_field(self)
 
 
-class NotField(Field):
+class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     def __init__(self, fields):
-        self._fields = fields
-        super().__init__()
+        super().__init__(fields=fields)
 
     def __set__(self, instance, value):
-        for field in self._fields:
+        for field in self.get_fields():
             setattr(field, '_name', self._name)
             try:
                 field.__set__(instance, value)

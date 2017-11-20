@@ -30,7 +30,7 @@ Features
 
 Examples
 ----------
-Basic example:
+Basic Structure definition:
 
 
 .. code-block:: python
@@ -46,8 +46,9 @@ Basic example:
 
 
 
-.. code-block:: python
+Working with a Structure:
 
+.. code-block:: python
 
     >>> from typedpy.structures import StructureReference, Structure
     >>> from fields import *

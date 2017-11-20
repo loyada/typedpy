@@ -6,13 +6,14 @@ from typedpy import Structure, AllOf, AnyOf, OneOf, Integer, String, Positive, N
 class Trade(Structure):
     _additionalProperties = True
     _required = []
-    #array support, similar to json schema
-    a = AllOf([Number(multiplesOf=5, maximum=20, minimum=-10), Integer(), Positive()])
-    b = AnyOf([Number(maximum=20, minimum=-10), Integer(), Positive(), String()])
-    c = OneOf([Number(multiplesOf=5, maximum=20, minimum=-10), Integer(), Positive(), String()])
-    d = NotField([Number(multiplesOf=5, maximum=20, minimum=-10), String()])
+    a = AllOf([Number(multiplesOf=5, maximum=20, minimum=-10), Integer, Positive])
+    # Can also omit the parens
+    b = AnyOf[Number(maximum=20, minimum=-10), Integer(), Positive, String]
+    c = OneOf([Number(multiplesOf=5, maximum=20, minimum=-10), Integer, Positive, String])
+    d = NotField([Number(multiplesOf=5, maximum=20, minimum=-10), String])
     e = AllOf([])
-    broken = AllOf([String(), Integer()])
+    broken = AllOf[String, Integer]
+    f = NotField[Number]
 
 
 
@@ -96,3 +97,36 @@ def test_not_matches_err():
 
 def test_not_valid():
     assert Trade(d=-99.6).d == -99.6
+
+def test_not_single_matches_err():
+    with raises(ValueError) as excinfo:
+        Trade(f=-5.234)
+    assert "f: Expected not to match any field definition" in str(excinfo.value)
+
+
+def test_not_single_valid():
+    assert Trade(f=Integer).f == Integer
+
+
+def test_simplified_definition_wrong_type_err():
+    with raises(TypeError) as excinfo:
+        class Example(Structure):
+            a = AllOf[Integer, float]
+    assert "Expected a Field class or instance" in str(excinfo.value)
+
+
+
+def test_standard_definition_wrong_field_type_err():
+    with raises(TypeError) as excinfo:
+        class Example(Structure):
+            a = AllOf([Integer, float])
+    assert "Expected a Field class or instance" in str(excinfo.value)
+
+
+def test_standard_definition_wrong_fields_arg_err():
+    with raises(TypeError) as excinfo:
+        class Example(Structure):
+            a = AllOf(1)
+    assert "Expected a Field class or instance" in str(excinfo.value)
+
+

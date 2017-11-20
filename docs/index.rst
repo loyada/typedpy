@@ -10,6 +10,8 @@ Welcome to Typedpy's documentation!
 
 Features
 --------
+Features
+--------
 
 * Supports JSON schema draft4 features
 
@@ -23,12 +25,28 @@ Features
 
 * No dependencies on third-party libs
 
+* Supports collections: `Map <https://github.com/loyada/typedpy/tree/master/tests/test_Map.py>`_, `Set <https://github.com/loyada/typedpy/tree/master/tests/test_Set.py>`_, `Array <https://github.com/loyada/typedpy/tree/master/tests/test_array.py>`_
+
+* Clean Java-generics-like definitions, but more flexible. e.g.: Set[Integer], Map[String(maxLength=8), String]
+
 **There are many examples under "tests/".**
 
 Examples
 ----------
-Basic example:
+Basic Structure definition:
 
+.. code-block:: python
+
+    >>> from typedpy.structures import StructureReference, Structure
+    >>> from fields import *
+    >>> class Example(Structure):
+    ...     name = String
+    ...     val_by_alias = Map[String, Number]
+    ...     num = Integer(maximum=30)
+    ...     foo = Array[PositiveFloat]
+
+
+Basic Example:
 
 .. code-block:: python
 

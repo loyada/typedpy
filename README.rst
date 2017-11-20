@@ -44,7 +44,7 @@ Basic Structure definition:
     ...     foo = Array[PositiveFloat]
     ...
 
-Given this definition, any instance of Example will always have the above attributes withe their corresponding field definitions.
+Given this definition, any instance of Example will always have the above attributes with values corresponding to their definitions.
 
 Working with a Structure:
 

@@ -135,6 +135,17 @@ class _DickStruct(dict):
         copied.__setitem__(key, value)
         self._map.__set__(self._instance, copied)
 
+    def __delitem__(self, key):
+        copied = self.copy()
+        del copied[key]
+        self._map.__set__(self._instance, copied)
+
+    def update(self, *args, **kwargs):
+        copied = self.copy()
+        res = copied.update(*args, **kwargs)
+        self._map.__set__(self._instance, copied)
+        return res
+
 
 class _CollectionMeta(type):
     def __getitem__(cls, item):
@@ -177,7 +188,7 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
         elif Field in getattr(items, '__mro__', []):
             self.items = items()
         else:
-          raise TypeError("Expected a Field class or instance")
+            raise TypeError("Expected a Field class or instance")
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):
@@ -202,14 +213,17 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
                  **kwargs):
         if items is not None and (not isinstance(items, (tuple, list)) or len(items) != 2):
             raise TypeError("items is expected to be a list/tuple of two fields")
-        self.items = []
-        for item in items:
-            if isinstance(item, Field):
-                self.items.append(item)
-            elif Field in item.__mro__:
-                self.items.append(item())
-            else:
-                raise TypeError("Expected a Field class or instance")
+        if items is None:
+            self.items = None
+        else:
+            self.items = []
+            for item in items:
+                if isinstance(item, Field):
+                    self.items.append(item)
+                elif Field in item.__mro__:
+                    self.items.append(item())
+                else:
+                    raise TypeError("Expected a Field class or instance")
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):
@@ -219,7 +233,7 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
 
         if self.items is not None:
             temp_st = Structure()
-            key_field, value_field =  self.items[0], self.items[1]
+            key_field, value_field = self.items[0], self.items[1]
             setattr(key_field, '_name', self._name + '_key')
             setattr(value_field, '_name', self._name + '_value')
             res = {}
@@ -237,7 +251,7 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
 class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
     _ty = list
 
-    def __init__(self, *args, items=None, uniqueItems=None,  additionalItems=None,
+    def __init__(self, *args, items=None, uniqueItems=None, additionalItems=None,
                  **kwargs):
         self.uniqueItems = uniqueItems
         self.additionalItems = additionalItems

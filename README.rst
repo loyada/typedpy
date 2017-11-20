@@ -22,7 +22,7 @@ Features
 
 * No dependencies on third-party libs
 
-* Supports collections: `Map <https://github.com/loyada/typedpy/tree/master/tests/test_Map.py>`_, `Set <https://github.com/loyada/typedpy/tree/master/tests/test_Set.py>`_, `Array <https://github.com/loyada/typedpy/tree/master/tests/test_Array.py>`_
+* Supports collections: `Map <https://github.com/loyada/typedpy/tree/master/tests/test_Map.py>`_, `Set <https://github.com/loyada/typedpy/tree/master/tests/test_Set.py>`_, `Array <https://github.com/loyada/typedpy/tree/master/tests/test_array.py>`_
 
 * Clean Java-generics-like definitions, but more flexible. e.g.: Set[Integer], Map[String(maxLength=8), String]
 

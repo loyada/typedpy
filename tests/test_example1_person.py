@@ -85,3 +85,15 @@ def test_str_Structure_instance():
     p = Person(name="aaa", ssid="abc", num=10, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})
     assert str(p)=="<Instance of Person. Properties: foo = <Instance of Structure. Properties: a = 'aaa', b = <Instance of Structure. Properties: c = 10, d " \
                    "= 1>>, name = 'aaa', num = 10, ssid = 'abc'>"
+
+def test_del_mandatory_err():
+    p = Person(name="aaa", ssid="abc", num=10, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})
+    with pytest.raises(ValueError) as excinfo:
+        del p['ssid']
+    assert 'ssid is manadoty' in str(excinfo.value)
+
+def test_del_non_mandatory():
+    p = Person(name="aaa", ssid="abc", num=10, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})
+    del p['name']
+    assert 'name' not in p.__dict__
+

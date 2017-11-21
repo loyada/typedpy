@@ -161,6 +161,13 @@ class Structure(metaclass=StructMeta):
     def __eq__(self, other):
         return str(self) == str(other)
 
+    def __delitem__(self, key):
+        if isinstance(getattr(self, '_required'), list) and \
+            key in getattr(self, '_required'):
+            raise ValueError("{} is manadoty".format(key))
+        del self.__dict__[key]
+
+
 
 class StructureReference(Field):
     """

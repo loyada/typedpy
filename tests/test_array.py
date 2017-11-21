@@ -113,3 +113,50 @@ def test_generics_version_err():
 
 def test_generics_version_err():
     assert Example(f=[4, 5, 6]).f == [4, 5, 6]
+
+
+def test_extend_err():
+    e = Example(b=[1, 2, 3])
+    with raises(ValueError) as excinfo:
+        e.b.extend([5, 99])
+    assert "b_4: Expected a maxmimum of 10" in str(excinfo.value)
+
+def test_extend_valid():
+    e = Example(b=[1, 2, 3])
+    e.b.extend([5, 9])
+    assert e.b == [1,2,3,5,9]
+
+def test_insert_err():
+    e = Example(b=[1, 2, 3])
+    with raises(TypeError) as excinfo:
+        e.b.insert(2, 'a')
+    assert "b_2: Expected a number" in str(excinfo.value)
+
+def test_insert_valid():
+    e = Example(b=[1, 2, 3])
+    e.b.insert(1, 9)
+    assert e.b == [1,9,2,3]
+
+
+def test_remove_err():
+    e = Example(b=[1, 2, 3])
+    with raises(ValueError) as excinfo:
+        e.b.remove(2)
+    assert "b: Expected length of at least 3" in str(excinfo.value)
+
+def test_remove_valid():
+    e = Example(b=[1, 2, 3, 4])
+    e.b.remove(1)
+    assert e.b == [2,3,4]
+
+
+def test_pop_err():
+    e = Example(b=[1, 2, 3])
+    with raises(ValueError) as excinfo:
+        e.b.pop()
+    assert "b: Expected length of at least 3" in str(excinfo.value)
+
+def test_pop_valid():
+    e = Example(b=[1, 2, 3, 4])
+    e.b.pop()
+    assert e.b == [1,2,3]

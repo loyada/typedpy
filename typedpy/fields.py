@@ -119,6 +119,32 @@ class _ListStruct(list):
         copied.__setitem__(key, value)
         self._array.__set__(self._instance, copied)
 
+    def append(self, value):
+        copied = self.copy()
+        copied.append(value)
+        self._array.__set__(self._instance, copied)
+
+    def extend(self, value):
+        copied = self.copy()
+        copied.extend(value)
+        self._array.__set__(self._instance, copied)
+
+    def insert(self, index: int, value):
+        copied = self.copy()
+        copied.insert(index, value)
+        self._array.__set__(self._instance, copied)
+
+    def remove(self, ind):
+        copied = self.copy()
+        copied.remove(ind)
+        self._array.__set__(self._instance, copied)
+
+    def pop(self, index: int = -1):
+        copied = self.copy()
+        res = copied.pop(index)
+        self._array.__set__(self._instance, copied)
+        return res
+
 
 class _DictStruct(dict):
     """

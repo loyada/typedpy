@@ -9,6 +9,6 @@ from typedpy.fields import (
     Number, Integer, PositiveInt, PositiveFloat, Float, Positive,
     String, SizedString, Sized, Enum, EnumString,
     AllOf, AnyOf, OneOf, NotField, Boolean,
-    Array, Set, Map,
+    Array, Set, Map, Tuple,
     ImmutableField
     )

@@ -78,7 +78,7 @@ class Field(object):
             self._immutable = immutable
 
     def __set__(self, instance, value):
-        if (getattr(self, '_immutable', False) or getattr(instance, '_immutable', False)) \
+        if getattr(self, '_immutable', False)  \
                 and  self._name in instance.__dict__:
             raise ValueError("{}: Field is immutable".format(self._name))
         instance.__dict__[self._name] = value
@@ -152,6 +152,11 @@ class Structure(metaclass=StructMeta):
         bound = getattr(self, '__signature__').bind(*args, **kwargs)
         for name, val in bound.arguments.items():
             setattr(self, name, val)
+
+    def __setattr__(self, key, value):
+        if getattr(self, '_immutable', False) and key in self.__dict__:
+            raise ValueError("Structure is immutable")
+        super().__setattr__(key, value)
 
     def __str__(self):
         name = self.__class__.__name__

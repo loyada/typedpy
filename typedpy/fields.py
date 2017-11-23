@@ -121,32 +121,32 @@ class _ListStruct(list):
     def __setitem__(self, key, value):
         copied = self.copy()
         copied.__setitem__(key, value)
-        self._array.__set__(self._instance, copied)
+        setattr(self._instance, getattr(self._array, '_name', None), copied)
 
     def append(self, value):
         copied = self.copy()
         copied.append(value)
-        self._array.__set__(self._instance, copied)
+        setattr(self._instance, getattr(self._array, '_name', None), copied)
 
     def extend(self, value):
         copied = self.copy()
         copied.extend(value)
-        self._array.__set__(self._instance, copied)
+        setattr(self._instance, getattr(self._array, '_name', None), copied)
 
     def insert(self, index: int, value):
         copied = self.copy()
         copied.insert(index, value)
-        self._array.__set__(self._instance, copied)
+        setattr(self._instance, getattr(self._array, '_name', None), copied)
 
     def remove(self, ind):
         copied = self.copy()
         copied.remove(ind)
-        self._array.__set__(self._instance, copied)
+        setattr(self._instance, getattr(self._array, '_name', None), copied)
 
     def pop(self, index: int = -1):
         copied = self.copy()
         res = copied.pop(index)
-        self._array.__set__(self._instance, copied)
+        setattr(self._instance, getattr(self._array, '_name', None), copied)
         return res
 
 
@@ -168,17 +168,17 @@ class _DictStruct(dict):
     def __setitem__(self, key, value):
         copied = self.copy()
         copied.__setitem__(key, value)
-        self._map.__set__(self._instance, copied)
+        setattr(self._instance, getattr(self._map, '_name', None), copied)
 
     def __delitem__(self, key):
         copied = self.copy()
         del copied[key]
-        self._map.__set__(self._instance, copied)
+        setattr(self._instance, getattr(self._map, '_name', None), copied)
 
     def update(self, *args, **kwargs):
         copied = self.copy()
         res = copied.update(*args, **kwargs)
-        self._map.__set__(self._instance, copied)
+        setattr(self._instance, getattr(self._map, '_name', None), copied)
         return res
 
 
@@ -369,6 +369,61 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 value = res
 
         super().__set__(instance, _ListStruct(self, instance, value))
+
+
+class Tuple(TypedField, metaclass=_CollectionMeta):
+    """
+    A tuple field, supports unique items option.
+    """
+    _ty = tuple
+
+    def __init__(self, *args, items, uniqueItems=None,
+                 **kwargs):
+        """
+        Constructor
+        :param args: pass-through
+        :param items: either a single field, which will be enforced for all elements, or a list
+         of fields which enforce the elements with the correspondent index
+        :param uniqueItems: are elements required to be unique?
+        :param kwargs: pass-through
+        """
+        self.uniqueItems = uniqueItems
+        if isinstance(items, (list, tuple)):
+            self.items = []
+            for item in items:
+                if isinstance(item, Field):
+                    self.items.append(item)
+                elif Field in item.__mro__:
+                    self.items.append(item())
+                else:
+                    raise TypeError("Expected a Field class or instance")
+        else:
+            raise TypeError("Expected a list/tuple of Fields")
+        super().__init__(*args, **kwargs)
+
+    def __set__(self, instance, value):
+        if not isinstance(value, tuple):
+            raise TypeError("%s: Expected %s" % (self._name, tuple))
+        if self.uniqueItems:
+            unique = reduce(lambda unique_vals, x: unique_vals.append(x) or
+                            unique_vals if x not in unique_vals
+                            else unique_vals, value, [])
+            if len(unique) < len(value):
+                raise ValueError("{}: Expected unique items".format(self._name))
+        if len(self.items) != len(value):
+            raise ValueError("{}: Expected a tuple of length {}".format(
+                self._name, len(self.items)))
+
+        temp_st = Structure()
+        res = []
+        for ind, item in enumerate(self.items):
+            setattr(item, '_name', self._name + "_{}".format(str(ind)))
+            item.__set__(temp_st, value[ind])
+            res.append(getattr(temp_st, getattr(item, '_name')))
+            res += value[len(self.items):]
+        value = tuple(res)
+
+        super().__set__(instance, value)
 
 
 class Enum(Field):

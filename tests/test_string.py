@@ -21,7 +21,6 @@ def test_min_length_violation_err():
     assert "s: Expected a minimum length of 2" in str(excinfo.value)
 
 
-
 def test_immutable_err():
     b = B(s='sss', a='asd')
     with raises(ValueError) as excinfo:

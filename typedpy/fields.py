@@ -7,6 +7,10 @@ from functools import reduce
 from typedpy.structures import Field, Structure, TypedField
 
 
+class ImmutableField(Field):
+    _immutable = True
+
+
 class Number(Field):
     """
     Base class for numerical fields. Based on Json schema draft4.

@@ -72,10 +72,15 @@ class Field(object):
     Base class for a field(i.e. property) in a structure.
     """
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, immutable=None):
         self._name = name
+        if immutable is not None:
+            self._immutable = immutable
 
     def __set__(self, instance, value):
+        if (getattr(self, '_immutable', False) or getattr(instance, '_immutable', False)) \
+                and  self._name in instance.__dict__:
+            raise ValueError("{}: Field is immutable".format(self._name))
         instance.__dict__[self._name] = value
 
     def __str__(self):
@@ -167,6 +172,13 @@ class Structure(metaclass=StructMeta):
             raise ValueError("{} is manadoty".format(key))
         del self.__dict__[key]
 
+
+
+class ImmutableStructure(Structure):
+    """
+    A structure in which non of the fields can be updated post creation
+    """
+    _immutable = True
 
 
 class StructureReference(Field):

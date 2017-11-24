@@ -2,6 +2,7 @@
 Definitions of various types of fields. Supports JSON draft4 types.
 """
 import re
+from collections import OrderedDict
 from functools import reduce
 
 from typedpy.structures import Field, Structure, TypedField
@@ -57,13 +58,12 @@ class String(TypedField):
     _ty = str
 
     def __init__(self, *args, minLength=None, maxLength=None,
-                 pattern=None, format_type=None, **kwargs):
+                 pattern=None, **kwargs):
         self.minLength = minLength
         self.maxLength = maxLength
         self.pattern = pattern
         if self.pattern is not None:
             self._compiled_pattern = re.compile(self.pattern)
-        self.format_type = format_type
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):
@@ -287,7 +287,7 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
             key_field, value_field = self.items[0], self.items[1]
             setattr(key_field, '_name', self._name + '_key')
             setattr(value_field, '_name', self._name + '_value')
-            res = {}
+            res = OrderedDict()
 
             for key, val in value.items():
                 key_field.__set__(temp_st, key)

@@ -15,6 +15,22 @@ class ImmutableField(Field):
 class Number(Field):
     """
     Base class for numerical fields. Based on Json schema draft4.
+    Accepts and int or float.
+
+    Arguments:
+
+        multipleOf(int): optional
+            The number must be a multiple of this number
+
+        minimum(int or float): optional
+            value cannot be lower than this number
+
+        maximum(int or float): optional
+            value cannot be higher than this number
+
+        exclusiveMaximum(bool): optional
+            marks the maximum threshold above as exclusive
+
     """
 
     def __init__(self, *args, multiplesOf=None, minimum=None,
@@ -51,10 +67,28 @@ class Number(Field):
 
 
 class Integer(TypedField, Number):
+    """
+    An extension of :class:`Number` for an integer. Accepts int
+    """
     _ty = int
 
 
 class String(TypedField):
+    """
+      A string value. Accepts input of `str`
+
+      Arguments:
+
+          minLength(int): optional
+              minimal length
+
+          maxLength(int): optional
+              maximal lengthr
+
+          pattern(str): optional
+              string of a regular expression
+
+      """
     _ty = str
 
     def __init__(self, *args, minLength=None, maxLength=None,
@@ -83,14 +117,23 @@ class String(TypedField):
 
 
 class Float(TypedField, Number):
+    """
+    An extension of :class:`Number` for a float
+    """
     _ty = float
 
 
 class Boolean(TypedField):
+    """
+    Value of type bool. True or False.
+    """
     _ty = bool
 
 
-class Positive(Field):
+class Positive(Number):
+    """
+    An extension of :class:`Number`. Requires the number to be positive
+    """
     def __set__(self, instance, value):
         if value <= 0:
             raise ValueError('{}: Must be positive'.format(self._name))
@@ -98,10 +141,16 @@ class Positive(Field):
 
 
 class PositiveFloat(Float, Positive):
+    """
+    An combination of :class:`Float` and :class:`Positive`
+    """
     pass
 
 
 class PositiveInt(Integer, Positive):
+    """
+       An combination of :class:`Integer` and :class:`Positive`
+       """
     pass
 
 
@@ -428,7 +477,13 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
 
 class Enum(Field):
     """
-    Enum field. value can be one of predefined values
+        Enum field. value can be one of predefined values
+
+        Arguments:
+
+             values(`list` or `set` or `tuple`):
+                 allowed values. Can be of any type
+
     """
     def __init__(self, *args, values, **kwargs):
         self.values = values
@@ -441,10 +496,23 @@ class Enum(Field):
 
 
 class EnumString(Enum, String):
+    """
+    Combination of :class:`Enum and :class:`String`
+    """
     pass
 
 
 class Sized(Field):
+    """
+    The length of the value is limited to be at most the maximum given.
+    The value can be any iterable.
+
+        Arguments:
+
+            maxlen(`int`):
+                maximum length
+
+    """
     def __init__(self, *args, maxlen, **kwargs):
         self.maxlen = maxlen
         super().__init__(*args, **kwargs)
@@ -586,3 +654,21 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __str__(self):
         return _str_for_multioption_field(self)
+
+
+class ValidatedTypedField(TypedField):
+
+    def __set__(self, instance, value):
+        self._validate_func(value) # pylint: disable=E1101
+        super().__set__(instance, value)
+
+def createTypedField(classname, cls, validate_func=None):
+
+    def validate_wrapper(cls, value):
+        if validate_func is None:
+            return
+        validate_func(value)
+
+    return type(classname, (ValidatedTypedField,), {'_validate_func' :validate_wrapper, '_ty': cls})
+
+

@@ -30,6 +30,12 @@ Features
 
 **There are many examples under "tests/".**
 
+Notes
+----------
+The library is currently optimized for easy debugging and readability - not for performance.
+
+
+
 Examples
 ----------
 Basic Structure definition:

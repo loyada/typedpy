@@ -10,5 +10,5 @@ from typedpy.fields import (
     String, SizedString, Sized, Enum, EnumString,
     AllOf, AnyOf, OneOf, NotField, Boolean,
     Array, Set, Map, Tuple,
-    ImmutableField
+    ImmutableField, createTypedField
     )

@@ -62,7 +62,7 @@ Example:
 
     class Example(Structure):
         num = Integer(minimum=10)
-        str = String
+        st = String
 
     class Foo(Example):
         def __init__(self, *args, x, y, **kwargs):
@@ -74,7 +74,7 @@ Example:
             return self.x * self.y * self.num
 
 
-    foo = Foo(str = "abc", num = 10, x = 2, y = 3)
+    foo = Foo(st = "abc", num = 10, x = 2, y = 3)
     print(foo.multiply())
     # 60
 

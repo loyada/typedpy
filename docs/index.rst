@@ -139,12 +139,12 @@ Another example with Array, class reference, Enum, json-schema-style re-use:
     30
 
 Contents:
-
+=========
 .. toctree::
    :maxdepth: 2
 
-   fields
    structures
+   fields
 
 
 

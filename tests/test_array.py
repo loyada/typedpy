@@ -16,6 +16,7 @@ class Example(Structure):
     e = Array(minItems=2)
     f = Array[Integer]
     g = Array[Foo]
+    h = Array[Array[Integer]]
 
 
 def test_wrong_type_for_array_err():
@@ -170,3 +171,20 @@ def test_array_of_defined_structure_type_err():
 
 def test_array_of_defined_structure_valid():
     assert  Example(g = [Foo(s="abc"), Foo(s="def")]).g[1].s == "def"
+
+
+def test_array_of_array_type_err1():
+    with raises(TypeError) as excinfo:
+        Example(h = [3, 4])
+    assert "h_0: Expected <class 'list'>" in str(excinfo.value)
+
+
+def test_array_of_array_type_err2():
+    with raises(TypeError) as excinfo:
+        Example(h = [[1,2], ["aaa", "ccc"]])
+    assert "h_1_0: Expected <class 'int'>" in str(excinfo.value)
+
+
+def test_array_of_array_valid():
+    assert  Example(h = [[1,2], [3,4]]).h[1] == [3,4]
+

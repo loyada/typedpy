@@ -411,6 +411,7 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 names = Array[String(minLengh=3)]
                 names = Array(minItems=5, items=String)
                 my_record = Array(items=[String, Integer(minimum=5), String])
+                my_lists = Array[Array[Integer]]
 
     """
     _ty = list

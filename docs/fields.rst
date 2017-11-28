@@ -63,6 +63,7 @@ String, Enums etc.
 
 Collections
 -----------
+
 .. autoclass:: Array
 
 .. autoclass:: Set
@@ -71,6 +72,8 @@ Collections
 
 .. autoclass:: Map
 
+
+* **Note** - The collections support embedded collections, such as :class:`Array` [ :class:`Tuple` [ :class:`Integer` , :class:`Integer` ]]
 
 Re-use
 ======

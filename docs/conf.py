@@ -47,6 +47,9 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
+# remove module name when doing autodoc
+add_module_names = False
+
 # General information about the project.
 project = 'Typedpy'
 copyright = '2017, Danny Loya'
@@ -116,6 +119,9 @@ html_sidebars = {
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'Typedpydoc'
 
+html_theme_options = {
+    'page_width': '1280px',
+}
 
 # -- Options for LaTeX output ---------------------------------------------
 

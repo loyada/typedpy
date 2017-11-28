@@ -5,7 +5,7 @@ import re
 from collections import OrderedDict
 from functools import reduce
 
-from typedpy.structures import Field, Structure, TypedField
+from typedpy.structures import Field, Structure, TypedField, ClassReference
 
 
 class ImmutableField(Field):
@@ -18,16 +18,12 @@ class Number(Field):
     Accepts and int or float.
 
     Arguments:
-
         multipleOf(int): optional
             The number must be a multiple of this number
-
         minimum(int or float): optional
             value cannot be lower than this number
-
         maximum(int or float): optional
             value cannot be higher than this number
-
         exclusiveMaximum(bool): optional
             marks the maximum threshold above as exclusive
 
@@ -78,13 +74,10 @@ class String(TypedField):
       A string value. Accepts input of `str`
 
       Arguments:
-
           minLength(int): optional
               minimal length
-
           maxLength(int): optional
               maximal lengthr
-
           pattern(str): optional
               string of a regular expression
 
@@ -238,6 +231,8 @@ class _CollectionMeta(type):
                 return val
             elif Field in val.__mro__:
                 return val()
+            elif Structure in val.__mro__:
+                return ClassReference(val)
             else:
                 raise TypeError("Expected a Field class or instance")
 
@@ -254,6 +249,8 @@ class _JSONSchemaDraft4ReuseMeta(type):
                 return val
             elif Field in val.__mro__:
                 return val()
+            elif Structure in val.__mro__:
+                return ClassReference(val)
             else:
                 raise TypeError("Expected a Field class or instance")
 
@@ -279,6 +276,17 @@ class SizedCollection(object):
 
 
 class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
+    """
+    A set collection. Accepts input of type `set`
+
+    Arguments:
+        minItems(int): optional
+            minimal size
+        maxItems(int): optional
+            maximal size
+        items(:class:`Field`): optional
+            The type of the content
+    """
     _ty = set
 
     def __init__(self, *args, items=None,
@@ -307,6 +315,24 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
 
 
 class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
+    """
+    A map/dictionary collection. Accepts input of type `dict`
+
+    Arguments:
+        minItems(int): optional
+            minimal size
+        maxItems(int): optional
+            maximal size
+        items(tuple of 2 :class:`Field` elements): optional
+            The first element is the Field for keys, the second is for values.
+            Examples:
+
+            .. code-block:: python
+
+                age_by_name = Map[:class:`String`, :class:`PositiveInt`]
+
+    """
+
     _ty = dict
 
     def __init__(self, *args, items=None,
@@ -351,6 +377,32 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
 class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
     """
     An Array field, similar to a list. Supports the properties in JSON schema draft 4.
+    Expected input is of type `list`.
+
+    Arguments:
+        minItems(int): optional
+            minimal size
+        maxItems(int): optional
+            maximal size
+        unqieItems(bool): optional
+            are elements required to be unique?
+        additionalItems(bool): optional
+            Relevant in case items parameter is a list of Fields. Is it allowed to have additional
+            elements beyond the ones defined in "items"?
+        items(a :class:`Field` or a list/tuple of :class:`Field`): optional
+            Describes the fields of the elements.
+            If a items if a :class:`Field`, then it applies to all items.
+            If a items is a list, then every element in the content is expected to be
+            of the corresponding field in items.
+            Examples:
+
+            .. code-block:: python
+
+                names = Array[String]
+                names = Array[String(minLengh=3)]
+                names = Array(minItems=5, items=String)
+                my_record = Array(items=[String, Integer(minimum=5), String])
+
     """
     _ty = list
 
@@ -423,6 +475,26 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
 class Tuple(TypedField, metaclass=_CollectionMeta):
     """
     A tuple field, supports unique items option.
+       Expected input is of type `tuple`.
+
+    Arguments:
+
+        unqieItems(`bool`): optional
+            are elements required to be unique?
+
+        items(`list`/`tuple` of :class:`Field`): optional
+            Describes the fields of the elements.
+            Every element in the content is expected to be
+            of the corresponding :class:`Field` in items.
+
+    Examples:
+
+    .. code-block:: python
+
+        a = Tuple(uniqueItems=True, items = [String, String])
+        b = Tuple(items = [String, String, Number(maximum=10)])
+        c = Tuple[Integer, String, Float]
+
     """
     _ty = tuple
 
@@ -480,7 +552,6 @@ class Enum(Field):
         Enum field. value can be one of predefined values
 
         Arguments:
-
              values(`list` or `set` or `tuple`):
                  allowed values. Can be of any type
 
@@ -497,7 +568,7 @@ class Enum(Field):
 
 class EnumString(Enum, String):
     """
-    Combination of :class:`Enum and :class:`String`
+    Combination of :class:`Enum` and :class:`String`
     """
     pass
 
@@ -563,6 +634,17 @@ class MultiFieldWrapper(object):
 class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     """
     Content must adhere to all requirements in the fields arguments.
+    Arguments:
+
+        fields( `list` of :class:`Field`): optional
+        the content should match all of the fields in the list
+
+    Example:
+
+    .. code-block:: python
+
+        AllOf[Number(maximum=20, minimum=-10), Integer, Positive]
+
     """
     def __init__(self, fields):
         super().__init__(fields=fields)
@@ -579,7 +661,18 @@ class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
 class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     """
-    Content must adhere to any of the requirements in the fields arguments.
+    Content must adhere to one or more of the requirements in the fields arguments.
+    Arguments:
+
+        fields( `list` of :class:`Field`): optional
+        the content should match at least one of the fields in the list
+
+    Example:
+
+    .. code-block:: python
+
+       AnyOf[Number(maximum=20, minimum=-10), Integer, Positive, String]
+
     """
     def __init__(self, fields):
         super().__init__(fields=fields)
@@ -606,6 +699,17 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     """
     Content must adhere to one, and only one, of the requirements in the fields arguments.
+    Arguments:
+
+        fields( `list` of :class:`Field`): optional
+        the content should match one, and only one, of the fields in the list
+
+    Example:
+
+    .. code-block:: python
+
+        OneOf[Number(maximum=20, minimum=-10), Integer, Positive, String]
+
     """
     def __init__(self, fields):
         super().__init__(fields=fields)
@@ -633,8 +737,20 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
 class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     """
-       Content *must not* adhere to any of the requirements in the fields arguments.
-       """
+    Content *must not* adhere to any of the requirements in the fields arguments.
+    Arguments:
+
+        fields( `list` of :class:`Field`): optional
+            the content must not match any of the fields in the lists
+
+    Examples:
+
+    .. code-block:: python
+
+        NotField([Number(multiplesOf=5, maximum=20, minimum=-10), String])
+        NotField[Positive]
+
+    """
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -662,13 +778,37 @@ class ValidatedTypedField(TypedField):
         self._validate_func(value) # pylint: disable=E1101
         super().__set__(instance, value)
 
-def createTypedField(classname, cls, validate_func=None):
 
+def create_typed_field(classname, cls, validate_func=None):
+    """
+    Factory that generates a new class for a :class:`Field` as a wrapper of any class.
+    Example:
+    Given a class Foo, and a validation function for the value in Foo - validate_foo, the line
+
+    .. code-block:: python
+
+        ValidatedFooField = create_typed_field("FooField", Foo, validate_func=validate_foo)
+
+    Generates a new :class:`Field` class that validates the content using validate_foo, and can be
+    used just like any :class:`Field` type.
+
+    .. code-block:: python
+
+        class A(Structure):
+            foo = ValidatedFooField
+            bar = Integer
+
+        # asumming we have an instance of Foo, called my_foo:
+        A(bar=4, foo=my_foo)
+
+    Arguments:
+
+        classname(`str`):
+            the content must not match any of the fields in the lists
+    """
     def validate_wrapper(cls, value):
         if validate_func is None:
             return
         validate_func(value)
 
     return type(classname, (ValidatedTypedField,), {'_validate_func' :validate_wrapper, '_ty': cls})
-
-

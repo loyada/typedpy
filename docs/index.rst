@@ -15,9 +15,9 @@ Features
 
 * Supports JSON schema draft4 features
 
-* Class/Field definition
+* `Class`/`Field` definition
 
-* Easily extensible
+* Easily extensible. `Wrapper of any class as a Field <https://github.com/loyada/typedpy/tree/master/tests/test_typed_field_creator.py>`_
 
 * `Inheritance/mixins of field <https://github.com/loyada/typedpy/tree/master/tests/test_inheritance.py>`_
 
@@ -136,9 +136,14 @@ Another example with Array, class reference, Enum, json-schema-style re-use:
     >>> t.quantity
     30
 
+Contents:
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+
+   fields
+   structures
+
 
 
 

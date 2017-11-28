@@ -1,6 +1,6 @@
 from pytest import raises
 
-from typedpy import Structure, Tuple, Number, String, Integer, Float, createTypedField
+from typedpy import Structure, Tuple, Number, String, Integer, Float, create_typed_field
 
 class Foo(object):
     def __init__(self, a=0, b=0):
@@ -13,8 +13,8 @@ def validate_foo(foo):
         raise ValueError("a+b must be larger or equal to 10")
 
 
-FooField = createTypedField("FooField", Foo)
-ValidatedFooField = createTypedField("FooField", Foo, validate_func=validate_foo)
+FooField = create_typed_field("FooField", Foo)
+ValidatedFooField = create_typed_field("FooField", Foo, validate_func=validate_foo)
 
 class A(Structure):
     _required = []

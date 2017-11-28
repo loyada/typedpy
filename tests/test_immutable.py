@@ -1,5 +1,5 @@
 from pytest import raises
-from typedpy import String , Number, Structure, ImmutableField, ImmutableStructure, Array
+from typedpy import String , Number, Structure, ImmutableField, ImmutableStructure, Array, Map
 
 class ImmutableString(String, ImmutableField): pass
 
@@ -13,6 +13,7 @@ class B(ImmutableStructure):
     x = String
     y = Number
     z = Array[Number]
+    m = Map[String, Number]
 
 
 class C(Structure):
@@ -48,4 +49,11 @@ def test_immutable_structure_array_updates_err():
     b = B(z = [1,2,3])
     with raises(ValueError) as excinfo:
         b.z[1] = 1
+    assert "Structure is immutable" in str(excinfo.value)
+
+
+def test_immutable_structure_map_updates_err():
+    b = B(m = {'a': 1, 'b': 2})
+    with raises(ValueError) as excinfo:
+        b.m['c'] = 1
     assert "Structure is immutable" in str(excinfo.value)

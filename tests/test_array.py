@@ -2,6 +2,8 @@ from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer
 
+class Foo(Structure):
+    s = String
 
 class Example(Structure):
     _additionalProperties = True
@@ -13,7 +15,7 @@ class Example(Structure):
     d = Array(minItems=2, items = '')
     e = Array(minItems=2)
     f = Array[Integer]
-
+    g = Array[Foo]
 
 
 def test_wrong_type_for_array_err():
@@ -160,3 +162,11 @@ def test_pop_valid():
     e = Example(b=[1, 2, 3, 4])
     e.b.pop()
     assert e.b == [1,2,3]
+
+def test_array_of_defined_structure_type_err():
+    with raises(TypeError) as excinfo:
+        Example(g = [Foo(s="abc"), 4])
+    assert "g_1: Expected <Structure: Foo. Properties: s = <String>>" in str(excinfo.value)
+
+def test_array_of_defined_structure_valid():
+    assert  Example(g = [Foo(s="abc"), Foo(s="def")]).g[1].s == "def"

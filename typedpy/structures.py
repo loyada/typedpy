@@ -70,6 +70,7 @@ def get_base_info(bases):
 class Field(object):
     """
     Base class for a field(i.e. property) in a structure.
+    Should not be used directly by developers.
     """
 
     def __init__(self, name=None, immutable=None):
@@ -188,7 +189,20 @@ class ImmutableStructure(Structure):
 
 class StructureReference(Field):
     """
-    An embedded structure within other structure. Allows to create hierarchy.
+    A Field that is an embedded structure within other structure. Allows to create hierarchy.
+    This is useful if you want to inline your Structure, as opposed to create an explicit
+    class for it.
+    All the arguments are passed as attributes of the structure. Example:
+
+    .. code-block:: python
+
+        StructureReference(
+            _additionalProperties = False,
+            id = String,
+            name = String
+            age = AnyOf[PositiveInt, PositiveFloat]
+        )
+
     """
     counter = 0
 
@@ -217,7 +231,8 @@ class StructureReference(Field):
 
 class TypedField(Field):
     """
-    A strictly typed field
+    A strictly typed base field.
+    Should not be used directly. Instead, use :func:`createTypedField`
     """
     _ty = object
 
@@ -229,7 +244,7 @@ class TypedField(Field):
 
 class ClassReference(TypedField):
     """
-    A field that is a reference to another Structure instance
+    A field that is a reference to another Structure instance.
     """
     def __init__(self, cls):
         self._ty = cls

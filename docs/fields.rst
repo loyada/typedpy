@@ -124,6 +124,28 @@ Inlining a Structure as a Field
 .. autoclass:: StructureReference
 
 
+Immutability
+============
+To define an immutable Field, you use the mixin **ImmutableField**.
+Example:
+
+.. code-block:: python
+
+    class ImmutableString(String, ImmutableField): pass
+
+    class A(Structure):
+        x = Number
+        y = ImmutableString
+
+
+    a = A(x=0.5, y="abc")
+
+    # This will raise an ValueError exception, with the message  "y: Field is immutable"
+    a.y += "xyz"
+
+
+It is also possible to define an immutable Structure. See Under the **Structures** section.
+
 Extension and Utilities
 =======================
 

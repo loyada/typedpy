@@ -116,7 +116,8 @@ class StructMeta(type):
     def __new__(mcs, name, bases, cls_dict):
         bases_params, bases_required = get_base_info(bases)
         for key, val in cls_dict.items():
-            if not key.startswith('_') and not isinstance(val, Field) and Field in val.__mro__:
+            if not key.startswith('_') and not isinstance(val, Field) and \
+                            Field in getattr(val, '__mro__', []):
                 cls_dict[key] = val()
         for key, val in cls_dict.items():
             if isinstance(val, StructMeta) and not isinstance(val, Field):
@@ -145,7 +146,46 @@ class StructMeta(type):
 
 class Structure(metaclass=StructMeta):
     """
-    The main class to support strictly defined structures. Note it is manipulated by StructMeta.
+    The base class to support strictly defined structures. When creating a new instance of
+    a Structure, fields must be provided by name.
+
+    Arguments:
+        _required: optional
+            An array of the mandatory fields. The default is all the fields in the class.
+            Example:
+
+            .. code-block:: python
+
+                class Foo(Structure):
+                    _required = ['id']
+
+                    id = Integer
+                    name = String
+
+                # this is valid:
+                Foo(id = 1)
+
+                # this raises an exception:
+                Foo(name="John")
+
+        _additionalProperties(bool): optional
+            Is it allowed to add additional properties that are not defined in the class definition?
+            the default is True.
+            Example:
+
+            .. code-block:: python
+
+                class Foo(Structure):
+                    _additionalProperties = False
+
+                    id = Integer
+
+                # this is valid:
+                Foo(id = 1)
+
+                # this raises an exception:
+                Foo(id = 1, a = 2)
+
     """
     _fields = []
 
@@ -182,7 +222,24 @@ class Structure(metaclass=StructMeta):
 
 class ImmutableStructure(Structure):
     """
-    A structure in which non of the fields can be updated post creation
+    A base class for a structure in which non of the fields can be updated post-creation
+    Example:
+
+    .. code-block:: python
+
+        class B(ImmutableStructure):
+            _required = []
+            y = Number
+            z = Array[Number]
+            m = Map[String, Number]
+
+        b = B(y = 3, z = [1,2,3], m = {'a': 1, 'b': 2})
+
+        # each of the following lines will raise an exception:
+        b.y = 1
+        b.z[1] += 1
+        b.m['c'] = 4
+
     """
     _immutable = True
 
@@ -232,7 +289,7 @@ class StructureReference(Field):
 class TypedField(Field):
     """
     A strictly typed base field.
-    Should not be used directly. Instead, use :func:`createTypedField`
+    Should not be used directly. Instead, use :func:`create_typed_field`
     """
     _ty = object
 

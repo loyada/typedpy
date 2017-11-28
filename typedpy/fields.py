@@ -286,6 +286,15 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
             maximal size
         items(:class:`Field`): optional
             The type of the content
+
+    Examples:
+
+    .. code-block:: python
+
+        Set[String]
+        Set(items=Integer(maximum=10), maxItems = 10)
+
+
     """
     _ty = set
 

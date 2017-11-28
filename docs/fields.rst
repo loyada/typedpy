@@ -102,6 +102,8 @@ Inheritance work the way you would expects:
 
 
 
+.. _structure-as-field:
+
 Using a Structure as a Field
 ----------------------------
 Any Structure type can also be used in a field.
@@ -118,6 +120,8 @@ Any Structure type can also be used in a field.
         b = Array[Foo]
         c = AnyOf[Foo, Integer]
 
+
+.. _structure-inlining:
 
 Inlining a Structure as a Field
 -------------------------------

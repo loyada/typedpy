@@ -63,7 +63,6 @@ class Trade(Structure):
 op = OldPerson(children = 1, num=1, ssid = "aaa")
 print(Person)
 
-op.aaa = 3
 
 p = Person(name="fo", ssid="fff", num=25, foo = {'a': 'aaa', 'b': {'c': 10, 'd': 1}})
 p.foo.b.c = 15
@@ -74,3 +73,16 @@ print(Person.name)
 print(p)
 t.children[1] = 8
 print(t)
+
+class Foo(Person):
+    def __init__(self, *args, x, y, **kwargs):
+        self.x = x
+        self.y = y
+        super().__init__(*args, **kwargs)
+
+    def multiply(self):
+        return self.x*self.y*self.num
+
+
+foo = Foo(ssid = "abc", num = 10, x = 2, y = 3)
+print(foo.multiply())

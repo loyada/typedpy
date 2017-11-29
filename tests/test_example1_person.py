@@ -47,7 +47,8 @@ def test_embedded_field_number_type_err():
 def test_miss_required_field():
     with pytest.raises(TypeError) as excinfo:
         Person(name="fo", num=10, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})
-    assert "missing a required argument: 'ssid'" in str(excinfo.value)
+    assert "missing a required argument: 'ssid'" in str(excinfo.value) or \
+           "'ssid' parameter lacking default value" in str(excinfo.value)
 
 def test_valid_instance_and_accessor():
     p = Person(name="aaa", ssid="aaa", num=10, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})
@@ -67,7 +68,8 @@ def test_updating_embedded_struct_to_an_invalid_val():
     p = Person(name="aaa", ssid="aaa", num=10, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})
     with pytest.raises(TypeError) as excinfo:
         p.foo.b = {'d': 1}
-    assert "missing a required argument: 'c'" in str(excinfo.value)
+    assert "missing a required argument: 'c'" in str(excinfo.value) or \
+           "'c' parameter lacking default value" in str(excinfo.value)
 
 def test_updating_embedded_field_to_an_invalid_val():
     p = Person(name="aaa", ssid="aaa", num=10, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})

@@ -88,7 +88,7 @@ Re-use
 
 Inheritance and mixins
 ----------------------
-Inheritance work the way you would expects:
+Inheritance works the way you would expect:
 
 .. code-block:: python
 
@@ -109,7 +109,7 @@ Inheritance work the way you would expects:
 
 Using a Structure as a Field
 ----------------------------
-Any Structure type can also be used in a field.
+Any Structure type can also be used as a field.
 
 .. code-block:: python
 
@@ -123,6 +123,11 @@ Any Structure type can also be used in a field.
         b = Array[Foo]
         c = AnyOf[Foo, Integer]
 
+    #This will raise a TypeError for a
+    Example(a = 1, b=[], c=2)
+
+    #This is valid
+    Example(a=Foo(st=""), b=[Foo(st="xyz")], c=2))
 
 .. _structure-inlining:
 

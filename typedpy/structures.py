@@ -36,7 +36,11 @@ def make_signature(names, required, additional_properties, bases_params_by_name)
          for name in names if name not in required])
     default_args_for_bases = OrderedDict([(name, param) for (name, param)
                                           in bases_params_by_name.items() if name not in required])
-    default_args = list({**default_args_for_bases, **default_args_for_class}.values())
+    # Once we drop support for python 3.4, we can do:
+    # default_args = list({**default_args_for_bases, **default_args_for_class}.values())
+    default_args_for_bases_copy  = default_args_for_bases.copy()
+    default_args_for_bases_copy.update(default_args_for_class)
+    default_args = list(default_args_for_bases_copy.values())
     additional_args = [Parameter("kwargs", Parameter.VAR_KEYWORD)] if \
         additional_properties else []
 

@@ -164,13 +164,25 @@ Extension and Utilities
    Arguments:
 
         classname(`str`):
-            the content must not match any of the fields in the lists
+            A new name this class can be referenced by
+
+        cls(`type`):
+            The class we are wrapping
+
+        validate_func(function): optional
+            A validation function. It should raise an exception if the instance is invalid.
+
 
    Example:
 
-    Given a class Foo, and a validation function for the value in Foo - validate_foo, the line
+    Given a class Foo, and a validation function for an instance of Foo, called validate_foo(foo):
 
     .. code-block:: python
+
+        class Foo(object):
+            def __init__(self, x):
+                self.x = x
+
 
         ValidatedFooField = create_typed_field("FooField",
                                              Foo,
@@ -185,6 +197,6 @@ Extension and Utilities
             foo = ValidatedFooField
             bar = Integer
 
-        # asumming we have an instance of Foo, called my_foo, we can create a valid instance of A:
+        # assuming we have an instance of Foo called my_foo, we can create a valid instance of A:
         A(bar=4, foo=my_foo)
 

@@ -36,4 +36,8 @@ Documentation
 
 `Detailed documentation is here <http://typedpy.readthedocs.io/>`_
 
+Installation
+============
+
+`PyPI page is here <https://pypi.python.org/pypi/typedpy>`_
 

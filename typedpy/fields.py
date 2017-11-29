@@ -338,7 +338,7 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
 
             .. code-block:: python
 
-                age_by_name = Map[:class:`String`, :class:`PositiveInt`]
+                age_by_name = Map[String, PositiveInt]
 
     """
 

@@ -25,13 +25,13 @@ setup(
     author="Danny Loya",
     author_email="dan.loya@gmail.com",
     classifiers=classifiers,
-    description="Typed-safe Python",
+    description="Type-safe Python",
     license="MIT",
     long_description=long_description,
     url="http://github.com/loyada/typedpy",
     download_url ="https://github.com/loyada/typedpy/archive/v0.2.tar.gz",
     keywords=['testing', 'type-safe', 'strict', 'schema', 'validation'],
-    version='0.2'
+    version='0.21'
 )
 
 # coverage run --source=typedpy/ setup.py test

@@ -28,8 +28,11 @@ def make_signature(names, required, additional_properties, bases_params_by_name)
     non_default_args_for_bases = OrderedDict(
         [(name, param) for (name, param) in bases_params_by_name.items() if
          name in required])
-    non_default_args = list({**non_default_args_for_bases,
-                             **non_default_args_for_class}.values())
+    # non_default_args = list({**non_default_args_for_bases,
+    #                          **non_default_args_for_class}.values())
+    non_default_args_for_bases_copy = non_default_args_for_bases.copy()
+    non_default_args_for_bases_copy.update(non_default_args_for_class)
+    non_default_args = list(non_default_args_for_bases_copy.values())
 
     default_args_for_class = OrderedDict(
         [(name, Parameter(name, Parameter.POSITIONAL_OR_KEYWORD, default=None))

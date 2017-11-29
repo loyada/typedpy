@@ -6,7 +6,7 @@
 Welcome to Typedpy's documentation!
 ===================================
 
-``typedpy`` is a library for easty type-safe Python structures. It supports Python 3.3+.
+``typedpy`` is a library for type-safe, strict, Python structures. It supports Python 3.5+.
 
 Features
 --------

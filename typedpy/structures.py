@@ -255,46 +255,6 @@ class ImmutableStructure(Structure):
     _immutable = True
 
 
-class StructureReference(Field):
-    """
-    A Field that is an embedded structure within other structure. Allows to create hierarchy.
-    This is useful if you want to inline your Structure, as opposed to create an explicit
-    class for it.
-    All the arguments are passed as attributes of the structure. Example:
-
-    .. code-block:: python
-
-        StructureReference(
-            _additionalProperties = False,
-            id = String,
-            name = String
-            age = AnyOf[PositiveInt, PositiveFloat]
-        )
-
-    """
-    counter = 0
-
-    def __init__(self, **kwargs):
-        classname = "StructureReference_" + str(StructureReference.counter)
-        StructureReference.counter += 1
-
-        self._newclass = type(classname, (Structure,), kwargs)
-        super().__init__(kwargs)
-
-    def __set__(self, instance, value):
-        if not isinstance(value, dict):
-            raise TypeError("{}: Expected a dictionary".format(self._name))
-        newval = self._newclass(**value)
-        super().__set__(instance, newval)
-
-    def __str__(self):
-        props = []
-        for k, val in sorted(self._newclass.__dict__.items()):
-            if val is not None and not k.startswith('_'):
-                props.append('{} = {}'.format(k, str(val)))
-
-        propst = '. Properties: {}'.format(', '.join(props)) if props  else ''
-        return '<Structure{}>'.format(propst)
 
 
 class TypedField(Field):

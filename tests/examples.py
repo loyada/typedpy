@@ -86,3 +86,18 @@ class Foo(Person):
 
 foo = Foo(ssid = "abc", num = 10, x = 2, y = 3)
 print(foo.multiply())
+
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
+
+class SimpleStruct(Structure):
+    name = String(pattern='[A-Za-z]+$', maxLength=8)
+
+class Example(Structure):
+    i = Integer(maximum=10)
+    s = String(maxLength=5)
+    a = Array[Integer(multiplesOf=5), Number]
+    foo = StructureReference(a1 = Integer(), a2=Float())
+    ss = SimpleStruct
+
+pp.pprint (structure_to_schema(Example))

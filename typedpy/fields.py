@@ -8,6 +8,132 @@ from functools import reduce
 from typedpy.structures import Field, Structure, TypedField, ClassReference
 
 
+def map_jsonschema_type_to_field(the_type):
+    type_name_to_field = {
+        'object': StructureReference,
+        'integer': Integer,
+        'number': Number,
+        'float': Float,
+        'array': Array,
+        'enum': Enum,
+        'string': String
+    }
+    return String
+
+
+def convert_to_schema(field):
+    """
+    In case field is None, should return None.
+    Should deal with a list of fields, as well as a single one
+    """
+    if field is None:
+        return None
+    if isinstance(field, ClassReference):
+        return structure_to_schema(field._ty)
+    if isinstance(field, list):
+        return [convert_to_schema(f) for f in field]
+    field_type_to_schema_type = {
+        StructureReference: 'object',
+        Integer: 'integer',
+        Number: 'number',
+        Float: 'float',
+        Array: 'array',
+        Enum: 'enum',
+        String: 'string'
+    }
+    return field.to_schema()
+
+def structure_to_schema(structure):
+    #json schema draft4 does not support inheritance, so we don't need to worry about that
+    props = structure.__dict__
+    fields = [key for key, val in props.items() if isinstance(val, Field)]
+    required = props.get('_required', fields)
+    additional_props = props.get('_additionalProperties', True)
+    fields_schema = dict([(key, convert_to_schema(props[key])) for key in fields])
+    base_schema = {
+        'required' : required,
+        'additionalProperties': additional_props,
+        'type': 'object'
+    }
+    fields_schema.update(base_schema)
+    return fields_schema
+
+def convert_to_field_code(schema):
+    """
+    In case schema is None, should return None.
+    Should deal with a schema that is a dict, as well as one that is a list
+    """
+    if schema is None:
+        return None
+    if isinstance(schema, list):
+        return [convert_to_field_code(s) for s in schema]
+    type_name_to_field = {
+        'object': StructureReference,
+        'integer': Integer,
+        'number': Number,
+        'float': Float,
+        'array': Array,
+        'enum': Enum,
+        'string': String,
+        'boolean': Boolean
+    }
+    cls = type_name_to_field[schema.get('type', 'object')]
+    params_list = cls.get_paramlist_from_schema(schema)
+    params_as_string = ", ".join(["{}={}".format(name, val) for (name, val) in params_list])
+    return '{}({})'.format(cls.__name__, params_as_string)
+
+
+class StructureReference(Field):
+    """
+    A Field that is an embedded structure within other structure. Allows to create hierarchy.
+    This is useful if you want to inline your Structure, as opposed to create an explicit
+    class for it.
+    All the arguments are passed as attributes of the structure. Example:
+
+    .. code-block:: python
+
+        StructureReference(
+            _additionalProperties = False,
+            id = String,
+            name = String
+            age = AnyOf[PositiveInt, PositiveFloat]
+        )
+
+    """
+    counter = 0
+
+    def __init__(self, **kwargs):
+        classname = "StructureReference_" + str(StructureReference.counter)
+        StructureReference.counter += 1
+
+        self._newclass = type(classname, (Structure,), kwargs)
+        super().__init__(kwargs)
+
+    def __set__(self, instance, value):
+        if not isinstance(value, dict):
+            raise TypeError("{}: Expected a dictionary".format(self._name))
+        newval = self._newclass(**value)
+        super().__set__(instance, newval)
+
+    def __str__(self):
+        props = []
+        for k, val in sorted(self._newclass.__dict__.items()):
+            if val is not None and not k.startswith('_'):
+                props.append('{} = {}'.format(k, str(val)))
+
+        propst = '. Properties: {}'.format(', '.join(props)) if props  else ''
+        return '<Structure{}>'.format(propst)
+
+    @staticmethod
+    def get_paramlist_from_schema(schema):
+        return [(k,convert_to_field_code(v)) for (k,v) in schema.items()]
+
+    def to_schema(self):
+        schema = structure_to_schema(self._newclass)
+        schema['type'] = 'object'
+        return schema
+
+
 class ImmutableField(Field):
     _immutable = True
 
@@ -61,12 +187,41 @@ class Number(Field):
                         self._name, self.maximum))
         super().__set__(instance, value)
 
+    @staticmethod
+    def get_paramlist_from_schema(schema):
+        params = {
+            'multiplesOf': schema.get('multiplesOf', None),
+            'minimum': schema.get('minimum', None),
+            'maximum': schema.get('maximum', None),
+            'exclusiveMaximum': schema.get('exclusiveMaximum', None)
+        }
+        return list(params.items())
+
+    def to_schema(self):
+        params = {
+            'type': 'number',
+            'multiplesOf': self.multiplesOf,
+            'minimum': self.minimum,
+            'maximum': self.maximum,
+            'exclusiveMaximum': self.exclusiveMaximum
+        }
+        return dict([(k,v) for k, v in params.items() if v is not None])
+
+
+
 
 class Integer(TypedField, Number):
     """
     An extension of :class:`Number` for an integer. Accepts int
     """
     _ty = int
+
+    def to_schema(self):
+        params = super().to_schema()
+        params.update({'type': 'integer'})
+        return params
+
+
 
 
 class String(TypedField):
@@ -108,6 +263,24 @@ class String(TypedField):
 
         super().__set__(instance, value)
 
+    @staticmethod
+    def get_paramlist_from_schema(schema):
+        params = {
+            'minLength': schema.get('minLength', None),
+            'maxLength': schema.get('maxLength', None),
+            'pattern': schema.get('pattern', None),
+        }
+        return list(params.items())
+
+    def to_schema(self):
+        params = {
+            'type': 'string',
+            'minLength': self.minLength,
+            'maxLength': self.maxLength,
+            'pattern': self.pattern
+        }
+        return dict([(k, v) for k, v in params.items() if v is not None])
+
 
 class Float(TypedField, Number):
     """
@@ -115,12 +288,22 @@ class Float(TypedField, Number):
     """
     _ty = float
 
+    def to_schema(self):
+        params = super().to_schema()
+        params.update({'type': 'float'})
+        return params
+
 
 class Boolean(TypedField):
     """
     Value of type bool. True or False.
     """
     _ty = bool
+
+    def to_schema(self):
+        params = super().to_schema()
+        params.update({'type': 'boolean'})
+        return params
 
 
 class Positive(Number):
@@ -481,6 +664,29 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
 
         super().__set__(instance, _ListStruct(self, instance, value))
 
+    @staticmethod
+    def get_paramlist_from_schema(schema):
+        items = schema.get('items', None)
+
+        params = {
+        'uniqueItems': schema.get('uniqueItems', None),
+        'additionalItems': schema.get('additionalItems', None),
+        'items': convert_to_field_code(items)
+        }
+
+        return list(params.items())
+
+    def to_schema(self):
+        params = {
+            'type': 'array',
+            'uniqueItems': self.uniqueItems,
+            'additionalItems': self.additionalItems,
+            'maxItems': self.maxItems,
+            'minItems': self.minItems,
+            'items': convert_to_schema(self.items)
+        }
+        return dict([(k, v) for k, v in params.items() if v is not None])
+
 
 class Tuple(TypedField, metaclass=_CollectionMeta):
     """
@@ -556,6 +762,9 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
 
         super().__set__(instance, value)
 
+    def to_schema(self):
+        raise NotImplemented()
+
 
 class Enum(Field):
     """
@@ -574,6 +783,20 @@ class Enum(Field):
         if value not in self.values:
             raise ValueError('{}: Must be one of {}'.format(self._name, self.values))
         super().__set__(instance, value)
+
+    @staticmethod
+    def get_paramlist_from_schema(schema):
+        params = {
+                'values': schema.get('values', None),
+            }
+        return list(params.items())
+
+    def to_schema(self):
+        params = {
+            'type': 'enum',
+            'values': convert_to_schema(self.values)
+        }
+        return dict([(k, v) for k, v in params.items() if v is not None])
 
 
 class EnumString(Enum, String):
@@ -640,6 +863,20 @@ class MultiFieldWrapper(object):
     def get_fields(self):
         return self._fields
 
+    @staticmethod
+    def get_paramlist_from_schema(schema):
+        items = schema.get('fields', None)
+        params = {
+            'fields': convert_to_field_code(items)
+        }
+        return list(params.items())
+
+    def to_schema(self):
+        params = {
+            'items': convert_to_schema(self.items)
+        }
+        return dict([(k, v) for k, v in params.items() if v is not None])
+
 
 class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     """
@@ -667,6 +904,12 @@ class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __str__(self):
         return _str_for_multioption_field(self)
+
+    def to_schema(self):
+        params = super().to_schema()
+        params.update({'type': 'allOf'})
+        return params
+
 
 
 class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
@@ -705,6 +948,11 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     def __str__(self):
         return _str_for_multioption_field(self)
 
+    def to_schema(self):
+        params = super().to_schema()
+        params.update({'type': 'anyOf'})
+        return params
+
 
 class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     """
@@ -740,6 +988,11 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         if matched > 1:
             raise ValueError("{}: Matched more than one field option".format(self._name))
         super().__set__(instance, value)
+
+    def to_schema(self):
+        params = super().to_schema()
+        params.update({'type': 'oneOf'})
+        return params
 
     def __str__(self):
         return _str_for_multioption_field(self)
@@ -780,6 +1033,11 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __str__(self):
         return _str_for_multioption_field(self)
+
+    def to_schema(self):
+        params = super().to_schema()
+        params.update({'type': 'not'})
+        return params
 
 
 class ValidatedTypedField(TypedField):

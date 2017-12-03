@@ -1,5 +1,5 @@
 ===================
-JSON Schena Mapping
+JSON Schema Mapping
 ===================
 
 .. currentmodule:: typedpy

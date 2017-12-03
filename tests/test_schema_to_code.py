@@ -126,10 +126,14 @@ def test_schema():
 
 def test_write_code_to_file():
     write_code_from_schema(schema, definitions, "generated_sample.py", "Poo")
-    from generated_sample import Poo, SimpleStruct
-    poo = Poo(
+    from importlib.machinery import SourceFileLoader
+    import os
+    cwd = os.getcwd()
+    generated_sample = SourceFileLoader("generated_sample", cwd + "/" + "generated_sample.py").load_module()
+   # from generated_sample import Poo, SimpleStruct
+    poo = generated_sample.Poo(
         foo={'a1': 5, 'a2': 1.5},
-        ss=SimpleStruct(name='abc'),
+        ss=generated_sample.SimpleStruct(name='abc'),
         enum=2,
         s="xyz",
         i=10,
@@ -137,6 +141,6 @@ def test_write_code_to_file():
         a=[10, 3]
     )
     assert poo.ss.name == 'abc'
-    assert 'This is a test of schema mapping'==Poo.__doc__.strip()
+    assert 'This is a test of schema mapping'==generated_sample.Poo.__doc__.strip()
     from os import remove
     remove("generated_sample.py")

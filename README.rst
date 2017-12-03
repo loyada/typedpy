@@ -10,7 +10,7 @@ typedpy
 Features
 --------
 
-* Supports JSON schema draft4 features
+* Supports JSON schema draft4 features, including mapping schema-to-code and code-to-schema
 
 * Class/Field definition
 

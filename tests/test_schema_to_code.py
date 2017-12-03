@@ -1,7 +1,8 @@
 from pytest import raises
 
-from typedpy import String, Structure, schema_definitions_to_code, Integer, Array, \
-    StructureReference, Number, Float, AllOf, Enum, AnyOf, OneOf, NotField, schema_to_struct_code
+from typedpy import schema_definitions_to_code, schema_to_struct_code, write_code_from_schema
+from typedpy.structures import *
+from typedpy.fields import *
 
 definitions = {
     "SimpleStruct": {
@@ -20,6 +21,7 @@ definitions = {
 
 schema = {
     "type": "object",
+    "description": "This is a test of schema mapping",
     "foo": {
         "type": "object",
         "a2": {
@@ -122,3 +124,19 @@ def test_schema():
     )
     assert duba.ss.name == 'abc'
 
+def test_write_code_to_file():
+    write_code_from_schema(schema, definitions, "generated_sample.py", "Poo")
+    from generated_sample import Poo, SimpleStruct
+    poo = Poo(
+        foo={'a1': 5, 'a2': 1.5},
+        ss=SimpleStruct(name='abc'),
+        enum=2,
+        s="xyz",
+        i=10,
+        all=6,
+        a=[10, 3]
+    )
+    assert poo.ss.name == 'abc'
+    assert 'This is a test of schema mapping'==Poo.__doc__.strip()
+    from os import remove
+    remove("generated_sample.py")

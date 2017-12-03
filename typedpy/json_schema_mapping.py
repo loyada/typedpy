@@ -45,6 +45,23 @@ def convert_to_schema(field, definitions_schema):
 
 
 def structure_to_schema(structure, definitions_schema):
+    """
+    Generate JSON schema from :class:`Structure`
+    `See working example in test. <https://github.com/loyada/typedpy/tree/master/tests/test_struct_to_schema.py>`_
+
+    Arguments:
+        struct( :class:`Structure` ):
+            the json schema for the main structure
+        definitions_schema(dict):
+            the json schema for all the definitions (typically under "#/definitions" in the schema.
+            If it is the first call, just use and empty dict.
+
+    Returns:
+        A tuple of 2. The fist is the schema of structure, the second is the schema
+        for the referenced definitions.
+        the The schema that the code maps to. It also updates
+
+    """
     #json schema draft4 does not support inheritance, so we don't need to worry about that
     props = structure.__dict__
     fields = [key for key, val in props.items() if isinstance(val, Field)]
@@ -109,26 +126,89 @@ def convert_to_field_code(schema, definitions):
 
 def schema_to_struct_code(struct_name, schema, definitions_schema):
     """
-    In case schema is None, should return None.
-    Should deal with a schema that is a dict, as well as one that is a list
+    Generate code for the main class that maps to the given JSON schema.
+    The main struct_name can include references to structures defined in
+    definitions_schema, under "#/definitions/".
+    `See working example in test. <https://github.com/loyada/typedpy/tree/master/tests/test_schema_to_code.py>`_
+
+    Arguments:
+        struct_name(str):
+            the name of the main :class:`Structure` to be created
+        schema(dict):
+            the json schema of the main Structure that need to be defined
+        definitions_schema(dict):
+            schema for definitions of objects that can be referred to in the main schema. If non exist,
+            just use an empty dict.
+    Returns:
+        A string with the code of the class. This can either be executed directly,
+        using exec(), or written to a file.
+        The "description" property, if exists, is mapped to the docstring of the class.
+        If you write to a file, the higher level :func:`write_code_from_schema` is preferable.
+        Note: In case schema is None, should return None.
+        Deals with a schema that is a dict, as well as one that is a list
     """
     body = ['class {}(Structure):'.format(struct_name)]
+    body += ['    """\n    {}\n    """\n'.format(schema.get('description'))] if 'description' \
+        in schema else []
     body += ['    _additionalProperties = False'] if not \
         schema.get('additionalProperties', True) else []
     required = schema.get('required', None)
     body += ['    _required = {}'.format(required)] if  required is not None else []
     fields = [(k, v) for (k, v) in schema.items() if k
-              not in {'required', 'additionalProperties', 'type'}]
+              not in {'required', 'additionalProperties', 'type', 'description'}]
     for (name, sch) in fields:
         body += ['    {} = {}'.format(name, convert_to_field_code(sch, definitions_schema))]
     return '\n'.join(body)
 
 def schema_definitions_to_code(schema):
+    """
+    Generate code for the classes in the definitions that maps to the given JSON schema.
+    `See working example in test. <https://github.com/loyada/typedpy/tree/master/tests/test_schema_to_code.py>`_
+
+    Arguments:
+        schema(dict):
+            the json schema of the various Structures that need to be defined
+    Returns:
+        A string with the code. This can either be executed directly, using exec(), or written to a file.
+        If you write to a file, the higher level :func:`write_code_from_schema` is preferable.
+    """
     code = []
     for (name, sch) in schema.items():
         code.append(schema_to_struct_code(name, sch, schema))
     return '\n\n'.join(code)
 
+
+def write_code_from_schema(schema, definitions_schema, filename, class_name):
+    """
+    Generate code from schema and write it to a file.
+    `See working example in test. <https://github.com/loyada/typedpy/tree/master/tests/test_schema_to_code.py>`_
+
+    Example:
+
+    .. code-block:: python
+
+        write_code_from_schema(schema, definitions, "generated_sample.py", "Poo")
+
+
+    Arguments:
+        schema(dict):
+            the json schema for the main structure
+        definitions_schema(dict):
+            the json schema for all the definitions (typically under "#/definitions" in the schema.
+            These can be referred to from the main schema
+        filename(str):
+            the file name for the output. Typically should be end with ".py".
+        class_name(str):
+            the main Structure name
+    """
+    supporting_classes = schema_definitions_to_code(definitions_schema)
+    structure_code = schema_to_struct_code(class_name, schema, definitions_schema)
+    with open(filename, 'w') as fout:
+        fout.write("from typedpy import *\n\n")
+        fout.write(supporting_classes)
+        fout.write("\n\n# ********************\n\n")
+        fout.write(structure_code)
+        fout.write("\n")
 
 
 class Mapper(object):

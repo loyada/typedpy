@@ -11,5 +11,8 @@ from typedpy.fields import (
     AllOf, AnyOf, OneOf, NotField, Boolean,
     Array, Set, Map, Tuple, StructureReference,
     ImmutableField, create_typed_field,
-    structure_to_schema
+    )
+
+from typedpy.json_schema_mapping import (
+    structure_to_schema, schema_to_struct_code, schema_definitions_to_code
     )

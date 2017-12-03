@@ -1,3 +1,4 @@
+import json
 
 from typedpy import *
 
@@ -99,5 +100,16 @@ class Example(Structure):
     a = Array[Integer(multiplesOf=5), Number]
     foo = StructureReference(a1 = Integer(), a2=Float())
     ss = SimpleStruct
+    all = AllOf[Number, Integer]
+    enum = Enum(values=[1,2,3])
 
-pp.pprint (structure_to_schema(Example))
+
+schema, definitions = structure_to_schema(Example, {})
+schema['definitions'] = definitions
+print(json.dumps(schema, indent=4))
+del schema['definitions']
+print("\n**************************\n")
+
+print(schema_definitions_to_code(definitions))
+print("\n\n")
+print(schema_to_struct_code('Duba', schema, definitions))

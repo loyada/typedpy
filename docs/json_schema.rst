@@ -11,6 +11,7 @@ The Basics - Usage
 
 Typedpy allows to map a json draft4 schema to code. This code can be saved to a .py file (recommended) or executed dynamically.
 It supposts references to schema definitions, It also creates definitions whenever a Structure is being referenced.
+Mapping a JSON schema to code, inherently provides schema validation when the generated classes are used.
 
 .. code-block:: py
 

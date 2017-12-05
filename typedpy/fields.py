@@ -328,8 +328,9 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
             minimal size
         maxItems(int): optional
             maximal size
-        items(:class:`Field`): optional
-            The type of the content
+        items(:class:`Field` or :class:`Structure`): optional
+            The type of the content, can be a predefined :class:`Structure` or
+            :class:`Field`
 
     Examples:
 
@@ -376,13 +377,15 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
             minimal size
         maxItems(int): optional
             maximal size
-        items(tuple of 2 :class:`Field` elements): optional
+        items(tuple of 2 :class:`Field` or :class:`Structure`  elements): optional
             The first element is the Field for keys, the second is for values.
             Examples:
 
             .. code-block:: python
 
                 age_by_name = Map[String, PositiveInt]
+                # Let's assume we defined a Structure "Person"
+                person_by_id = Map[String, Person]
 
     """
 
@@ -442,7 +445,7 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
         additionalItems(bool): optional
             Relevant in case items parameter is a list of Fields. Is it allowed to have additional
             elements beyond the ones defined in "items"?
-        items(a :class:`Field` or a list/tuple of :class:`Field`): optional
+        items(a :class:`Field` or :class:`Structure`, or a list/tuple of :class:`Field` or :class:`Structure`): optional
             Describes the fields of the elements.
             If a items if a :class:`Field`, then it applies to all items.
             If a items is a list, then every element in the content is expected to be
@@ -456,6 +459,9 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 names = Array(minItems=5, items=String)
                 my_record = Array(items=[String, Integer(minimum=5), String])
                 my_lists = Array[Array[Integer]]
+                my_structs = Array[StructureReference(a=Integer, b=Float)]
+                # Let's say we defined a Structure "Person"
+                people = Array[Person]
 
     """
     _ty = list
@@ -537,7 +543,7 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
         unqieItems(`bool`): optional
             are elements required to be unique?
 
-        items(`list`/`tuple` of :class:`Field`): optional
+        items(`list`/`tuple` of :class:`Field` or :class:`Structure`): optional
             Describes the fields of the elements.
             Every element in the content is expected to be
             of the corresponding :class:`Field` in items.

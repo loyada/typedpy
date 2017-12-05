@@ -115,3 +115,4 @@ print("\n\n")
 print(schema_to_struct_code('Duba', schema, definitions))
 
 #write_code_from_schema(schema, definitions, "generated_code_for_test.py", "Poo")
+

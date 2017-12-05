@@ -181,7 +181,7 @@ def schema_definitions_to_code(schema):
 def write_code_from_schema(schema, definitions_schema, filename, class_name):
     """
     Generate code from schema and write it to a file.
-    `See working example in test. <https://github.com/loyada/typedpy/tree/master/tests/test_schema_to_code.py>`_
+    `See working example in test. <https://github.com/loyada/typedpy/tree/master/tests/test_struct_to_schema.py>`_
 
     Example:
 

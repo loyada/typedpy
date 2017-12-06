@@ -22,7 +22,7 @@ class OldPerson(Person):
 def test_string_with_regex_err():
     with pytest.raises(ValueError) as excinfo:
         Person(name="fo d", ssid="fff", num=25, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})
-    assert 'name: Does not match regular expression: [A-Za-z]+$' in str(excinfo.value)
+    assert 'name: Does not match regular expression: "[A-Za-z]+$"' in str(excinfo.value)
 
 def test_string_type_err():
     with pytest.raises(TypeError) as excinfo:

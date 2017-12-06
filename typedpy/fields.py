@@ -6,7 +6,7 @@ from collections import OrderedDict
 from functools import reduce
 
 from typedpy.structures import Field, Structure, TypedField, ClassReference
-
+from collections import Hashable
 
 
 class StructureReference(Field):
@@ -147,7 +147,7 @@ class String(TypedField):
             raise ValueError("{}: Expected a minimum length of {}".format(
                 self._name, self.minLength))
         if self.pattern is not None and not self._compiled_pattern.match(value):
-            raise ValueError('{}: Does not match regular expression: {}'.format(
+            raise ValueError('{}: Does not match regular expression: "{}"'.format(
                 self._name, self.pattern))
 
         super().__set__(instance, value)
@@ -351,6 +351,9 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
             self.items = items()
         else:
             raise TypeError("Expected a Field class or instance")
+
+        if isinstance(self.items, TypedField) and not isinstance(self.items, Hashable):
+            raise TypeError("Set field must be hashable")
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):
@@ -406,6 +409,9 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
                     self.items.append(item())
                 else:
                     raise TypeError("Expected a Field class or instance")
+            key_field = self.items[0]
+            if isinstance(key_field, TypedField) and not isinstance(key_field, Hashable):
+                raise TypeError("Key field must be hashable")
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):

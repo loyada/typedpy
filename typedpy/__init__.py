@@ -19,5 +19,5 @@ from typedpy.json_schema_mapping import (
     )
 
 from typedpy.serialization import (
-    deserialize_structure
+    deserialize_structure, serialize
 )

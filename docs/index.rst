@@ -23,13 +23,14 @@ Features
 
 * Embedded structures within structures/fields and fields within fields
 
-* No dependencies on third-party libs
+* Deserialization - JSON to Structure
 
 * Supports collections: `Map <https://github.com/loyada/typedpy/tree/master/tests/test_Map.py>`_, `Set <https://github.com/loyada/typedpy/tree/master/tests/test_Set.py>`_, `Array <https://github.com/loyada/typedpy/tree/master/tests/test_array.py>`_, `Tuple <https://github.com/loyada/typedpy/tree/master/tests/test_tuple.py>`_
 
 * Clean Java-generics-like definitions, but more flexible. e.g.: Set[Integer], Map[String(maxLength=8), Number]
 
-**There are many examples under "tests/".**
+* No dependencies on third-party libs
+
 
 Examples
 ----------
@@ -146,6 +147,7 @@ Contents:
    structures
    fields
    json_schema
+   serialization
 
 
 

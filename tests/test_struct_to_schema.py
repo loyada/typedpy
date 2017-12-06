@@ -121,3 +121,21 @@ def test_schema():
             },
             "additionalProperties": True
     }
+
+
+def test_array_no_items_definition():
+    class Foo(Structure):
+        arr = Array(minItems=2)
+        _required = []
+        _additionalProperties = False
+
+    schema, definitions = structure_to_schema(Foo, {})
+    assert schema == {
+        "type": "object",
+        "arr": {
+            "type": "array",
+            "minItems": 2
+        },
+        "required": [],
+        "additionalProperties": False
+    }

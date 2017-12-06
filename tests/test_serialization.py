@@ -4,7 +4,7 @@ from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, TypedField, serialize
+    Float, TypedField, serialize, Map, Set
 
 
 class SimpleStruct(Structure):
@@ -40,3 +40,37 @@ def test_successful_deserialization_with_many_types():
     result = serialize(example)
     assert result==source
 
+
+
+def test_map_without_types():
+    class Foo(Structure):
+        map = Map
+
+    source = {
+        'map': {
+            'a': 1,
+            1: 'b'
+        }
+    }
+    foo = deserialize_structure(Foo, source)
+    assert foo.map['a'] == 1
+
+
+def test_some_empty_fields():
+    class Foo(Structure):
+        a = Integer
+        b = String
+        _required = []
+
+    foo = Foo(a=5)
+    assert serialize(foo)=={'a': 5}
+
+
+def test_serialize_set_err():
+    class Foo(Structure):
+        a = Set()
+
+    foo = Foo(a={1,2,3})
+    with raises(TypeError) as excinfo:
+        serialize(foo)
+    assert "a: Serialization unsupported for set, tuple" in str(excinfo.value)

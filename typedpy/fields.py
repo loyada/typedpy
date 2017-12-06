@@ -2,11 +2,11 @@
 Definitions of various types of fields. Supports JSON draft4 types.
 """
 import re
+from collections import Hashable
 from collections import OrderedDict
 from functools import reduce
 
 from typedpy.structures import Field, Structure, TypedField, ClassReference
-from collections import Hashable
 
 
 class StructureReference(Field):

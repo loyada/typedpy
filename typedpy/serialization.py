@@ -1,4 +1,3 @@
-from typedpy import Structure
 from typedpy.fields import Field, Number, String, StructureReference,\
     Array, Map, ClassReference, Enum, MultiFieldWrapper, Boolean
 
@@ -39,7 +38,8 @@ def deserialize_map(map_field, source_val, name):
         key_field, value_field = None, None
     res = {}
     for key, val in source_val.items():
-        res[deserialize_single_field(key_field, key, name)] = deserialize_single_field(value_field, val, name)
+        res[deserialize_single_field(key_field, key, name)] = \
+            deserialize_single_field(value_field, val, name)
     return res
 
 
@@ -100,10 +100,9 @@ def serialize_val(name, val):
         raise TypeError("{}: Serialization unsupported for set, tuple".format(name))
     if isinstance(val, (int, str, bool, float)) or val is None:
         return val
-    elif isinstance(val, list):
+    if isinstance(val, list):
         return [serialize_val(name, i) for i in val]
-    else:
-        return serialize(val)
+    return serialize(val)
 
 
 

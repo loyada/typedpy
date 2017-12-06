@@ -144,3 +144,21 @@ def test_write_code_to_file():
     assert 'This is a test of schema mapping'==generated_sample.Poo.__doc__.strip()
     from os import remove
     remove("generated_sample.py")
+
+
+def test_array_no_items_definition():
+    schema = {
+        "type": "object",
+        "arr": {
+            "type": "array",
+            "uniqueItems": True,
+        },
+        "required": [],
+        "additionalProperties": False
+    }
+    struct_code = schema_to_struct_code('Duba', schema, {})
+    exec(struct_code, globals())
+
+    duba = Duba(arr= [1,'sss', None])
+    assert duba.arr[2]==None
+

@@ -32,11 +32,19 @@ def deserialize_multifield_wrapper(field, source_val, name):
 
 def deserialize_map(map_field, source_val, name):
     if not isinstance(source_val, dict):
-        return source_val
+        raise TypeError("{}: expected a dict".format(name))
+    if map_field.items:
+        key_field, value_field = map_field.items
+    else:
+        key_field, value_field = None, None
+    res = {}
+    for key, val in source_val.items():
+        res[deserialize_single_field(key_field, key, name)] = deserialize_single_field(value_field, val, name)
+    return res
 
 
 def deserialize_single_field(field, source_val, name):
-    if isinstance(field, (Number, String, Map, Enum, Boolean)):
+    if isinstance(field, (Number, String, Enum, Boolean)) or field is None:
         value = source_val
     elif isinstance(field, Array):
         value = deserialize_array(field, source_val, name)

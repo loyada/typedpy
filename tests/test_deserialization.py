@@ -2,7 +2,7 @@ from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, TypedField
+    Float, TypedField, Map
 
 
 class SimpleStruct(Structure):
@@ -160,31 +160,31 @@ def test_invalid_value_err():
 
 def test_map_deserialization():
     class Foo(Structure):
-        map = Map[Integer, da]
+        map = Map[Integer, SimpleStruct]
+
     data = {
-        'i': 5,
-        's': 'test',
-        'array': [10, 7],
-        'embedded': {
-            'a1': 8,
-            'a2': 0.5
-        },
-        'simplestruct': {
-            'name': 'danny'
-        },
-        'all': 5,
-        'enum': 3
+        'map': {
+            1: {
+            'name': 'abc'
+            },
+            2: {
+            'name': 'def'
+            }
+        }
     }
-    example = deserialize_structure(Example, data)
-    assert example == Example(
-        i = 5,
-        s = 'test',
-        array = [10,7],
-        embedded = {
-            'a1': 8,
-            'a2': 0.5
-        },
-        simplestruct = SimpleStruct(name = 'danny'),
-        all = 5,
-        enum = 3
-    )
+
+    example = deserialize_structure(Foo, data)
+    assert example.map[1] == SimpleStruct(name = 'abc')
+    assert example.map[2] == SimpleStruct(name = 'def')
+
+
+def test_map_deserialization_type_err():
+    class Foo(Structure):
+        map = Map[Integer, SimpleStruct]
+
+    data = {
+        'map': 5
+    }
+    with raises(TypeError) as excinfo:
+        deserialize_structure(Foo, data)
+    assert 'map: expected a dict' in str(excinfo.value)

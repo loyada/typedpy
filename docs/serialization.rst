@@ -28,8 +28,8 @@ Below:
         enum = Enum(values=[1,2,3])
 
 
-    def test_successful_deserialization_with_many_types():
-        data = {
+    def test_deserialization_and_serialization_with_many_types():
+        source = {
             'i': 5,
             's': 'test',
             'array': [10, 7],
@@ -43,7 +43,7 @@ Below:
             'all': 5,
             'enum': 3
         }
-        example = deserialize_structure(Example, data)
+        example = deserialize_structure(Example, source)
         assert example == Example(
             i = 5,
             s = 'test',
@@ -56,6 +56,13 @@ Below:
             all = 5,
             enum = 3
         )
+
+        #serialization
+        result = serialize(example)
+        assert result==source
+
+
+
 
 
 

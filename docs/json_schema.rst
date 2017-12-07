@@ -139,7 +139,8 @@ Functions
 
 Code to schema
 --------------
-.. autofunction:: write_code_from_schema
+
+.. autofunction:: structure_to_schema
 
 Keep in mind that in order to print a JSON schema (as opposed to a Python dict), you need to do something like:
 
@@ -153,5 +154,5 @@ Schema to code
 
 .. autofunction:: schema_to_struct_code
 
-.. autofunction:: structure_to_schema
+.. autofunction:: write_code_from_schema
 

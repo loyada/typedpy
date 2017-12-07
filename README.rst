@@ -10,9 +10,11 @@ typedpy
 Features
 --------
 
+* Class/Field definition
+
 * Supports JSON schema draft4 features, including mapping schema-to-code and code-to-schema
 
-* Class/Field definition
+* Serialization, deserialization between JSON-like dict and class instance
 
 * Easily extensible. `Wrapper of any class as a Field <https://github.com/loyada/typedpy/tree/master/tests/test_typed_field_creator.py>`_
 

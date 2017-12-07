@@ -2,7 +2,6 @@
 Definitions of various types of fields. Supports JSON draft4 types.
 """
 import re
-from collections import Hashable
 from collections import OrderedDict
 from functools import reduce
 
@@ -352,8 +351,10 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
         else:
             raise TypeError("Expected a Field class or instance")
 
-        if isinstance(self.items, TypedField) and not isinstance(self.items, Hashable):
-            raise TypeError("Set field must be hashable")
+        if isinstance(self.items, TypedField) and not \
+                getattr(getattr(self.items, '_ty'), '__hash__'):
+            raise TypeError("Set element of type {} is not hashable".format(
+                getattr(self.items, '_ty')))
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):
@@ -410,8 +411,9 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 else:
                     raise TypeError("Expected a Field class or instance")
             key_field = self.items[0]
-            if isinstance(key_field, TypedField) and not isinstance(key_field, Hashable):
-                raise TypeError("Key field must be hashable")
+            if isinstance(key_field, TypedField) and not getattr(getattr(key_field, '_ty'), '__hash__'):
+                raise TypeError("Key field of type {} is not hashable".format(
+                    getattr(key_field, '_ty')))
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):

@@ -1,7 +1,7 @@
 from pytest import raises
 
 from typedpy import String, Structure, structure_to_schema, Integer, Array, \
-    StructureReference, Number, Float, AllOf, Enum, AnyOf, OneOf, NotField
+    StructureReference, Number, Float, AllOf, Enum, AnyOf, OneOf, NotField, Boolean, Map, Set
 
 
 class SimpleStruct(Structure):
@@ -139,3 +139,18 @@ def test_array_no_items_definition():
         "required": [],
         "additionalProperties": False
     }
+
+def test_boolean_field():
+    class Foo(Structure):
+        b = Boolean
+
+    schema, definitions = structure_to_schema(Foo, {})
+    assert schema == {
+        "type": "object",
+        "b": {
+            "type": "boolean"
+        },
+        "required": ["b"],
+        "additionalProperties": True
+    }
+

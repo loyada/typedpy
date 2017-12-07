@@ -9,9 +9,11 @@ Serialization
 The Basics - Usage
 ==================
 
-Typedpy allows to deserialize a JSON-like Python dict to an instance of a predefined :class:`Structure`.
-The target class can have fields that are embedded structure or even class references. See example
-Below:
+Typedpy allows to deserialize/ a JSON-like Python dict to an instance of a predefined :class:`Structure`,
+as well serialize an instance of :class:`Structure` to a JSON-like dict.
+The target class can have fields that are embedded structure or even class references.
+
+See example below:
 
 .. code-block:: py
 
@@ -43,7 +45,10 @@ Below:
             'all': 5,
             'enum': 3
         }
+
+        # Deserialization:
         example = deserialize_structure(Example, source)
+
         assert example == Example(
             i = 5,
             s = 'test',
@@ -57,40 +62,30 @@ Below:
             enum = 3
         )
 
-        #serialization
+        # Serialization
         result = serialize(example)
         assert result==source
 
 
+**To convert the result of serialize() to JSON use:**
 
+.. code-block:: py
 
+   json.dumps(schema, indent=4)
 
 
 Limitations
 -----------
-#. Some complex fields can have ambiguous serialized representation, for example: if a field can be an Instance of
-some class A, or class B (e.g. :class:`AnyOf`[Foo, Bar])- the deserialization is not well defined. Such
+#. Some complex fields have ambiguous serialized representation, for example: if a field can be an Instance of
+some class A, or class B (e.g. :class:`AnyOf` [A, B])- the deserialization is not well defined. Such
 fields are unsupported.
-#. Set is unsupported, since it does not exist in JSON
+#. Set, Tuple is unsupported, since it does not exist in JSON
 
 Functions
 =========
 
-Code to schema
---------------
-.. autofunction:: write_code_from_schema
+.. autofunction:: deserialize_structure
 
-Keep in mind that in order to print a JSON schema (as opposed to a Python dict), you need to do something like:
+.. autofunction:: serialize
 
-.. code-block:: py
-
-    print(json.dumps(schema, indent=4))
-
-Schema to code
---------------
-.. autofunction:: schema_definitions_to_code
-
-.. autofunction:: schema_to_struct_code
-
-.. autofunction:: structure_to_schema
 

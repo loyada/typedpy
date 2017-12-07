@@ -1,6 +1,6 @@
 from pytest import raises
 
-from typedpy import Structure, Number, String, Map, Field
+from typedpy import Structure, Number, String, Map, Field, Integer
 
 
 class Example(Structure):
@@ -182,3 +182,8 @@ def test_str():
     assert "d = <Map. Properties: items = [<String. Properties: minLength = 3>, <Number>]>" in st
     assert "e = <Map. Properties: items = [<String>, <Number>]" in st
 
+def test_invalid_key_type():
+    with raises(TypeError) as excinfo:
+        class Foo(Structure):
+            a = Map[Map, Integer]
+    assert "Key field of type <class 'dict'> is not hashable" in str(excinfo.value)

@@ -202,6 +202,10 @@ class Structure(metaclass=StructMeta):
 
     def __init__(self, *args, **kwargs):
         bound = getattr(self, '__signature__').bind(*args, **kwargs)
+        if 'kwargs' in bound.arguments:
+            for name, val in bound.arguments['kwargs'].items():
+                setattr(self, name, val)
+            del bound.arguments['kwargs']
         for name, val in bound.arguments.items():
             setattr(self, name, val)
 

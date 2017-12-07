@@ -1,6 +1,6 @@
 from pytest import raises
 
-from typedpy import Structure, Number, String, Integer, Set, AnyOf
+from typedpy import Structure, Number, String, Integer, Set, AnyOf, Map
 
 
 class Example(Structure):
@@ -84,3 +84,9 @@ def test_simplified_definition_with_flexible_types_err():
     with raises(ValueError) as excinfo:
         Example(g={'xy'})
     assert "g: Did not match any field option" in str(excinfo.value)
+
+def test_invalid_type():
+    with raises(TypeError) as excinfo:
+        class Foo(Structure):
+            a = Set[Map]
+    assert "Set element of type <class 'dict'> is not hashable" in str(excinfo.value)

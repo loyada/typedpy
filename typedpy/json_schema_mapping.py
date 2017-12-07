@@ -16,6 +16,7 @@ def get_mapper(field_cls):
         Number: NumberMapper,
         Float: FloatMapper,
         Array: ArrayMapper,
+        Boolean: BooleanMapper,
         Enum: EnumMapper,
         String: StringMapper,
         AllOf: AllOfMapper,
@@ -47,7 +48,7 @@ def convert_to_schema(field, definitions_schema):
 def structure_to_schema(structure, definitions_schema):
     """
     Generate JSON schema from :class:`Structure`
-    `See working example in test. <https://github.com/loyada/typedpy/tree/master/tests/test_struct_to_schema.py>`_
+    `See working examples in test. <https://github.com/loyada/typedpy/tree/master/tests/test_struct_to_schema.py>`_
 
     Arguments:
         struct( :class:`Structure` ):
@@ -129,7 +130,7 @@ def schema_to_struct_code(struct_name, schema, definitions_schema):
     Generate code for the main class that maps to the given JSON schema.
     The main struct_name can include references to structures defined in
     definitions_schema, under "#/definitions/".
-    `See working example in test. <https://github.com/loyada/typedpy/tree/master/tests/test_schema_to_code.py>`_
+    `See working examples in test. <https://github.com/loyada/typedpy/tree/master/tests/test_schema_to_code.py>`_
 
     Arguments:
         struct_name(str):
@@ -181,7 +182,7 @@ def schema_definitions_to_code(schema):
 def write_code_from_schema(schema, definitions_schema, filename, class_name):
     """
     Generate code from schema and write it to a file.
-    `See working example in test. <https://github.com/loyada/typedpy/tree/master/tests/test_struct_to_schema.py>`_
+    `See working examples in test. <https://github.com/loyada/typedpy/tree/master/tests/test_struct_to_schema.py>`_
 
     Example:
 
@@ -274,7 +275,7 @@ class FloatMapper(NumberMapper):
         return params
 
 
-class BooleanMapper(object):
+class BooleanMapper(Mapper):
 
     @staticmethod
     def get_paramlist_from_schema(schema, definitions):

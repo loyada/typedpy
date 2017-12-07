@@ -24,8 +24,8 @@ def deserialize_multifield_wrapper(field, source_val, name):
     """
     for field_option in field.get_fields():
         if not isinstance(field_option, (Number, String, Enum, Boolean)):
-            raise NotImplementedError("{}: deserialization only supports Number, ".format(name) +
-                                      "String and Enum")
+            raise TypeError("{}: deserialization of Multifield only supports Number, ".\
+                            format(name) + "String and Enum")
     return source_val
 
 
@@ -57,7 +57,8 @@ def deserialize_single_field(field, source_val, name):
     elif isinstance(field, Map):
         value = deserialize_map(field, source_val, name)
     else:
-        raise NotImplementedError("cannot deserialize field '{}'".format(name))
+        raise NotImplementedError("cannot deserialize field '{}' of type {}".\
+                                  format(name, field.__class__.__name__))
     return value
 
 def deserialize_structure_reference(cls, the_dict: dict):
@@ -71,19 +72,22 @@ def deserialize_structure_reference(cls, the_dict: dict):
 
 def deserialize_structure(cls, the_dict, name=None):
     """
-       Deserialize a dict to a Structure instance, Jackson style.
-       There are certain limitations to what is supported.
-        `See working example in test.
-         <https://github.com/loyada/typedpy/tree/master/tests/test_deserialization.py>`_
+        Deserialize a dict to a Structure instance, Jackson style.
+        Note the top level must be a python dict - which implies that a JSON of
+        simply a number, or string, or array, is unsupported.
+        `See working examples in test. <https://github.com/loyada/typedpy/tree/master/tests/test_deserialization.py>`_
 
-      Arguments:
-          cls(type):
-            The target class
-          the_dict(dict):
-              the source dictionary
-          name(str): optional
-              name of the structure, used only internally, when there is a
-              class reference field. Users are not supposed to use it.
+        Arguments:
+            cls(type):
+                The target class
+            the_dict(dict):
+                the source dictionary
+            name(str): optional
+                name of the structure, used only internally, when there is a
+                class reference field. Users are not supposed to use this argument.
+
+        Returns:
+            an instance of the provided :class:`Structure` deserialized
     """
     if not isinstance(the_dict, dict):
         raise TypeError("{}: Expected a dictionary".format(name))
@@ -107,6 +111,16 @@ def serialize_val(name, val):
 
 
 def serialize(structure):
+    """
+    Serialize an instance of :class:`Structure` to a JSON-like dict.
+    `See working examples in test. <https://github.com/loyada/typedpy/tree/master/tests/test_serialization.py>`_
+
+    Arguments:
+        structure(:class:`Structure`):
+
+    Returns:
+        a serialized Python dict
+    """
     items = structure.items() if isinstance(structure, dict) \
         else structure.__dict__.items()
     result = {}

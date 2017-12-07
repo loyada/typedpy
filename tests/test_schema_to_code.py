@@ -162,3 +162,21 @@ def test_array_no_items_definition():
     duba = Duba(arr= [1,'sss', None])
     assert duba.arr[2]==None
 
+
+def test_boolean_field():
+    schema = {
+        "type": "object",
+        "b": {
+            "type": "boolean"
+        },
+        "required": ["b"],
+        "additionalProperties": True
+    }
+
+    struct_code = schema_to_struct_code('Foo', schema, {})
+    exec(struct_code, globals())
+
+    foo = Foo(b = False)
+    assert foo.b == False
+
+

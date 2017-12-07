@@ -2,7 +2,7 @@ from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, TypedField, Map
+    Float, TypedField, Map, create_typed_field, AnyOf, Set
 
 
 class SimpleStruct(Structure):
@@ -64,9 +64,9 @@ def test_unsupported_nested_field_err():
     class UnsupportedStruct(Structure):
         unsupported = AllOf[Integer, Array]
 
-    with raises(NotImplementedError) as excinfo:
+    with raises(TypeError) as excinfo:
         deserialize_structure(UnsupportedStruct, {'unsupported': 1})
-    assert "deserialization only supports Number, String and Enum" in str(excinfo.value)
+    assert "unsupported: deserialization of Multifield only supports Number, String and Enum" in str(excinfo.value)
 
 def test_invalid_type_err():
     data = {
@@ -188,3 +188,31 @@ def test_map_deserialization_type_err():
     with raises(TypeError) as excinfo:
         deserialize_structure(Foo, data)
     assert 'map: expected a dict' in str(excinfo.value)
+
+def test_multifield_with_unsupported_type_err():
+    source = {
+       'any': 'abc'
+    }
+    class Foo(Structure):
+        any = AnyOf[Map, Set, String]
+
+    with raises(TypeError) as excinfo:
+         deserialize_structure(Foo, source)
+    assert "any: deserialization of Multifield only supports Number, String and Enum" in str(excinfo.value)
+
+
+def test_unsupported_type_err():
+    source = {
+       'bar': 'abc'
+    }
+
+    class Bar(object): pass
+
+    WrappedBar = create_typed_field("WrappedBar", Bar)
+
+    class Foo(Structure):
+        bar = WrappedBar
+
+    with raises(NotImplementedError) as excinfo:
+         deserialize_structure(Foo, source)
+    assert "cannot deserialize field 'bar' of type WrappedBar" in str(excinfo.value)

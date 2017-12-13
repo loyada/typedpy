@@ -50,9 +50,9 @@ class Trade(Structure):
     tradable = String()
     counterparty1 = String()
     counterparty2 = String()
-    quantity = AnyOf([PositiveInt(), Enum(values=['asds', 'ddd', 'cxczx'])])
+    quantity = AnyOf([PositiveInt(), Enum['asds', 'ddd', 'cxczx']])
     price = PositiveFloat()
-    category = EnumString(values = ['a','b'])
+    category = EnumString['a','b']
 
     #class referece: to another Structure
     person = Person

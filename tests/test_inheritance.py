@@ -1,6 +1,6 @@
 from pytest import raises
 
-from typedpy import StructureReference, Structure, String, Integer, Number, PositiveInt
+from typedpy import StructureReference, Structure, String, Integer, Number, PositiveInt, Float
 
 
 class Person(Structure):
@@ -68,3 +68,14 @@ def test_additional_properties_err():
         OldPerson(num=1, name="abc", ssid="aaa", children=1, xyz =1)
     assert "got an unexpected keyword argument 'xyz'" in str(excinfo.value) or \
            "too many keyword arguments" in str(excinfo.value)
+
+def test_mro_override_field():
+    class HasNumber(Structure):
+        _required=[]
+        num = Float
+
+    class AncientPerson(OldPerson, HasNumber):
+        grandchildren = PositiveInt
+
+    assert AncientPerson(grandchildren=4, num=6, ssid='aaa', children=3).num==6
+

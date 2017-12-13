@@ -106,9 +106,9 @@ Another example with Array, class reference, Enum, json-schema-style re-use:
         _additionalProperties = True
         _required = ['quantity', 'price']
 
-        quantity = AnyOf([PositiveInt, Enum(values=['few', 'many', 'several'])])
+        quantity = AnyOf([PositiveInt, Enum['few', 'many', 'several']])
         price = PositiveFloat
-        category = EnumString(values = ['cat1','cat2'])
+        category = EnumString['cat1','cat2']
         person = Person
         children = Array(uniqueItems=True, minItems= 3, items = [String, Number(maximum=10)])
 

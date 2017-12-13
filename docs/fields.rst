@@ -61,6 +61,8 @@ String, Enums etc.
 
 .. autoclass:: Sized
 
+.. autoclass:: DateString
+
 Collections
 -----------
 

@@ -6,7 +6,7 @@ from typedpy import Enum, Positive, Structure, Array
 class PositiveEnum(Enum, Positive): pass
 
 class B(Structure):
-    e = PositiveEnum(values=[23, -5, 12, 5])
+    e = PositiveEnum[23, -5, 12, 5]
 
 
 def test_not_positive_err():

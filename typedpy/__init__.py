@@ -8,7 +8,7 @@ from typedpy.structures import (
 from typedpy.fields import (
     Number, Integer, PositiveInt, PositiveFloat, Float, Positive,
     String, SizedString, Sized, Enum, EnumString,
-    AllOf, AnyOf, OneOf, NotField, Boolean,
+    AllOf, AnyOf, OneOf, NotField, Boolean, DateString,
     Array, Set, Map, Tuple, StructureReference,
     ImmutableField, create_typed_field,
     )

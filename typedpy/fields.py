@@ -3,6 +3,7 @@ Definitions of various types of fields. Supports JSON draft4 types.
 """
 import re
 from collections import OrderedDict
+from datetime import datetime
 from functools import reduce
 
 from typedpy.structures import Field, Structure, TypedField, ClassReference
@@ -283,6 +284,11 @@ class _CollectionMeta(type):
             items = [validate_and_get_field(it) for it in item]
             return cls(items=items)
         return cls(items=validate_and_get_field(item))
+
+
+class _EnumMeta(type):
+    def __getitem__(cls, values):
+        return cls(values=list(values))
 
 
 class _JSONSchemaDraft4ReuseMeta(type):
@@ -617,7 +623,7 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
 
 
 
-class Enum(Field):
+class Enum(Field, metaclass=_EnumMeta):
     """
         Enum field. value can be one of predefined values
 
@@ -639,9 +645,35 @@ class Enum(Field):
 
 class EnumString(Enum, String):
     """
-    Combination of :class:`Enum` and :class:`String`
+    Combination of :class:`Enum` and :class:`String`. This is useful if you want to further
+    limit your allowable enum values, using :class:`String` attributes, such as pattern, maxLength.
+
+    Example:
+
+    .. code-block:: python
+
+        predefined_list = ['abc', 'x', 'def', 'yy']
+
+        EnumString(values=predefined_list, minLength=3)
+
     """
     pass
+
+
+class DateString(TypedField):
+    """
+    A string field of the format '%Y-%m-%d' that can be converted to a date
+    """
+    _ty = str
+
+    def __set__(self, instance, value):
+        super().__set__(instance, value)
+        try:
+            datetime.strptime(value, '%Y-%m-%d')
+        except ValueError as ex:
+            raise ValueError("{}: {}".format(self._name, ex.args[0]))
+
+
 
 
 class Sized(Field):

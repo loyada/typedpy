@@ -1,8 +1,9 @@
 from datetime import datetime
+import json
 
 from pytest import raises
 
-from typedpy import String , Structure, ImmutableField, DateString
+from typedpy import String, Structure, ImmutableField, DateString, TimeString, EmailAddress, HostName, IPV4, JSONString
 
 
 class ImmutableString(String, ImmutableField): pass
@@ -44,3 +45,72 @@ def test_date_valid():
     e = Example(d='2017-8-9')
     assert datetime.strptime(e.d, '%Y-%m-%d').month==8
 
+
+def test_time_err():
+    class Example(Structure):
+        t = TimeString
+    with raises(ValueError) as excinfo:
+        Example(t='20:1015')
+    assert "t:  time data '20:1015' does not match format '%H:%M:%S'" in str(excinfo.value)
+
+
+def test_time_valid():
+    class Example(Structure):
+        t = TimeString
+    e = Example(t='20:10:15')
+    assert datetime.strptime(e.t, '%H:%M:%S').hour==20
+
+
+def test_email_err():
+    class Example(Structure):
+        email = EmailAddress
+    with raises(ValueError) as excinfo:
+        Example(email='asdnsa@dsads.sds.')
+    assert "email: Does not match regular expression" in str(excinfo.value)
+
+
+def test_email_valid():
+    class Example(Structure):
+        email = EmailAddress
+    Example(email='abc@com.ddd').email=='abc@com.ddd'
+
+
+def test_hostname_err():
+    class Example(Structure):
+        host = HostName
+    with raises(ValueError) as excinfo:
+        Example(host='aaa bbb')
+    assert "host: wrong format for hostname" in str(excinfo.value)
+
+
+def test_hostname_valid():
+    class Example(Structure):
+        host = HostName
+    Example(host='com.ddd.dasdasdsadasdasda').host=='com.ddd.dasdasdsadasdasda'
+
+def test_ipv4_err():
+    class Example(Structure):
+        ip = IPV4
+    with raises(ValueError) as excinfo:
+        Example(ip='2312.2222.223233')
+    assert "ip: wrong format for IP version 4" in str(excinfo.value)
+
+
+def test_hostname_valid():
+    class Example(Structure):
+        ip = IPV4
+    Example(ip='212.22.33.192').ip.split('.')==['212','22', '33', '192']
+
+
+def test_JSONString_err():
+    class Example(Structure):
+        j = JSONString
+    with raises(ValueError) as excinfo:
+        Example(json='[1,2,3')
+
+
+def test_JSONString_valid():
+    class Example(Structure):
+        j = JSONString
+
+    assert json.loads(Example(j='[1,2,3]').j) == [1,2,3]

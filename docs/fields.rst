@@ -63,6 +63,17 @@ String, Enums etc.
 
 .. autoclass:: DateString
 
+.. autoclass:: TimeString
+
+.. autoclass:: IPV4
+
+.. autoclass:: JSONString
+
+.. autoclass:: HostName
+
+EmailAddress - an email address
+
+
 Collections
 -----------
 

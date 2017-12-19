@@ -6,27 +6,38 @@ import re
 from typedpy import TypedField
 from typedpy.fields import String
 
-EmailAddress = String(pattern="(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+EmailAddress = String(pattern="(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]+$)")
 
 
 class JSONString(String):
+    """
+      A string of a valid JSON
+    """
+
     def __set__(self, instance, value):
         json.loads(value)
         super().__set__(instance, value)
 
 
 class IPV4(String):
+    """
+      A string field of a valid IP version 4
+    """
     _ipv4_re = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 
     def __set__(self, instance, value):
-        if not IPV4._ipv4_re.match(value):
-            return False
-        if not all(0 <= int(component) <= 255 for component in value.split(".")):
-            raise ValueError("{}: wrong format for IPV4".format(self._name))
-        super().__set__(instance, value)
+        if IPV4._ipv4_re.match(value) and \
+                all(0 <= int(component) <= 255 for component in value.split(".")):
+            super().__set__(instance, value)
+        else:
+            raise ValueError("{}: wrong format for IP version 4".format(self._name))
 
 
 class HostName(String):
+    """
+      A string field of a valid host name
+    """
+
     _host_name_re = re.compile(r"^[A-Za-z0-9][A-Za-z0-9\.\-]{1,255}$")
 
     def __set__(self, instance, value):
@@ -62,6 +73,6 @@ class TimeString(TypedField):
     def __set__(self, instance, value):
         super().__set__(instance, value)
         try:
-            datetime.strptime(instance, "%H:%M:%S")
+            datetime.strptime(value, "%H:%M:%S")
         except ValueError as ex:
             raise ValueError("{}:  {}".format(self._name, ex.args[0]))

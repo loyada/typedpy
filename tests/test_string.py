@@ -106,7 +106,7 @@ def test_JSONString_err():
     class Example(Structure):
         j = JSONString
     with raises(ValueError) as excinfo:
-        Example(json='[1,2,3')
+        Example(j='[1,2,3')
 
 
 def test_JSONString_valid():

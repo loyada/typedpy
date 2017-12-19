@@ -24,7 +24,7 @@ def deserialize_multifield_wrapper(field, source_val, name):
     """
     for field_option in field.get_fields():
         if not isinstance(field_option, (Number, String, Enum, Boolean)):
-            raise TypeError("{}: deserialization of Multifield only supports Number, ".\
+            raise TypeError("{}: deserialization of Multifield only supports Number, ".
                             format(name) + "String and Enum")
     return source_val
 
@@ -57,9 +57,10 @@ def deserialize_single_field(field, source_val, name):
     elif isinstance(field, Map):
         value = deserialize_map(field, source_val, name)
     else:
-        raise NotImplementedError("cannot deserialize field '{}' of type {}".\
+        raise NotImplementedError("cannot deserialize field '{}' of type {}".
                                   format(name, field.__class__.__name__))
     return value
+
 
 def deserialize_structure_reference(cls, the_dict: dict):
     field_by_name = dict([(k, v) for k, v in cls.__dict__.items()
@@ -107,7 +108,6 @@ def serialize_val(name, val):
     if isinstance(val, list):
         return [serialize_val(name, i) for i in val]
     return serialize(val)
-
 
 
 def serialize(structure):

@@ -51,7 +51,7 @@ def structure_to_schema(structure, definitions_schema):
     `See working examples in test. <https://github.com/loyada/typedpy/tree/master/tests/test_struct_to_schema.py>`_
 
     Arguments:
-        struct( :class:`Structure` ):
+        structure( :class:`Structure` ):
             the json schema for the main structure
         definitions_schema(dict):
             the json schema for all the definitions (typically under "#/definitions" in the schema.
@@ -63,7 +63,7 @@ def structure_to_schema(structure, definitions_schema):
         the The schema that the code maps to. It also updates
 
     """
-    #json schema draft4 does not support inheritance, so we don't need to worry about that
+    # json schema draft4 does not support inheritance, so we don't need to worry about that
     props = structure.__dict__
     fields = [key for key, val in props.items() if isinstance(val, Field)]
     required = props.get('_required', fields)
@@ -119,7 +119,7 @@ def convert_to_field_code(schema, definitions):
         cls = type_name_to_field[schema.get('type', 'object')]
         mapper = get_mapper(cls)
     params_list = mapper.get_paramlist_from_schema(schema, definitions)
- #   print("param list: {} \n ".format(params_list))
+    #   print("param list: {} \n ".format(params_list))
 
     params_as_string = ", ".join(["{}={}".format(name, val) for (name, val) in params_list])
     return '{}({})'.format(cls.__name__, params_as_string)
@@ -150,16 +150,17 @@ def schema_to_struct_code(struct_name, schema, definitions_schema):
     """
     body = ['class {}(Structure):'.format(struct_name)]
     body += ['    """\n    {}\n    """\n'.format(schema.get('description'))] if 'description' \
-        in schema else []
+                                                                                in schema else []
     body += ['    _additionalProperties = False'] if not \
         schema.get('additionalProperties', True) else []
     required = schema.get('required', None)
-    body += ['    _required = {}'.format(required)] if  required is not None else []
+    body += ['    _required = {}'.format(required)] if required is not None else []
     fields = [(k, v) for (k, v) in schema.items() if k
               not in {'required', 'additionalProperties', 'type', 'description'}]
     for (name, sch) in fields:
         body += ['    {} = {}'.format(name, convert_to_field_code(sch, definitions_schema))]
     return '\n'.join(body)
+
 
 def schema_definitions_to_code(schema):
     """
@@ -216,8 +217,8 @@ class Mapper(object):
     def __init__(self, value):
         self.value = value
 
-class StructureReferenceMapper(Mapper):
 
+class StructureReferenceMapper(Mapper):
     @staticmethod
     def get_paramlist_from_schema(schema, definitions):
         body = []
@@ -238,7 +239,6 @@ class StructureReferenceMapper(Mapper):
 
 
 class NumberMapper(Mapper):
-
     @staticmethod
     def get_paramlist_from_schema(schema, definitions):
         params = {
@@ -276,7 +276,6 @@ class FloatMapper(NumberMapper):
 
 
 class BooleanMapper(Mapper):
-
     @staticmethod
     def get_paramlist_from_schema(schema, definitions):
         return []
@@ -289,7 +288,6 @@ class BooleanMapper(Mapper):
 
 
 class StringMapper(Mapper):
-
     @staticmethod
     def get_paramlist_from_schema(schema, definitions):
         params = {
@@ -311,7 +309,6 @@ class StringMapper(Mapper):
 
 
 class ArrayMapper(Mapper):
-
     @staticmethod
     def get_paramlist_from_schema(schema, definitions):
         items = schema.get('items', None)
@@ -338,7 +335,6 @@ class ArrayMapper(Mapper):
 
 
 class EnumMapper(Mapper):
-
     @staticmethod
     def get_paramlist_from_schema(schema, definitions):
         params = {
@@ -365,10 +361,8 @@ class MultiFieldMapper(object):
 
 
 class AllOfMapper(Mapper):
-
     def to_schema(self, definitions):
         return {'allOf': convert_to_schema(self.value._fields, definitions)}
-
 
 
 class OneOfMapper(Mapper):
@@ -376,11 +370,9 @@ class OneOfMapper(Mapper):
         return {'oneOf': convert_to_schema(self.value._fields, definitions)}
 
 
-
 class AnyOfMapper(Mapper):
     def to_schema(self, definitions):
         return {'anyOf': convert_to_schema(self.value._fields, definitions)}
-
 
 
 class NotFieldMapper(Mapper):

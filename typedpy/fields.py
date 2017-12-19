@@ -3,7 +3,6 @@ Definitions of various types of fields. Supports JSON draft4 types.
 """
 import re
 from collections import OrderedDict
-from datetime import datetime
 from functools import reduce
 
 from typedpy.structures import Field, Structure, TypedField, ClassReference
@@ -112,7 +111,6 @@ class Integer(TypedField, Number):
     _ty = int
 
 
-
 class String(TypedField):
     """
       A string value. Accepts input of `str`
@@ -171,6 +169,7 @@ class Positive(Number):
     """
     An extension of :class:`Number`. Requires the number to be positive
     """
+
     def __set__(self, instance, value):
         if value <= 0:
             raise ValueError('{}: Must be positive'.format(self._name))
@@ -513,8 +512,8 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
         self.validate_size(value, self._name)
         if self.uniqueItems:
             unique = reduce(lambda unique_vals, x: unique_vals.append(x) or
-                            unique_vals if x not in unique_vals
-                            else unique_vals, value, [])
+                                                   unique_vals if x not in unique_vals
+            else unique_vals, value, [])
             if len(unique) < len(value):
                 raise ValueError("{}: Expected unique items".format(self._name))
         if self.items is not None:
@@ -544,7 +543,6 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 value = res
 
         super().__set__(instance, _ListStruct(self, instance, value))
-
 
 
 class Tuple(TypedField, metaclass=_CollectionMeta):
@@ -602,8 +600,8 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
             raise TypeError("%s: Expected %s" % (self._name, tuple))
         if self.uniqueItems:
             unique = reduce(lambda unique_vals, x: unique_vals.append(x) or
-                            unique_vals if x not in unique_vals
-                            else unique_vals, value, [])
+                                                   unique_vals if x not in unique_vals
+            else unique_vals, value, [])
             if len(unique) < len(value):
                 raise ValueError("{}: Expected unique items".format(self._name))
         if len(self.items) != len(value):
@@ -622,7 +620,6 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
         super().__set__(instance, value)
 
 
-
 class Enum(Field, metaclass=_EnumMeta):
     """
         Enum field. value can be one of predefined values
@@ -632,6 +629,7 @@ class Enum(Field, metaclass=_EnumMeta):
                  allowed values. Can be of any type
 
     """
+
     def __init__(self, *args, values, **kwargs):
         self.values = values
         super().__init__(*args, **kwargs)
@@ -640,7 +638,6 @@ class Enum(Field, metaclass=_EnumMeta):
         if value not in self.values:
             raise ValueError('{}: Must be one of {}'.format(self._name, self.values))
         super().__set__(instance, value)
-
 
 
 class EnumString(Enum, String):
@@ -660,21 +657,6 @@ class EnumString(Enum, String):
     pass
 
 
-class DateString(TypedField):
-    """
-    A string field of the format '%Y-%m-%d' that can be converted to a date
-    """
-    _ty = str
-
-    def __set__(self, instance, value):
-        super().__set__(instance, value)
-        try:
-            datetime.strptime(value, '%Y-%m-%d')
-        except ValueError as ex:
-            raise ValueError("{}: {}".format(self._name, ex.args[0]))
-
-
-
 
 class Sized(Field):
     """
@@ -687,6 +669,7 @@ class Sized(Field):
                 maximum length
 
     """
+
     def __init__(self, *args, maxlen, **kwargs):
         self.maxlen = maxlen
         super().__init__(*args, **kwargs)
@@ -716,6 +699,7 @@ class MultiFieldWrapper(object):
     An abstract base class for AllOf, AnyOf, OneOf, etc.
     It provides flexibility in reading the "fields" argument.
     """
+
     def __init__(self, *arg, fields, **kwargs):
         if isinstance(fields, list):
             self._fields = []
@@ -749,6 +733,7 @@ class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         AllOf[Number(maximum=20, minimum=-10), Integer, Positive]
 
     """
+
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -760,7 +745,6 @@ class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __str__(self):
         return _str_for_multioption_field(self)
-
 
 
 class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
@@ -778,6 +762,7 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
        AnyOf[Number(maximum=20, minimum=-10), Integer, Positive, String]
 
     """
+
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -815,6 +800,7 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         OneOf[Number(maximum=20, minimum=-10), Integer, Positive, String]
 
     """
+
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -855,6 +841,7 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         NotField[Positive]
 
     """
+
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -877,9 +864,8 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
 
 class ValidatedTypedField(TypedField):
-
     def __set__(self, instance, value):
-        self._validate_func(value) # pylint: disable=E1101
+        self._validate_func(value)  # pylint: disable=E1101
         super().__set__(instance, value)
 
 
@@ -910,9 +896,10 @@ def create_typed_field(classname, cls, validate_func=None):
         classname(`str`):
             the content must not match any of the fields in the lists
     """
+
     def validate_wrapper(cls, value):
         if validate_func is None:
             return
         validate_func(value)
 
-    return type(classname, (ValidatedTypedField,), {'_validate_func' :validate_wrapper, '_ty': cls})
+    return type(classname, (ValidatedTypedField,), {'_validate_func': validate_wrapper, '_ty': cls})

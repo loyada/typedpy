@@ -75,7 +75,7 @@ def get_base_info(bases):
         if additional_props and bases_params["kwargs"].kind == Parameter.VAR_KEYWORD:
             del bases_params["kwargs"]
 
-    return (bases_params, bases_required)
+    return bases_params, bases_required
 
 
 class Field(object):
@@ -90,21 +90,22 @@ class Field(object):
             self._immutable = immutable
 
     def __set__(self, instance, value):
-        if getattr(self, '_immutable', False)  \
-                and  self._name in instance.__dict__:
+        if getattr(self, '_immutable', False) \
+                and self._name in instance.__dict__:
             raise ValueError("{}: Field is immutable".format(self._name))
         instance.__dict__[self._name] = value
 
     def __str__(self):
-        def as_str(val):
+        def as_str(the_val):
             """
             convert to string or a list of strings
-            :param val: a Field or a list of Fields
+            :param the_val: a Field or a list of Fields
             :return: a string representation
             """
-            if hasattr(val, '__iter__'):
-                return '[{}]'.format(', '.join([str(v) for v in val]))
-            return str(val)
+            if hasattr(the_val, '__iter__'):
+                return '[{}]'.format(', '.join([str(v) for v in the_val]))
+            return str(the_val)
+
         name = self.__class__.__name__
         props = []
         for k, val in sorted(self.__dict__.items()):
@@ -120,6 +121,7 @@ class StructMeta(type):
     """
     Metaclass for Structure. Manipulates it to ensure the fields are set up correctly.
     """
+
     @classmethod
     def __prepare__(mcs, name, bases):
         return OrderedDict()
@@ -229,10 +231,9 @@ class Structure(metaclass=StructMeta):
 
     def __delitem__(self, key):
         if isinstance(getattr(self, '_required'), list) and \
-            key in getattr(self, '_required'):
+                        key in getattr(self, '_required'):
             raise ValueError("{} is manadoty".format(key))
         del self.__dict__[key]
-
 
 
 class ImmutableStructure(Structure):
@@ -259,8 +260,6 @@ class ImmutableStructure(Structure):
     _immutable = True
 
 
-
-
 class TypedField(Field):
     """
     A strictly typed base field.
@@ -278,6 +277,7 @@ class ClassReference(TypedField):
     """
     A field that is a reference to another Structure instance.
     """
+
     def __init__(self, cls):
         self._ty = cls
         super().__init__(cls)

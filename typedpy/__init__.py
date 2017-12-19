@@ -8,7 +8,7 @@ from typedpy.structures import (
 from typedpy.fields import (
     Number, Integer, PositiveInt, PositiveFloat, Float, Positive,
     String, SizedString, Sized, Enum, EnumString,
-    AllOf, AnyOf, OneOf, NotField, Boolean, DateString,
+    AllOf, AnyOf, OneOf, NotField, Boolean,
     Array, Set, Map, Tuple, StructureReference,
     ImmutableField, create_typed_field,
     )
@@ -20,4 +20,7 @@ from typedpy.json_schema_mapping import (
 
 from typedpy.serialization import (
     deserialize_structure, serialize
+)
+from typedpy.extfields import (
+    DateString, TimeString, HostName, IPV4, JSONString, EmailAddress
 )

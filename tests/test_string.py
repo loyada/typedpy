@@ -112,5 +112,4 @@ def test_JSONString_err():
 def test_JSONString_valid():
     class Example(Structure):
         j = JSONString
-
     assert json.loads(Example(j='[1,2,3]').j) == [1,2,3]

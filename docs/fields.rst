@@ -71,7 +71,10 @@ String, Enums etc.
 
 .. autoclass:: HostName
 
-EmailAddress - an email address
+.. class:: EmailAddress
+
+            String of an email address
+
 
 
 Collections

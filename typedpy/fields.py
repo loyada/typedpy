@@ -622,9 +622,14 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
 
 class Enum(Field, metaclass=_EnumMeta):
     """
-        Enum field. value can be one of predefined values
+    Enum field. value can be one of predefined values
+    Example:
 
-        Arguments:
+    .. code-block:: python
+
+        names = Enum['john', 'dan']
+
+    Arguments:
              values(`list` or `set` or `tuple`):
                  allowed values. Can be of any type
 

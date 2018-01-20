@@ -69,8 +69,8 @@ def structure_to_schema(structure, definitions_schema):
     required = props.get('_required', fields)
     additional_props = props.get('_additionalProperties', True)
     fields_schema = OrderedDict([('type', 'object')])
-    fields_schema.update(OrderedDict([(key, convert_to_schema(props[key], definitions_schema))
-                                      for key in fields]))
+    fields_schema['properties'] = OrderedDict([(key, convert_to_schema(props[key], definitions_schema))
+                                      for key in fields])
     fields_schema.update(OrderedDict([
         ('required', required),
         ('additionalProperties', additional_props),
@@ -155,10 +155,11 @@ def schema_to_struct_code(struct_name, schema, definitions_schema):
         schema.get('additionalProperties', True) else []
     required = schema.get('required', None)
     body += ['    _required = {}'.format(required)] if required is not None else []
-    fields = [(k, v) for (k, v) in schema.items() if k
-              not in {'required', 'additionalProperties', 'type', 'description'}]
-    for (name, sch) in fields:
-        body += ['    {} = {}'.format(name, convert_to_field_code(sch, definitions_schema))]
+    the_type = schema.get('type', 'object')
+    if the_type=='object':
+        properties = schema.get('properties', {})
+        for (name, sch) in properties.items():
+            body += ['    {} = {}'.format(name, convert_to_field_code(sch, definitions_schema))]
     return '\n'.join(body)
 
 
@@ -226,10 +227,9 @@ class StructureReferenceMapper(Mapper):
             schema.get('additionalProperties', True) else []
         required = schema.get('required', None)
         body += [('_required', required)] if required is not None else []
-        fields = [(k, v) for (k, v) in schema.items() if k
-                  not in {'required', 'additionalProperties', 'type'}]
+        properties = schema.get('properties', {})
 
-        body += [(k, convert_to_field_code(v, definitions)) for (k, v) in fields]
+        body += [(k, convert_to_field_code(v, definitions)) for (k, v) in properties.items()]
         return body
 
     def to_schema(self, definitions):

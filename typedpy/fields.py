@@ -416,7 +416,8 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 else:
                     raise TypeError("Expected a Field class or instance")
             key_field = self.items[0]
-            if isinstance(key_field, TypedField) and not getattr(getattr(key_field, '_ty'), '__hash__'):
+            if isinstance(key_field, TypedField) and not \
+                    getattr(getattr(key_field, '_ty'), '__hash__'):
                 raise TypeError("Key field of type {} is not hashable".format(
                     getattr(key_field, '_ty')))
         super().__init__(*args, **kwargs)
@@ -512,8 +513,8 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
         self.validate_size(value, self._name)
         if self.uniqueItems:
             unique = reduce(lambda unique_vals, x: unique_vals.append(x) or
-                                                   unique_vals if x not in unique_vals
-            else unique_vals, value, [])
+                            unique_vals if x not in unique_vals
+                            else unique_vals, value, [])
             if len(unique) < len(value):
                 raise ValueError("{}: Expected unique items".format(self._name))
         if self.items is not None:
@@ -600,8 +601,8 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
             raise TypeError("%s: Expected %s" % (self._name, tuple))
         if self.uniqueItems:
             unique = reduce(lambda unique_vals, x: unique_vals.append(x) or
-                                                   unique_vals if x not in unique_vals
-            else unique_vals, value, [])
+                            unique_vals if x not in unique_vals
+                            else unique_vals, value, [])
             if len(unique) < len(value):
                 raise ValueError("{}: Expected unique items".format(self._name))
         if len(self.items) != len(value):
@@ -660,7 +661,6 @@ class EnumString(Enum, String):
 
     """
     pass
-
 
 
 class Sized(Field):

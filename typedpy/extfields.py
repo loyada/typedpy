@@ -2,10 +2,10 @@ import json
 from datetime import datetime
 import re
 
-from typedpy import TypedField
+from typedpy.fields import TypedField
 from typedpy.fields import String
 
-EmailAddress = String(pattern="(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]+$)")
+EmailAddress = String(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]+$)")
 
 
 class JSONString(String):

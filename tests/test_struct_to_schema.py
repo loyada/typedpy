@@ -24,10 +24,12 @@ def test_class_reference_in_definitions():
     assert definitions == {
         "SimpleStruct": {
             "type": "object",
-            "name": {
-                "type": "string",
-                "pattern": "[A-Za-z]+$",
-                "maxLength": 8
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "pattern": "[A-Za-z]+$",
+                    "maxLength": 8
+                }
             },
             "required": [
                 "name"
@@ -41,83 +43,87 @@ def test_schema():
     assert set(schema['required']) == {'a', 'all', 'any','one', 'no',
                                        'i', 'foo', 'ss', 's', 'enum'}
     del schema['required']
-    assert set(schema['foo']['required']) == {'a1','a2'}
-    del schema['foo']['required']
+    assert set(schema['properties']['foo']['required']) == {'a1','a2'}
+    del schema['properties']['foo']['required']
     assert dict(schema) == {
             "type": "object",
-            "a": {
-                "items": [
-                    {
-                        "multiplesOf": 5,
-                        "type": "integer"
-                    },
-                    {
-                        "type": "number"
-                    }
-                ],
-                "type": "array"
-            },
-            "all": {
-                "allOf": [
-                    {
-                        "type": "number"
-                    },
-                    {
-                        "type": "integer"
-                    }
-                ]
-            },
-            "any": {
-              "anyOf": [
-                    {
-                        "type": "number",
-                        "minimum": 1
-                    },
-                    {
-                        "type": "integer"
-                    }
-                ]
-            },
-            "one": {
-                "oneOf": [
-                    {
-                        "type": "number",
-                        "minimum": 1
-                    },
-                    {
-                        "type": "integer"
-                    }
-                ]
-            },
-            "no": {
-                "not": [{
-                    "type": "string"
-                }]
-            },
-            "i": {
-                "maximum": 10,
-                "type": "integer"
-            },
-            "foo": {
-                "type": "object",
-                "a2": {
-                    "type": "float"
+            "properties" : {
+                "a": {
+                    "items": [
+                        {
+                            "multiplesOf": 5,
+                            "type": "integer"
+                        },
+                        {
+                            "type": "number"
+                        }
+                    ],
+                    "type": "array"
                 },
-                "a1": {
+                "all": {
+                    "allOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "integer"
+                        }
+                    ]
+                },
+                "any": {
+                    "anyOf": [
+                        {
+                            "type": "number",
+                            "minimum": 1
+                        },
+                        {
+                            "type": "integer"
+                        }
+                    ]
+                },
+                "one": {
+                    "oneOf": [
+                        {
+                            "type": "number",
+                            "minimum": 1
+                        },
+                        {
+                            "type": "integer"
+                        }
+                    ]
+                },
+                "no": {
+                    "not": [{
+                        "type": "string"
+                    }]
+                },
+                "i": {
+                    "maximum": 10,
                     "type": "integer"
                 },
-                "additionalProperties": True
-            },
-            "ss": {
-                "$ref": "#/definitions/SimpleStruct"
-            },
-            "s": {
-                "type": "string",
-                "maxLength": 5
-            },
-            "enum": {
-                "type": "enum",
-                "values": [1,2,3]
+                "foo": {
+                    "type": "object",
+                    "properties": {
+                        "a2": {
+                            "type": "float"
+                        },
+                        "a1": {
+                            "type": "integer"
+                        }
+                    },
+                    "additionalProperties": True
+                },
+                "ss": {
+                    "$ref": "#/definitions/SimpleStruct"
+                },
+                "s": {
+                    "type": "string",
+                    "maxLength": 5
+                },
+                "enum": {
+                    "type": "enum",
+                    "values": [1, 2, 3]
+                }
             },
             "additionalProperties": True
     }
@@ -132,9 +138,11 @@ def test_array_no_items_definition():
     schema, definitions = structure_to_schema(Foo, {})
     assert schema == {
         "type": "object",
-        "arr": {
-            "type": "array",
-            "minItems": 2
+        "properties": {
+            "arr": {
+                "type": "array",
+                "minItems": 2
+            }
         },
         "required": [],
         "additionalProperties": False
@@ -147,8 +155,10 @@ def test_boolean_field():
     schema, definitions = structure_to_schema(Foo, {})
     assert schema == {
         "type": "object",
-        "b": {
-            "type": "boolean"
+        "properties": {
+            "b": {
+                "type": "boolean"
+            }
         },
         "required": ["b"],
         "additionalProperties": True

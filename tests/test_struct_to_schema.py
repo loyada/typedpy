@@ -1,7 +1,8 @@
 from pytest import raises
 
 from typedpy import String, Structure, structure_to_schema, Integer, Array, \
-    StructureReference, Number, Float, AllOf, Enum, AnyOf, OneOf, NotField, Boolean, Map, Set
+    StructureReference, Number, Float, AllOf, Enum, AnyOf, OneOf, NotField, Boolean, Map, Set, DateString, EmailAddress, \
+    Field
 
 
 class SimpleStruct(Structure):
@@ -163,4 +164,54 @@ def test_boolean_field():
         "required": ["b"],
         "additionalProperties": True
     }
+
+def test_datestring_field():
+    class Foo(Structure):
+        a = DateString
+
+    schema, definitions = structure_to_schema(Foo, {})
+    assert schema == {
+        "type": "object",
+        "properties": {
+            "a": {
+                "type": "string",
+                "pattern": "^([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]))$"
+            }
+        },
+        "required": [
+            "a"
+        ],
+        "additionalProperties": True
+    }
+
+
+def test_email_field():
+    class Foo(Structure):
+        a = EmailAddress
+
+    schema, definitions = structure_to_schema(Foo, {})
+    assert schema == {
+        "type": "object",
+        "properties": {
+            "a": {
+                "type": "string",
+                "pattern": "(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9]+$)"
+            }
+        },
+        "required": [
+            "a"
+        ],
+        "additionalProperties": True
+    }
+
+
+def test_unsupported_field():
+    class AAA(Field): pass
+    class Foo(Structure):
+        a = AAA
+
+    with raises(NotImplementedError):
+        structure_to_schema(Foo, {})
+
+
 

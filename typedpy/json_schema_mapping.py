@@ -4,6 +4,8 @@ from typedpy.fields import StructureReference, Integer, Number, Float, Array, En
     ClassReference, Field, Boolean, \
     AllOf, OneOf, AnyOf, NotField
 
+from typedpy.extfields import DateString
+
 
 def as_str(val):
     return "'{}'".format(val) if isinstance(val, str) else val
@@ -19,12 +21,17 @@ def get_mapper(field_cls):
         Boolean: BooleanMapper,
         Enum: EnumMapper,
         String: StringMapper,
+        DateString: DateStringMapper,
         AllOf: AllOfMapper,
         AnyOf: AnyOfMapper,
         OneOf: OneOfMapper,
         NotField: NotFieldMapper
     }
-    return field_type_to_mapper[field_cls]
+    for cls in field_cls.__mro__:
+        if issubclass(cls, Field) and cls in field_type_to_mapper:
+            return field_type_to_mapper[cls]
+    raise NotImplementedError("schema mapping is not implemented for {}".
+                              format(field_cls))
 
 
 def convert_to_schema(field, definitions_schema):
@@ -70,7 +77,7 @@ def structure_to_schema(structure, definitions_schema):
     additional_props = props.get('_additionalProperties', True)
     fields_schema = OrderedDict([('type', 'object')])
     fields_schema['properties'] = OrderedDict([(key, convert_to_schema(props[key], definitions_schema))
-                                      for key in fields])
+                                               for key in fields])
     fields_schema.update(OrderedDict([
         ('required', required),
         ('additionalProperties', additional_props),
@@ -156,7 +163,7 @@ def schema_to_struct_code(struct_name, schema, definitions_schema):
     required = schema.get('required', None)
     body += ['    _required = {}'.format(required)] if required is not None else []
     the_type = schema.get('type', 'object')
-    if the_type=='object':
+    if the_type == 'object':
         properties = schema.get('properties', {})
         for (name, sch) in properties.items():
             body += ['    {} = {}'.format(name, convert_to_field_code(sch, definitions_schema))]
@@ -304,6 +311,15 @@ class StringMapper(Mapper):
             'minLength': value.minLength,
             'maxLength': value.maxLength,
             'pattern': value.pattern
+        }
+        return dict([(k, v) for k, v in params.items() if v is not None])
+
+
+class DateStringMapper(Mapper):
+    def to_schema(self, definitions):
+        params = {
+            'type': 'string',
+            'pattern': r"^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$"
         }
         return dict([(k, v) for k, v in params.items() if v is not None])
 

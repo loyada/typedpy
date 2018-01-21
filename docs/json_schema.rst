@@ -22,11 +22,13 @@ Mapping a JSON schema to code, inherently provides schema validation when the ge
     definitions = {
     "SimpleStruct": {
         "type": "object",
-        "name": {
-            "type": "string",
-            "pattern": "[A-Za-z]+$",
-            "maxLength": 8
-        },
+        "properties": {
+            "name": {
+                "type": "string",
+                "pattern": "[A-Za-z]+$",
+                "maxLength": 8
+            }
+        }.
         "required": [
             "name"
         ],
@@ -37,60 +39,64 @@ Mapping a JSON schema to code, inherently provides schema validation when the ge
     schema = {
         "type": "object",
         "description": "This is a test of schema mapping",
-        "foo": {
-            "type": "object",
-            "a2": {
-                "type": "float"
-            },
-            "a1": {
-                "type": "integer"
-            },
-            "required": [
-                "a2",
-                "a1"
-            ],
-            "additionalProperties": True
-        },
-        "ss": {
-            "$ref": "#/definitions/SimpleStruct"
-        },
-        "enum": {
-            "type": "enum",
-            "values": [
-                1,
-                2,
-                3
-            ]
-        },
-        "s": {
-            "maxLength": 5,
-            "type": "string"
-        },
-        "i": {
-            "type": "integer",
-            "maximum": 10
-        },
-        "all": {
-            "allOf": [
-                {
-                    "type": "number"
+        "properties": {
+            "foo": {
+                "type": "object",
+                "properties": {
+                    "a2": {
+                        "type": "float"
+                    },
+                    "a1": {
+                        "type": "integer"
+                    }
                 },
-                {
-                    "type": "integer"
-                }
-            ]
-        },
-        "a": {
+                "required": [
+                    "a2",
+                    "a1"
+                ],
+                "additionalProperties": True
+            },
+            "ss": {
+                "$ref": "#/definitions/SimpleStruct"
+            },
+            "enum": {
+                "type": "enum",
+                "values": [
+                    1,
+                    2,
+                    3
+                ]
+            },
+            "s": {
+                "maxLength": 5,
+                "type": "string"
+            },
+            "i": {
+                "type": "integer",
+                "maximum": 10
+            },
+            "all": {
+                "allOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                     "type": "integer"
+                    }
+                ]
+            },
+            "a": {
             "type": "array",
-            "items": [
-                {
-                    "type": "integer",
-                    "multiplesOf": 5
-                },
-                {
-                    "type": "number"
-                }
-            ]
+                "items": [
+                    {
+                        "type": "integer",
+                        "multiplesOf": 5
+                    },
+                    {
+                        "type": "number"
+                    }
+                ]
+            }
         },
         "required": [
             "foo",

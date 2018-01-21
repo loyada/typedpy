@@ -28,7 +28,7 @@ Mapping a JSON schema to code, inherently provides schema validation when the ge
                 "pattern": "[A-Za-z]+$",
                 "maxLength": 8
             }
-        }.
+        },
         "required": [
             "name"
         ],

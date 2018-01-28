@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from typedpy.fields import StructureReference, Integer, Number, Float, Array, Enum, String, \
     ClassReference, Field, Boolean, \
-    AllOf, OneOf, AnyOf, NotField
+    AllOf, OneOf, AnyOf, NotField, Tuple, Set
 
 from typedpy.extfields import DateString
 
@@ -25,7 +25,9 @@ def get_mapper(field_cls):
         AllOf: AllOfMapper,
         AnyOf: AnyOfMapper,
         OneOf: OneOfMapper,
-        NotField: NotFieldMapper
+        NotField: NotFieldMapper,
+        Tuple: ArrayMapper,
+        Set: ArrayMapper
     }
     for cls in field_cls.__mro__:
         if issubclass(cls, Field) and cls in field_type_to_mapper:
@@ -328,25 +330,39 @@ class ArrayMapper(Mapper):
     @staticmethod
     def get_paramlist_from_schema(schema, definitions):
         items = schema.get('items', None)
-
         params = {
             'uniqueItems': schema.get('uniqueItems', None),
             'additionalItems': schema.get('additionalItems', None),
             'items': convert_to_field_code(items, definitions)
         }
-
         return list((k, v) for k, v in params.items() if v is not None)
 
     def to_schema(self, definitions):
         value = self.value
-        params = {
-            'type': 'array',
-            'uniqueItems': value.uniqueItems,
-            'additionalItems': value.additionalItems,
-            'maxItems': value.maxItems,
-            'minItems': value.minItems,
-            'items': convert_to_schema(value.items, definitions)
-        }
+        if isinstance(value, Tuple):
+            params = {
+                'type': 'array',
+                'uniqueItems': value.uniqueItems,
+                'additionalItems': False,
+                'items': convert_to_schema(value.items, definitions)
+            }
+        elif isinstance(value, Set):
+            params = {
+                'type': 'array',
+                'uniqueItems': True,
+                'maxItems': value.maxItems,
+                'minItems': value.minItems,
+                'items': convert_to_schema(value.items, definitions)
+            }
+        else:
+            params = {
+                'type': 'array',
+                'uniqueItems': value.uniqueItems,
+                'additionalItems': value.additionalItems,
+                'maxItems': value.maxItems,
+                'minItems': value.minItems,
+                'items': convert_to_schema(value.items, definitions)
+            }
         return dict([(k, v) for k, v in params.items() if v is not None])
 
 

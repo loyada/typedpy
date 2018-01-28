@@ -77,7 +77,7 @@ See example below:
 Limitations
 -----------
 #. Some complex fields have ambiguous serialized representation, for example: if a field can be an \Instance of some class A, or class B (e.g. :class:`AnyOf` [A, B])- the deserialization is not well defined. Such fields are unsupported.
-#. Set, Tuple is unsupported, since it does not exist in JSON
+#. For Set, Tuple - deserialization expects an array, serialization converts to array
 
 Functions
 =========

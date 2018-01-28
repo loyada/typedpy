@@ -83,6 +83,14 @@ def test_hostname_err():
     assert "host: wrong format for hostname" in str(excinfo.value)
 
 
+def test_hostname_err2():
+    class Example(Structure):
+        host = HostName
+    with raises(ValueError) as excinfo:
+        Example(host='aaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.asc')
+    assert "host: wrong format for hostname" in str(excinfo.value)
+
+
 def test_hostname_valid():
     class Example(Structure):
         host = HostName
@@ -96,10 +104,11 @@ def test_ipv4_err():
     assert "ip: wrong format for IP version 4" in str(excinfo.value)
 
 
-def test_hostname_valid():
+def test_ipv4_valid():
     class Example(Structure):
         ip = IPV4
     Example(ip='212.22.33.192').ip.split('.')==['212','22', '33', '192']
+
 
 
 def test_JSONString_err():

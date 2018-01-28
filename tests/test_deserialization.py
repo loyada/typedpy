@@ -2,7 +2,7 @@ from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, TypedField, Map, create_typed_field, AnyOf, Set
+    Float, TypedField, Map, create_typed_field, AnyOf, Set, DateString, Field, Tuple
 
 
 class SimpleStruct(Structure):
@@ -49,8 +49,7 @@ def test_successful_deserialization_with_many_types():
     )
 
 def test_unsupported_field_err():
-    class UnsupportedField(TypedField):
-        _ty = str
+    class UnsupportedField(Field): pass
 
     class UnsupportedStruct(Structure):
         unsupported = UnsupportedField
@@ -216,3 +215,36 @@ def test_unsupported_type_err():
     with raises(NotImplementedError) as excinfo:
          deserialize_structure(Foo, source)
     assert "cannot deserialize field 'bar' of type WrappedBar" in str(excinfo.value)
+
+
+def test_deserialize_datestring():
+    source = {
+        'bar': '2018-01-01'
+    }
+    class Foo(Structure):
+        bar = DateString
+
+    foo = deserialize_structure(Foo, source)
+    assert foo.bar == source['bar']
+
+
+def test_deserialize_tuple():
+    source = {
+        'bar': ['aaa', 'bbb']
+    }
+    class Foo(Structure):
+        bar = Tuple[String, String(maxLength=3)]
+
+    foo = deserialize_structure(Foo, source)
+    assert foo.bar == ('aaa', 'bbb')
+
+
+def test_deserialize_set():
+    source = {
+        'bar': ['aaa', 'aaa', 'bbb']
+    }
+    class Foo(Structure):
+        bar = Set[String(maxLength=3)]
+
+    foo = deserialize_structure(Foo, source)
+    assert foo.bar == {'aaa', 'bbb'}

@@ -75,13 +75,11 @@ def test_null_fields():
     assert serialize(foo)=={'a': 5}
 
 
-def test_serialize_set_err():
+def test_serialize_set():
     class Foo(Structure):
         a = Set()
 
     foo = Foo(a={1,2,3})
-    with raises(TypeError) as excinfo:
-        serialize(foo)
-    assert "a: Serialization unsupported for set, tuple" in str(excinfo.value)
+    assert serialize(foo)=={'a': [1,2,3]}
 
 

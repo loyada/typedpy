@@ -1,20 +1,33 @@
-from typedpy.fields import Field, Number, String, StructureReference,\
-    Array, Map, ClassReference, Enum, MultiFieldWrapper, Boolean
+from typedpy.structures import TypedField
+from typedpy.fields import Field, Number, String, StructureReference, \
+    Array, Map, ClassReference, Enum, MultiFieldWrapper, Boolean, Tuple, Set
+
+
+def deserialize_list_like(field, content_type, value, name):
+    if not isinstance(value, list):
+        return value
+    items = field.items
+    if isinstance(items, Field):
+        return content_type(deserialize_single_field(items, v, name) for v in value)
+
+    values = []
+    for i, item in enumerate(items):
+        res = deserialize_single_field(item, value[i], name)
+        values.append(res)
+    values += value[len(items):]
+    return content_type(values)
 
 
 def deserialize_array(array_field, value, name):
-    if not isinstance(value, list):
-        return value
-    items = array_field.items
-    if isinstance(items, Field):
-        return [deserialize_single_field(items, v, name) for v in value]
+    return deserialize_list_like(array_field, list, value, name)
 
-    values = []
-    for i, field in enumerate(items):
-        res = deserialize_single_field(field, value[i], name)
-        values.append(res)
-    values += value[len(items):]
-    return values
+
+def deserialize_tuple(tuple_field, value, name):
+    return deserialize_list_like(tuple_field, tuple, value, name)
+
+
+def deserialize_set(set_field, value, name):
+    return deserialize_list_like(set_field, set, value, name)
 
 
 def deserialize_multifield_wrapper(field, source_val, name):
@@ -46,8 +59,14 @@ def deserialize_map(map_field, source_val, name):
 def deserialize_single_field(field, source_val, name):
     if isinstance(field, (Number, String, Enum, Boolean)) or field is None:
         value = source_val
+    elif isinstance(field, TypedField) and getattr(field, '_ty', '') in {str, int, float}:
+        value = source_val
     elif isinstance(field, Array):
         value = deserialize_array(field, source_val, name)
+    elif isinstance(field, Tuple):
+        value = deserialize_tuple(field, source_val, name)
+    elif isinstance(field, Set):
+        value = deserialize_set(field, source_val, name)
     elif isinstance(field, MultiFieldWrapper):
         value = deserialize_multifield_wrapper(field, source_val, name)
     elif isinstance(field, ClassReference):
@@ -101,11 +120,9 @@ def deserialize_structure(cls, the_dict, name=None):
 
 
 def serialize_val(name, val):
-    if isinstance(val, (set, tuple)):
-        raise TypeError("{}: Serialization unsupported for set, tuple".format(name))
     if isinstance(val, (int, str, bool, float)) or val is None:
         return val
-    if isinstance(val, list):
+    if isinstance(val, (list, set, tuple)):
         return [serialize_val(name, i) for i in val]
     return serialize(val)
 

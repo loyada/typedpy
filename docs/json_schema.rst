@@ -132,11 +132,12 @@ Mapping a JSON schema to code, inherently provides schema validation when the ge
     from generated_sample import Poo, SimpleStruct
 
 
-Limitations
------------
+Limitations and Comments
+------------------------
 #. Top level data is expected to be a JSON `object`. If your API simply returns an array, or a number, it is unsupported
 #. JSON schema's String formatters are unsupported
 #. Only JSON Schema Draft 4 is supported. Draft 3/6 are unsupported
+#. Set and Tuple fields are mapped to array types when converting code to schema
 #. Regarding JSON pointers(i.e. "$ref") - only pointers that point to an object under "#/definitions/" are supported
 
 

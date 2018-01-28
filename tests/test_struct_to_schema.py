@@ -2,7 +2,7 @@ from pytest import raises
 
 from typedpy import String, Structure, structure_to_schema, Integer, Array, \
     StructureReference, Number, Float, AllOf, Enum, AnyOf, OneOf, NotField, Boolean, Map, Set, DateString, EmailAddress, \
-    Field
+    Field, Tuple
 
 
 class SimpleStruct(Structure):
@@ -19,6 +19,8 @@ class Example(Structure):
     one = OneOf[Number(minimum=1), Integer]
     no = NotField(fields = [String])
     enum = Enum(values=[1,2,3])
+    a_set = Set[Integer]
+    a_tuple = Tuple[String, Integer]
 
 def test_class_reference_in_definitions():
     schema, definitions = structure_to_schema(Example, {})
@@ -42,7 +44,7 @@ def test_class_reference_in_definitions():
 def test_schema():
     schema, definitions = structure_to_schema(Example, {})
     assert set(schema['required']) == {'a', 'all', 'any','one', 'no',
-                                       'i', 'foo', 'ss', 's', 'enum'}
+                                       'i', 'foo', 'ss', 's', 'enum', 'a_set', 'a_tuple'}
     del schema['required']
     assert set(schema['properties']['foo']['required']) == {'a1','a2'}
     del schema['properties']['foo']['required']
@@ -124,6 +126,25 @@ def test_schema():
                 "enum": {
                     "type": "enum",
                     "values": [1, 2, 3]
+                },
+                "a_set": {
+                    "type": "array",
+                    "uniqueItems": True,
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "a_tuple": {
+                    "type": "array",
+                    "additionalItems": False,
+                    "items": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "integer"
+                        }
+                    ]
                 }
             },
             "additionalProperties": True

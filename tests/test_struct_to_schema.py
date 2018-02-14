@@ -124,8 +124,7 @@ def test_schema():
                     "maxLength": 5
                 },
                 "enum": {
-                    "type": "enum",
-                    "values": [1, 2, 3]
+                    "enum": [1, 2, 3]
                 },
                 "a_set": {
                     "type": "array",

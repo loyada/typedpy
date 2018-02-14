@@ -60,8 +60,7 @@ Mapping a JSON schema to code, inherently provides schema validation when the ge
                 "$ref": "#/definitions/SimpleStruct"
             },
             "enum": {
-                "type": "enum",
-                "values": [
+                "enum": [
                     1,
                     2,
                     3

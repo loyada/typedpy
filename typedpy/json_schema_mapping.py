@@ -108,7 +108,6 @@ def convert_to_field_code(schema, definitions):
         'number': Number,
         'float': Float,
         'array': Array,
-        'enum': Enum,
         'string': String,
         'boolean': Boolean
     }
@@ -124,11 +123,13 @@ def convert_to_field_code(schema, definitions):
                 cls = the_class
         mapper = MultiFieldMapper
 
+    elif 'enum' in schema:
+            cls = Enum
+            mapper = get_mapper(cls)
     else:
         cls = type_name_to_field[schema.get('type', 'object')]
         mapper = get_mapper(cls)
     params_list = mapper.get_paramlist_from_schema(schema, definitions)
-    #   print("param list: {} \n ".format(params_list))
 
     params_as_string = ", ".join(["{}={}".format(name, val) for (name, val) in params_list])
     return '{}({})'.format(cls.__name__, params_as_string)
@@ -370,14 +371,13 @@ class EnumMapper(Mapper):
     @staticmethod
     def get_paramlist_from_schema(schema, definitions):
         params = {
-            'values': schema.get('values', None),
+            'values': schema.get('enum', None),
         }
         return list(params.items())
 
     def to_schema(self, definitions):
         params = {
-            'type': 'enum',
-            'values': self.value.values
+            'enum': self.value.values
         }
         return dict([(k, v) for k, v in params.items() if v is not None])
 

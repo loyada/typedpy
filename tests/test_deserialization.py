@@ -2,7 +2,7 @@ from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, TypedField, Map, create_typed_field, AnyOf, Set, Field
+    Float, TypedField, Map, create_typed_field, AnyOf, Set, Field, Tuple
 
 
 class SimpleStruct(Structure):
@@ -243,3 +243,56 @@ def test_min_items_and_class_reference():
     serialized = {'foos': [{'a': 1, 'b': 2}]}
     bar = deserialize_structure(Bar, serialized)
     assert bar.foos[0].b==2
+
+
+def test_deserialize_tuple():
+    class Foo(Structure):
+        a= Integer
+        t=Tuple[Integer, String]
+
+    serialized = {'a':3, 't' :[3, 'abc']}
+    foo = deserialize_structure(Foo, serialized)
+    assert foo.t[1]=='abc'
+
+
+def test_deserialize_tuple_err():
+    class Foo(Structure):
+        a= Integer
+        t=Tuple[Integer, String]
+
+    serialized = {'a':3, 't' :[3, 4]}
+    with raises(TypeError) as excinfo:
+        deserialize_structure(Foo, serialized)
+    assert "t_1: Expected a string" in str(excinfo.value)
+
+
+def test_deserialize_set():
+    class Foo(Structure):
+        a= Integer
+        t=Set[Integer]
+
+    serialized = {'a':3, 't' :[3, 4, 3]}
+    foo = deserialize_structure(Foo, serialized)
+    assert foo.t=={3,4}
+
+
+def test_deserialize_set_err1():
+    class Foo(Structure):
+        a= Integer
+        t=Set[Integer]
+
+    serialized = {'a':3, 't' :4}
+    with raises(TypeError) as excinfo:
+        deserialize_structure(Foo, serialized)
+    assert "t: Expected <class 'set'>" in str(excinfo.value)
+
+
+def test_deserialize_set_err2():
+    class Foo(Structure):
+        a= Integer
+        t=Set[Integer]
+
+    serialized = {'a':3, 't' : [1, 'asd']}
+    with raises(TypeError) as excinfo:
+        deserialize_structure(Foo, serialized)
+    assert "t: Expected <class 'int'>" in str(excinfo.value)

@@ -3,9 +3,20 @@ Definitions of various types of fields. Supports JSON draft4 types.
 """
 import re
 from collections import OrderedDict
+from datetime import datetime
 from functools import reduce
 
-from typedpy.structures import Field, Structure, TypedField, ClassReference
+from typedpy.structures import Field, Structure, TypedField, ClassReference, StructMeta
+
+def _map_to_field(item):
+    if isinstance(item, StructMeta) and not isinstance(item, Field):
+        return ClassReference(item)
+    if item in [None, ''] or isinstance(item, Field):
+        return item
+    elif Field in getattr(item, '__mro__', []):
+        return item()
+    else:
+        raise TypeError("Expected a Field/Structure class or Field instance")
 
 
 class StructureReference(Field):
@@ -111,6 +122,7 @@ class Integer(TypedField, Number):
     _ty = int
 
 
+
 class String(TypedField):
     """
       A string value. Accepts input of `str`
@@ -169,7 +181,6 @@ class Positive(Number):
     """
     An extension of :class:`Number`. Requires the number to be positive
     """
-
     def __set__(self, instance, value):
         if value <= 0:
             raise ValueError('{}: Must be positive'.format(self._name))
@@ -349,12 +360,7 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
 
     def __init__(self, *args, items=None,
                  **kwargs):
-        if items is None or isinstance(items, Field):
-            self.items = items
-        elif Field in getattr(items, '__mro__', []):
-            self.items = items()
-        else:
-            raise TypeError("Expected a Field class or instance")
+        self.items = _map_to_field(items)
 
         if isinstance(self.items, TypedField) and not \
                 getattr(getattr(self.items, '_ty'), '__hash__'):
@@ -409,15 +415,9 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
         else:
             self.items = []
             for item in items:
-                if isinstance(item, Field):
-                    self.items.append(item)
-                elif Field in item.__mro__:
-                    self.items.append(item())
-                else:
-                    raise TypeError("Expected a Field class or instance")
+                self.items.append(_map_to_field(item))
             key_field = self.items[0]
-            if isinstance(key_field, TypedField) and not \
-                    getattr(getattr(key_field, '_ty'), '__hash__'):
+            if isinstance(key_field, TypedField) and not getattr(getattr(key_field, '_ty'), '__hash__'):
                 raise TypeError("Key field of type {} is not hashable".format(
                     getattr(key_field, '_ty')))
         super().__init__(*args, **kwargs)
@@ -442,6 +442,7 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
             value = res
 
         super().__set__(instance, _DictStruct(self, instance, value))
+
 
 
 class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
@@ -497,14 +498,9 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
         if isinstance(items, list):
             self.items = []
             for item in items:
-                if isinstance(item, Field):
-                    self.items.append(item)
-                elif Field in item.__mro__:
-                    self.items.append(item())
-                else:
-                    raise TypeError("Expected a Field class or instance")
+                self.items.append(_map_to_field(item))
         else:
-            self.items = items
+            self.items = _map_to_field(items)
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):
@@ -544,6 +540,7 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 value = res
 
         super().__set__(instance, _ListStruct(self, instance, value))
+
 
 
 class Tuple(TypedField, metaclass=_CollectionMeta):
@@ -621,21 +618,16 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
         super().__set__(instance, value)
 
 
+
 class Enum(Field, metaclass=_EnumMeta):
     """
-    Enum field. value can be one of predefined values
-    Example:
+        Enum field. value can be one of predefined values
 
-    .. code-block:: python
-
-        names = Enum['john', 'dan']
-
-    Arguments:
+        Arguments:
              values(`list` or `set` or `tuple`):
                  allowed values. Can be of any type
 
     """
-
     def __init__(self, *args, values, **kwargs):
         self.values = values
         super().__init__(*args, **kwargs)
@@ -644,6 +636,7 @@ class Enum(Field, metaclass=_EnumMeta):
         if value not in self.values:
             raise ValueError('{}: Must be one of {}'.format(self._name, self.values))
         super().__set__(instance, value)
+
 
 
 class EnumString(Enum, String):
@@ -663,6 +656,22 @@ class EnumString(Enum, String):
     pass
 
 
+class DateString(TypedField):
+    """
+    A string field of the format '%Y-%m-%d' that can be converted to a date
+    """
+    _ty = str
+
+    def __set__(self, instance, value):
+        super().__set__(instance, value)
+        try:
+            datetime.strptime(value, '%Y-%m-%d')
+        except ValueError as ex:
+            raise ValueError("{}: {}".format(self._name, ex.args[0]))
+
+
+
+
 class Sized(Field):
     """
     The length of the value is limited to be at most the maximum given.
@@ -674,7 +683,6 @@ class Sized(Field):
                 maximum length
 
     """
-
     def __init__(self, *args, maxlen, **kwargs):
         self.maxlen = maxlen
         super().__init__(*args, **kwargs)
@@ -704,7 +712,6 @@ class MultiFieldWrapper(object):
     An abstract base class for AllOf, AnyOf, OneOf, etc.
     It provides flexibility in reading the "fields" argument.
     """
-
     def __init__(self, *arg, fields, **kwargs):
         if isinstance(fields, list):
             self._fields = []
@@ -738,7 +745,6 @@ class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         AllOf[Number(maximum=20, minimum=-10), Integer, Positive]
 
     """
-
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -750,6 +756,7 @@ class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __str__(self):
         return _str_for_multioption_field(self)
+
 
 
 class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
@@ -767,7 +774,6 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
        AnyOf[Number(maximum=20, minimum=-10), Integer, Positive, String]
 
     """
-
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -805,7 +811,6 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         OneOf[Number(maximum=20, minimum=-10), Integer, Positive, String]
 
     """
-
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -846,7 +851,6 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         NotField[Positive]
 
     """
-
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -869,8 +873,9 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
 
 class ValidatedTypedField(TypedField):
+
     def __set__(self, instance, value):
-        self._validate_func(value)  # pylint: disable=E1101
+        self._validate_func(value) # pylint: disable=E1101
         super().__set__(instance, value)
 
 
@@ -901,10 +906,9 @@ def create_typed_field(classname, cls, validate_func=None):
         classname(`str`):
             the content must not match any of the fields in the lists
     """
-
     def validate_wrapper(cls, value):
         if validate_func is None:
             return
         validate_func(value)
 
-    return type(classname, (ValidatedTypedField,), {'_validate_func': validate_wrapper, '_ty': cls})
+    return type(classname, (ValidatedTypedField,), {'_validate_func' :validate_wrapper, '_ty': cls})

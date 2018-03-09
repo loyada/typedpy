@@ -188,3 +188,37 @@ def test_array_of_array_type_err2():
 def test_array_of_array_valid():
     assert  Example(h = [[1,2], [3,4]]).h[1] == [3,4]
 
+
+def test_class_reference_err1():
+    class Bar(Structure):
+        st = String
+
+    class Foo(Structure):
+        bars = Array(items=Bar)
+
+    with raises(TypeError) as excinfo:
+        Foo(bars=[1])
+    assert "bars_0: Expected <Structure: Bar. Properties: st = <String>>" in str(excinfo.value)
+
+
+def test_class_reference_err2():
+    class Bar(Structure):
+        st = String
+
+    class Foo(Structure):
+        bars = Array(items=[Bar, Bar])
+
+    with raises(TypeError) as excinfo:
+        Foo(bars=[Bar(st='a'), 1])
+    assert "bars_1: Expected <Structure: Bar. Properties: st = <String>>" in str(excinfo.value)
+
+
+def test_class_reference_success():
+    class Bar(Structure):
+        st = String
+
+    class Foo(Structure):
+        bars = Array(items=Bar)
+
+    foo = Foo(bars=[Bar(st='a'), Bar(st='b')])
+    assert foo.bars[1].st=='b'

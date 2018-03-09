@@ -43,7 +43,7 @@ def test_invalid_items_definitions_err3():
     with raises(TypeError) as excinfo:
         class A(Structure):
             a = Map(items=[String, int])
-    assert "Expected a Field class or instance" in str(excinfo.value)
+    assert "Expected a Field/Structure class or Field instance" in str(excinfo.value)
 
 
 

@@ -58,7 +58,7 @@ def test_class_definition_err2():
     with raises(TypeError) as excinfo:
         class Foo(Structure):
             a = Array(items = [int])
-    assert "Expected a Field class or instance" in str(excinfo.value)
+    assert "Expected a Field/Structure class or Field instance" in str(excinfo.value)
 
 def test_multiple_items_in_array_schema_definition_err():
     with raises(TypeError) as excinfo:

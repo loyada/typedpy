@@ -18,13 +18,13 @@ def test_invalid_items_definitions_err1():
     with raises(TypeError) as excinfo:
         class A(Structure):
             a = Set(items = [String, String])
-    assert "Expected a Field class or instance" in str(excinfo.value)
+    assert "Expected a Field/Structure class or Field instance" in str(excinfo.value)
 
 def test_invalid_items_definitions_err2():
     with raises(TypeError) as excinfo:
         class A(Structure):
             a = Set[String, String]
-    assert "Expected a Field class or instance" in str(excinfo.value)
+    assert "Expected a Field/Structure class or Field instance" in str(excinfo.value)
 
 def test_wrong_type_for_set_items_err():
     with raises(TypeError) as excinfo:
@@ -90,3 +90,4 @@ def test_invalid_type():
         class Foo(Structure):
             a = Set[Map]
     assert "Set element of type <class 'dict'> is not hashable" in str(excinfo.value)
+

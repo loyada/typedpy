@@ -218,6 +218,19 @@ def test_unsupported_type_err():
     assert "cannot deserialize field 'bar' of type WrappedBar" in str(excinfo.value)
 
 
+def test_min_items_and_class_reference_err():
+    class Foo(Structure):
+        a = Integer
+        b = Integer
+
+    class Bar(Structure):
+        foos = Array(minItems=1, items = Foo)
+
+    serialized = {'foos': [1]}
+    with raises(TypeError) as excinfo:
+        deserialize_structure(Bar, serialized)
+    assert "foos: Expected a dictionary" in str(excinfo.value)
+
 
 def test_min_items_and_class_reference():
     class Foo(Structure):

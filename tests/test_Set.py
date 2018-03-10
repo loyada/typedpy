@@ -1,6 +1,6 @@
 from pytest import raises
 
-from typedpy import Structure, Number, String, Integer, Set, AnyOf, Map
+from typedpy import Structure, Number, String, Integer, Set, AnyOf, Map, PositiveInt
 
 
 class Example(Structure):
@@ -90,4 +90,17 @@ def test_invalid_type():
         class Foo(Structure):
             a = Set[Map]
     assert "Set element of type <class 'dict'> is not hashable" in str(excinfo.value)
+
+
+def test_class_reference_in_set():
+    class Person(Structure):
+        age = PositiveInt
+        name = String
+
+    class Peope(Structure):
+        data = Set[Person]
+
+    people = Peope(data = {Person(age=54, name="john")})
+    assert Person(age=54, name="john") in people.data
+    assert Person(age=54, name="jo") not in people.data
 

@@ -1,6 +1,6 @@
 from pytest import raises
 
-from typedpy import Structure, Number, String, Map, Field, Integer
+from typedpy import Structure, Number, String, Map, Field, Integer, PositiveInt, Array, Set
 
 
 class Example(Structure):
@@ -186,4 +186,45 @@ def test_invalid_key_type():
     with raises(TypeError) as excinfo:
         class Foo(Structure):
             a = Map[Map, Integer]
-    assert "Key field of type <class 'dict'> is not hashable" in str(excinfo.value)
+    assert "Key field of type <Map>, with underlying type of <class 'dict'> is not hashable" in str(excinfo.value)
+
+
+def test_class_reference_keys_find_in_map():
+    class Person(Structure):
+        name = String
+        age = PositiveInt
+
+    class People(Structure):
+        ids = Array[String]
+        data = Map[Person, Integer]
+
+    people = People(ids = [], data = {Person(name = "john", age = 5): 20})
+    assert Person(age = 5, name = "john") in people.data
+
+
+def test_class_reference_keys_find_in_map_failure1():
+    class Person(Structure):
+        name = String
+        age = PositiveInt
+
+    class People(Structure):
+        ids = Array[String]
+        data = Map[Person, Integer]
+
+    people = People(ids=[], data={Person(name="john", age=5): 20})
+    assert Person(age=5, name="smith") not in people.data
+
+
+def test_class_reference_keys_find_in_map_failure2():
+    class Person(Structure):
+        name = String
+        age = PositiveInt
+
+    class People(Structure):
+        ids = Array[String]
+        data = Map[Person, Integer]
+
+    people = People(ids=[], data={Person(name="john", age=5): 20})
+    assert Person(age=5, name="john", extra = 3) not in people.data
+
+

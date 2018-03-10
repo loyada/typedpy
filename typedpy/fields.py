@@ -354,6 +354,9 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
         Set[String]
         Set(items=Integer(maximum=10), maxItems = 10)
 
+        # let's assume we defined a :class:`Structure` Person, then we can use it too:
+        Set[Person]
+
 
     """
     _ty = set
@@ -401,6 +404,9 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 age_by_name = Map[String, PositiveInt]
                 # Let's assume we defined a Structure "Person"
                 person_by_id = Map[String, Person]
+                # even Structure reference is supported for keys!
+                id_by_person = Map[Person, String]
+                id_by_person = Map[Person, String]
 
     """
 
@@ -418,8 +424,8 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 self.items.append(_map_to_field(item))
             key_field = self.items[0]
             if isinstance(key_field, TypedField) and not getattr(getattr(key_field, '_ty'), '__hash__'):
-                raise TypeError("Key field of type {} is not hashable".format(
-                    getattr(key_field, '_ty')))
+                raise TypeError("Key field of type {}, with underlying type of {} is not hashable".format(
+                    key_field, getattr(key_field, '_ty')))
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):

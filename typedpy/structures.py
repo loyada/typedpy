@@ -229,6 +229,9 @@ class Structure(metaclass=StructMeta):
     def __eq__(self, other):
         return str(self) == str(other)
 
+    def __hash__(self):
+        return str(self).__hash__()
+
     def __delitem__(self, key):
         if isinstance(getattr(self, '_required'), list) and \
                         key in getattr(self, '_required'):

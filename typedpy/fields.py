@@ -354,7 +354,7 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
         Set[String]
         Set(items=Integer(maximum=10), maxItems = 10)
 
-        # let's assume we defined a :class:`Structure` Person, then we can use it too:
+        # let's assume we defined a Structure 'Person', then we can use it too:
         Set[Person]
 
 

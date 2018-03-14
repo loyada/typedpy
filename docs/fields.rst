@@ -80,6 +80,17 @@ String, Enums etc.
 Collections
 -----------
 
+.. autoclass:: Array
+
+.. autoclass:: Set
+
+.. autoclass:: Tuple
+
+.. autoclass:: Map
+
+
+* **Note** - The collections support embedded collections, such as :class:`Array` [ :class:`Tuple` [ :class:`Integer` , :class:`Integer` ]]
+
 **All collections support reference to another :class:`Structure`**. For example, this code is valid and will work the
 way you'd expect:
 
@@ -93,16 +104,6 @@ way you'd expect:
           b = Map [Foo, Integer]
 
 
-.. autoclass:: Array
-
-.. autoclass:: Set
-
-.. autoclass:: Tuple
-
-.. autoclass:: Map
-
-
-* **Note** - The collections support embedded collections, such as :class:`Array` [ :class:`Tuple` [ :class:`Integer` , :class:`Integer` ]]
 
 Re-use
 ======

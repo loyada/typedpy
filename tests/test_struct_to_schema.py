@@ -14,6 +14,7 @@ class Example(Structure):
     a = Array[Integer(multiplesOf=5), Number]
     foo = StructureReference(a1 = Integer(), a2=Float())
     ss = SimpleStruct
+    ss_array = Array[SimpleStruct]
     all = AllOf[Number, Integer]
     any = AnyOf[Number(minimum=1), Integer]
     one = OneOf[Number(minimum=1), Integer]
@@ -44,7 +45,7 @@ def test_class_reference_in_definitions():
 def test_schema():
     schema, definitions = structure_to_schema(Example, {})
     assert set(schema['required']) == {'a', 'all', 'any','one', 'no',
-                                       'i', 'foo', 'ss', 's', 'enum', 'a_set', 'a_tuple'}
+                                       'i', 'foo', 'ss', 'ss_array', 's', 'enum', 'a_set', 'a_tuple'}
     del schema['required']
     assert set(schema['properties']['foo']['required']) == {'a1','a2'}
     del schema['properties']['foo']['required']
@@ -118,6 +119,12 @@ def test_schema():
                 },
                 "ss": {
                     "$ref": "#/definitions/SimpleStruct"
+                },
+                "ss_array": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SimpleStruct"
+                    }
                 },
                 "s": {
                     "type": "string",

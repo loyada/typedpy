@@ -125,7 +125,7 @@ def test_standard_definition_wrong_field_type_err():
     with raises(TypeError) as excinfo:
         class Example(Structure):
             a = AllOf([Integer, float])
-    assert "Expected a Field class or instance" in str(excinfo.value)
+    assert "Expected a Field/Structure class or Field instance" in str(excinfo.value)
 
 
 def test_standard_definition_wrong_fields_arg_err():

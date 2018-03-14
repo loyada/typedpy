@@ -80,6 +80,19 @@ String, Enums etc.
 Collections
 -----------
 
+**All collections support reference to another :class:`Structure`**. For example, this code is valid and will work the
+way you'd expect:
+
+.. code-block:: python
+
+    class Foo(Structure):
+          s = String
+
+    class Bar(Structure):
+          a = Set[Foo]
+          b = Map [Foo, Integer]
+
+
 .. autoclass:: Array
 
 .. autoclass:: Set
@@ -101,6 +114,17 @@ Re-use
 .. autoclass:: OneOf
 
 .. autoclass:: NotField
+
+**All the field types under this category support reference to another :class:`Structure`**. For example, this code is valid and will work the
+way you'd expect:
+
+.. code-block:: python
+
+    class Foo(Structure):
+          s = String
+
+    class Bar(Structure):
+          a = Any[Foo, Integer]
 
 Inheritance and mixins
 ----------------------

@@ -722,12 +722,7 @@ class MultiFieldWrapper(object):
         if isinstance(fields, list):
             self._fields = []
             for item in fields:
-                if isinstance(item, Field):
-                    self._fields.append(item)
-                elif Field in item.__mro__:
-                    self._fields.append(item())
-                else:
-                    raise TypeError("Expected a Field class or instance")
+                self._fields.append(_map_to_field(item))
         else:
             raise TypeError("Expected a Field class or instance")
         super().__init__(*arg, **kwargs)

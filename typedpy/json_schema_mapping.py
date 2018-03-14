@@ -36,6 +36,13 @@ def get_mapper(field_cls):
                               format(field_cls))
 
 
+def _map_class_reference(reference, definitions_schema):
+    definition, _ = structure_to_schema(getattr(reference, '_ty'), definitions_schema)
+    name = getattr(reference, '_ty').__name__
+    definitions_schema[name] = definition
+    return {'$ref': '#/definitions/{}'.format(name)}
+
+
 def convert_to_schema(field, definitions_schema):
     """
     In case field is None, should return None.
@@ -44,10 +51,7 @@ def convert_to_schema(field, definitions_schema):
     if field is None:
         return None
     if isinstance(field, ClassReference):
-        definition, _ = structure_to_schema(getattr(field, '_ty'), definitions_schema)
-        name = getattr(field, '_ty').__name__
-        definitions_schema[name] = definition
-        return {'$ref': '#/definitions/{}'.format(name)}
+        return _map_class_reference(field, definitions_schema)
     if isinstance(field, list):
         return [convert_to_schema(f, definitions_schema) for f in field]
     mapper = get_mapper(field.__class__)(field)

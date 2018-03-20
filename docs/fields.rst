@@ -91,7 +91,7 @@ Collections
 
 * **Note** - The collections support embedded collections, such as :class:`Array` [ :class:`Tuple` [ :class:`Integer` , :class:`Integer` ]]
 
-**All collections support reference to another :class:`Structure`**. For example, this code is valid and will work the
+**All collections support reference to another** :class:`Structure` . For example, this code is valid and will work the
 way you'd expect:
 
 .. code-block:: python
@@ -116,7 +116,7 @@ Re-use
 
 .. autoclass:: NotField
 
-**All the field types under this category support reference to another :class:`Structure`**. For example, this code is valid and will work the
+**All the field types under this category support reference to another** :class:`Structure` . For example, this code is valid and will work the
 way you'd expect:
 
 .. code-block:: python

@@ -81,13 +81,16 @@ def structure_to_schema(structure, definitions_schema):
     fields = [key for key, val in props.items() if isinstance(val, Field)]
     required = props.get('_required', fields)
     additional_props = props.get('_additionalProperties', True)
-    fields_schema = OrderedDict([('type', 'object')])
-    fields_schema['properties'] = OrderedDict([(key, convert_to_schema(props[key], definitions_schema))
-                                               for key in fields])
-    fields_schema.update(OrderedDict([
-        ('required', required),
-        ('additionalProperties', additional_props),
-    ]))
+    if len(fields) == 1 and required == fields and additional_props is False:
+        return (convert_to_schema(props[fields[0]], definitions_schema), definitions_schema)
+    else:
+        fields_schema = OrderedDict([('type', 'object')])
+        fields_schema['properties'] = OrderedDict([(key, convert_to_schema(props[key], definitions_schema))
+                                                   for key in fields])
+        fields_schema.update(OrderedDict([
+            ('required', required),
+            ('additionalProperties', additional_props),
+        ]))
     return (fields_schema, definitions_schema)
 
 
@@ -128,8 +131,8 @@ def convert_to_field_code(schema, definitions):
         mapper = MultiFieldMapper
 
     elif 'enum' in schema:
-            cls = Enum
-            mapper = get_mapper(cls)
+        cls = Enum
+        mapper = get_mapper(cls)
     else:
         cls = type_name_to_field[schema.get('type', 'object')]
         mapper = get_mapper(cls)
@@ -167,13 +170,18 @@ def schema_to_struct_code(struct_name, schema, definitions_schema):
                                                                                 in schema else []
     body += ['    _additionalProperties = False'] if not \
         schema.get('additionalProperties', True) else []
-    required = schema.get('required', None)
+    required = schema.get('required', None) if schema.get('type', 'object') == 'object' \
+        else ['wrapped']
     body += ['    _required = {}'.format(required)] if required is not None else []
-    the_type = schema.get('type', 'object')
+    the_type = schema.get('type', 'object' if 'properties' in schema else None)
+
     if the_type == 'object':
         properties = schema.get('properties', {})
         for (name, sch) in properties.items():
             body += ['    {} = {}'.format(name, convert_to_field_code(sch, definitions_schema))]
+    else:
+        body += ['    {} = {}'.format('wrapped', convert_to_field_code(schema, definitions_schema))]
+
     return '\n'.join(body)
 
 

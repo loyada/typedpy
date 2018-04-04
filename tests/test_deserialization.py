@@ -218,6 +218,28 @@ def test_unsupported_type_err():
     assert "cannot deserialize field 'bar' of type WrappedBar" in str(excinfo.value)
 
 
+def test_single_int_deserialization():
+    class Foo(Structure):
+        i = Integer
+        _additionalProperties = False
+
+    data = 5
+
+    example = deserialize_structure(Foo, data)
+    assert example.i == 5
+
+
+def test_single_array_deserialization():
+    class Foo(Structure):
+        arr = Array[String]
+        _additionalProperties = False
+
+    data = ['abc', 'def', 'ghi']
+
+    example = deserialize_structure(Foo, data)
+    assert example.arr[2] == 'ghi'
+
+
 def test_min_items_and_class_reference_err():
     class Foo(Structure):
         a = Integer

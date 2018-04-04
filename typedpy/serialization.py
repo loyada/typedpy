@@ -110,6 +110,13 @@ def deserialize_structure(cls, the_dict, name=None):
             an instance of the provided :class:`Structure` deserialized
     """
     if not isinstance(the_dict, dict):
+        props = cls.__dict__
+        fields = [key for key, val in props.items() if isinstance(val, Field)]
+        required = props.get('_required', fields)
+        additional_props = props.get('_additionalProperties', True)
+        if len(fields) == 1 and required == fields and additional_props is False:
+            field_name = fields[0]
+            return cls(deserialize_single_field(getattr(cls, field_name), the_dict, field_name))
         raise TypeError("{}: Expected a dictionary".format(name))
     field_by_name = dict([(k, v) for k, v in cls.__dict__.items()
                           if isinstance(v, Field) and k in the_dict])
@@ -126,23 +133,37 @@ def serialize_val(name, val):
         return [serialize_val(name, i) for i in val]
     return serialize(val)
 
-
-def serialize(structure):
+def serialize(structure, compact=False):
     """
     Serialize an instance of :class:`Structure` to a JSON-like dict.
     `See working examples in test. <https://github.com/loyada/typedpy/tree/master/tests/test_serialization.py>`_
 
     Arguments:
         structure(:class:`Structure`):
+            the structure instance to be serialized to JSON
+
+        compact(bool):
+             whether to use a compact form for Structure that is a simple wrapper of a field.
+             for example: if a Structure has only one field of an int, if compact is True
+             it will serialize the structure as an int instead of a dictionary
 
     Returns:
         a serialized Python dict
     """
     items = structure.items() if isinstance(structure, dict) \
         else structure.__dict__.items()
-    result = {}
-    for key, val in items:
-        if val is None:
-            continue
-        result[key] = serialize_val(key, val)
+    props = structure.__class__.__dict__
+    fields = [key for key, val in props.items() if isinstance(val, Field)]
+    required = props.get('_required', fields)
+    additional_props = props.get('_additionalProperties', True)
+    if len(fields) == 1 and required == fields \
+        and additional_props is False and compact:
+        key = fields[0]
+        result = serialize_val(key, getattr(structure, key))
+    else:
+        result = {}
+        for key, val in items:
+            if val is None:
+                continue
+            result[key] = serialize_val(key, val)
     return result

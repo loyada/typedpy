@@ -189,3 +189,94 @@ def test_boolean_field():
     assert foo.b == False
 
 
+def test_array_top_level():
+    schema = {
+        "type": "array",
+        "items": [
+            {
+                "type": "integer",
+                "multiplesOf": 5
+            },
+            {
+                "type": "number"
+            }
+        ]
+    }
+
+    struct_code = schema_to_struct_code('Foo', schema, {})
+    exec(struct_code, globals())
+
+    foo = Foo(wrapped=[10, 4])
+    assert foo.wrapped[1] == 4
+
+
+def test_array_top_level_1():
+    schema = {
+        "type": "array",
+        "items": [
+            {
+                "type": "integer",
+                "multiplesOf": 5
+            },
+            {
+                "type": "number"
+            }
+        ]
+    }
+
+    struct_code = schema_to_struct_code('Foo', schema, {})
+    exec(struct_code, globals())
+
+    foo = Foo([10, 4])
+    assert foo.wrapped[1] == 4
+
+
+def test_array_top_level_err():
+    schema = {
+        "type": "array",
+        "items": [
+            {
+                "type": "integer",
+                "multiplesOf": 5
+            },
+            {
+                "type": "number"
+            }
+        ]
+    }
+
+    struct_code = schema_to_struct_code('Foo', schema, {})
+    exec(struct_code, globals())
+    with raises(TypeError) as excinfo:
+        Foo(wrapped=123)
+
+
+def test_enum_top_level():
+    schema = {
+        "enum": [
+            1,
+            2,
+            3
+        ]
+    }
+
+    struct_code = schema_to_struct_code('Foo', schema, {})
+    exec(struct_code, globals())
+
+    foo = Foo(2)
+    assert foo.wrapped == 2
+
+
+def test_enum_top_level_err():
+    schema = {
+        "enum": [
+            1,
+            2,
+            3
+        ]
+    }
+
+    struct_code = schema_to_struct_code('Foo', schema, {})
+    exec(struct_code, globals())
+    with raises(ValueError) as excinfo:
+        Foo('abc')

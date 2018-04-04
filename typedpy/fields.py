@@ -662,22 +662,6 @@ class EnumString(Enum, String):
     pass
 
 
-class DateString(TypedField):
-    """
-    A string field of the format '%Y-%m-%d' that can be converted to a date
-    """
-    _ty = str
-
-    def __set__(self, instance, value):
-        super().__set__(instance, value)
-        try:
-            datetime.strptime(value, '%Y-%m-%d')
-        except ValueError as ex:
-            raise ValueError("{}: {}".format(self._name, ex.args[0]))
-
-
-
-
 class Sized(Field):
     """
     The length of the value is limited to be at most the maximum given.

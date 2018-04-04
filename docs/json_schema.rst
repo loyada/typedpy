@@ -131,9 +131,32 @@ Mapping a JSON schema to code, inherently provides schema validation when the ge
     from generated_sample import Poo, SimpleStruct
 
 
+Non-object top-level schemas are also supported, using a "field wrapper". For example:
+
+.. code-block:: py
+
+    class Foo(Structure):
+        arr = Array(minItems=2)
+        _required = ['arr']
+        _additionalProperties = False
+
+    schema, definitions = structure_to_schema(Foo, {})
+    assert schema == {
+        "type": "array",
+        "minItems": 2
+    }
+
+    # And the back to a Structure...
+    struct_code = schema_to_struct_code('Bar', schema, {})
+    exec(struct_code, globals())
+
+    bar = Bar([1,2,3])
+    assert bar.wrapped[2] == 3
+
+
+
 Limitations and Comments
 ------------------------
-#. Top level data is expected to be a JSON `object`. If your API simply returns an array, or a number, it is unsupported
 #. JSON schema's String formatters are unsupported
 #. Only JSON Schema Draft 4 is supported. Draft 3/6 are unsupported
 #. Set and Tuple fields are mapped to array types when converting code to schema

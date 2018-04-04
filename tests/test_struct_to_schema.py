@@ -192,6 +192,29 @@ def test_boolean_field():
         "additionalProperties": True
     }
 
+def test_single_boolean_field_wrapper():
+    class Foo(Structure):
+        b = Boolean
+        _required = ['b']
+        _additionalProperties = False
+
+    schema, definitions = structure_to_schema(Foo, {})
+    assert schema == {
+        "type": "boolean"
+    }
+
+def test_single_array_field_wrapper():
+    class Foo(Structure):
+        arr = Array(minItems=2)
+        _required = ['arr']
+        _additionalProperties = False
+
+    schema, definitions = structure_to_schema(Foo, {})
+    assert schema == {
+        "type": "array",
+        "minItems": 2
+    }
+
 def test_datestring_field():
     class Foo(Structure):
         a = DateString

@@ -82,4 +82,27 @@ def test_serialize_set():
     foo = Foo(a={1,2,3})
     assert serialize(foo)=={'a': [1,2,3]}
 
+def test_string_field_wrapper_compact():
+    class Foo(Structure):
+        st = String
+        _additionalProperties = False
 
+    foo = Foo(st='abcde')
+    assert serialize(foo, compact=True)=='abcde'
+
+def test_string_field_wrapper_not_compact():
+    class Foo(Structure):
+        st = String
+        _additionalProperties = False
+
+    foo = Foo(st='abcde')
+    assert serialize(foo, compact=False)=={'st': 'abcde'}
+
+
+def test_set_field_wrapper_compact():
+    class Foo(Structure):
+        s = Array[AnyOf[String, Number]]
+        _additionalProperties = False
+
+    foo = Foo(s=['abcde', 234])
+    assert serialize(foo, compact=True)==['abcde', 234]

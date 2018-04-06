@@ -207,7 +207,7 @@ def test_single_array_field_wrapper():
     class Foo(Structure):
         arr = Array(minItems=2)
         _required = ['arr']
-        _additionalProperties = True
+        _additionalProperties = False
 
     schema, definitions = structure_to_schema(Foo, {})
     assert schema == {

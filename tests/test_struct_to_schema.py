@@ -207,13 +207,30 @@ def test_single_array_field_wrapper():
     class Foo(Structure):
         arr = Array(minItems=2)
         _required = ['arr']
-        _additionalProperties = False
+        _additionalProperties = True
 
     schema, definitions = structure_to_schema(Foo, {})
     assert schema == {
         "type": "array",
         "minItems": 2
     }
+
+def test_single_array_field_not_just_wrapper():
+    class Foo(Structure):
+        arr = Array(minItems=2)
+
+    schema, definitions = structure_to_schema(Foo, {})
+    assert schema == {
+        'type': 'object',
+         'properties': {
+         'arr': {
+             "type": "array",
+             "minItems": 2
+         }},
+        'required': ['arr'],
+        'additionalProperties': True
+    }
+
 
 def test_datestring_field():
     class Foo(Structure):

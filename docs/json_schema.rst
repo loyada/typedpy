@@ -131,7 +131,11 @@ Mapping a JSON schema to code, inherently provides schema validation when the ge
     from generated_sample import Poo, SimpleStruct
 
 
-Non-object top-level schemas are also supported, using a "field wrapper". For example:
+Non-object top-level schemas are also supported, using a "field wrapper". A field wrapper Structure \
+is a Structure that contains a single, required, field, and does not allow any other property (i.e. _additionalProperties = False).
+For example:
+
+For example:
 
 .. code-block:: py
 
@@ -153,6 +157,8 @@ Non-object top-level schemas are also supported, using a "field wrapper". For ex
     bar = Bar([1,2,3])
     assert bar.wrapped[2] == 3
 
+In the example above, if '_required' was [], or _additionalProperties was True, then the schema was an object with
+a single property 'arr', as usual.
 
 
 Limitations and Comments

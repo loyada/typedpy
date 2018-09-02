@@ -5,6 +5,7 @@ import re
 from collections import OrderedDict
 from datetime import datetime
 from functools import reduce
+from decimal import Decimal, getcontext, InvalidOperation
 
 from typedpy.structures import Field, Structure, TypedField, ClassReference, StructMeta
 
@@ -92,9 +93,9 @@ class Number(Field):
 
     def __set__(self, instance, value):
         def is_number(val):
-            return isinstance(val, (float, int))
+            return isinstance(val, (float, int, Decimal))
 
-        if not isinstance(value, float) and not isinstance(value, int):
+        if not is_number(value):
             raise TypeError("{}: Expected a number".format(self._name))
         if isinstance(self.multiplesOf, float) and \
                         int(value / self.multiplesOf) != value / self.multiplesOf or \
@@ -121,7 +122,19 @@ class Integer(TypedField, Number):
     """
     _ty = int
 
+class DecimalNumber(Number):
+    """
+    An extension of :class:`Number` for an Decimal. Accepts anything that can be converted to a Decimal
+    """
+    def __set__(self, instance, value):
+        try:
+            value = Decimal(value)
+        except TypeError as ex:
+            raise TypeError("{}: {}".format(self._name, ex.args[0]))
+        except InvalidOperation as ex:
+            raise ValueError("{}: {}".format(self._name, ex.args[0]))
 
+        super().__set__(instance, value)
 
 class String(TypedField):
     """
@@ -227,6 +240,7 @@ class _ListStruct(list):
     def extend(self, value):
         copied = self.copy()
         copied.extend(value)
+        setattr(self._instance, getattr(self._array, '_name', None), copied)
         setattr(self._instance, getattr(self._array, '_name', None), copied)
 
     def insert(self, index: int, value):

@@ -6,7 +6,7 @@ from typedpy.structures import (
     Structure, Field, TypedField, ClassReference, ImmutableStructure
     )
 from typedpy.fields import (
-    Number, Integer, PositiveInt, PositiveFloat, Float, Positive,
+    Number, Integer, PositiveInt, PositiveFloat, Float, Positive, DecimalNumber,
     String, SizedString, Sized, Enum, EnumString,
     AllOf, AnyOf, OneOf, NotField, Boolean,
     Array, Set, Map, Tuple, StructureReference,

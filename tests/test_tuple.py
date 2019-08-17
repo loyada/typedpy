@@ -10,7 +10,7 @@ class Example(Structure):
     a = Tuple(uniqueItems=True, items = [String, String])
     b = Tuple(items = [String, String, Number(maximum=10)])
     c = Tuple[Integer, String, Float]
-
+    d = Tuple[Integer]
 
 
 def test_wrong_type_for_tuple_err():
@@ -50,8 +50,8 @@ def test_unique_items_valid():
 
 def test_bad_items_definition_err():
     with raises(TypeError) as excinfo:
-        Tuple(items=String())
-    assert "Expected a list/tuple of Fields" in str(excinfo.value)
+        Tuple(items=str)
+    assert "Expected a list/tuple of Fields or a single Field" in str(excinfo.value)
 
 def test_simplified_definition_valid_assignment():
     assert Example(c = (1, 'bb', 0.5)).c[1:] == ('bb', 0.5)
@@ -60,3 +60,13 @@ def test_wrong_type_in_items_definition_err():
     with raises(TypeError) as excinfo:
         Tuple(items=[int, String])
     assert "Expected a Field class or instance" in str(excinfo.value)
+
+def test_single_type_tuple():
+    e = Example(d=(1, 2))
+    assert e.d[0] == 1
+    assert e.d == (1,2)
+
+def test_single_type_tuple_err1():
+    with raises(TypeError) as excinfo:
+        Example(d = (3,2,'asdasd'))
+    assert "d_2: Expected <class 'int'>" in str(excinfo.value)

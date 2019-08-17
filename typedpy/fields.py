@@ -572,6 +572,9 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
         b = Tuple(items = [String, String, Number(maximum=10)])
         c = Tuple[Integer, String, Float]
 
+        // The following define a tuple of any number of Integers
+        d = Tuple[Integer]
+
     """
     _ty = tuple
 
@@ -595,8 +598,10 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
                     self.items.append(item())
                 else:
                     raise TypeError("Expected a Field class or instance")
+        elif isinstance(items, (Field,)) or Field in items.__mro__:
+            self.items = [items]
         else:
-            raise TypeError("Expected a list/tuple of Fields")
+            raise TypeError("Expected a list/tuple of Fields or a single Field")
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):
@@ -608,17 +613,18 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
                             else unique_vals, value, [])
             if len(unique) < len(value):
                 raise ValueError("{}: Expected unique items".format(self._name))
-        if len(self.items) != len(value):
+        if len(self.items) != len(value) and len(self.items)>1:
             raise ValueError("{}: Expected a tuple of length {}".format(
                 self._name, len(self.items)))
 
         temp_st = Structure()
         res = []
-        for ind, item in enumerate(self.items):
+        items = self.items if len(self.items)>1 else self.items * len(value)
+        for ind, item in enumerate(items):
             setattr(item, '_name', self._name + "_{}".format(str(ind)))
             item.__set__(temp_st, value[ind])
             res.append(getattr(temp_st, getattr(item, '_name')))
-            res += value[len(self.items):]
+            res += value[len(items):]
         value = tuple(res)
 
         super().__set__(instance, value)

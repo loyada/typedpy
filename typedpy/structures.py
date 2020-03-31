@@ -23,30 +23,21 @@ def make_signature(names, required, additional_properties, bases_params_by_name)
     :return: the signature
     """
 
-    def combine_values(dict1, dict2):
-        my_copy = dict1.copy()
-        my_copy.update(dict2)
-        return list(my_copy.values())
-
     non_default_args_for_class = OrderedDict(
         [(name, Parameter(name, Parameter.POSITIONAL_OR_KEYWORD)) for name in names if
          name in required])
     non_default_args_for_bases = OrderedDict(
         [(name, param) for (name, param) in bases_params_by_name.items() if
          name in required])
-    # Once we drop support for python 3.4, we can do:
-    # non_default_args = list({**non_default_args_for_bases,
-    #                          **non_default_args_for_class}.values())
-    non_default_args = combine_values(non_default_args_for_bases, non_default_args_for_class)
+    non_default_args = list({**non_default_args_for_bases,
+                              **non_default_args_for_class}.values())
 
     default_args_for_class = OrderedDict(
         [(name, Parameter(name, Parameter.POSITIONAL_OR_KEYWORD, default=None))
          for name in names if name not in required])
     default_args_for_bases = OrderedDict([(name, param) for (name, param)
                                           in bases_params_by_name.items() if name not in required])
-    # Once we drop support for python 3.4, we can do:
-    # default_args = list({**default_args_for_bases, **default_args_for_class}.values())
-    default_args = combine_values(default_args_for_bases, default_args_for_class)
+    default_args = list({**default_args_for_bases, **default_args_for_class}.values())
 
     additional_args = [Parameter("kwargs", Parameter.VAR_KEYWORD)] if \
         additional_properties else []
@@ -84,10 +75,17 @@ class Field(object):
     Should not be used directly by developers.
     """
 
-    def __init__(self, name=None, immutable=None):
+    def __init__(self, name=None, immutable=None, default=None):
         self._name = name
+        self._default = default
         if immutable is not None:
             self._immutable = immutable
+
+    def __get__(self, instance, owner):
+        if instance and self._name not in instance.__dict__:
+            return self._default
+        else:
+            return instance.__dict__[self._name] if instance else owner.__dict__[self._name]
 
     def __set__(self, instance, value):
         if getattr(self, '_immutable', False) \

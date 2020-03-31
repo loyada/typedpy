@@ -8,6 +8,7 @@ from typedpy import Structure, Array, Number, String, Integer, \
 class SimpleStruct(Structure):
     name = String(pattern='[A-Za-z]+$', maxLength=8)
 
+
 class Example(Structure):
     i = Integer(maximum=10)
     s = String(maxLength=5)
@@ -16,7 +17,6 @@ class Example(Structure):
     simplestruct = SimpleStruct
     all = AllOf[Number, Integer]
     enum = Enum(values=[1,2,3])
-
 
 
 def test_successful_deserialization_with_many_types():
@@ -47,6 +47,7 @@ def test_successful_deserialization_with_many_types():
         all = 5,
         enum = 3
     )
+
 
 def test_unsupported_field_err():
     # This has no information about the type - clearly can't deserialize

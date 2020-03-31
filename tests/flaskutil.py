@@ -1,4 +1,4 @@
-from flask import Flask
+#from flask import Flask
 from flask.json import JSONEncoder
 
 from typedpy import Structure, deserialize_structure
@@ -10,5 +10,5 @@ class CustomJSONEncoder(JSONEncoder):
             return deserialize_structure(obj)
         return JSONEncoder.default(self, obj)
 
-# app = Flask(__name__)
-# app.json_encoder = CustomJSONEncoder
+#app = Flask(__name__)
+#app.json_encoder = CustomJSONEncoder

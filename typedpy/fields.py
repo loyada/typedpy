@@ -3,11 +3,11 @@ Definitions of various types of fields. Supports JSON draft4 types.
 """
 import re
 from collections import OrderedDict
-from datetime import datetime
 from functools import reduce
 from decimal import Decimal, getcontext, InvalidOperation
 
 from typedpy.structures import Field, Structure, TypedField, ClassReference, StructMeta
+
 
 def _map_to_field(item):
     if isinstance(item, StructMeta) and not isinstance(item, Field):
@@ -58,7 +58,7 @@ class StructureReference(Field):
             if val is not None and not k.startswith('_'):
                 props.append('{} = {}'.format(k, str(val)))
 
-        propst = '. Properties: {}'.format(', '.join(props)) if props  else ''
+        propst = '. Properties: {}'.format(', '.join(props)) if props else ''
         return '<Structure{}>'.format(propst)
 
 
@@ -98,8 +98,8 @@ class Number(Field):
         if not is_number(value):
             raise TypeError("{}: Expected a number".format(self._name))
         if isinstance(self.multiplesOf, float) and \
-                        int(value / self.multiplesOf) != value / self.multiplesOf or \
-                        isinstance(self.multiplesOf, int) and value % self.multiplesOf:
+                int(value / self.multiplesOf) != value / self.multiplesOf or \
+                isinstance(self.multiplesOf, int) and value % self.multiplesOf:
             raise ValueError("{}: Expected a a multiple of {}".format(
                 self._name, self.multiplesOf))
         if (is_number(self.minimum)) and self.minimum > value:
@@ -122,10 +122,12 @@ class Integer(TypedField, Number):
     """
     _ty = int
 
+
 class DecimalNumber(Number):
     """
     An extension of :class:`Number` for an Decimal. Accepts anything that can be converted to a Decimal
     """
+
     def __set__(self, instance, value):
         try:
             value = Decimal(value)
@@ -135,6 +137,7 @@ class DecimalNumber(Number):
             raise ValueError("{}: {}".format(self._name, ex.args[0]))
 
         super().__set__(instance, value)
+
 
 class String(TypedField):
     """
@@ -194,6 +197,7 @@ class Positive(Number):
     """
     An extension of :class:`Number`. Requires the number to be positive
     """
+
     def __set__(self, instance, value):
         if value <= 0:
             raise ValueError('{}: Must be positive'.format(self._name))
@@ -464,7 +468,6 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
         super().__set__(instance, _DictStruct(self, instance, value))
 
 
-
 class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
     """
     An Array field, similar to a list. Supports the properties in JSON schema draft 4.
@@ -524,15 +527,8 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):
-        if not isinstance(value, list):
-            raise TypeError("%s: Expected %s" % (self._name, list))
+        verify_type_and_uniqueness(list, value, self._name, self.uniqueItems)
         self.validate_size(value, self._name)
-        if self.uniqueItems:
-            unique = reduce(lambda unique_vals, x: unique_vals.append(x) or
-                            unique_vals if x not in unique_vals
-                            else unique_vals, value, [])
-            if len(unique) < len(value):
-                raise ValueError("{}: Expected unique items".format(self._name))
         if self.items is not None:
             if isinstance(self.items, Field):
                 temp_st = Structure()
@@ -561,6 +557,16 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
 
         super().__set__(instance, _ListStruct(self, instance, value))
 
+
+def verify_type_and_uniqueness(the_type, value, name, has_unique_items):
+    if not isinstance(value, the_type):
+        raise TypeError("%s: Expected %s" % (name, the_type))
+    if has_unique_items:
+        unique = reduce(lambda unique_vals, x: unique_vals.append(x) or
+                        unique_vals if x not in unique_vals
+                        else unique_vals, value, [])
+        if len(unique) < len(value):
+            raise ValueError("{}: Expected unique items".format(name))
 
 
 class Tuple(TypedField, metaclass=_CollectionMeta):
@@ -619,21 +625,14 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):
-        if not isinstance(value, tuple):
-            raise TypeError("%s: Expected %s" % (self._name, tuple))
-        if self.uniqueItems:
-            unique = reduce(lambda unique_vals, x: unique_vals.append(x) or
-                            unique_vals if x not in unique_vals
-                            else unique_vals, value, [])
-            if len(unique) < len(value):
-                raise ValueError("{}: Expected unique items".format(self._name))
-        if len(self.items) != len(value) and len(self.items)>1:
+        verify_type_and_uniqueness(tuple, value, self._name, self.uniqueItems)
+        if len(self.items) != len(value) and len(self.items) > 1:
             raise ValueError("{}: Expected a tuple of length {}".format(
                 self._name, len(self.items)))
 
         temp_st = Structure()
         res = []
-        items = self.items if len(self.items)>1 else self.items * len(value)
+        items = self.items if len(self.items) > 1 else self.items * len(value)
         for ind, item in enumerate(items):
             setattr(item, '_name', self._name + "_{}".format(str(ind)))
             item.__set__(temp_st, value[ind])
@@ -642,7 +641,6 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
         value = tuple(res)
 
         super().__set__(instance, value)
-
 
 
 class Enum(Field, metaclass=_EnumMeta):
@@ -654,6 +652,7 @@ class Enum(Field, metaclass=_EnumMeta):
                  allowed values. Can be of any type
 
     """
+
     def __init__(self, *args, values, **kwargs):
         self.values = values
         super().__init__(*args, **kwargs)
@@ -662,7 +661,6 @@ class Enum(Field, metaclass=_EnumMeta):
         if value not in self.values:
             raise ValueError('{}: Must be one of {}'.format(self._name, self.values))
         super().__set__(instance, value)
-
 
 
 class EnumString(Enum, String):
@@ -693,6 +691,7 @@ class Sized(Field):
                 maximum length
 
     """
+
     def __init__(self, *args, maxlen, **kwargs):
         self.maxlen = maxlen
         super().__init__(*args, **kwargs)
@@ -722,6 +721,7 @@ class MultiFieldWrapper(object):
     An abstract base class for AllOf, AnyOf, OneOf, etc.
     It provides flexibility in reading the "fields" argument.
     """
+
     def __init__(self, *arg, fields, **kwargs):
         if isinstance(fields, list):
             self._fields = []
@@ -750,6 +750,7 @@ class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         AllOf[Number(maximum=20, minimum=-10), Integer, Positive]
 
     """
+
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -761,7 +762,6 @@ class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __str__(self):
         return _str_for_multioption_field(self)
-
 
 
 class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
@@ -779,6 +779,7 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
        AnyOf[Number(maximum=20, minimum=-10), Integer, Positive, String]
 
     """
+
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -816,6 +817,7 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         OneOf[Number(maximum=20, minimum=-10), Integer, Positive, String]
 
     """
+
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -856,6 +858,7 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         NotField[Positive]
 
     """
+
     def __init__(self, fields):
         super().__init__(fields=fields)
 
@@ -880,7 +883,7 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 class ValidatedTypedField(TypedField):
 
     def __set__(self, instance, value):
-        self._validate_func(value) # pylint: disable=E1101
+        self._validate_func(value)  # pylint: disable=E1101
         super().__set__(instance, value)
 
 
@@ -911,9 +914,10 @@ def create_typed_field(classname, cls, validate_func=None):
         classname(`str`):
             the content must not match any of the fields in the lists
     """
+
     def validate_wrapper(cls, value):
         if validate_func is None:
             return
         validate_func(value)
 
-    return type(classname, (ValidatedTypedField,), {'_validate_func' :validate_wrapper, '_ty': cls})
+    return type(classname, (ValidatedTypedField,), {'_validate_func': validate_wrapper, '_ty': cls})

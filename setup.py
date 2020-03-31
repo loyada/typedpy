@@ -11,7 +11,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.4",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
@@ -20,6 +19,7 @@ classifiers = [
 setup(
     name="typedpy",
     packages=["typedpy"],
+    install_requires=[],
     setup_requires=['pytest-runner', 'setuptools-lint'],
     tests_require=['pytest', 'coverage', 'pytest-cov'],
     author="Danny Loya",

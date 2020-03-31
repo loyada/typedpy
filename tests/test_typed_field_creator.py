@@ -2,6 +2,7 @@ from pytest import raises
 
 from typedpy import Structure, Tuple, Number, String, Integer, Float, create_typed_field
 
+
 class Foo(object):
     def __init__(self, a=0, b=0):
         self.a = a
@@ -16,6 +17,7 @@ def validate_foo(foo):
 FooField = create_typed_field("FooField", Foo)
 ValidatedFooField = create_typed_field("FooField", Foo, validate_func=validate_foo)
 
+
 class A(Structure):
     _required = []
     a = FooField
@@ -27,13 +29,16 @@ def test_wrong_type_err():
         A(a=2)
     assert "a: Expected <class 'test_typed_field_creator.Foo'>" in str(excinfo.value)
 
+
 def test_right_type1():
-    assert A(a=Foo(1,2)).a.a == 1
+    assert A(a=Foo(1, 2)).a.a == 1
+
 
 def test_invalid_value_err():
     with raises(ValueError) as excinfo:
-        A(b=Foo(1,2))
+        A(b=Foo(1, 2))
     assert "a+b must be larger or equal to 10" in str(excinfo.value)
 
+
 def test_valid_value():
-    assert A(b=Foo(3, 8)).b.b==8
+    assert A(b=Foo(3, 8)).b.b == 8

@@ -8,7 +8,8 @@ class Person(Structure):
     name = String(pattern='[A-Za-z]+$', maxLength=8)
     ssid = String(minLength=3, pattern='[A-Za-z]+$')
     num = Integer(maximum=30, minimum=10, multiplesOf="dd", exclusiveMaximum=False)
-    foo = StructureReference(a=String(), b = StructureReference(c = Number(minimum=10), d = Number(maximum=10)))
+    foo = StructureReference(a=String(), b=StructureReference(c=Number(minimum=10), d=Number(maximum=10)))
+
 
 # Inherited Structure. Note:
 # - adding a new attribute "children"
@@ -22,11 +23,13 @@ class OldPerson(Person):
 
 
 def test_str_OldPerson():
-    assert str(OldPerson)=="<Structure: OldPerson. Properties: children = <PositiveInt>, num = <PositiveInt>>"
+    assert str(OldPerson) == "<Structure: OldPerson. Properties: children = <PositiveInt>, num = <PositiveInt>>"
+
 
 def test_str_OldPerson_instance():
-    op = OldPerson(children=1, num=1, ssid="aaa", name = "abc")
-    assert str(op)=="<Instance of OldPerson. Properties: children = 1, name = 'abc', num = 1, ssid = 'aaa'>"
+    op = OldPerson(children=1, num=1, ssid="aaa", name="abc")
+    assert str(op) == "<Instance of OldPerson. Properties: children = 1, name = 'abc', num = 1, ssid = 'aaa'>"
+
 
 def test_missing_inherited_required_property_err():
     with raises(TypeError) as excinfo:
@@ -34,14 +37,17 @@ def test_missing_inherited_required_property_err():
     assert "missing a required argument: 'ssid'" in str(excinfo.value) or \
            "'ssid' parameter lacking default value" in str(excinfo.value)
 
+
 def test_missing_required_property_err():
     with raises(TypeError) as excinfo:
         OldPerson(num=1, name="abc", ssid="aaa")
     assert "missing a required argument: 'children'" in str(excinfo.value) or \
            "'children' parameter lacking default value" in str(excinfo.value)
 
+
 def test_num_overrides_inherited_num():
     assert OldPerson(num=1, name="abc", ssid="aaa", children=1).num == 1
+
 
 def test_verifying_inherited_property1():
     with raises(TypeError) as excinfo:
@@ -54,28 +60,31 @@ def test_verifying_inherited_embedded_property1_err():
         OldPerson(num=1, name="abc", ssid="aaa", foo={'a': "xyz", 'b': {'c': 5, 'd': 5}}, children=1)
     assert 'c: Expected a minimum of 10' in str(excinfo.value)
 
+
 def test_verifying_inherited_embedded_property2_err():
     with raises(TypeError) as excinfo:
         OldPerson(num=1, name="abc", ssid="aaa", foo={'b': {'c': 5, 'd': 5}}, children=1)
     assert "missing a required argument: 'a'" in str(excinfo.value) or \
            "'a' parameter lacking default value" in str(excinfo.value)
 
+
 def test_verifying_inherited_embedded_property_success():
-        assert OldPerson(num=1, name="abc", ssid="aaa", foo={'a': 'x', 'b': {'c': 15, 'd': 5}}, children=1).foo.a=='x'
+    assert OldPerson(num=1, name="abc", ssid="aaa", foo={'a': 'x', 'b': {'c': 15, 'd': 5}}, children=1).foo.a == 'x'
+
 
 def test_additional_properties_err():
     with raises(TypeError) as excinfo:
-        OldPerson(num=1, name="abc", ssid="aaa", children=1, xyz =1)
+        OldPerson(num=1, name="abc", ssid="aaa", children=1, xyz=1)
     assert "got an unexpected keyword argument 'xyz'" in str(excinfo.value) or \
            "too many keyword arguments" in str(excinfo.value)
 
+
 def test_mro_override_field():
     class HasNumber(Structure):
-        _required=[]
+        _required = []
         num = Float
 
     class AncientPerson(OldPerson, HasNumber):
         grandchildren = PositiveInt
 
-    assert AncientPerson(grandchildren=4, num=6, ssid='aaa', children=3).num==6
-
+    assert AncientPerson(grandchildren=4, num=6, ssid='aaa', children=3).num == 6

@@ -109,10 +109,13 @@ schema = {
         }
     }
 }
+
+
 def test_definitions():
     code = schema_definitions_to_code(definitions)
     exec(code, globals())
     assert SimpleStruct(name = 'abc').name =='abc'
+
 
 def test_schema():
     definitions_code = schema_definitions_to_code(definitions)
@@ -169,7 +172,7 @@ def test_array_no_items_definition():
     exec(struct_code, globals())
 
     duba = Duba(arr= [1,'sss', None])
-    assert duba.arr[2]==None
+    assert duba.arr[2] is None
 
 
 def test_boolean_field():

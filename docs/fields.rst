@@ -71,6 +71,8 @@ String, Enums etc.
 
 .. autoclass:: HostName
 
+.. autoclass:: DecimalNumber
+
 .. class:: EmailAddress
 
             String of an email address
@@ -198,6 +200,29 @@ Example:
 
 
 It is also possible to define an immutable Structure. See Under the **Structures** section.
+
+Optional field and default values
+=================================
+A structure can have fields that are optional. For an optional field, if no value is provided, than the assessor returns
+None by default.
+You can provide a default settings, using the "default"  parameter (see below). If a default value is set and no value
+ is provided, then the assessor returns the default value.
+Example:
+
+.. code-block:: python
+
+    class Person(Structure):
+        _required = ['ssid']
+        name = String(pattern='[A-Za-z]+$', maxLength=16, default='Arthur')
+        ssid = String(minLength=3, pattern='[A-Za-z]+$')
+        num = Integer(default=5)
+
+    def test_defaults():
+        person = Person(ssid="abc")
+        assert person.foo is None
+        assert person.name == 'Arthur'
+        assert person.num == 5
+
 
 Extension and Utilities
 =======================

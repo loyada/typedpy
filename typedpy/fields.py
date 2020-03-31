@@ -125,7 +125,7 @@ class Integer(TypedField, Number):
 
 class DecimalNumber(Number):
     """
-    An extension of :class:`Number` for an Decimal. Accepts anything that can be converted to a Decimal
+    An extension of :class:`Number` for a Decimal. Accepts anything that can be converted to a Decimal
     """
 
     def __set__(self, instance, value):
@@ -584,16 +584,27 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
             Every element in the content is expected to be
             of the corresponding :class:`Field` in items.
 
+
     Examples:
 
     .. code-block:: python
 
+        // a is a tuple of exactly 2 strings that are different from each other.
         a = Tuple(uniqueItems=True, items = [String, String])
+
+        // b is a tuple of 3: string, string and a number up to 10.
         b = Tuple(items = [String, String, Number(maximum=10)])
+
+        // c is a tuple of 3: integer, string, float.
         c = Tuple[Integer, String, Float]
 
         // The following define a tuple of any number of Integers
         d = Tuple[Integer]
+
+        // It can also contain other structures:
+        // Assume we have something like: class Foo(Structure): pass
+        // e is a tuple of any number of Integers or Foo instances
+        e = Tuple[AnyOf[Integer, Foo]]
 
     """
     _ty = tuple

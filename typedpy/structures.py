@@ -92,6 +92,8 @@ class Field(object):
                 and self._name in instance.__dict__:
             raise ValueError("{}: Field is immutable".format(self._name))
         instance.__dict__[self._name] = value
+        if getattr(instance, '_instantiated', False):
+            instance.__validate__()
 
     def __str__(self):
         def as_str(the_val):
@@ -209,6 +211,9 @@ class Structure(metaclass=StructMeta):
         for name, val in bound.arguments.items():
             setattr(self, name, val)
 
+        self.__validate__()
+        self._instantiated = True
+
     def __setattr__(self, key, value):
         if getattr(self, '_immutable', False) and key in self.__dict__:
             raise ValueError("Structure is immutable")
@@ -219,9 +224,11 @@ class Structure(metaclass=StructMeta):
         if name.startswith('StructureReference_') and self.__class__.__bases__ == (Structure,):
             name = 'Structure'
         props = []
+        internal_props = ['_instantiated']
         for k, val in sorted(self.__dict__.items()):
-            strv = "'{}'".format(val) if isinstance(val, str) else str(val)
-            props.append('{} = {}'.format(k, strv))
+            if k not in internal_props:
+                strv = "'{}'".format(val) if isinstance(val, str) else str(val)
+                props.append('{} = {}'.format(k, strv))
         return '<Instance of {}. Properties: {}>'.format(name, ', '.join(props))
 
     def __eq__(self, other):
@@ -235,6 +242,8 @@ class Structure(metaclass=StructMeta):
                         key in getattr(self, '_required'):
             raise ValueError("{} is manadoty".format(key))
         del self.__dict__[key]
+
+    def __validate__(self): pass
 
 
 class ImmutableStructure(Structure):

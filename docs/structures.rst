@@ -78,3 +78,52 @@ Example:
     print(foo.multiply())
     # 60
 
+Validating Structure As a Whole
+===============================
+There are cases where we want to validate a complex field, or a structure as a whole.
+For example, suppose we define a range field and we want to ensure min is not larger than max.
+There are 2 ways to approach it.
+First approach: create a regular class and provide a validation function, as described in the previous section.
+For example:
+
+.. code-block:: python
+
+    class RangeCL(object):
+        def __init__(self, min, max, step):
+            self.min = min
+            self.max = max
+            self.step = step
+
+
+    def validate_range(range):
+        if not isinstance(range.min, (float, int, Decimal)):
+            raise TypeError()
+        if range.min > range.max:
+            raise ValueError()
+
+    ValidatedRangeField = create_typed_field("RangeField", RangeCL, validate_func=validate_range)
+
+    # now we can use ValidatedRangeField as a field type. It is guaranteed to be valid.
+    class Foo(Structure):
+        range = ValidatedRangeField
+
+The second approach is to override  the __validate__ function of the structure.
+For example:
+
+.. code-block:: python
+
+    class Range(Structure):
+        min = Integer
+        max = Integer
+        step = Integer
+        _required = ["min", "max"]
+
+        def __validate__(self):
+            if self.min > self.max:
+                raise ValueError("min cannot be larger than max")
+
+
+In the example above, any Range instance is guaranteed to be valid, even if you mutate it.
+Usually the second approach is more elegant.
+
+`See usage of both approaches here: <https://github.com/loyada/typedpy/tree/master/tests/test_higher_order.py>`_

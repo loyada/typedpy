@@ -133,6 +133,7 @@ def serialize_val(name, val):
         return [serialize_val(name, i) for i in val]
     return serialize(val)
 
+
 def serialize(structure, compact=False):
     """
     Serialize an instance of :class:`Structure` to a JSON-like dict.
@@ -151,13 +152,13 @@ def serialize(structure, compact=False):
         a serialized Python dict
     """
     items = structure.items() if isinstance(structure, dict) \
-        else structure.__dict__.items()
+        else [(k, v) for (k, v) in structure.__dict__.items() if k != '_instantiated']
     props = structure.__class__.__dict__
     fields = [key for key, val in props.items() if isinstance(val, Field)]
     required = props.get('_required', fields)
     additional_props = props.get('_additionalProperties', True)
     if len(fields) == 1 and required == fields \
-        and additional_props is False and compact:
+            and additional_props is False and compact:
         key = fields[0]
         result = serialize_val(key, getattr(structure, key))
     else:

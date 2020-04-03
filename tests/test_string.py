@@ -3,7 +3,8 @@ import json
 
 from pytest import raises
 
-from typedpy import String, Structure, ImmutableField, DateString, TimeString, EmailAddress, HostName, IPV4, JSONString
+from typedpy import String, Structure, ImmutableField, DateString, TimeString, EmailAddress, HostName, IPV4, JSONString, \
+    serialize, deserialize_structure
 
 
 class ImmutableString(String, ImmutableField): pass
@@ -48,6 +49,30 @@ def test_date_valid():
 
     e = Example(d='2017-8-9')
     assert datetime.strptime(e.d, '%Y-%m-%d').month == 8
+
+
+def test_date_alternative_format_invalid():
+    class Example(Structure):
+        d = DateString(date_format="%Y%m%d")
+
+    with raises(ValueError):
+        Example(d='2017-8-9')
+
+
+def test_date_alternative_format_valid():
+    class Example(Structure):
+        d = DateString(date_format="%Y%m%d")
+
+    e = Example(d='20170809')
+    assert datetime.strptime(e.d, '%Y%m%d').month == 8
+
+
+def test_date_serialization():
+    class Example(Structure):
+        d = DateString
+
+    e = Example(d='2017-8-9')
+    assert deserialize_structure(Example, serialize(e)) == e
 
 
 def test_time_err():

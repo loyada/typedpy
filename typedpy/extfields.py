@@ -52,13 +52,22 @@ class HostName(String):
 class DateString(TypedField):
     """
     A string field of the format '%Y-%m-%d' that can be converted to a date
+
+    Arguments:
+          date_format(str): optional
+              an alternative date format
+
     """
     _ty = str
+
+    def __init__(self, *args, date_format="%Y-%m-%d", **kwargs):
+        self._format = date_format
+        super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):
         super().__set__(instance, value)
         try:
-            datetime.strptime(value, '%Y-%m-%d')
+            datetime.strptime(value, self._format)
         except ValueError as ex:
             raise ValueError("{}: {}".format(self._name, ex.args[0]))
 

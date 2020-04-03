@@ -203,10 +203,9 @@ It is also possible to define an immutable Structure. See Under the **Structures
 
 Optional field and default values
 =================================
-A structure can have fields that are optional. For an optional field, if no value is provided, than the assessor returns
+A structure can have fields that are optional. For an optional field, if no value is provided, then the assessor returns
 None by default.
-You can provide a default settings, using the "default"  parameter (see below). If a default value is set and no value
- is provided, then the assessor returns the default value.
+You can provide a default settings, using the "default"  parameter (see below). If a default value is set and no value is provided, then the assessor returns the default value.
 Example:
 
 .. code-block:: python
@@ -223,6 +222,7 @@ Example:
         assert person.name == 'Arthur'
         assert person.num == 5
 
+.. _extension-of-classes:
 
 Extension and Utilities
 =======================

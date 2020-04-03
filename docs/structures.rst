@@ -83,7 +83,7 @@ Validating Structure As a Whole
 There are cases where we want to validate a complex field, or a structure as a whole.
 For example, suppose we define a range field and we want to ensure min is not larger than max.
 There are 2 ways to approach it.
-First approach: create a regular class and provide a validation function, as described in the previous section.
+First approach: create a regular class and provide a validation function, as described in :ref:`_extension-of-classes`
 For example:
 
 .. code-block:: python

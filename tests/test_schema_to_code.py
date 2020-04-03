@@ -5,6 +5,7 @@ from typedpy.structures import *
 from typedpy.fields import *
 
 definitions = {
+
     "SimpleStruct": {
         "type": "object",
         "properties": {
@@ -18,6 +19,14 @@ definitions = {
             "name"
         ],
         "additionalProperties": True
+    },
+    "ComplexStruct": {
+        "type": "object",
+        "properties": {
+            "simple": {
+                "$ref": "#/definitions/SimpleStruct"
+            }
+        }
     }
 }
 
@@ -42,7 +51,7 @@ schema = {
             "additionalProperties": True
         },
         "ss": {
-            "$ref": "#/definitions/SimpleStruct"
+            "$ref": "#/definitions/ComplexStruct"
         },
         "enum": {
             "enum": [
@@ -114,7 +123,7 @@ schema = {
 def test_definitions():
     code = schema_definitions_to_code(definitions)
     exec(code, globals())
-    assert SimpleStruct(name = 'abc').name =='abc'
+    assert SimpleStruct(name='abc').name == 'abc'
 
 
 def test_schema():
@@ -124,15 +133,16 @@ def test_schema():
     struct_code = schema_to_struct_code('Duba', schema, definitions)
     exec(struct_code, globals())
     duba = Duba(
-        foo = {'a1': 5, 'a2': 1.5},
-        ss = SimpleStruct(name = 'abc'),
-        enum = 2,
-        s = "xyz",
-        i = 10,
-        all = 6,
-        a = [10, 3]
+        foo={'a1': 5, 'a2': 1.5},
+        ss=ComplexStruct(simple=SimpleStruct(name='abc')),
+        enum=2,
+        s="xyz",
+        i=10,
+        all=6,
+        a=[10, 3]
     )
-    assert duba.ss.name == 'abc'
+    assert duba.ss.simple.name == 'abc'
+
 
 def test_write_code_to_file():
     write_code_from_schema(schema, definitions, "generated_sample.py", "Poo")
@@ -140,18 +150,18 @@ def test_write_code_to_file():
     import os
     cwd = os.getcwd()
     generated_sample = SourceFileLoader("generated_sample", cwd + "/" + "generated_sample.py").load_module()
-   # from generated_sample import Poo, SimpleStruct
+    # from generated_sample import Poo, ComplexStruct
     poo = generated_sample.Poo(
         foo={'a1': 5, 'a2': 1.5},
-        ss=generated_sample.SimpleStruct(name='abc'),
+        ss=generated_sample.ComplexStruct(simple=generated_sample.SimpleStruct(name='abc')),
         enum=2,
         s="xyz",
         i=10,
         all=6,
         a=[10, 3]
     )
-    assert poo.ss.name == 'abc'
-    assert 'This is a test of schema mapping'==generated_sample.Poo.__doc__.strip()
+    assert poo.ss.simple.name == 'abc'
+    assert 'This is a test of schema mapping' == generated_sample.Poo.__doc__.strip()
     from os import remove
     remove("generated_sample.py")
 
@@ -171,7 +181,7 @@ def test_array_no_items_definition():
     struct_code = schema_to_struct_code('Duba', schema, {})
     exec(struct_code, globals())
 
-    duba = Duba(arr= [1,'sss', None])
+    duba = Duba(arr=[1, 'sss', None])
     assert duba.arr[2] is None
 
 
@@ -188,7 +198,7 @@ def test_boolean_field():
     struct_code = schema_to_struct_code('Foo', schema, {})
     exec(struct_code, globals())
 
-    foo = Foo(b = False)
+    foo = Foo(b=False)
     assert foo.b == False
 
 

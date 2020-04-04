@@ -124,6 +124,7 @@ For example:
 
 
 In the example above, any Range instance is guaranteed to be valid, even if you mutate it.
-Usually the second approach is more elegant.
 
-`See usage of both approaches here: <https://github.com/loyada/typedpy/tree/master/tests/test_higher_order.py>`_
+| Of the two approaches described, usually the second approach is more elegant.
+
+`See usage of both approaches here <https://github.com/loyada/typedpy/tree/master/tests/test_higher_order.py>`_

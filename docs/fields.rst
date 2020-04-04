@@ -201,7 +201,7 @@ Example:
 
 It is also possible to define an immutable Structure. See Under the **Structures** section.
 
-Optional field and default values
+Optional Field and Default Values
 =================================
 A structure can have fields that are optional. For an optional field, if no value is provided, then the assessor returns
 None by default.

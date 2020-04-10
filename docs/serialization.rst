@@ -125,7 +125,8 @@ Limitations and Guidance
 #. If you have a field that you want to assign as a blob, without any validation, use :class:`Anything`
 
 #. If you create a completely new field type, that is not based on the predefined classes in Typedpy, it is not guaranteed to be supported. \
-For example - if you define a custom field type using :function:`create_typed_field`, it is not supported.
+For example - if you define a custom field type using :function:`create_typed_field`, it is not supported
+
 
 Functions
 =========

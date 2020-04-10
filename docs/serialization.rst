@@ -107,7 +107,6 @@ tries to deserialize directly to that field. For example:
 
 Limitations
 -----------
-#. Some complex fields have ambiguous serialized representation, for example: if a field can be an \Instance of some class A, or class B (e.g. :class:`AnyOf` [A, B])- the deserialization is not well defined. Such fields are unsupported.
 #. For Set, Tuple - deserialization expects an array, serialization converts to array
 
 Functions

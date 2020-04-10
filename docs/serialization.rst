@@ -76,8 +76,7 @@ Though the above example does not show it, the deserializer supports the followi
 
 * :class:`AnyOf`, :class:`OneOf`, :class:`NotField`, :class:`AllOf` are fully supported, including embedded structures in them. For example, if you had a structure Foo, the following is supported: p = Set[AnyOf[Foo, Array[Foo], String]]
 
-* In case of an error in the input data, deserialize_structure() will raise an exception with the exact description \
-of the problem.
+* In case of an error in the input data, deserialize_structure() will raise an exception with the exact description of the problem.
 
 
 **To convert the result of serialize() to JSON, use:**

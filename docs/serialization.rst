@@ -68,7 +68,7 @@ See example below:
         assert result==source
 
 
-Though the above example does not show it, the deserializer supports the following:
+Though the above example does not show it, the deserializer also supports the following:
 
 * A field that can be anything, using the Field type :class:`Anything`
 

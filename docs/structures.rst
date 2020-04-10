@@ -50,6 +50,14 @@ Required properties are the union of all required properties.
 
 `Here is a test for inheritance <https://github.com/loyada/typedpy/tree/master/tests/test_inheritance.py>`_
 
+Equality Checks
+===============
+Equality check (i.e. checking a==b) of structures is fully supported, including for arbitrarily complex objects.
+
+String output
+=============
+The string representation of structure instances shows exactly what are all the properties, even for hierarchical \
+structures and arbitrarily complex ones. This is useful for debugging.
 
 Combining with "Regular" Classes
 ================================

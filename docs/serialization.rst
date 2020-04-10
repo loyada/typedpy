@@ -77,6 +77,9 @@ Though the above example does not show it, the deserializer supports the followi
 * :class:`AnyOf`, :class:`OneOf`, :class:`NotField`, :class:`AllOf` are fully supported, including embedded structures \
 in them. For example, if you had a structure Foo, the following is supported: p = Set[AnyOf[Foo, Array[Foo], String]]
 
+* In case of an error in the input data, deserialize_structure() will raise an exception with the exact description \
+of the problem.
+
 
 **To convert the result of serialize() to JSON use:**
 
@@ -115,9 +118,14 @@ tries to deserialize directly to that field. For example:
     assert example.i == 5
 
 
-Limitations
------------
-#. For Set, Tuple - deserialization expects an array, serialization converts to array
+Limitations and Guidance
+------------------------
+#. For Set, Tuple - deserialization expects an array, serialization converts to array (set and tuple are not part of JSON)
+
+#. If you have a field that you want to assign as a blob, without any validation, use :class:`Anything`
+
+#. If you create a completely new field type, that is not based on the predefined classes in Typedpy, it is not guaranteed to be supported. \
+For example - if you define a custom field type using :function:`create_typed_field`, it is not supported.
 
 Functions
 =========

@@ -69,9 +69,12 @@ See example below:
 
 
 Though the above example does not show it, the deserializer supports the following:
-#. A field that can be anything, using the Field type :class:`Anything`
-#. All the built in collections are fully supported, for example:  a = Array[Map[String, Integer]] is supported
-#. :class:`AnyOf`, :class:`OneOf`, :class:`NotField`, :class:`AllOf` are fully supported, including embedded structures \
+
+* A field that can be anything, using the Field type :class:`Anything`
+
+* All the built in collections are fully supported, for example:  a = Array[Map[String, Integer]] is supported
+
+* :class:`AnyOf`, :class:`OneOf`, :class:`NotField`, :class:`AllOf` are fully supported, including embedded structures \
 in them. For example, if you had a structure Foo, the following is supported: p = Set[AnyOf[Foo, Array[Foo], String]]
 
 

@@ -2,51 +2,107 @@ from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, TypedField, Map, create_typed_field, AnyOf, Set, Field, Tuple
+    Float, TypedField, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything
 
 
 class SimpleStruct(Structure):
     name = String(pattern='[A-Za-z]+$', maxLength=8)
 
 
+class Person(Structure):
+    name = String
+    ssid = String
+
+
+class BigPerson(Person):
+    height = Integer
+    _required = []
+
+
 class Example(Structure):
+    anything = Anything
     i = Integer(maximum=10)
     s = String(maxLength=5)
-    array = Array[Integer(multiplesOf=5), Number]
-    embedded = StructureReference(a1 = Integer(), a2=Float())
+    any = AnyOf[Array[Person], Person]
+    complex_allof = AllOf[AnyOf[Integer, Person], BigPerson]  # this is stupid, but we do it for testing
+    people = Array[Person]
+    array_of_one_of = Array[OneOf[Float, Integer, Person, StructureReference(a1=Integer(), a2=Float())]]
+    array = Array[Integer(multiplesOf=5), OneOf[Array[Person], Number]]
+    embedded = StructureReference(a1=Integer(), a2=Float())
     simplestruct = SimpleStruct
     all = AllOf[Number, Integer]
-    enum = Enum(values=[1,2,3])
+    enum = Enum(values=[1, 2, 3])
+    _required = []
+
+
+"""
+    complex test that tests many variations of fields, including various multi-field
+"""
 
 
 def test_successful_deserialization_with_many_types():
     data = {
+        'anything': {'a', 'b', 'c'},
         'i': 5,
         's': 'test',
+        'complex_allof': {'name': 'john', 'ssid': '123'},
         'array': [10, 7],
+        'any': [{'name': 'john', 'ssid': '123'}],
         'embedded': {
             'a1': 8,
             'a2': 0.5
         },
+        'people': [{'name': 'john', 'ssid': '123'}],
+        'simplestruct': {
+            'name': 'danny'
+        },
+        'array_of_one_of': [{'a1': 8, 'a2': 0.5}, 0.5, 4, {'name': 'john', 'ssid': '123'}],
+        'all': 5,
+        'enum': 3
+    }
+    example = deserialize_structure(Example, data)
+
+    expected = Example(
+        anything={'a', 'b', 'c'},
+        i=5,
+        s='test',
+        array_of_one_of=[{'a1': 8, 'a2': 0.5}, 0.5, 4, Person(name='john', ssid='123')],
+        complex_allof=BigPerson(name='john', ssid='123'),
+        any=[Person(name='john', ssid='123')],
+        array=[10, 7],
+        people=[Person(name='john', ssid='123')],
+        embedded={
+            'a1': 8,
+            'a2': 0.5
+        },
+        simplestruct=SimpleStruct(name='danny'),
+        all=5,
+        enum=3
+    )
+    assert example == expected
+
+
+def test_anyof_field_failure():
+    data = {
+        'i': 5,
+        's': 'test',
+        'array': [10, 7],
+        'any': [{'name': 'john', 'ssid': '123'}, {'name': 'paul'}],
+        'embedded': {
+            'a1': 8,
+            'a2': 0.5
+        },
+        'people': [{'name': 'john', 'ssid': '123'}],
         'simplestruct': {
             'name': 'danny'
         },
         'all': 5,
         'enum': 3
     }
-    example = deserialize_structure(Example, data)
-    assert example == Example(
-        i = 5,
-        s = 'test',
-        array = [10,7],
-        embedded = {
-            'a1': 8,
-            'a2': 0.5
-        },
-        simplestruct = SimpleStruct(name = 'danny'),
-        all = 5,
-        enum = 3
-    )
+    with raises(ValueError) as excinfo:
+        deserialize_structure(Example, data)
+    assert "any: [{'name': 'john', 'ssid': '123'}, {'name': 'paul'}] Did not match any field option" in str(
+        excinfo.value)
 
 
 def test_unsupported_field_err():
@@ -61,13 +117,15 @@ def test_unsupported_field_err():
     assert "cannot deserialize field 'unsupported'" in str(excinfo.value)
 
 
-def test_unsupported_nested_field_err():
+def test_allof_wrong_value_err():
     class UnsupportedStruct(Structure):
         unsupported = AllOf[Integer, Array]
 
-    with raises(TypeError) as excinfo:
+    with raises(ValueError) as excinfo:
         deserialize_structure(UnsupportedStruct, {'unsupported': 1})
-    assert "unsupported: deserialization of Multifield only supports Number, String and Enum" in str(excinfo.value)
+    assert "could not deserialize unsupported: did not match <Array>. reason: unsupported: must be an iterable" in str(
+        excinfo.value)
+
 
 def test_invalid_type_err():
     data = {
@@ -85,9 +143,9 @@ def test_invalid_type_err():
         'enum': 3,
 
     }
-    with raises(TypeError) as excinfo:
-         deserialize_structure(Example, data)
-    assert "all: Expected a number" in str(excinfo.value)
+    with raises(ValueError) as excinfo:
+        deserialize_structure(Example, data)
+    assert "could not deserialize all: did not match <Number>. reason: all: Expected a number" in str(excinfo.value)
 
 
 def test_invalid_type_err2():
@@ -105,9 +163,8 @@ def test_invalid_type_err2():
 
     }
     with raises(TypeError) as excinfo:
-         deserialize_structure(Example, data)
+        deserialize_structure(Example, data)
     assert "simplestruct: Expected a dictionary" in str(excinfo.value)
-
 
 
 def test_invalid_type_for_array_err():
@@ -121,13 +178,13 @@ def test_invalid_type_for_array_err():
         },
         'simplestruct': {
             'name': 'danny'
-        },        'all': 1,
+        }, 'all': 1,
         'enum': 3,
 
     }
-    with raises(TypeError) as excinfo:
-         deserialize_structure(Example, data)
-    assert "array: Expected <class 'list'>" in str(excinfo.value)
+    with raises(ValueError) as excinfo:
+        deserialize_structure(Example, data)
+    assert "array: must be an iterable" in str(excinfo.value)
 
 
 def test_array_has_simgle_itemp_in_definition():
@@ -135,7 +192,7 @@ def test_array_has_simgle_itemp_in_definition():
         a = Array(items=Integer())
 
     foo = deserialize_structure(Foo, {'a': [1, 2, -3]})
-    assert foo.a[2]==-3
+    assert foo.a[2] == -3
 
 
 def test_invalid_value_err():
@@ -155,7 +212,7 @@ def test_invalid_value_err():
 
     }
     with raises(ValueError) as excinfo:
-         deserialize_structure(Example, data)
+        deserialize_structure(Example, data)
     assert 'name: Does not match regular expression: "[A-Za-z]+$"' in str(excinfo.value)
 
 
@@ -166,17 +223,17 @@ def test_map_deserialization():
     data = {
         'map': {
             1: {
-            'name': 'abc'
+                'name': 'abc'
             },
             2: {
-            'name': 'def'
+                'name': 'def'
             }
         }
     }
 
     example = deserialize_structure(Foo, data)
-    assert example.map[1] == SimpleStruct(name = 'abc')
-    assert example.map[2] == SimpleStruct(name = 'def')
+    assert example.map[1] == SimpleStruct(name='abc')
+    assert example.map[2] == SimpleStruct(name='def')
 
 
 def test_map_deserialization_type_err():
@@ -190,21 +247,28 @@ def test_map_deserialization_type_err():
         deserialize_structure(Foo, data)
     assert 'map: expected a dict' in str(excinfo.value)
 
-def test_multifield_with_unsupported_type_err():
-    source = {
-       'any': 'abc'
-    }
+
+def test_multifield_with_diffrerent_types():
     class Foo(Structure):
         any = AnyOf[Map, Set, String]
 
-    with raises(TypeError) as excinfo:
-         deserialize_structure(Foo, source)
-    assert "any: deserialization of Multifield only supports Number, String and Enum" in str(excinfo.value)
+    assert deserialize_structure(Foo, {'any': 'abc'}).any == 'abc'
+    assert deserialize_structure(Foo, {'any': {'abc': 'def'}}).any['abc'] == 'def'
+    assert 'def' in deserialize_structure(Foo, {'any': {'abc','def'}}).any
+
+
+def test_multifield_with_diffrerent_types_no_match():
+    class Foo(Structure):
+        any = AnyOf[Map, Set, String]
+
+    with raises(ValueError) as excinfo:
+        deserialize_structure(Foo, {'any': [1,2,3]})
+    assert 'any: [1, 2, 3] Did not match any field option' in str(excinfo.value)
 
 
 def test_unsupported_type_err():
     source = {
-       'bar': 'abc'
+        'bar': 'abc'
     }
 
     class Bar(object): pass
@@ -215,7 +279,7 @@ def test_unsupported_type_err():
         bar = WrappedBar
 
     with raises(NotImplementedError) as excinfo:
-         deserialize_structure(Foo, source)
+        deserialize_structure(Foo, source)
     assert "cannot deserialize field 'bar' of type WrappedBar" in str(excinfo.value)
 
 
@@ -247,12 +311,12 @@ def test_min_items_and_class_reference_err():
         b = Integer
 
     class Bar(Structure):
-        foos = Array(minItems=1, items = Foo)
+        foos = Array(minItems=1, items=Foo)
 
     serialized = {'foos': [1]}
-    with raises(TypeError) as excinfo:
+    with raises(ValueError) as excinfo:
         deserialize_structure(Bar, serialized)
-    assert "foos: Expected a dictionary" in str(excinfo.value)
+    assert "foos_0: Expected a dictionary" in str(excinfo.value)
 
 
 def test_min_items_and_class_reference():
@@ -261,61 +325,75 @@ def test_min_items_and_class_reference():
         b = Integer
 
     class Bar(Structure):
-        foos = Array(minItems=1, items = Foo)
+        foos = Array(minItems=1, items=Foo)
 
     serialized = {'foos': [{'a': 1, 'b': 2}]}
     bar = deserialize_structure(Bar, serialized)
-    assert bar.foos[0].b==2
+    assert bar.foos[0].b == 2
 
 
 def test_deserialize_tuple():
     class Foo(Structure):
-        a= Integer
-        t=Tuple[Integer, String]
+        a = Integer
+        t = Tuple[Integer, String]
 
-    serialized = {'a':3, 't' :[3, 'abc']}
+    serialized = {'a': 3, 't': [3, 'abc']}
     foo = deserialize_structure(Foo, serialized)
-    assert foo.t[1]=='abc'
+    assert foo.t[1] == 'abc'
 
 
 def test_deserialize_tuple_err():
     class Foo(Structure):
-        a= Integer
-        t=Tuple[Integer, String]
+        a = Integer
+        t = Tuple[Integer, String]
 
-    serialized = {'a':3, 't' :[3, 4]}
-    with raises(TypeError) as excinfo:
+    serialized = {'a': 3, 't': [3, 4]}
+    with raises(ValueError) as excinfo:
         deserialize_structure(Foo, serialized)
     assert "t_1: Expected a string" in str(excinfo.value)
 
 
 def test_deserialize_set():
     class Foo(Structure):
-        a= Integer
-        t=Set[Integer]
+        a = Integer
+        t = Set[Integer]
 
-    serialized = {'a':3, 't' :[3, 4, 3]}
+    serialized = {'a': 3, 't': [3, 4, 3]}
     foo = deserialize_structure(Foo, serialized)
-    assert foo.t=={3,4}
+    assert foo.t == {3, 4}
 
 
 def test_deserialize_set_err1():
     class Foo(Structure):
-        a= Integer
-        t=Set[Integer]
+        a = Integer
+        t = Set[Integer]
 
-    serialized = {'a':3, 't' :4}
-    with raises(TypeError) as excinfo:
+    serialized = {'a': 3, 't': 4}
+    with raises(ValueError) as excinfo:
         deserialize_structure(Foo, serialized)
-    assert "t: Expected <class 'set'>" in str(excinfo.value)
+    assert "t: must be an iterable" in str(excinfo.value)
 
 
 def test_deserialize_set_err2():
     class Foo(Structure):
-        a= Integer
-        t=Set[Integer]
+        a = Integer
+        t = Set[Integer]
 
-    serialized = {'a':3, 't' : [1, 'asd']}
-    with raises(TypeError) as excinfo:
+    serialized = {'a': 3, 't': [1, 'asd']}
+    with raises(ValueError) as excinfo:
         deserialize_structure(Foo, serialized)
-    assert "t: Expected <class 'int'>" in str(excinfo.value)
+    assert "t_1: Expected <class 'int'>" in str(excinfo.value)
+
+
+def test_map_without_types():
+    class Foo(Structure):
+        map = Map
+
+    source = {
+        'map': {
+            'a': 1,
+            1: 'b'
+        }
+    }
+    foo = deserialize_structure(Foo, source)
+    assert foo.map['a'] == 1

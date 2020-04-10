@@ -108,7 +108,7 @@ def test_del_mandatory_err():
     p = Person(name="aaa", ssid="abc", num=10, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})
     with pytest.raises(ValueError) as excinfo:
         del p['ssid']
-    assert 'ssid is manadoty' in str(excinfo.value)
+    assert 'ssid is mandatory' in str(excinfo.value)
 
 
 def test_del_non_mandatory():

@@ -10,7 +10,7 @@ from typedpy.fields import (
     String, SizedString, Sized, Enum, EnumString,
     AllOf, AnyOf, OneOf, NotField, Boolean,
     Array, Set, Map, Tuple, StructureReference,
-    ImmutableField, create_typed_field,
+    ImmutableField, create_typed_field, Anything
     )
 
 from typedpy.json_schema_mapping import (

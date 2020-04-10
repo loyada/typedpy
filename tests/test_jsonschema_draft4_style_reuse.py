@@ -74,7 +74,7 @@ def test_allof_broken_err2():
 def test_anyof_misses_all_err():
     with raises(ValueError) as excinfo:
         Example(b=-99.1)
-    assert "b: Did not match any field option" in str(excinfo.value)
+    assert "b: -99.1 Did not match any field option" in str(excinfo.value)
 
 
 def test_anyof_valid1():
@@ -157,7 +157,7 @@ def test_standard_definition_wrong_fields_arg_err():
 def test_embeded_structure_type_err():
     with raises(ValueError) as excinfo:
         Example(g=3.5)
-    assert "g: Did not match any field option" in str(excinfo.value)
+    assert "g: 3.5 Did not match any field option" in str(excinfo.value)
 
 
 def test_embeded_structure_valid():

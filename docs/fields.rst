@@ -31,6 +31,8 @@ Predefined Types
 
 .. autoclass:: Field
 
+.. autoclass:: Anything
+
 Numerical
 ---------
 

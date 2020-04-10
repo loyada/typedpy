@@ -1,20 +1,35 @@
 from typedpy.structures import TypedField
 from typedpy.fields import Field, Number, String, StructureReference, \
-    Array, Map, ClassReference, Enum, MultiFieldWrapper, Boolean, Tuple, Set
+    Array, Map, ClassReference, Enum, MultiFieldWrapper, Boolean, Tuple, Set, Anything, AnyOf, AllOf, \
+    OneOf, NotField
 
 
 def deserialize_list_like(field, content_type, value, name):
-    if not isinstance(value, list):
-        return value
-    items = field.items
-    if isinstance(items, Field):
-        return content_type(deserialize_single_field(items, v, name) for v in value)
+    try:
+        iter(value)
+    except TypeError:
+        raise ValueError("{}: must be an iterable".format(name))
 
     values = []
-    for i, item in enumerate(items):
-        res = deserialize_single_field(item, value[i], name)
-        values.append(res)
-    values += value[len(items):]
+    items = field.items
+    if isinstance(items, Field):
+        list_items = []
+        for i, v in enumerate(value):
+            item_name = "{}_{}".format(name, i)
+            try:
+                list_item = deserialize_single_field(items, v, item_name)
+            except (ValueError, TypeError) as e:
+                prefix = "" if str(e).startswith(item_name) else "{}: ".format(item_name)
+                raise ValueError("{}{}".format(prefix, str(e)))
+            values.append(list_item)
+    else:
+        for i, item in enumerate(items):
+            try:
+               res = deserialize_single_field(item, value[i], name)
+            except (ValueError, TypeError) as e:
+                raise ValueError("{}_{}: {}".format(name, i, str(e)))
+            values.append(res)
+        values += value[len(items):]
     return content_type(values)
 
 
@@ -35,11 +50,22 @@ def deserialize_multifield_wrapper(field, source_val, name):
     Only primitive values are supported, otherwise deserialization is ambiguous,
     since it can only be verified when the structure is instantiated
     """
+    deserialized = source_val
+    found_previous_match = False
     for field_option in field.get_fields():
-        if not isinstance(field_option, (Number, String, Enum, Boolean)):
-            raise TypeError("{}: deserialization of Multifield only supports Number, ".
-                            format(name) + "String and Enum")
-    return source_val
+        try:
+            deserialized =  deserialize_single_field(field_option, source_val, name)
+            if isinstance(field, AnyOf):
+                return deserialized
+            elif isinstance(field,  NotField) :
+                raise ValueError("could not deserialize {}: matches field {}, but must not match it".format(name, field))
+            elif isinstance(field,  OneOf)  and found_previous_match:
+                raise ValueError("could not deserialize {}: matches more than one match".format(name, field))
+            found_previous_match = True
+        except Exception as e:
+            if isinstance(field, AllOf):
+                raise ValueError("could not deserialize {}: did not match {}. reason: {}".format(name, field_option, str(e)))
+    return deserialized
 
 
 def deserialize_map(map_field, source_val, name):
@@ -57,9 +83,12 @@ def deserialize_map(map_field, source_val, name):
 
 
 def deserialize_single_field(field, source_val, name):
-    if isinstance(field, (Number, String, Enum, Boolean)) or field is None:
+    if isinstance(field, (Number, String, Enum, Boolean)):
+        field._validate(source_val)
         value = source_val
-    elif isinstance(field, TypedField) and getattr(field, '_ty', '') in {str, int, float}:
+    elif isinstance(field, TypedField) and \
+            getattr(field, '_ty', '') in {str, int, float} and \
+            isinstance(source_val, getattr(field, '_ty', '')):
         value = source_val
     elif isinstance(field, Array):
         value = deserialize_array(field, source_val, name)
@@ -75,6 +104,8 @@ def deserialize_single_field(field, source_val, name):
         value = deserialize_structure_reference(getattr(field, '_newclass'), source_val)
     elif isinstance(field, Map):
         value = deserialize_map(field, source_val, name)
+    elif isinstance(field, Anything) or field is None:
+        value = source_val
     else:
         raise NotImplementedError("cannot deserialize field '{}' of type {}".
                                   format(name, field.__class__.__name__))
@@ -87,6 +118,7 @@ def deserialize_structure_reference(cls, the_dict: dict):
     kwargs = dict([(k, v) for k, v in the_dict.items() if k not in cls.__dict__])
     for name, field in field_by_name.items():
         kwargs[name] = deserialize_single_field(field, the_dict[name], name)
+    cls(**kwargs)
     return kwargs
 
 

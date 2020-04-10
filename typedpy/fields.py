@@ -91,28 +91,37 @@ class Number(Field):
         self.exclusiveMaximum = exclusiveMaximum
         super().__init__(*args, **kwargs)
 
-    def __set__(self, instance, value):
+    @staticmethod
+    def _validate_static(self, value):
         def is_number(val):
             return isinstance(val, (float, int, Decimal))
 
+        def err_prefix():
+            return "{}: ".format(self._name) if self._name else ""
         if not is_number(value):
-            raise TypeError("{}: Expected a number".format(self._name))
+            raise TypeError("{}Expected a number".format(err_prefix()))
         if isinstance(self.multiplesOf, float) and \
                 int(value / self.multiplesOf) != value / self.multiplesOf or \
                 isinstance(self.multiplesOf, int) and value % self.multiplesOf:
-            raise ValueError("{}: Expected a a multiple of {}".format(
-                self._name, self.multiplesOf))
+            raise ValueError("{}Expected a a multiple of {}".format(
+                err_prefix(), self.multiplesOf))
         if (is_number(self.minimum)) and self.minimum > value:
-            raise ValueError("{}: Expected a minimum of {}".format(
-                self._name, self.minimum))
+            raise ValueError("{}Expected a minimum of {}".format(
+                err_prefix(), self.minimum))
         if is_number(self.maximum):
             if self.exclusiveMaximum and self.maximum == value:
-                raise ValueError("{}: Expected a maxmimum of less than {}".format(
-                    self._name, self.maximum))
+                raise ValueError("{}Expected a maxmimum of less than {}".format(
+                    err_prefix(), self.maximum))
             else:
                 if self.maximum < value:
-                    raise ValueError("{}: Expected a maxmimum of {}".format(
-                        self._name, self.maximum))
+                    raise ValueError("{}Expected a maxmimum of {}".format(
+                        err_prefix(), self.maximum))
+
+    def _validate(self, value):
+        Number._validate_static(self, value)
+
+    def __set__(self, instance, value):
+        self._validate(value)
         super().__set__(instance, value)
 
 
@@ -121,6 +130,10 @@ class Integer(TypedField, Number):
     An extension of :class:`Number` for an integer. Accepts int
     """
     _ty = int
+
+    def _validate(self, value):
+        super()._validate(value)
+        Number._validate_static(self, value)
 
 
 class DecimalNumber(Number):
@@ -163,20 +176,36 @@ class String(TypedField):
             self._compiled_pattern = re.compile(self.pattern)
         super().__init__(*args, **kwargs)
 
-    def __set__(self, instance, value):
-        if not isinstance(value, str):
-            raise TypeError("{}: Expected a string".format(self._name))
-        if self.maxLength is not None and len(value) > self.maxLength:
-            raise ValueError("{}: Expected a maxmimum length of {}".format(
-                self._name, self.maxLength))
-        if self.minLength is not None and len(value) < self.minLength:
-            raise ValueError("{}: Expected a minimum length of {}".format(
-                self._name, self.minLength))
-        if self.pattern is not None and not self._compiled_pattern.match(value):
-            raise ValueError('{}: Does not match regular expression: "{}"'.format(
-                self._name, self.pattern))
+    def _validate(self, value):
+        String._validate_static(self, value)
 
+    @staticmethod
+    def _validate_static(self, value):
+        def err_prefix():
+            return "{}: ".format(self._name) if self._name else ""
+
+        if not isinstance(value, str):
+            raise TypeError("{}Expected a string".format(err_prefix()))
+        if self.maxLength is not None and len(value) > self.maxLength:
+            raise ValueError("{}Expected a maxmimum length of {}".format(
+                err_prefix(), self.maxLength))
+        if self.minLength is not None and len(value) < self.minLength:
+            raise ValueError("{}Expected a minimum length of {}".format(
+                err_prefix(), self.minLength))
+        if self.pattern is not None and not self._compiled_pattern.match(value):
+            raise ValueError('{}Does not match regular expression: "{}"'.format(
+                err_prefix(), self.pattern))
+
+    def __set__(self, instance, value):
+        self._validate(value)
         super().__set__(instance, value)
+
+
+class Anything(Field):
+    """
+    A field that can contain anything
+    """
+    pass
 
 
 class Float(TypedField, Number):
@@ -184,6 +213,10 @@ class Float(TypedField, Number):
     An extension of :class:`Number` for a float
     """
     _ty = float
+
+    def _validate(self, value):
+        super()._validate(value)
+        Number._validate_static(self, value)
 
 
 class Boolean(TypedField):
@@ -668,9 +701,12 @@ class Enum(Field, metaclass=_EnumMeta):
         self.values = values
         super().__init__(*args, **kwargs)
 
-    def __set__(self, instance, value):
+    def _validate(self, value):
         if value not in self.values:
             raise ValueError('{}: Must be one of {}'.format(self._name, self.values))
+
+    def __set__(self, instance, value):
+        self._validate(value)
         super().__set__(instance, value)
 
 
@@ -806,7 +842,7 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             except ValueError:
                 pass
         if not matched:
-            raise ValueError("{}: Did not match any field option".format(self._name))
+            raise ValueError("{}: {} Did not match any field option".format(self._name, value))
         super().__set__(instance, value)
 
     def __str__(self):

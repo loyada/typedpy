@@ -220,6 +220,25 @@ class Structure(metaclass=StructMeta):
         super().__setattr__(key, value)
 
     def __str__(self):
+        def list_to_str(values):
+            as_strings = [to_str(v) for v in values]
+            return ','.join(as_strings)
+
+        def dict_to_str(values):
+            as_strings = ["{} = {}".format(to_str(k), to_str(v)) for (k, v) in values.items()]
+            return ','.join(as_strings)
+
+        def to_str(val):
+            if isinstance(val, (list)):
+                return '[{}]'.format(list_to_str(val))
+            elif isinstance(val, tuple):
+                return '({})'.format(list_to_str(val))
+            elif isinstance(val, set):
+                return '{{{}}}'.format(list_to_str(val))
+            elif isinstance(val, dict):
+                return '{{{}}}'.format(dict_to_str(val))
+            return str(val)
+
         name = self.__class__.__name__
         if name.startswith('StructureReference_') and self.__class__.__bases__ == (Structure,):
             name = 'Structure'
@@ -227,7 +246,7 @@ class Structure(metaclass=StructMeta):
         internal_props = ['_instantiated']
         for k, val in sorted(self.__dict__.items()):
             if k not in internal_props:
-                strv = "'{}'".format(val) if isinstance(val, str) else str(val)
+                strv = "'{}'".format(val) if isinstance(val, str) else to_str(val)
                 props.append('{} = {}'.format(k, strv))
         return '<Instance of {}. Properties: {}>'.format(name, ', '.join(props))
 
@@ -240,7 +259,7 @@ class Structure(metaclass=StructMeta):
     def __delitem__(self, key):
         if isinstance(getattr(self, '_required'), list) and \
                         key in getattr(self, '_required'):
-            raise ValueError("{} is manadoty".format(key))
+            raise ValueError("{} is mandatory".format(key))
         del self.__dict__[key]
 
     def __validate__(self): pass
@@ -277,9 +296,14 @@ class TypedField(Field):
     """
     _ty = object
 
+    def _validate(self, value):
+        def err_prefix():
+            return "{}: ".format(self._name) if self._name else ""
+        if not isinstance(value, (self._ty)) and value is not None:
+            raise TypeError("{}Expected {}".format(err_prefix(), self._ty))
+
     def __set__(self, instance, value):
-        if not isinstance(value, self._ty):
-            raise TypeError("%s: Expected %s" % (self._name, self._ty))
+        self._validate(value)
         super().__set__(instance, value)
 
 

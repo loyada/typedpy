@@ -37,20 +37,6 @@ def test_successful_deserialization_with_many_types():
     assert result == source
 
 
-def test_map_without_types():
-    class Foo(Structure):
-        map = Map
-
-    source = {
-        'map': {
-            'a': 1,
-            1: 'b'
-        }
-    }
-    foo = deserialize_structure(Foo, source)
-    assert foo.map['a'] == 1
-
-
 def test_some_empty_fields():
     class Foo(Structure):
         a = Integer

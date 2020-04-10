@@ -9,7 +9,7 @@ Serialization
 The Basics - Usage
 ==================
 
-Typedpy allows to deserialize/ a JSON-like Python dict to an instance of a predefined :class:`Structure`,
+Typedpy allows to deserialize a JSON-like Python dict to an instance of a predefined :class:`Structure`,
 as well serialize an instance of :class:`Structure` to a JSON-like dict.
 The target class can have fields that are embedded structure or even class references.
 
@@ -66,6 +66,13 @@ See example below:
         # Serialization
         result = serialize(example)
         assert result==source
+
+
+Though the above example does not show it, the deserializer supports the following:
+#. A field that can be anything, using the Field type :class:`Anything`
+#. All the built in collections are fully supported, for example:  a = Array[Map[String, Integer]] is supported
+#. :class:`AnyOf`, :class:`OneOf`, :class:`NotField`, :class:`AllOf` are fully supported, including embedded structures \
+in them. For example, if you had a structure Foo, the following is supported: p = Set[AnyOf[Foo, Array[Foo], String]]
 
 
 **To convert the result of serialize() to JSON use:**

@@ -2,7 +2,7 @@ from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, TypedField, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything
+    Float, TypedField, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything, serialize, NotField
 
 
 class SimpleStruct(Structure):
@@ -60,7 +60,7 @@ def test_successful_deserialization_with_many_types():
         'all': 5,
         'enum': 3
     }
-    example = deserialize_structure(Example, data)
+    deserialized = deserialize_structure(Example, data)
 
     expected = Example(
         anything={'a', 'b', 'c'},
@@ -79,7 +79,32 @@ def test_successful_deserialization_with_many_types():
         all=5,
         enum=3
     )
-    assert example == expected
+    assert deserialized == expected
+
+
+def test_successful_deserialization_and_serialization_with_many_types():
+    original = {
+        'anything': ['a', 'b', 'c'],
+        'i': 5,
+        's': 'test',
+        'complex_allof': {'name': 'john', 'ssid': '123'},
+        'array': [10, 7],
+        'any': [{'name': 'john', 'ssid': '123'}],
+        'embedded': {
+            'a1': 8,
+            'a2': 0.5
+        },
+        'people': [{'name': 'john', 'ssid': '123'}],
+        'simplestruct': {
+            'name': 'danny'
+        },
+        'array_of_one_of': [{'a1': 8, 'a2': 0.5}, 0.5, 4, {'name': 'john', 'ssid': '123'}],
+        'all': 5,
+        'enum': 3
+    }
+    serialized = serialize(deserialize_structure(Example, original))
+
+    assert serialized == original
 
 
 def test_anyof_field_failure():
@@ -105,6 +130,86 @@ def test_anyof_field_failure():
         excinfo.value)
 
 
+def test_anyof_field_success():
+    class Foo(Structure):
+        a = Integer
+        b = Array[AnyOf[Person, Float, Array[Person]]]
+
+    data = {
+        'a': 1,
+        'b': [1.5, [{'name': 'john', 'ssid': '123'}, {'name': 'john', 'ssid': '456'}], {'name': 'john', 'ssid': '789'}],
+    }
+    deserialized = deserialize_structure(Foo, data)
+
+    expected = Foo(
+        a=1,
+        b=[
+            1.5,
+            [Person(name='john', ssid='123'), Person(name='john', ssid='456')],
+            Person(name='john', ssid='789')
+        ]
+    )
+    assert deserialized == expected
+
+
+def test_oneof_field_failure1():
+    class Foo(Structure):
+        a = Integer
+        b = Array[OneOf[String(minLength=3), String(maxLength=5), Integer]]
+
+    data = {'a': 1, 'b': [1, 'abcd']}
+    with raises(ValueError) as excinfo:
+        deserialize_structure(Foo, data)
+    assert "b_1: Matched more than one field option" in str(
+        excinfo.value)
+
+
+def test_oneof_field_failure2():
+    class Foo(Structure):
+        a = Integer
+        b = Array[OneOf[String(minLength=3), String(maxLength=5), Integer]]
+
+    data = {'a': 1, 'b': [1, []]}
+    with raises(ValueError) as excinfo:
+        deserialize_structure(Foo, data)
+    assert "b_1: Did not match any field option" in str(
+        excinfo.value)
+
+
+def test_oneof_field_success():
+    class Foo(Structure):
+        a = Integer
+        b = Array[OneOf[String(minLength=3), String(maxLength=5), Integer]]
+
+    data = {'a': 1, 'b': ['abcdef', 1, 'a', 'b']}
+    deserialized = deserialize_structure(Foo, data)
+
+    assert deserialized == Foo(a=1, b=['abcdef', 1, 'a', 'b'])
+
+
+def test_notfield_field_failure():
+    class Foo(Structure):
+        a = Integer
+        b = Array[NotField[String(minLength=3), String(maxLength=5), Integer]]
+
+    data = {'a': 1, 'b': [1.4, 'abcd']}
+    with raises(ValueError) as excinfo:
+        deserialize_structure(Foo, data)
+    assert "b_1: Expected not to match any field definition" in str(
+        excinfo.value)
+
+
+def test_notfield_field_success():
+    class Foo(Structure):
+        a = Integer
+        b = Array[NotField[String(maxLength=3), Integer(minimum=4)]]
+
+    data = {'a': 1, 'b': ['abcdef', 1, 10.5, []]}
+    deserialized = deserialize_structure(Foo, data)
+
+    assert deserialized == Foo(a=1, b=['abcdef', 1, 10.5, []])
+
+
 def test_unsupported_field_err():
     # This has no information about the type - clearly can't deserialize
     class UnsupportedField(Field): pass
@@ -118,12 +223,12 @@ def test_unsupported_field_err():
 
 
 def test_allof_wrong_value_err():
-    class UnsupportedStruct(Structure):
-        unsupported = AllOf[Integer, Array]
+    class Foo(Structure):
+        bar = AllOf[Integer, Array]
 
     with raises(ValueError) as excinfo:
-        deserialize_structure(UnsupportedStruct, {'unsupported': 1})
-    assert "could not deserialize unsupported: did not match <Array>. reason: unsupported: must be an iterable" in str(
+        deserialize_structure(Foo, {'bar': 1})
+    assert "could not deserialize bar: did not match <Array>. reason: bar: must be an iterable" in str(
         excinfo.value)
 
 
@@ -187,7 +292,7 @@ def test_invalid_type_for_array_err():
     assert "array: must be an iterable" in str(excinfo.value)
 
 
-def test_array_has_simgle_itemp_in_definition():
+def test_array_has_simple_item_in_definition():
     class Foo(Structure):
         a = Array(items=Integer())
 
@@ -254,7 +359,7 @@ def test_multifield_with_diffrerent_types():
 
     assert deserialize_structure(Foo, {'any': 'abc'}).any == 'abc'
     assert deserialize_structure(Foo, {'any': {'abc': 'def'}}).any['abc'] == 'def'
-    assert 'def' in deserialize_structure(Foo, {'any': {'abc','def'}}).any
+    assert 'def' in deserialize_structure(Foo, {'any': {'abc', 'def'}}).any
 
 
 def test_multifield_with_diffrerent_types_no_match():
@@ -262,7 +367,7 @@ def test_multifield_with_diffrerent_types_no_match():
         any = AnyOf[Map, Set, String]
 
     with raises(ValueError) as excinfo:
-        deserialize_structure(Foo, {'any': [1,2,3]})
+        deserialize_structure(Foo, {'any': [1, 2, 3]})
     assert 'any: [1, 2, 3] Did not match any field option' in str(excinfo.value)
 
 

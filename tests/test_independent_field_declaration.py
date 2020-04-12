@@ -1,3 +1,5 @@
+import sys
+
 from pytest import raises
 from typedpy import String, Number, Structure, ImmutableField, ImmutableStructure, Array, Map, Integer, Field
 from typing import get_type_hints, Type
@@ -95,6 +97,8 @@ def test_field_declaration_bad_usage():
 
 
 def test_field_declaration_simplified_syntax_v051():
+    if sys.version_info[0:2] == (3,6):
+        return
     # we declare type hint of the return value:
     def Names() -> Type[Field]: return Array[String]
     def TableName()-> Type[Field]: return String

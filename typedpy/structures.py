@@ -4,6 +4,7 @@ Structure, Field, StructureReference, ClassReference, TypedField
 """
 from collections import OrderedDict
 from inspect import Signature, Parameter
+import sys
 
 # support:
 # json schema draft 4,
@@ -130,7 +131,7 @@ class StructMeta(type):
     def __new__(mcs, name, bases, cls_dict):
         # noinspection PyBroadException
         def is_function_returning_field(field_definition_candidate):
-            if callable(field_definition_candidate):
+            if callable(field_definition_candidate) and sys.version_info[0:2] != (3,6):
                 try:
                     return_value = get_type_hints(field_definition_candidate).get("return", None)
                     return Field in getattr(return_value.__args__[0], '__mro__', [])

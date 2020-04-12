@@ -274,7 +274,7 @@ Extension and Utilities
         A(bar=4, foo=my_foo)
 
 
-Defining a Field Separately
+Defining a Field Independently
 ===========================
 Supposed you have a field definition you would like to reuse. It's important that you do *not* do it using an assignment, i.e.:
 
@@ -306,7 +306,7 @@ The example above is wrong. Instead, define a function that returns the field, a
             table = TableName()
 
 
-From 0.51, you can also use type hints to let TypedPy know that this is a Field factory. In this case, \
+From version 0.51, if you use Python 3.7+, you can also use type hints to let TypedPy know that this is a Field factory. In this case, \
  TypedPy will automatically inspect it, so you don't need to call the function explicitly in the class definition. For example:
 
  .. code-block:: python

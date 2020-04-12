@@ -273,3 +273,48 @@ Extension and Utilities
         # assuming we have an instance of Foo called my_foo, we can create a valid instance of A:
         A(bar=4, foo=my_foo)
 
+
+Defining a Field Separately
+===========================
+Supposed you have a field definition you would like to reuse. It's important that you do *not* do it using an assignment, i.e.:
+
+  .. code-block:: python
+
+        # This is bad! don't do it!
+        TableName = String(minLength=5)
+
+        class Foo(Structure):
+            table = TableName
+
+        # the above *may* work in certain scenario, but it is broken code. Avoid it.
+
+The example above is wrong. Instead, define a function that returns the field, as in the following Example:
+
+ .. code-block:: python
+
+        def Names(): return Array[String]
+        def TableName(): return String(minLength=5)
+
+        class Foo(Structure):
+            i = Integer
+            foo_names = Names()
+            table = TableName()
+
+        class Bar(Structure):
+            bar_names = Names()
+            i = Integer
+            table = TableName()
+
+
+From 0.51, you can also use type hints to let TypedPy know that this is a Field factory. In this case, \
+ TypedPy will automatically inspect it, so you don't need to call the function explicitly in the class definition. For example:
+
+ .. code-block:: python
+
+        def Names() -> Type[Field]: return Array[String]
+        def TableName()-> Type[Field]: return String
+
+        class Foo(Structure):
+            foo_names = Names   # note we don't need to call NameS()
+            table = TableName
+

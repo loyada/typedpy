@@ -5,12 +5,13 @@ Structure, Field, StructureReference, ClassReference, TypedField
 from collections import OrderedDict
 from inspect import Signature, Parameter
 
-
 # support:
 # json schema draft 4,
 # Structure inheritance,
 # fields of class reference
 # embedded structures
+from typing import get_type_hints
+
 
 def make_signature(names, required, additional_properties, bases_params_by_name):
     """
@@ -30,7 +31,7 @@ def make_signature(names, required, additional_properties, bases_params_by_name)
         [(name, param) for (name, param) in bases_params_by_name.items() if
          name in required])
     non_default_args = list({**non_default_args_for_bases,
-                              **non_default_args_for_class}.values())
+                             **non_default_args_for_class}.values())
 
     default_args_for_class = OrderedDict(
         [(name, Parameter(name, Parameter.POSITIONAL_OR_KEYWORD, default=None))
@@ -127,10 +128,20 @@ class StructMeta(type):
         return OrderedDict()
 
     def __new__(mcs, name, bases, cls_dict):
+        # noinspection PyBroadException
+        def is_function_returning_field(field_definition_candidate):
+            if callable(field_definition_candidate):
+                try:
+                    return_value = get_type_hints(field_definition_candidate).get("return", None)
+                    return Field in getattr(return_value.__args__[0], '__mro__', [])
+                except Exception:
+                    return False
+            return False
+
         bases_params, bases_required = get_base_info(bases)
         for key, val in cls_dict.items():
             if not key.startswith('_') and not isinstance(val, Field) and \
-                            Field in getattr(val, '__mro__', []):
+                    (Field in getattr(val, '__mro__', []) or is_function_returning_field(val)):
                 cls_dict[key] = val()
         for key, val in cls_dict.items():
             if isinstance(val, StructMeta) and not isinstance(val, Field):
@@ -258,11 +269,12 @@ class Structure(metaclass=StructMeta):
 
     def __delitem__(self, key):
         if isinstance(getattr(self, '_required'), list) and \
-                        key in getattr(self, '_required'):
+                key in getattr(self, '_required'):
             raise ValueError("{} is mandatory".format(key))
         del self.__dict__[key]
 
-    def __validate__(self): pass
+    def __validate__(self):
+        pass
 
 
 class ImmutableStructure(Structure):
@@ -299,6 +311,7 @@ class TypedField(Field):
     def _validate(self, value):
         def err_prefix():
             return "{}: ".format(self._name) if self._name else ""
+
         if not isinstance(value, (self._ty)) and value is not None:
             raise TypeError("{}Expected {}".format(err_prefix(), self._ty))
 

@@ -107,6 +107,34 @@ def test_successful_deserialization_and_serialization_with_many_types():
     assert serialized == original
 
 
+def test_successful_deserialization_and_serialization_with_many_types1():
+    original = {
+        'anything': ['a', 'b', 'c'],
+        'i': 5,
+        's': 'test',
+        'complex_allof': {'name': 'john', 'ssid': '123'},
+        'array': [10, 7],
+        'any': [{'name': 'john', 'ssid': '123'}],
+        'embedded': {
+            'a1': 8,
+            'a2': 0.5
+        },
+        'people': [{'name': 'john', 'ssid': '123'}],
+        'simplestruct': {
+            'name': 'danny'
+        },
+        'array_of_one_of': [{'a1': 8, 'a2': 0.5}, 0.5, 4, {'name': 'john', 'ssid': '123'}],
+        'all': 5,
+        'enum': 3
+    }
+    deserialized: Example = deserialize_structure(Example, original)
+    deserialized.anything = Person(name="abc", ssid= "123123123123123123")
+
+    serialized = serialize(deserialized)
+
+    assert serialized == original
+
+
 def test_anyof_field_failure():
     data = {
         'i': 5,

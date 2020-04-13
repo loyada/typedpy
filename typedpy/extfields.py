@@ -1,8 +1,9 @@
 import json
-from datetime import datetime
+from datetime import datetime, date
 import re
 
-from typedpy.fields import TypedField
+from typedpy import Field
+from typedpy.fields import TypedField, SerializableField
 from typedpy.fields import String
 
 EmailAddress = String(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]+$)")
@@ -84,3 +85,26 @@ class TimeString(TypedField):
             datetime.strptime(value, "%H:%M:%S")
         except ValueError as ex:
             raise ValueError("{}:  {}".format(self._name, ex.args[0]))
+
+
+class DateField(Field, SerializableField):
+    def __init__(self, *args, date_format="%Y-%m-%d", **kwargs):
+        self._date_format = date_format
+        super().__init__(*args, **kwargs)
+
+    def serialize(self, value):
+        return value.strftime(self._date_format)
+
+    def deserialize(self, value):
+        return datetime.strptime(value, self._date_format).date()
+
+    def __set__(self, instance, value):
+        if isinstance(value, str):
+            as_date = datetime.strptime(value, self._date_format).date()
+            super().__set__(instance, as_date)
+        elif isinstance(value, date):
+            super().__set__(instance, value)
+        elif isinstance(value, datetime):
+            sum().__set__(instance, value.date())
+        else:
+            raise TypeError("{}: expected date, datetime, or str".format(self._name))

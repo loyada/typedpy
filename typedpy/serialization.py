@@ -1,7 +1,7 @@
 from typedpy.structures import TypedField
 from typedpy.fields import Field, Number, String, StructureReference, \
     Array, Map, ClassReference, Enum, MultiFieldWrapper, Boolean, Tuple, Set, Anything, AnyOf, AllOf, \
-    OneOf, NotField
+    OneOf, NotField, SerializableField
 
 
 def deserialize_list_like(field, content_type, value, name):
@@ -158,11 +158,20 @@ def deserialize_structure(cls, the_dict, name=None):
     return cls(**kwargs)
 
 
-def serialize_val(name, val):
+def serialize_val(field_definition, name, val):
+    if isinstance(field_definition, SerializableField) and isinstance(field_definition, Field):
+        return field_definition.serialize(val)
     if isinstance(val, (int, str, bool, float)) or val is None:
         return val
     if isinstance(val, (list, set, tuple)):
-        return [serialize_val(name, i) for i in val]
+        if isinstance(field_definition.items, list):
+            return [serialize_val(field_definition.items[ind], name, v) for ind,v in enumerate(val)]
+        elif isinstance(field_definition.items, Field):
+            return [serialize_val(field_definition.items, name, i) for i in val]
+        else:
+            return [serialize_val(None, name, i) for i in val]
+    if isinstance(field_definition, SerializableField):
+        return val.serialize()
     return serialize(val)
 
 
@@ -192,11 +201,11 @@ def serialize(structure, compact=False):
     if len(fields) == 1 and required == fields \
             and additional_props is False and compact:
         key = fields[0]
-        result = serialize_val(key, getattr(structure, key))
+        result = serialize_val(props.get(key, None), key, getattr(structure, key))
     else:
         result = {}
         for key, val in items:
             if val is None:
                 continue
-            result[key] = serialize_val(key, val)
+            result[key] = serialize_val(props.get(key, None), key, val)
     return result

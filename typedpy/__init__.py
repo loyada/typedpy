@@ -10,7 +10,8 @@ from typedpy.fields import (
     String, SizedString, Sized, Enum, EnumString,
     AllOf, AnyOf, OneOf, NotField, Boolean,
     Array, Set, Map, Tuple, StructureReference,
-    ImmutableField, create_typed_field, Anything
+    ImmutableField, create_typed_field, Anything,
+    SerializableField
     )
 
 from typedpy.json_schema_mapping import (
@@ -22,5 +23,5 @@ from typedpy.serialization import (
     deserialize_structure, serialize
 )
 from typedpy.extfields import (
-    DateString, TimeString, HostName, IPV4, JSONString, EmailAddress
+    DateString, DateField, TimeString, HostName, IPV4, JSONString, EmailAddress
 )

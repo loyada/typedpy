@@ -2,6 +2,7 @@
 Definitions of various types of fields. Supports JSON draft4 types.
 """
 import re
+from abc import ABC
 from collections import OrderedDict
 from functools import reduce
 from decimal import Decimal, getcontext, InvalidOperation
@@ -98,6 +99,7 @@ class Number(Field):
 
         def err_prefix():
             return "{}: ".format(self._name) if self._name else ""
+
         if not is_number(value):
             raise TypeError("{}Expected a number".format(err_prefix()))
         if isinstance(self.multiplesOf, float) and \
@@ -981,3 +983,13 @@ def create_typed_field(classname, cls, validate_func=None):
         validate_func(value)
 
     return type(classname, (ValidatedTypedField,), {'_validate_func': validate_wrapper, '_ty': cls})
+
+
+class SerializableField(ABC):
+    """
+    An abstract class for a field that has custom serialization or deserialization.
+    """
+    def serialize(self, value): return value
+
+    def deserialize(self, value): return value
+

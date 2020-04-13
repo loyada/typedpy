@@ -1,6 +1,6 @@
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, serialize, Map, Set, AnyOf
+    Float, serialize, Set, AnyOf, DateField
 
 
 class SimpleStruct(Structure):
@@ -90,3 +90,14 @@ def test_set_field_wrapper_compact():
 
     foo = Foo(s=['abcde', 234])
     assert serialize(foo, compact=True) == ['abcde', 234]
+
+
+def test_serializable_serialize():
+    from datetime import date
+
+    class Foo(Structure):
+        d = Array[DateField(date_format="%y%m%d")]
+        i = Integer
+
+    foo = Foo(d=[date(2019, 12, 4), "191205"], i=3)
+    assert serialize(foo) == {'d': ["191204", "191205"], 'i': 3}

@@ -124,7 +124,7 @@ Sometimes you might want to define your own serialization or deserialization of 
 For example: suppose you have a datetime object in one of the properties. You want to serialize/deserialize \
 it using a custom format. For that, you can inherit from  :class:`SerializableField`
 
-Example for custom deserialization:
+Example of custom deserialization:
 
 .. code-block:: python
 

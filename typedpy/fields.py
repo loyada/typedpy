@@ -988,7 +988,11 @@ def create_typed_field(classname, cls, validate_func=None):
 class SerializableField(ABC):
     """
     An abstract class for a field that has custom serialization or deserialization.
+    can override the method:
+      serialize(self, value),
+      deserialize(self, value)
     """
+
     def serialize(self, value): return value
 
     def deserialize(self, value): return value

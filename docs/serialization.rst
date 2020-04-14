@@ -116,6 +116,42 @@ tries to deserialize directly to that field. For example:
     assert example.i == 5
 
 
+.. _custom-serialization:
+
+Custom Serialization
+--------------------
+Sometimes you might want to define your own serialization or deserialization of a field. \
+For example: suppose you have a datetime object in one of the properties. You want to serialize/deserialize \
+it using a custom format. For that, you can inherit from  :class:`SerializableField`
+
+Example for custom deserialization:
+
+.. code-block:: python
+
+    class MySerializable(Field, SerializableField):
+        def __init__(self, *args, some_param="xxx", **kwargs):
+            self._some_param = some_param
+            super().__init__(*args, **kwargs)
+
+        def deserialize(self, value):
+            return {"mykey": "my custom deserialization: {}, {}".format(self._some_param, str(value))}
+
+         def serialize(self, value):
+            return 123
+
+    class Foo(Structure):
+        d = Array[MySerializable(some_param="abcde")]
+        i = Integer
+
+    deserialized = deserialize_structure(Foo, {'d': ["191204", "191205"], 'i': 3})
+
+    assert deserialized == Foo(i=3, d=[{'mykey': 'my custom deserialization: abcde, 191204'},
+                                       {'mykey': 'my custom deserialization: abcde, 191205'}])
+
+    assert serialize(deserialized) == {'d': [123, 123], 'i': 3}
+
+
+
 Limitations and Guidance
 ------------------------
 * For Set, Tuple - deserialization expects an array, serialization converts to array (set and tuple are not part of JSON)

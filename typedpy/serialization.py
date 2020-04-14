@@ -104,6 +104,8 @@ def deserialize_single_field(field, source_val, name):
         value = deserialize_structure_reference(getattr(field, '_newclass'), source_val)
     elif isinstance(field, Map):
         value = deserialize_map(field, source_val, name)
+    elif isinstance(field, SerializableField):
+        value = field.deserialize(source_val)
     elif isinstance(field, Anything) or field is None:
         value = source_val
     else:

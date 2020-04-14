@@ -105,6 +105,6 @@ class DateField(Field, SerializableField):
         elif isinstance(value, date):
             super().__set__(instance, value)
         elif isinstance(value, datetime):
-            sum().__set__(instance, value.date())
+            super().__set__(instance, value.date())
         else:
             raise TypeError("{}: expected date, datetime, or str".format(self._name))

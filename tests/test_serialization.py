@@ -92,7 +92,7 @@ def test_set_field_wrapper_compact():
     assert serialize(foo, compact=True) == ['abcde', 234]
 
 
-def test_serializable_serialize():
+def test_serializable_serialize_and_deserialize():
     from datetime import date
 
     class Foo(Structure):
@@ -100,4 +100,9 @@ def test_serializable_serialize():
         i = Integer
 
     foo = Foo(d=[date(2019, 12, 4), "191205"], i=3)
-    assert serialize(foo) == {'d': ["191204", "191205"], 'i': 3}
+    serialized = serialize(foo)
+    assert serialized == {'d': ["191204", "191205"], 'i': 3}
+
+    deserialized = deserialize_structure(Foo, serialized)
+    assert deserialized == Foo(i=3, d=[date(2019, 12, 4), date(2019, 12, 5)])
+

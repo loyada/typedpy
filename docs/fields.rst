@@ -203,6 +203,17 @@ Example:
 
 It is also possible to define an immutable Structure. See Under the **Structures** section.
 
+Custom Serialization or Deserialization of a Field
+==================================================
+
+.. autoclass:: SerializableField
+
+If your field inherits from this class, Typedpy will look for custom serialization or deserialization functions in it.
+If found, it will use them to serialize or deserialize.
+
+For more details, see :ref:`custom-serialization`
+
+
 Optional Field and Default Values
 =================================
 A structure can have fields that are optional. For an optional field, if no value is provided, then the assessor returns

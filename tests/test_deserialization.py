@@ -2,7 +2,8 @@ from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, TypedField, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything, serialize, NotField
+    Float, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything, serialize, NotField, \
+    SerializableField
 
 
 class SimpleStruct(Structure):
@@ -128,7 +129,7 @@ def test_successful_deserialization_and_serialization_with_many_types1():
         'enum': 3
     }
     deserialized: Example = deserialize_structure(Example, original)
-    deserialized.anything = Person(name="abc", ssid= "123123123123123123")
+    deserialized.anything = Person(name="abc", ssid="123123123123123123")
 
     serialized = serialize(deserialized)
 
@@ -530,3 +531,27 @@ def test_map_without_types():
     }
     foo = deserialize_structure(Foo, source)
     assert foo.map['a'] == 1
+
+
+def test_serializable_deserialize():
+    class MySerializable(Field, SerializableField):
+        def __init__(self, *args, some_param="xxx", **kwargs):
+            self._some_param = some_param
+            super().__init__(*args, **kwargs)
+
+        def deserialize(self, value):
+            return {"mykey": "my custom deserialization: {}, {}".format(self._some_param, str(value))}
+
+        def serialize(self, value):
+            return 123
+
+    class Foo(Structure):
+        d = Array[MySerializable(some_param="abcde")]
+        i = Integer
+
+    deserialized = deserialize_structure(Foo, {'d': ["191204", "191205"], 'i': 3})
+
+    assert deserialized == Foo(i=3, d=[{'mykey': 'my custom deserialization: abcde, 191204'},
+                                       {'mykey': 'my custom deserialization: abcde, 191205'}])
+
+    assert serialize(deserialized) == {'d': [123, 123], 'i': 3}

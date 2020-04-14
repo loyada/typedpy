@@ -160,7 +160,6 @@ Limitations and Guidance
 
 * If you create a completely new field type, that is not based on the predefined classes in Typedpy, it is not guaranteed to be supported. For example - if you define a custom field type using :func:`create_typed_field`, it is not supported
 
-* If you are serializing a Structure with a property of type :class:`Anything` , it 
 
 
 Functions

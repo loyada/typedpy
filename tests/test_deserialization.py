@@ -132,7 +132,7 @@ def test_successful_deserialization_and_serialization_with_many_types1():
     deserialized.anything = Person(name="abc", ssid="123123123123123123")
 
     serialized = serialize(deserialized)
-
+    original['anything'] = {'name': 'abc', 'ssid': '123123123123123123'}
     assert serialized == original
 
 

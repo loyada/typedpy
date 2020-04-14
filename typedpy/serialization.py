@@ -1,7 +1,7 @@
-from typedpy.structures import TypedField
+from typedpy.structures import TypedField, Structure
 from typedpy.fields import Field, Number, String, StructureReference, \
     Array, Map, ClassReference, Enum, MultiFieldWrapper, Boolean, Tuple, Set, Anything, AnyOf, AllOf, \
-    OneOf, NotField, SerializableField
+    OneOf, NotField, SerializableField, SizedCollection
 
 
 def deserialize_list_like(field, content_type, value, name):
@@ -165,15 +165,20 @@ def serialize_val(field_definition, name, val):
         return field_definition.serialize(val)
     if isinstance(val, (int, str, bool, float)) or val is None:
         return val
-    if isinstance(val, (list, set, tuple)):
+    if isinstance(field_definition, SizedCollection):
         if isinstance(field_definition.items, list):
             return [serialize_val(field_definition.items[ind], name, v) for ind,v in enumerate(val)]
         elif isinstance(field_definition.items, Field):
             return [serialize_val(field_definition.items, name, i) for i in val]
         else:
             return [serialize_val(None, name, i) for i in val]
-    if isinstance(field_definition, SerializableField):
-        return val.serialize()
+    if isinstance(val, (list, set, tuple)):
+        return [serialize_val(None, name, i) for i in val]
+    if isinstance(field_definition, Anything):
+        if isinstance(val, Structure):
+            return serialize(val)
+        elif isinstance(val, Field):
+            return serialize_val(None, name, val)
     return serialize(val)
 
 

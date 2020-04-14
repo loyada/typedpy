@@ -156,9 +156,11 @@ Limitations and Guidance
 ------------------------
 * For Set, Tuple - deserialization expects an array, serialization converts to array (set and tuple are not part of JSON)
 
-* If you have a field that you want to assign as a blob, without any validation, use :class:`Anything`
+* If you have a field that you want to assign as a blob, without any validation, use :class:`Anything` . When seriaizing a property of type :class:`Anything`, however, it is not guaranteed to work in all cases, since you can literaly asign it to anything without any validation, and Typedpy has no knowledge of what is supposed to be there. For example: suppose you assign some controller object to the property. Typedpy will allow it, since it is an Anything field, but has no idea how to serializa such an object.
 
 * If you create a completely new field type, that is not based on the predefined classes in Typedpy, it is not guaranteed to be supported. For example - if you define a custom field type using :func:`create_typed_field`, it is not supported
+
+* If you are serializing a Structure with a property of type :class:`Anything` , it 
 
 
 Functions

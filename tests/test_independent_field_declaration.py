@@ -19,6 +19,7 @@ def test_field_declaration():
         bar_names = Names()
         i = Integer
         table = TableName()
+
     foo = Foo(i=1, foo_names=["jack"], table="abc")
     bar = Bar(i=1, bar_names=["john", "amber"], table="def")
     assert foo.foo_names == ["jack"]
@@ -41,6 +42,7 @@ def test_field_declaration_compact_syntax():
         bar_names = Names()
         i = Integer
         table = TableName()
+
     foo = Foo(i=1, foo_names=["jack"], table="abc")
     bar = Bar(i=1, bar_names=["john", "amber"], table="def")
     assert foo.foo_names == ["jack"]
@@ -97,11 +99,13 @@ def test_field_declaration_bad_usage():
 
 
 def test_field_declaration_simplified_syntax_v051():
-    if sys.version_info[0:2] == (3,6):
+    if sys.version_info[0:2] == (3, 6):
         return
+
     # we declare type hint of the return value:
     def Names() -> Type[Field]: return Array[String]
-    def TableName()-> Type[Field]: return String
+
+    def TableName() -> Field: return String(minLength=5)
 
     class Foo(Structure):
         i = Integer
@@ -113,11 +117,9 @@ def test_field_declaration_simplified_syntax_v051():
         i = Integer
         table = TableName
 
-    foo = Foo(i=1, foo_names=["jack"], table="abc")
-    bar = Bar(i=1, bar_names=["john", "amber"], table="def")
+    foo = Foo(i=1, foo_names=["jack"], table="abcde")
+    bar = Bar(i=1, bar_names=["john", "amber"], table="defgh")
     assert foo.foo_names == ["jack"]
     assert bar.bar_names == ["john", "amber"]
-    assert bar.table == "def"
-    assert foo.table == "abc"
-
-
+    assert bar.table == "defgh"
+    assert foo.table == "abcde"

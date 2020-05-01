@@ -7,7 +7,7 @@ from collections import OrderedDict
 from functools import reduce
 from decimal import Decimal, getcontext, InvalidOperation
 
-from typedpy.structures import Field, Structure, TypedField, ClassReference, StructMeta
+from typedpy.structures import Field, Structure, TypedField, ClassReference, StructMeta, is_function_returning_field
 
 
 def _map_to_field(item):
@@ -353,6 +353,8 @@ class _CollectionMeta(type):
                 return val()
             elif Structure in val.__mro__:
                 return ClassReference(val)
+            elif is_function_returning_field(val):
+                return val()
             else:
                 raise TypeError("Expected a Field class or instance")
 
@@ -376,6 +378,8 @@ class _JSONSchemaDraft4ReuseMeta(type):
                 return val()
             elif Structure in val.__mro__:
                 return ClassReference(val)
+            elif is_function_returning_field(val):
+                return val()
             else:
                 raise TypeError("Expected a Field class or instance")
 
@@ -492,6 +496,7 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
             if isinstance(key_field, TypedField) and not getattr(getattr(key_field, '_ty'), '__hash__'):
                 raise TypeError("Key field of type {}, with underlying type of {} is not hashable".format(
                     key_field, getattr(key_field, '_ty')))
+        self._custom_deep_copy_implementation = True
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):
@@ -512,7 +517,6 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 res[getattr(temp_st, getattr(key_field, '_name'))] = getattr(
                     temp_st, getattr(value_field, '_name'))
             value = res
-
         super().__set__(instance, _DictStruct(self, instance, value))
 
 

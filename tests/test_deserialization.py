@@ -497,6 +497,22 @@ def test_deserialize_set():
     assert foo.t == {3, 4}
 
 
+# TODO: Bug. Make this test pass...
+# def test_deserialize_hiheritance():
+#     class Foo(Structure):
+#         a = Integer
+#         t = Set[Integer]
+#         x = String
+#         _required = ['a']
+#
+#     class Bar(Foo):
+#         b = String
+#
+#     serialized = {'a': 3, 't': [3, 4, 3], 'b': '111'}
+#     bar = deserialize_structure(Bar, serialized)
+#     assert bar.t == {3, 4}
+
+
 def test_deserialize_set_err1():
     class Foo(Structure):
         a = Integer

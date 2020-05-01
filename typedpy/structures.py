@@ -2,6 +2,7 @@
 The Skeleton classes to support strictly defined structures:
 Structure, Field, StructureReference, ClassReference, TypedField
 """
+from copy import deepcopy
 from collections import OrderedDict
 from inspect import Signature, Parameter
 import sys
@@ -90,10 +91,13 @@ class Field(object):
             return instance.__dict__[self._name] if instance else owner.__dict__[self._name]
 
     def __set__(self, instance, value):
-        if getattr(self, '_immutable', False) \
-                and self._name in instance.__dict__:
+        if getattr(self, '_immutable', False) and self._name in instance.__dict__:
             raise ValueError("{}: Field is immutable".format(self._name))
-        instance.__dict__[self._name] = value
+        elif getattr(self, '_immutable', False) and \
+                not getattr(self, '_custom_deep_copy_implementation', False):
+            instance.__dict__[self._name] = deepcopy(value)
+        else:
+            instance.__dict__[self._name] = value
         if getattr(instance, '_instantiated', False):
             instance.__validate__()
 
@@ -119,6 +123,18 @@ class Field(object):
         return '<{}{}>'.format(name, propst)
 
 
+# noinspection PyBroadException
+def is_function_returning_field(field_definition_candidate):
+    python_ver_higher_than_36 = sys.version_info[0:2] != (3, 6)
+    if callable(field_definition_candidate) and sys.version_info[0:2] != (3, 6):
+        try:
+            return_value = get_type_hints(field_definition_candidate).get("return", None)
+            return return_value == Field or Field in getattr(return_value.__args__[0], '__mro__', [])
+        except Exception:
+            return False
+    return False
+
+
 class StructMeta(type):
     """
     Metaclass for Structure. Manipulates it to ensure the fields are set up correctly.
@@ -129,16 +145,6 @@ class StructMeta(type):
         return OrderedDict()
 
     def __new__(mcs, name, bases, cls_dict):
-        # noinspection PyBroadException
-        def is_function_returning_field(field_definition_candidate):
-            if callable(field_definition_candidate) and sys.version_info[0:2] != (3, 6):
-                try:
-                    return_value = get_type_hints(field_definition_candidate).get("return", None)
-                    return return_value == Field or Field in getattr(return_value.__args__[0], '__mro__', [])
-                except Exception:
-                    return False
-            return False
-
         bases_params, bases_required = get_base_info(bases)
         for key, val in cls_dict.items():
             if not key.startswith('_') and not isinstance(val, Field) and \
@@ -227,8 +233,10 @@ class Structure(metaclass=StructMeta):
         self._instantiated = True
 
     def __setattr__(self, key, value):
-        if getattr(self, '_immutable', False) and key in self.__dict__:
-            raise ValueError("Structure is immutable")
+        if getattr(self, '_immutable', False):
+            if key in self.__dict__:
+                raise ValueError("Structure is immutable")
+            value = deepcopy(value)
         super().__setattr__(key, value)
 
     def __str__(self):

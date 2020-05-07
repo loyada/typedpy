@@ -1,6 +1,8 @@
+
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
     Float, serialize, Set, AnyOf, DateField
+from typedpy.extfields import DateTime
 
 
 class SimpleStruct(Structure):
@@ -105,4 +107,23 @@ def test_serializable_serialize_and_deserialize():
 
     deserialized = deserialize_structure(Foo, serialized)
     assert deserialized == Foo(i=3, d=[date(2019, 12, 4), date(2019, 12, 5)])
+
+
+def test_serializable_serialize_and_deserialize2():
+    from datetime import datetime
+
+    class Foo(Structure):
+        d = Array[DateTime]
+        i = Integer
+
+    atime = datetime(2020, 1, 30, 5,35,35)
+    atime_as_string = atime.strftime('%m/%d/%y %H:%M:%S')
+    foo = Foo(d=[atime, "01/30/20 05:35:35"], i=3)
+    serialized = serialize(foo)
+    assert serialized == {
+        'd': [atime_as_string, '01/30/20 05:35:35'],
+        'i': 3}
+
+    deserialized = deserialize_structure(Foo, serialized)
+    assert str(deserialized) == str(Foo(i=3, d=[atime, datetime(2020, 1, 30, 5,35,35)]))
 

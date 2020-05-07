@@ -108,3 +108,24 @@ class DateField(Field, SerializableField):
             super().__set__(instance, value.date())
         else:
             raise TypeError("{}: expected date, datetime, or str".format(self._name))
+
+
+class DateTime(Field, SerializableField):
+    def __init__(self, *args, datetime_format='%m/%d/%y %H:%M:%S', **kwargs):
+        self._datetime_format = datetime_format
+        super().__init__(*args, **kwargs)
+
+    def serialize(self, value: datetime):
+        return value.strftime(self._datetime_format)
+
+    def deserialize(self, value):
+        return datetime.strptime(value, self._datetime_format)
+
+    def __set__(self, instance, value):
+        if isinstance(value, str):
+            as_datetime = datetime.strptime(value, self._datetime_format)
+            super().__set__(instance, as_datetime)
+        elif isinstance(value, datetime):
+            super().__set__(instance, value)
+        else:
+            raise TypeError("{}: expected date, datetime, or str".format(self._name))

@@ -128,4 +128,4 @@ class DateTime(Field, SerializableField):
         elif isinstance(value, datetime):
             super().__set__(instance, value)
         else:
-            raise TypeError("{}: expected date, datetime, or str".format(self._name))
+            raise TypeError("{}: expected datetime or str".format(self._name))

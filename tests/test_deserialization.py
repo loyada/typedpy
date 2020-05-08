@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
@@ -103,9 +105,12 @@ def test_successful_deserialization_and_serialization_with_many_types():
         'all': 5,
         'enum': 3
     }
-    serialized = serialize(deserialize_structure(Example, original))
 
-    assert serialized == original
+    serialized = serialize(deserialize_structure(Example, original))
+    sorted_serialized =  OrderedDict(sorted(serialized.items()))
+    sorted_original =  OrderedDict(sorted(original.items()))
+
+    assert sorted_serialized == sorted_original
 
 
 def test_successful_deserialization_and_serialization_with_many_types1():

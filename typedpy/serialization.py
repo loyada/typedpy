@@ -1,3 +1,5 @@
+import json
+
 from typedpy.structures import TypedField, Structure
 from typedpy.fields import Field, Number, String, StructureReference, \
     Array, Map, ClassReference, Enum, MultiFieldWrapper, Boolean, Tuple, Set, Anything, AnyOf, AllOf, \
@@ -179,7 +181,13 @@ def serialize_val(field_definition, name, val):
             return serialize(val)
         elif isinstance(val, Field):
             return serialize_val(None, name, val)
-    return serialize(val)
+    if isinstance(val, Structure) or isinstance(field_definition, Field):
+        return serialize(val)
+    # nothing worked. Not a typedpy field. Last ditch effort.
+    try:
+        return json.dumps(val)
+    except Exception as ex:
+        raise ValueError(f"{name}: cannot serialize value: {ex}")
 
 
 def serialize(structure, compact=False):

@@ -1,3 +1,4 @@
+from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
@@ -127,3 +128,16 @@ def test_serializable_serialize_and_deserialize2():
     deserialized = deserialize_structure(Foo, serialized)
     assert str(deserialized) == str(Foo(i=3, d=[atime, datetime(2020, 1, 30, 5,35,35)]))
 
+
+def test_serializable_serialize_and_deserialize_of_a_non_serializable_value():
+    from datetime import datetime
+
+    class Foo(Structure):
+        d = DateTime
+        i = Integer
+
+    atime = datetime(2020, 1, 30, 5,35,35)
+    foo = Foo(d=atime, i=3, x=atime)
+    with raises(ValueError) as excinfo:
+        serialize(foo)
+    assert "x: cannot serialize value: Object of type datetime is not JSON serializable" in str(excinfo.value)

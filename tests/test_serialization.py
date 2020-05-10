@@ -140,7 +140,10 @@ def test_serializable_serialize_and_deserialize_of_a_non_serializable_value():
     foo = Foo(d=atime, i=3, x=atime)
     with raises(ValueError) as excinfo:
         serialize(foo)
-    assert "x: cannot serialize value: Object of type datetime is not JSON serializable" in str(excinfo.value)
+    # this is to cater to Python 3.6
+    assert "x: cannot serialize value" in str(excinfo.value)
+    assert "not JSON serializable" in str(excinfo.value)
+
 
 
 def test_serialize_map():

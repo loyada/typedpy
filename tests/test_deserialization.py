@@ -107,8 +107,8 @@ def test_successful_deserialization_and_serialization_with_many_types():
     }
 
     serialized = serialize(deserialize_structure(Example, original))
-    sorted_serialized =  OrderedDict(sorted(serialized.items()))
-    sorted_original =  OrderedDict(sorted(original.items()))
+    sorted_serialized = OrderedDict(sorted(serialized.items()))
+    sorted_original = OrderedDict(sorted(original.items()))
 
     assert sorted_serialized == sorted_original
 
@@ -502,20 +502,27 @@ def test_deserialize_set():
     assert foo.t == {3, 4}
 
 
-# TODO: Bug. Make this test pass...
-# def test_deserialize_hiheritance():
-#     class Foo(Structure):
-#         a = Integer
-#         t = Set[Integer]
-#         x = String
-#         _required = ['a']
-#
-#     class Bar(Foo):
-#         b = String
-#
-#     serialized = {'a': 3, 't': [3, 4, 3], 'b': '111'}
-#     bar = deserialize_structure(Bar, serialized)
-#     assert bar.t == {3, 4}
+def test_deserialize_inheritance():
+    class Blah(Structure):
+        x = Integer
+        y = Integer
+
+    class Foo(Structure):
+        a = Integer
+        t = OneOf[Integer, Blah]
+        x = String
+        _required = ['a']
+
+    class Kah(Foo): pass
+
+    class Bar(Kah):
+        b = String
+
+    input_dict = {'a': 3, 't': {'x': 3, 'y': 4}, 'b': '111'}
+    bar = deserialize_structure(Bar, input_dict)
+    assert bar.t == Blah(x=3, y=4)
+    serialized_again = serialize(bar)
+    assert OrderedDict(sorted(serialized_again.items())) == OrderedDict(sorted(input_dict.items()))
 
 
 def test_deserialize_set_err1():

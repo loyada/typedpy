@@ -1,6 +1,6 @@
 import json
 
-from typedpy.structures import TypedField, Structure
+from typedpy.structures import TypedField, Structure, StructMeta
 from typedpy.fields import Field, Number, String, StructureReference, \
     Array, Map, ClassReference, Enum, MultiFieldWrapper, Boolean, Tuple, Set, Anything, AnyOf, AllOf, \
     OneOf, NotField, SerializableField, SizedCollection
@@ -126,6 +126,16 @@ def deserialize_structure_reference(cls, the_dict: dict):
     return kwargs
 
 
+def get_all_fields_by_name(cls):
+    all_classes = reversed([c for c in cls.mro() if isinstance(c, StructMeta)])
+    all_fields_by_name = {}
+    for cl in all_classes:
+        field_by_name = dict([(k, v) for k, v in cl.__dict__.items()
+                              if isinstance(v, Field)])
+        all_fields_by_name.update(field_by_name)
+    return all_fields_by_name
+
+
 def deserialize_structure(cls, the_dict, name=None):
     """
         Deserialize a dict to a Structure instance, Jackson style.
@@ -145,20 +155,22 @@ def deserialize_structure(cls, the_dict, name=None):
         Returns:
             an instance of the provided :class:`Structure` deserialized
     """
+    field_by_name = get_all_fields_by_name(cls)
+
     if not isinstance(the_dict, dict):
         props = cls.__dict__
-        fields = [key for key, val in props.items() if isinstance(val, Field)]
+        fields = list(field_by_name.keys())
         required = props.get('_required', fields)
         additional_props = props.get('_additionalProperties', True)
         if len(fields) == 1 and required == fields and additional_props is False:
             field_name = fields[0]
             return cls(deserialize_single_field(getattr(cls, field_name), the_dict, field_name))
         raise TypeError("{}: Expected a dictionary".format(name))
-    field_by_name = dict([(k, v) for k, v in cls.__dict__.items()
-                          if isinstance(v, Field) and k in the_dict])
-    kwargs = dict([(k, v) for k, v in the_dict.items() if k not in cls.__dict__])
+
+    kwargs = dict([(k, v) for k, v in the_dict.items() if k not in field_by_name])
     for key, field in field_by_name.items():
-        kwargs[key] = deserialize_single_field(field, the_dict[key], key)
+        if key in the_dict:
+            kwargs[key] = deserialize_single_field(field, the_dict[key], key)
     return cls(**kwargs)
 
 

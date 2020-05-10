@@ -583,3 +583,13 @@ def test_serializable_deserialize():
                                        {'mykey': 'my custom deserialization: abcde, 191205'}])
 
     assert serialize(deserialized) == {'d': [123, 123], 'i': 3}
+
+
+def test_deserialization_map():
+    class Foo(Structure):
+            m1 = Map[String, Anything]
+            m2 = Map
+            i = Integer
+
+    deserialized = deserialize_structure(Foo, {'m1': {'a': 1, 'b': [1,2,3]},'m2': {1: 2, 'a': 'v'}, 'i': 3})
+    assert deserialized.m1['a'] == 1

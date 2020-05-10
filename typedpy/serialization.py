@@ -1,4 +1,5 @@
 import json
+from collections import Mapping
 
 from typedpy.structures import TypedField, Structure, StructMeta
 from typedpy.fields import Field, Number, String, StructureReference, \
@@ -180,6 +181,14 @@ def serialize_val(field_definition, name, val):
     if isinstance(val, (int, str, bool, float)) or val is None:
         return val
     if isinstance(field_definition, SizedCollection):
+        if isinstance(field_definition, Map):
+            if not isinstance(val, Mapping):
+                raise TypeError("{} Expected a Mapping", name)
+            if isinstance(field_definition.items, list) and len(field_definition.items)==2:
+                key_type, value_type = field_definition.items
+                return {serialize_val(key_type, name, k):serialize_val(value_type, name, v) for (k,v) in val.items()}
+            else:
+                return val
         if isinstance(field_definition.items, list):
             return [serialize_val(field_definition.items[ind], name, v) for ind,v in enumerate(val)]
         elif isinstance(field_definition.items, Field):

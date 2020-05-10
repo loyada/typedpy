@@ -2,7 +2,7 @@ from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, serialize, Set, AnyOf, DateField
+    Float, serialize, Set, AnyOf, DateField, Anything, Map
 from typedpy.extfields import DateTime
 
 
@@ -141,3 +141,14 @@ def test_serializable_serialize_and_deserialize_of_a_non_serializable_value():
     with raises(ValueError) as excinfo:
         serialize(foo)
     assert "x: cannot serialize value: Object of type datetime is not JSON serializable" in str(excinfo.value)
+
+
+def test_serialize_map():
+    class Foo(Structure):
+        m1 = Map[String, Anything]
+        m2 = Map
+        i = Integer
+
+    foo=Foo(m1={'a': [1,2,3], 'b': 1}, m2={1: 2, 'x': 'b'}, i=5)
+    serialized = serialize(foo)
+    assert serialized['m1'] == {'a': [1,2,3], 'b': 1}

@@ -67,9 +67,9 @@ String, Enums etc.
 
 .. autoclass:: TimeString
 
-.. autoclass::DateField
+.. autoclass:: DateField
 
-.. autoclass::DateTime
+.. autoclass:: DateTime
 
 .. autoclass:: IPV4
 

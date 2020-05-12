@@ -106,7 +106,7 @@ class DateField(Field, SerializableField):
            foo(date = date.today())
            foo(date = "2020-01-31")
 
-        This is a SerializableField, thus can be serialized/deserialized.
+       This is a SerializableField, thus can be serialized/deserialized.
 
     """
     def __init__(self, *args, date_format='%Y-%m-%d', **kwargs):

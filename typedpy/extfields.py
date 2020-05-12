@@ -88,7 +88,28 @@ class TimeString(TypedField):
 
 
 class DateField(Field, SerializableField):
-    def __init__(self, *args, date_format="%Y-%m-%d", **kwargs):
+    """
+       A datetime.date field. Can accept either a date object, or a string
+       that can be converted to a date, using the date_format in the constructor.
+
+       Arguments:
+            date_format(str): optional
+                The date format used to convert to/from a string. Default is '%Y-%m-%d'
+
+       Example:
+
+       .. code-block:: python
+
+           class Foo(Structure):
+               date = DateField
+
+           foo(date = date.today())
+           foo(date = "2020-01-31")
+
+        This is a SerializableField, thus can be serialized/deserialized.
+
+    """
+    def __init__(self, *args, date_format='%Y-%m-%d', **kwargs):
         self._date_format = date_format
         super().__init__(*args, **kwargs)
 
@@ -111,6 +132,26 @@ class DateField(Field, SerializableField):
 
 
 class DateTime(Field, SerializableField):
+    """
+        A datetime.date field. Can accept either a date object, or a string
+        that can be converted to a date, using the date_format in the constructor.
+        Arguments:
+            datetime_format(str): optional
+                The format used to convert to/from a string. Default is '%m/%d/%y %H:%M:%S'
+
+        Example:
+
+           .. code-block:: python
+
+               class Foo(Structure):
+                   timestamp = DateTime
+
+               foo(timestamp = datetime.now())
+               foo(timestamp = "01/31/20 07:15:45")
+
+        This is a SerializableField, thus can be serialized/deserialized.
+
+    """
     def __init__(self, *args, datetime_format='%m/%d/%y %H:%M:%S', **kwargs):
         self._datetime_format = datetime_format
         super().__init__(*args, **kwargs)

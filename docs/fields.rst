@@ -67,6 +67,10 @@ String, Enums etc.
 
 .. autoclass:: TimeString
 
+.. autoclass::DateField
+
+.. autoclass::DateTime
+
 .. autoclass:: IPV4
 
 .. autoclass:: JSONString
@@ -76,9 +80,6 @@ String, Enums etc.
 .. autoclass:: DecimalNumber
 
 .. class:: EmailAddress
-
-            String of an email address
-
 
 
 Collections

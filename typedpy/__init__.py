@@ -23,5 +23,5 @@ from typedpy.serialization import (
     deserialize_structure, serialize
 )
 from typedpy.extfields import (
-    DateString, DateField, TimeString, HostName, IPV4, JSONString, EmailAddress
+    DateString, DateField, DateTime, TimeString, HostName, IPV4, JSONString, EmailAddress
 )

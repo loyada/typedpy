@@ -2,9 +2,8 @@ import json
 from datetime import datetime, date
 import re
 
-from typedpy import Field
-from typedpy.fields import TypedField, SerializableField
-from typedpy.fields import String
+from typedpy.structures import Field, TypedField
+from typedpy.fields import SerializableField, String
 
 EmailAddress = String(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]+$)")
 

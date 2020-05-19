@@ -72,7 +72,7 @@ def get_base_info(bases):
     return bases_params, bases_required
 
 
-class Field(object):
+class Field:
     """
     Base class for a field(i.e. property) in a structure.
     Should not be used directly by developers.
@@ -87,13 +87,12 @@ class Field(object):
     def __get__(self, instance, owner):
         if instance and self._name not in instance.__dict__:
             return self._default
-        else:
-            return instance.__dict__[self._name] if instance else owner.__dict__[self._name]
+        return instance.__dict__[self._name] if instance else owner.__dict__[self._name]
 
     def __set__(self, instance, value):
         if getattr(self, '_immutable', False) and self._name in instance.__dict__:
             raise ValueError("{}: Field is immutable".format(self._name))
-        elif getattr(self, '_immutable', False) and \
+        if getattr(self, '_immutable', False) and \
                 not getattr(self, '_custom_deep_copy_implementation', False):
             instance.__dict__[self._name] = deepcopy(value)
         else:
@@ -126,10 +125,11 @@ class Field(object):
 # noinspection PyBroadException
 def is_function_returning_field(field_definition_candidate):
     python_ver_higher_than_36 = sys.version_info[0:2] != (3, 6)
-    if callable(field_definition_candidate) and sys.version_info[0:2] != (3, 6):
+    if callable(field_definition_candidate) and python_ver_higher_than_36:
         try:
             return_value = get_type_hints(field_definition_candidate).get("return", None)
-            return return_value == Field or Field in getattr(return_value.__args__[0], '__mro__', [])
+            return return_value == Field or \
+                   Field in getattr(return_value.__args__[0], '__mro__', [])
         except Exception:
             return False
     return False
@@ -249,13 +249,13 @@ class Structure(metaclass=StructMeta):
             return ','.join(as_strings)
 
         def to_str(val):
-            if isinstance(val, (list)):
+            if isinstance(val, list):
                 return '[{}]'.format(list_to_str(val))
-            elif isinstance(val, tuple):
+            if isinstance(val, tuple):
                 return '({})'.format(list_to_str(val))
-            elif isinstance(val, set):
+            if isinstance(val, set):
                 return '{{{}}}'.format(list_to_str(val))
-            elif isinstance(val, dict):
+            if isinstance(val, dict):
                 return '{{{}}}'.format(dict_to_str(val))
             return str(val)
 

@@ -24,32 +24,32 @@ class Example(Structure):
 def test_wrong_type_for_array_err():
     with raises(TypeError) as excinfo:
         Example(a=2)
-    assert "a: Expected <class 'list'>" in str(excinfo.value)
+    assert "a: Got 2; Expected <class 'list'>" in str(excinfo.value)
 
 
 def test_wrong_type_for_array_items_err():
     with raises(TypeError) as excinfo:
         Example(a=['aa', [], 2])
-    assert "a_1: Expected a number" in str(excinfo.value)
+    assert "a_1: Got []; Expected a number" in str(excinfo.value)
 
 
 def test_non_unique_items_err():
     with raises(ValueError) as excinfo:
         Example(a=['aa', 2, 2])
-    assert "a: Expected unique items" in str(excinfo.value)
+    assert "a: Got ['aa', 2, 2]; Expected unique items" in str(excinfo.value)
 
 
 def test_invalid_number_in_array_err():
     with raises(ValueError) as excinfo:
         Example(a=['aa', 12, 2])
-    assert "a_1: Expected a maxmimum of 10" in str(excinfo.value)
+    assert "a_1: Got 12; Expected a maximum of 10" in str(excinfo.value)
 
 
 def test_invalid_number_in_array_variation_err():
     t = Example(a=['aa', 5, 2])
     with raises(ValueError) as excinfo:
         t.a[1] += 9
-    assert "a_1: Expected a maxmimum of 10" in str(excinfo.value)
+    assert "a_1: Got 14; Expected a maximum of 10" in str(excinfo.value)
 
 
 def test_no_schema_for_item_so_no_validation():
@@ -86,7 +86,7 @@ def test_update_to_wrong_type_err():
     t = Example(a=['aa', 5, 2])
     with raises(TypeError) as excinfo:
         t.a[0] = 1
-    assert "a_0: Expected a string" in str(excinfo.value)
+    assert "a_0: Got 1; Expected a string" in str(excinfo.value)
 
 
 def test_not_enough_items_err():
@@ -104,7 +104,7 @@ def test_too_many_items_err():
 def test_single_field_for_all_items_err():
     with raises(ValueError) as excinfo:
         Example(b=[1, 2, 3, 99])
-    assert "b_3: Expected a maxmimum of 10" in str(excinfo.value)
+    assert "b_3: Got 99; Expected a maximum of 10" in str(excinfo.value)
 
 
 def test_single_field_for_all_items_valid():
@@ -115,7 +115,7 @@ def test_single_field_for_all_items_valid():
 def test_not_enough_items2_err():
     with raises(ValueError) as excinfo:
         Example(c=['aa'])
-    assert "c: Expected an array of length 3" in str(excinfo.value)
+    assert "c: Got ['aa']; Expected an array of length 3" in str(excinfo.value)
 
 
 def test_items_can_be_ignored_schema_is_valid():
@@ -140,7 +140,7 @@ def test_extend_err():
     e = Example(b=[1, 2, 3])
     with raises(ValueError) as excinfo:
         e.b.extend([5, 99])
-    assert "b_4: Expected a maxmimum of 10" in str(excinfo.value)
+    assert "b_4: Got 99; Expected a maximum of 10" in str(excinfo.value)
 
 
 def test_extend_valid():
@@ -153,7 +153,7 @@ def test_insert_err():
     e = Example(b=[1, 2, 3])
     with raises(TypeError) as excinfo:
         e.b.insert(2, 'a')
-    assert "b_2: Expected a number" in str(excinfo.value)
+    assert "b_2: Got 'a'; Expected a number" in str(excinfo.value)
 
 
 def test_insert_valid():
@@ -201,7 +201,7 @@ def test_array_of_defined_structure_valid():
 def test_array_of_array_type_err1():
     with raises(TypeError) as excinfo:
         Example(h=[3, 4])
-    assert "h_0: Expected <class 'list'>" in str(excinfo.value)
+    assert "h_0: Got 3; Expected <class 'list'>" in str(excinfo.value)
 
 
 def test_array_of_array_type_err2():

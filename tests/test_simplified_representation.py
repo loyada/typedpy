@@ -22,7 +22,7 @@ def test_Integer_prop_err():
 def test_String_prop_err():
     with raises(TypeError) as excinfo:
         Example(b=3.3)
-    assert "b: Expected a string" in str(excinfo.value)
+    assert "b: Got 3.3; Expected a string" in str(excinfo.value)
 
 
 def test_valid_props():
@@ -32,7 +32,7 @@ def test_valid_props():
 def test_array_generics_with_props_err():
     with raises(ValueError) as excinfo:
         Example(c=['aaa', 'bb'])
-    assert "c_1: Expected a minimum length of 3" in str(excinfo.value)
+    assert "c_1: Got 'bb'; Expected a minimum length of 3" in str(excinfo.value)
 
 
 def test_array_generics_with_props_valid():
@@ -80,7 +80,7 @@ def test_multiple_items_in_array_schema_definition_err():
 def test_multiple_items_in_array_schema_err():
     with raises(TypeError) as excinfo:
         Example(e=[1, 2])
-    assert "e_1: Expected a string" in str(excinfo.value)
+    assert "e_1: Got 2; Expected a string" in str(excinfo.value)
 
 
 def test_multiple_items_in_array_schema_valid():

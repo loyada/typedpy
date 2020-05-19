@@ -31,13 +31,13 @@ def test_invalid_items_definitions_err2():
 def test_wrong_type_for_set_items_err():
     with raises(TypeError) as excinfo:
         Example(b={3, 'aa', 2})
-    assert "b: Expected a number" in str(excinfo.value)
+    assert "b: Got 'aa'; Expected a number" in str(excinfo.value)
 
 
 def test_list_instead_of_set_err():
     with raises(TypeError) as excinfo:
         Example(b=[3, 'aa', 2])
-    assert "b: Expected <class 'set'>" in str(excinfo.value)
+    assert "b: Got [3, 'aa', 2]; Expected <class 'set'>" in str(excinfo.value)
 
 
 def test_set_too_large_err():
@@ -62,13 +62,13 @@ def test_right_size_and_Field():
 def test_items_simplified_version_type_err():
     with raises(TypeError) as excinfo:
         Example(d={1, ''})
-    assert "d: Expected a string" in str(excinfo.value)
+    assert "d: Got 1; Expected a string" in str(excinfo.value)
 
 
 def test_items_simplified_version_valid():
     with raises(TypeError) as excinfo:
         Example(d={1, ''})
-    assert "d: Expected a string" in str(excinfo.value)
+    assert "d: Got 1; Expected a string" in str(excinfo.value)
 
 
 def test_no_items_in_definition():
@@ -95,7 +95,7 @@ def test_simplified_definition_with_flexible_types_valid():
 def test_simplified_definition_with_flexible_types_err():
     with raises(ValueError) as excinfo:
         Example(g={'xy'})
-    assert "g: xy Did not match any field option" in str(excinfo.value)
+    assert "g: 'xy' Did not match any field option" in str(excinfo.value)
 
 
 def test_invalid_type():
@@ -125,4 +125,4 @@ def test_simple_set_valid():
 def test_simple_set_invalid():
     with raises(TypeError) as excinfo:
         Example(h=[1, 2, 3])
-    assert "h: Expected <class 'set'>" in str(excinfo.value)
+    assert "h: Got [1, 2, 3]; Expected <class 'set'>" in str(excinfo.value)

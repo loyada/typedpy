@@ -194,7 +194,7 @@ def test_oneof_field_failure1():
     data = {'a': 1, 'b': [1, 'abcd']}
     with raises(ValueError) as excinfo:
         deserialize_structure(Foo, data)
-    assert "b_1: Matched more than one field option" in str(
+    assert "b_1: Got abcd; Matched more than one field option" in str(
         excinfo.value)
 
 
@@ -206,7 +206,7 @@ def test_oneof_field_failure2():
     data = {'a': 1, 'b': [1, []]}
     with raises(ValueError) as excinfo:
         deserialize_structure(Foo, data)
-    assert "b_1: Did not match any field option" in str(
+    assert "b_1: Got []; Did not match any field option" in str(
         excinfo.value)
 
 
@@ -229,7 +229,7 @@ def test_notfield_field_failure():
     data = {'a': 1, 'b': [1.4, 'abcd']}
     with raises(ValueError) as excinfo:
         deserialize_structure(Foo, data)
-    assert "b_1: Expected not to match any field definition" in str(
+    assert "b_1: Got 'abcd'; Expected not to match any field definition" in str(
         excinfo.value)
 
 
@@ -262,7 +262,7 @@ def test_allof_wrong_value_err():
 
     with raises(ValueError) as excinfo:
         deserialize_structure(Foo, {'bar': 1})
-    assert "could not deserialize bar: did not match <Array>. reason: bar: must be an iterable" in str(
+    assert "could not deserialize bar: value 1 did not match <Array>. reason: bar: must be an iterable; got 1" in str(
         excinfo.value)
 
 
@@ -284,7 +284,7 @@ def test_invalid_type_err():
     }
     with raises(ValueError) as excinfo:
         deserialize_structure(Example, data)
-    assert "could not deserialize all: did not match <Number>. reason: all: Expected a number" in str(excinfo.value)
+    assert "could not deserialize all: value '' did not match <Number>. reason: all: Got ''; Expected a number" in str(excinfo.value)
 
 
 def test_invalid_type_err2():
@@ -352,7 +352,7 @@ def test_invalid_value_err():
     }
     with raises(ValueError) as excinfo:
         deserialize_structure(Example, data)
-    assert 'name: Does not match regular expression: "[A-Za-z]+$"' in str(excinfo.value)
+    assert """name: Got '123'; Does not match regular expression: "[A-Za-z]+$""""" in str(excinfo.value)
 
 
 def test_map_deserialization():

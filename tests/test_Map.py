@@ -57,19 +57,19 @@ def test_invalid_assignment_err():
 def test_invalid_key_type_err1():
     with raises(TypeError) as excinfo:
         Example(a={1: 'y', 'x2': 'y', 2: 'y'})
-    assert "a_key: Expected a number" in str(excinfo.value)
+    assert "a_key: Got 'x2'; Expected a number" in str(excinfo.value)
 
 
 def test_invalid_key_val_err1():
     with raises(ValueError) as excinfo:
         Example(a={1: 'y', 100: 'y', 2: 'y'})
-    assert "a_key: Expected a maxmimum of 10" in str(excinfo.value)
+    assert "a_key: Got 100; Expected a maximum of 10" in str(excinfo.value)
 
 
 def test_invalid_value_type_err1():
     with raises(TypeError) as excinfo:
         Example(a={1: 'y', 3: 7, 2: 'y'})
-    assert "a_value: Expected a string" in str(excinfo.value)
+    assert "a_value: Got 7; Expected a string" in str(excinfo.value)
 
 
 def test_dict_too_large_err():
@@ -92,7 +92,7 @@ def test_dict_first_variation_update_err():
     e = Example(a={1: 'y', 3: 'y', 4.5: 'x'})
     with raises(ValueError) as excinfo:
         e.a[100] = ''
-    assert "a_key: Expected a maxmimum of 10" in str(excinfo.value)
+    assert "a_key: Got 100; Expected a maximum of 10" in str(excinfo.value)
 
 
 def test_dict_first_variation_update_to_too_large_err():
@@ -139,13 +139,13 @@ def test_no_items_definition_wrong_size_err():
 def test_simplified_definition_val_type_err():
     with raises(TypeError) as excinfo:
         Example(d={'xyz': 'y', 'abc': 'x'})
-    assert "d_value: Expected a number" in str(excinfo.value)
+    assert "d_value: Got 'y'; Expected a number" in str(excinfo.value)
 
 
 def test_simplified_definition_key_type_err():
     with raises(TypeError) as excinfo:
         Example(d={'xyz': 1, 4.5: 3})
-    assert "d_key: Expected a string" in str(excinfo.value)
+    assert "d_key: Got 4.5; Expected a string" in str(excinfo.value)
 
 
 def test_simplified_definition_with_updates_valid():
@@ -159,13 +159,13 @@ def test_simplified_definition_with_updates_valid():
 def test_super_simplified_definition_val_type_err():
     with raises(TypeError) as excinfo:
         Example(e={'xyz': 'y', 'abc': 'x'})
-    assert "e_value: Expected a number" in str(excinfo.value)
+    assert "e_value: Got 'y'; Expected a number" in str(excinfo.value)
 
 
 def test_super_simplified_definition_key_type_err():
     with raises(TypeError) as excinfo:
         Example(e={'xyz': 1, 4.5: 3})
-    assert "e_key: Expected a string" in str(excinfo.value)
+    assert "e_key: Got 4.5; Expected a string" in str(excinfo.value)
 
 
 def test_super_simplified_definition_with_updates_valid():

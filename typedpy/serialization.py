@@ -1,17 +1,17 @@
 import json
-from collections import Mapping
+from collections.abc import Mapping
 
 from typedpy.structures import TypedField, Structure, StructMeta
 from typedpy.fields import Field, Number, String, StructureReference, \
     Array, Map, ClassReference, Enum, MultiFieldWrapper, Boolean, Tuple, Set, Anything, AnyOf, AllOf, \
-    OneOf, NotField, SerializableField, SizedCollection
+    OneOf, NotField, SerializableField, SizedCollection, wrap_val
 
 
 def deserialize_list_like(field, content_type, value, name):
     try:
         iter(value)
     except TypeError:
-        raise ValueError("{}: must be an iterable".format(name))
+        raise ValueError("{}: must be an iterable; got {}".format(name, value))
 
     values = []
     items = field.items
@@ -61,13 +61,16 @@ def deserialize_multifield_wrapper(field, source_val, name):
             if isinstance(field, AnyOf):
                 return deserialized
             elif isinstance(field,  NotField) :
-                raise ValueError("could not deserialize {}: matches field {}, but must not match it".format(name, field))
+                raise ValueError("could not deserialize {}: value {} matches field {}, but must not match it".format(
+                    name, wrap_val(source_val), field))
             elif isinstance(field,  OneOf)  and found_previous_match:
-                raise ValueError("could not deserialize {}: matches more than one match".format(name, field))
+                raise ValueError("could not deserialize {}: value {} matches more than one match".format(
+                    name, wrap_val(source_val), field))
             found_previous_match = True
         except Exception as e:
             if isinstance(field, AllOf):
-                raise ValueError("could not deserialize {}: did not match {}. reason: {}".format(name, field_option, str(e)))
+                raise ValueError("could not deserialize {}: value {} did not match {}. reason: {}".format(
+                    name, wrap_val(source_val), field_option, str(e)))
     return deserialized
 
 
@@ -112,8 +115,8 @@ def deserialize_single_field(field, source_val, name):
     elif isinstance(field, Anything) or field is None:
         value = source_val
     else:
-        raise NotImplementedError("cannot deserialize field '{}' of type {}".
-                                  format(name, field.__class__.__name__))
+        raise NotImplementedError("cannot deserialize field '{}' of type {} using value {}".
+                                  format(name, field.__class__.__name__, wrap_val(source_val)))
     return value
 
 
@@ -166,7 +169,7 @@ def deserialize_structure(cls, the_dict, name=None):
         if len(fields) == 1 and required == fields and additional_props is False:
             field_name = fields[0]
             return cls(deserialize_single_field(getattr(cls, field_name), the_dict, field_name))
-        raise TypeError("{}: Expected a dictionary".format(name))
+        raise TypeError("{}: Expected a dictionary; Got {}".format(name, wrap_val(the_dict)))
 
     kwargs = dict([(k, v) for k, v in the_dict.items() if k not in field_by_name])
     for key, field in field_by_name.items():

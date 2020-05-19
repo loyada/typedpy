@@ -16,13 +16,13 @@ class Example(Structure):
 def test_wrong_type_for_tuple_err():
     with raises(TypeError) as excinfo:
         Example(a=2)
-    assert "a: Expected <class 'tuple'>" in str(excinfo.value)
+    assert "a: Got 2; Expected <class 'tuple'>" in str(excinfo.value)
 
 
 def test_wrong_type_for_tuple_items_err1():
     with raises(TypeError) as excinfo:
         Example(a=('aa', 2))
-    assert "a_1: Expected a string" in str(excinfo.value)
+    assert "a_1: Got 2; Expected a string" in str(excinfo.value)
 
 
 def test_wrong_type_for_tuple_items_err2():
@@ -34,19 +34,19 @@ def test_wrong_type_for_tuple_items_err2():
 def test_wrong_value_for_tuple_item_err():
     with raises(ValueError) as excinfo:
         Example(b=('aa', 'bb', 92))
-    assert "b_2: Expected a maxmimum of 10" in str(excinfo.value)
+    assert "b_2: Got 92; Expected a maximum of 10" in str(excinfo.value)
 
 
 def test_wrong_length_for_tuple_items_err():
     with raises(ValueError) as excinfo:
         Example(a=('aa',))
-    assert "a: Expected a tuple of length 2" in str(excinfo.value)
+    assert "a: Got ('aa',); Expected a tuple of length 2" in str(excinfo.value)
 
 
 def test_non_unique_items_err():
     with raises(ValueError) as excinfo:
         Example(a=('aa', 'aa'))
-    assert "a: Expected unique items" in str(excinfo.value)
+    assert "a: Got ('aa', 'aa'); Expected unique items" in str(excinfo.value)
 
 
 def test_unique_items_valid():

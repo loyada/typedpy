@@ -58,7 +58,7 @@ def test_verifying_inherited_property1():
 def test_verifying_inherited_embedded_property1_err():
     with raises(ValueError) as excinfo:
         OldPerson(num=1, name="abc", ssid="aaa", foo={'a': "xyz", 'b': {'c': 5, 'd': 5}}, children=1)
-    assert 'c: Expected a minimum of 10' in str(excinfo.value)
+    assert 'c: Got 5; Expected a minimum of 10' in str(excinfo.value)
 
 
 def test_verifying_inherited_embedded_property2_err():

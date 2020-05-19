@@ -21,6 +21,8 @@ def _map_to_field(item):
         raise TypeError("Expected a Field/Structure class or Field instance")
 
 
+def wrap_val(v): return "'{}'".format(v) if isinstance(v, str) else v
+
 class StructureReference(Field):
     """
     A Field that is an embedded structure within other structure. Allows to create hierarchy.
@@ -98,7 +100,7 @@ class Number(Field):
             return isinstance(val, (float, int, Decimal))
 
         def err_prefix():
-            return "{}: ".format(self._name) if self._name else ""
+            return "{}: Got {}; ".format(self._name, wrap_val(value)) if self._name else ""
 
         if not is_number(value):
             raise TypeError("{}Expected a number".format(err_prefix()))
@@ -112,11 +114,11 @@ class Number(Field):
                 err_prefix(), self.minimum))
         if is_number(self.maximum):
             if self.exclusiveMaximum and self.maximum == value:
-                raise ValueError("{}Expected a maxmimum of less than {}".format(
+                raise ValueError("{}Expected a maximum of less than {}".format(
                     err_prefix(), self.maximum))
             else:
                 if self.maximum < value:
-                    raise ValueError("{}Expected a maxmimum of {}".format(
+                    raise ValueError("{}Expected a maximum of {}".format(
                         err_prefix(), self.maximum))
 
     def _validate(self, value):
@@ -184,12 +186,12 @@ class String(TypedField):
     @staticmethod
     def _validate_static(self, value):
         def err_prefix():
-            return "{}: ".format(self._name) if self._name else ""
+            return "{}: Got {}; ".format(self._name, wrap_val(value)) if self._name else ""
 
         if not isinstance(value, str):
             raise TypeError("{}Expected a string".format(err_prefix()))
         if self.maxLength is not None and len(value) > self.maxLength:
-            raise ValueError("{}Expected a maxmimum length of {}".format(
+            raise ValueError("{}Expected a maximum length of {}".format(
                 err_prefix(), self.maxLength))
         if self.minLength is not None and len(value) < self.minLength:
             raise ValueError("{}Expected a minimum length of {}".format(
@@ -443,7 +445,7 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
 
     def __set__(self, instance, value):
         if not isinstance(value, set):
-            raise TypeError("%s: Expected %s" % (self._name, set))
+            raise TypeError("{}: Got {}; Expected {}".format(self._name, wrap_val(value), set))
         self.validate_size(value, self._name)
         if self.items is not None:
             temp_st = Structure()
@@ -596,8 +598,8 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
                                                   self.additionalItems is False
                 if len(self.items) > len(value) or \
                         (additional_properties_forbidden and len(self.items) > len(value)):
-                    raise ValueError("{}: Expected an array of length {}".format(
-                        self._name, len(self.items)))
+                    raise ValueError("{}: Got {}; Expected an array of length {}".format(
+                        self._name, value, len(self.items)))
                 temp_st = Structure()
                 res = []
                 for ind, item in enumerate(self.items):
@@ -612,13 +614,13 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
 
 def verify_type_and_uniqueness(the_type, value, name, has_unique_items):
     if not isinstance(value, the_type):
-        raise TypeError("%s: Expected %s" % (name, the_type))
+        raise TypeError("{}: Got {}; Expected {}".format(name, wrap_val(value), str(the_type)))
     if has_unique_items:
         unique = reduce(lambda unique_vals, x: unique_vals.append(x) or
                         unique_vals if x not in unique_vals
                         else unique_vals, value, [])
         if len(unique) < len(value):
-            raise ValueError("{}: Expected unique items".format(name))
+            raise ValueError("{}: Got {}; Expected unique items".format(name, wrap_val(value)))
 
 
 class Tuple(TypedField, metaclass=_CollectionMeta):
@@ -690,8 +692,8 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
     def __set__(self, instance, value):
         verify_type_and_uniqueness(tuple, value, self._name, self.uniqueItems)
         if len(self.items) != len(value) and len(self.items) > 1:
-            raise ValueError("{}: Expected a tuple of length {}".format(
-                self._name, len(self.items)))
+            raise ValueError("{}: Got {}; Expected a tuple of length {}".format(
+                self._name, wrap_val(value), len(self.items)))
 
         temp_st = Structure()
         res = []
@@ -861,7 +863,7 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             except ValueError:
                 pass
         if not matched:
-            raise ValueError("{}: {} Did not match any field option".format(self._name, value))
+            raise ValueError("{}: {} Did not match any field option".format(self._name, wrap_val(value)))
         super().__set__(instance, value)
 
     def __str__(self):
@@ -899,9 +901,9 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             except ValueError:
                 pass
         if not matched:
-            raise ValueError("{}: Did not match any field option".format(self._name))
+            raise ValueError("{}: Got {}; Did not match any field option".format(self._name, value))
         if matched > 1:
-            raise ValueError("{}: Matched more than one field option".format(self._name))
+            raise ValueError("{}: Got {}; Matched more than one field option".format(self._name, value))
         super().__set__(instance, value)
 
     def __str__(self):
@@ -938,8 +940,8 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             except ValueError:
                 pass
             else:
-                raise ValueError("{}: Expected not to match any field definition".
-                                 format(self._name))
+                raise ValueError("{}: Got {}; Expected not to match any field definition".
+                                 format(self._name, wrap_val(value)))
         super().__set__(instance, value)
 
     def __str__(self):

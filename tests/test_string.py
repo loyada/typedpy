@@ -18,13 +18,13 @@ class B(Structure):
 def test_max_length_violation_err():
     with raises(ValueError) as excinfo:
         B(s='abcdef', a='')
-    assert "s: Expected a maxmimum length of 5" in str(excinfo.value)
+    assert "s: Got 'abcdef'; Expected a maximum length of 5" in str(excinfo.value)
 
 
 def test_min_length_violation_err():
     with raises(ValueError) as excinfo:
         B(s='a', a='')
-    assert "s: Expected a minimum length of 2" in str(excinfo.value)
+    assert "s: Got 'a'; Expected a minimum length of 2" in str(excinfo.value)
 
 
 def test_immutable_err():
@@ -98,7 +98,7 @@ def test_email_err():
 
     with raises(ValueError) as excinfo:
         Example(email='asdnsa@dsads.sds.')
-    assert "email: Does not match regular expression" in str(excinfo.value)
+    assert "email: Got \'asdnsa@dsads.sds.\'; Does not match regular expression" in str(excinfo.value)
 
 
 def test_email_valid():

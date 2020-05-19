@@ -54,7 +54,7 @@ def test_allof_misses_one_err1():
 def test_allof_misses_one_err2():
     with raises(ValueError) as excinfo:
         Example(a=3)
-    assert "a: Expected a a multiple of 5" in str(excinfo.value)
+    assert "a: Got 3; Expected a a multiple of 5" in str(excinfo.value)
 
 
 def test_allof_valid():
@@ -96,13 +96,13 @@ def test_anyof_valid4():
 def test_oneof_misses_all_err():
     with raises(ValueError) as excinfo:
         Example(c=-99.1)
-    assert "c: Did not match any field option" in str(excinfo.value)
+    assert "c: Got -99.1; Did not match any field option" in str(excinfo.value)
 
 
 def test_oneof_matches_few_err():
     with raises(ValueError) as excinfo:
         Example(c=5)
-    assert "c: Matched more than one field option" in str(excinfo.value)
+    assert "c: Got 5; Matched more than one field option" in str(excinfo.value)
 
 
 def test_oneof_valid1():
@@ -116,7 +116,7 @@ def test_oneof_valid2():
 def test_not_matches_err():
     with raises(ValueError) as excinfo:
         Example(d=5)
-    assert "d: Expected not to match any field definition" in str(excinfo.value)
+    assert "d: Got 5; Expected not to match any field definition" in str(excinfo.value)
 
 
 def test_not_valid():
@@ -126,7 +126,7 @@ def test_not_valid():
 def test_not_single_matches_err():
     with raises(ValueError) as excinfo:
         Example(f=-5.234)
-    assert "f: Expected not to match any field definition" in str(excinfo.value)
+    assert "f: Got -5.234; Expected not to match any field definition" in str(excinfo.value)
 
 
 def test_not_single_valid():

@@ -24,31 +24,31 @@ class OldPerson(Person):
 def test_string_with_regex_err():
     with pytest.raises(ValueError) as excinfo:
         Person(name="fo d", ssid="fff", num=25, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})
-    assert 'name: Does not match regular expression: "[A-Za-z]+$"' in str(excinfo.value)
+    assert 'name: Got \'fo d\'; Does not match regular expression: "[A-Za-z]+$"' in str(excinfo.value)
 
 
 def test_string_type_err():
     with pytest.raises(TypeError) as excinfo:
         Person(name="fo", ssid=10, num=30, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})
-    assert 'ssid: Expected a string' in str(excinfo.value)
+    assert 'ssid: Got 10; Expected a string' in str(excinfo.value)
 
 
 def test_number_max_err():
     with pytest.raises(ValueError) as excinfo:
         Person(name="fo", ssid="aaa", num=33, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})
-    assert 'num: Expected a maxmimum of 30' in str(excinfo.value)
+    assert 'num: Got 33; Expected a maximum of 30' in str(excinfo.value)
 
 
 def test_embedded_field_number_min_err():
     with pytest.raises(ValueError) as excinfo:
         Person(name="fo", ssid="aaa", num=10, foo={'a': 'aaa', 'b': {'c': 0, 'd': 1}})
-    assert 'c: Expected a minimum of 10' in str(excinfo.value)
+    assert 'c: Got 0; Expected a minimum of 10' in str(excinfo.value)
 
 
 def test_embedded_field_number_type_err():
     with pytest.raises(TypeError) as excinfo:
         Person(name="fo", ssid="aaa", num=10, foo={'a': 'aaa', 'b': {'c': "", 'd': 1}})
-    assert 'c: Expected a number' in str(excinfo.value)
+    assert "c: Got ''; Expected a number" in str(excinfo.value)
 
 
 def test_miss_required_field():
@@ -67,7 +67,7 @@ def test_change_number_to_illegal_val():
     p = Person(name="aaa", ssid="aaa", num=10, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})
     with pytest.raises(ValueError) as excinfo:
         p.num -= 1
-    assert "num: Expected a minimum of 10" in str(excinfo.value)
+    assert "num: Got 9; Expected a minimum of 10" in str(excinfo.value)
 
 
 def test_valid_instance_and_accessor_of_embedded_val():
@@ -87,7 +87,7 @@ def test_updating_embedded_field_to_an_invalid_val():
     p = Person(name="aaa", ssid="aaa", num=10, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})
     with pytest.raises(ValueError) as excinfo:
         p.foo.b.d = 99
-    assert 'd: Expected a maxmimum of 10' in str(excinfo.value)
+    assert 'd: Got 99; Expected a maximum of 10' in str(excinfo.value)
 
 
 def test_str_Structure():

@@ -35,20 +35,20 @@ def test_basic_operation():
 def test_too_large():
     with raises(ValueError) as excinfo:
         Foo(b=1000)
-    assert "b: Expected a maxmimum of 100" in str(excinfo.value)
+    assert "b: Got 1000; Expected a maximum of 100" in str(excinfo.value)
 
 
 def test_too_large2():
     f = Foo(b=90)
     with raises(ValueError) as excinfo:
         f.b += 20
-    assert "b: Expected a maxmimum of 100" in str(excinfo.value)
+    assert "b: Got 110; Expected a maximum of 100" in str(excinfo.value)
 
 
 def test_not_multiple():
     with raises(ValueError) as excinfo:
         Foo(b=93)
-    assert "b: Expected a a multiple of 5" in str(excinfo.value)
+    assert "b: Got 93; Expected a a multiple of 5" in str(excinfo.value)
 
 
 def test_positivedecimal_err():

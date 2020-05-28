@@ -4,6 +4,7 @@ from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
     Float, serialize, Set, AnyOf, DateField, Anything, Map
 from typedpy.extfields import DateTime
+from typedpy import serialize_field
 
 
 class SimpleStruct(Structure):
@@ -117,7 +118,7 @@ def test_serializable_serialize_and_deserialize2():
         d = Array[DateTime]
         i = Integer
 
-    atime = datetime(2020, 1, 30, 5,35,35)
+    atime = datetime(2020, 1, 30, 5, 35, 35)
     atime_as_string = atime.strftime('%m/%d/%y %H:%M:%S')
     foo = Foo(d=[atime, "01/30/20 05:35:35"], i=3)
     serialized = serialize(foo)
@@ -126,7 +127,7 @@ def test_serializable_serialize_and_deserialize2():
         'i': 3}
 
     deserialized = deserialize_structure(Foo, serialized)
-    assert str(deserialized) == str(Foo(i=3, d=[atime, datetime(2020, 1, 30, 5,35,35)]))
+    assert str(deserialized) == str(Foo(i=3, d=[atime, datetime(2020, 1, 30, 5, 35, 35)]))
 
 
 def test_serializable_serialize_and_deserialize_of_a_non_serializable_value():
@@ -136,7 +137,7 @@ def test_serializable_serialize_and_deserialize_of_a_non_serializable_value():
         d = DateTime
         i = Integer
 
-    atime = datetime(2020, 1, 30, 5,35,35)
+    atime = datetime(2020, 1, 30, 5, 35, 35)
     foo = Foo(d=atime, i=3, x=atime)
     with raises(ValueError) as excinfo:
         serialize(foo)
@@ -145,13 +146,51 @@ def test_serializable_serialize_and_deserialize_of_a_non_serializable_value():
     assert "not JSON serializable" in str(excinfo.value)
 
 
-
 def test_serialize_map():
     class Foo(Structure):
         m1 = Map[String, Anything]
         m2 = Map
         i = Integer
 
-    foo=Foo(m1={'a': [1,2,3], 'b': 1}, m2={1: 2, 'x': 'b'}, i=5)
+    foo = Foo(m1={'a': [1, 2, 3], 'b': 1}, m2={1: 2, 'x': 'b'}, i=5)
     serialized = serialize(foo)
-    assert serialized['m1'] == {'a': [1,2,3], 'b': 1}
+    assert serialized['m1'] == {'a': [1, 2, 3], 'b': 1}
+
+
+def test_serialize_field_basic_field():
+    source = {
+        'i': 5,
+        's': 'test',
+        'array': [10, 7],
+        'embedded': {
+            'a1': 8,
+            'a2': 0.5
+        },
+        'simple_struct': {
+            'name': 'danny'
+        },
+        'all': 5,
+        'enum': 3
+    }
+    example = deserialize_structure(Example, source)
+    assert serialize_field(Example.array, example.array) == source['array']
+
+
+def test_serialize_wrong_value():
+    with raises(TypeError) as excinfo:
+        serialize("foo")
+        # this is to cater to Python 3.6
+    assert "serialize: must get a Structure. Got: foo" in str(excinfo.value)
+
+
+def test_serialize_field_complex_field():
+    class Foo(Structure):
+        a = String
+        i = Integer
+
+    class Bar(Structure):
+        x = Float
+        foos = Array[Foo]
+
+    bar = Bar(x=0.5, foos=[Foo(a='a', i=5), Foo(a='b', i=1)])
+    assert serialize_field(Bar.foos, bar.foos)[0]['a'] == 'a'

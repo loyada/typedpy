@@ -28,7 +28,7 @@ def deserialize_list_like(field, content_type, value, name):
     else:
         for i, item in enumerate(items):
             try:
-               res = deserialize_single_field(item, value[i], name)
+                res = deserialize_single_field(item, value[i], name)
             except (ValueError, TypeError) as e:
                 raise ValueError("{}_{}: {}".format(name, i, str(e)))
             values.append(res)
@@ -57,13 +57,13 @@ def deserialize_multifield_wrapper(field, source_val, name):
     found_previous_match = False
     for field_option in field.get_fields():
         try:
-            deserialized =  deserialize_single_field(field_option, source_val, name)
+            deserialized = deserialize_single_field(field_option, source_val, name)
             if isinstance(field, AnyOf):
                 return deserialized
-            elif isinstance(field,  NotField) :
+            elif isinstance(field, NotField):
                 raise ValueError("could not deserialize {}: value {} matches field {}, but must not match it".format(
                     name, wrap_val(source_val), field))
-            elif isinstance(field,  OneOf)  and found_previous_match:
+            elif isinstance(field, OneOf) and found_previous_match:
                 raise ValueError("could not deserialize {}: value {} matches more than one match".format(
                     name, wrap_val(source_val), field))
             found_previous_match = True
@@ -187,13 +187,13 @@ def serialize_val(field_definition, name, val):
         if isinstance(field_definition, Map):
             if not isinstance(val, Mapping):
                 raise TypeError("{} Expected a Mapping", name)
-            if isinstance(field_definition.items, list) and len(field_definition.items)==2:
+            if isinstance(field_definition.items, list) and len(field_definition.items) == 2:
                 key_type, value_type = field_definition.items
-                return {serialize_val(key_type, name, k):serialize_val(value_type, name, v) for (k,v) in val.items()}
+                return {serialize_val(key_type, name, k): serialize_val(value_type, name, v) for (k, v) in val.items()}
             else:
                 return val
         if isinstance(field_definition.items, list):
-            return [serialize_val(field_definition.items[ind], name, v) for ind,v in enumerate(val)]
+            return [serialize_val(field_definition.items[ind], name, v) for ind, v in enumerate(val)]
         elif isinstance(field_definition.items, Field):
             return [serialize_val(field_definition.items, name, i) for i in val]
         else:
@@ -206,12 +206,66 @@ def serialize_val(field_definition, name, val):
         elif isinstance(val, Field):
             return serialize_val(None, name, val)
     if isinstance(val, Structure) or isinstance(field_definition, Field):
-        return serialize(val)
+        return serialize_internal(val)
     # nothing worked. Not a typedpy field. Last ditch effort.
     try:
         return json.dumps(val)
     except Exception as ex:
         raise ValueError(f"{name}: cannot serialize value: {ex}")
+
+
+def serialize_field(field_definition: Field, value):
+    """
+    Serialize a specific :class:`Field` from a structure to a JSON-like dict.
+    Example:
+
+            .. code-block:: python
+
+                class Foo(Structure):
+                    a = String
+                    i = Integer
+
+                class Bar(Structure):
+                    x = Float
+                    foos = Array[Foo]
+
+                bar = Bar(x=0.5, foos=[Foo(a='a', i=5), Foo(a='b', i=1)])
+                assert serialize_field(Bar.foos, bar.foos)[0]['a'] == 'a'
+
+
+    Arguments:
+        field_definition(:class:`Field`):
+           the field definition
+
+        value:
+             the value of the field to deserialize
+
+    Returns:
+        a serialized Python object that can be directly converted to JSON
+    """
+    return serialize_val(field_definition, field_definition._name, value)
+
+
+def serialize_internal(structure, compact=False):
+    field_by_name = get_all_fields_by_name(structure.__class__)
+
+    items = structure.items() if isinstance(structure, dict) \
+        else [(k, v) for (k, v) in structure.__dict__.items() if k != '_instantiated']
+    props = structure.__class__.__dict__
+    fields = list(field_by_name.keys())
+    required = props.get('_required', fields)
+    additional_props = props.get('_additionalProperties', True)
+    if len(fields) == 1 and required == fields \
+            and additional_props is False and compact:
+        key = fields[0]
+        result = serialize_val(field_by_name.get(key, None), key, getattr(structure, key))
+    else:
+        result = {}
+        for key, val in items:
+            if val is None:
+                continue
+            result[key] = serialize_val(field_by_name.get(key, None), key, val)
+    return result
 
 
 def serialize(structure, compact=False):
@@ -229,22 +283,10 @@ def serialize(structure, compact=False):
              it will serialize the structure as an int instead of a dictionary
 
     Returns:
-        a serialized Python dict
+        a serialized Python object that can be directly converted to JSON
     """
-    items = structure.items() if isinstance(structure, dict) \
-        else [(k, v) for (k, v) in structure.__dict__.items() if k != '_instantiated']
-    props = structure.__class__.__dict__
-    fields = [key for key, val in props.items() if isinstance(val, Field)]
-    required = props.get('_required', fields)
-    additional_props = props.get('_additionalProperties', True)
-    if len(fields) == 1 and required == fields \
-            and additional_props is False and compact:
-        key = fields[0]
-        result = serialize_val(props.get(key, None), key, getattr(structure, key))
-    else:
-        result = {}
-        for key, val in items:
-            if val is None:
-                continue
-            result[key] = serialize_val(props.get(key, None), key, val)
-    return result
+    if not isinstance(structure, Structure):
+        raise TypeError("serialize: must get a Structure. Got: {}".format(structure))
+    return serialize_internal(structure=structure, compact=compact)
+
+

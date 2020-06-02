@@ -1,6 +1,6 @@
 from pytest import raises
 
-from typedpy import Structure, Array, Number, String, Integer
+from typedpy import Structure, Array, Number, String, Integer, Field
 
 
 class Foo(Structure):
@@ -247,3 +247,13 @@ def test_class_reference_success():
 
     foo = Foo(bars=[Bar(st='a'), Bar(st='b')])
     assert foo.bars[1].st == 'b'
+
+
+def test_array_with_function_returning_field():
+    def MyField() -> Field:  return String()
+
+    class Foo(Structure):
+        a = Array[MyField]
+        s = String
+
+    assert Foo(a=['xyz'], s='abc').a[0] == 'xyz'

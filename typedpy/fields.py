@@ -351,9 +351,9 @@ class _CollectionMeta(type):
         def validate_and_get_field(val):
             if isinstance(val, Field):
                 return val
-            elif Field in val.__mro__:
+            elif Field in getattr(val, '__mro__', {}):
                 return val()
-            elif Structure in val.__mro__:
+            elif Structure in getattr(val, '__mro__', {}):
                 return ClassReference(val)
             elif is_function_returning_field(val):
                 return val()
@@ -376,9 +376,9 @@ class _JSONSchemaDraft4ReuseMeta(type):
         def validate_and_get_field(val):
             if isinstance(val, Field):
                 return val
-            elif Field in val.__mro__:
+            elif Field in getattr(val, '__mro__', {}):
                 return val()
-            elif Structure in val.__mro__:
+            elif Structure in getattr(val, '__mro__', {}):
                 return ClassReference(val)
             elif is_function_returning_field(val):
                 return val()

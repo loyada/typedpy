@@ -194,3 +194,14 @@ def test_serialize_field_complex_field():
 
     bar = Bar(x=0.5, foos=[Foo(a='a', i=5), Foo(a='b', i=1)])
     assert serialize_field(Bar.foos, bar.foos)[0]['a'] == 'a'
+
+
+def test_serialize_non_typedpy_attribute():
+    class Foo(Structure):
+        a = String
+        i = Integer
+
+    foo = Foo(a='a', i=1)
+    foo.x = {'x': 1, 's': 'abc'}
+    print( serialize(foo)['x'] )
+    assert serialize(foo)['x'] == {'x': 1, 's': 'abc'}

@@ -209,7 +209,7 @@ def serialize_val(field_definition, name, val):
         return serialize_internal(val)
     # nothing worked. Not a typedpy field. Last ditch effort.
     try:
-        return json.dumps(val)
+        return json.loads(json.dumps(val))
     except Exception as ex:
         raise ValueError(f"{name}: cannot serialize value: {ex}")
 

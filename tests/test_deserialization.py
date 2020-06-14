@@ -593,3 +593,14 @@ def test_deserialization_map():
 
     deserialized = deserialize_structure(Foo, {'m1': {'a': 1, 'b': [1,2,3]},'m2': {1: 2, 'a': 'v'}, 'i': 3})
     assert deserialized.m1['a'] == 1
+
+
+def test_deserialization_non_typedpy_attributes():
+    class Foo(Structure):
+            m1 = Map[String, Anything]
+            m2 = Map
+            i = Integer
+
+    deserialized = deserialize_structure(Foo, {'m1': {'a': 1, 'b': [1,2,3]},'m2': {1: 2, 'a': 'v'}, 'i': 3, 'x': [1,2,3]})
+    assert deserialized.m1['a'] == 1
+    assert deserialized.x == [1,2,3]

@@ -203,5 +203,4 @@ def test_serialize_non_typedpy_attribute():
 
     foo = Foo(a='a', i=1)
     foo.x = {'x': 1, 's': 'abc'}
-    print( serialize(foo)['x'] )
     assert serialize(foo)['x'] == {'x': 1, 's': 'abc'}

@@ -11,7 +11,7 @@ from typedpy.fields import (
     AllOf, AnyOf, OneOf, NotField, Boolean,
     Array, Set, Map, Tuple, StructureReference,
     ImmutableField, create_typed_field, Anything,
-    SerializableField
+    SerializableField, Function
     )
 
 from typedpy.json_schema_mapping import (

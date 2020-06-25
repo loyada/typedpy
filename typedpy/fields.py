@@ -23,6 +23,7 @@ def _map_to_field(item):
 
 def wrap_val(v): return "'{}'".format(v) if isinstance(v, str) else v
 
+
 class StructureReference(Field):
     """
     A Field that is an embedded structure within other structure. Allows to create hierarchy.
@@ -202,6 +203,25 @@ class String(TypedField):
 
     def __set__(self, instance, value):
         self._validate(value)
+        super().__set__(instance, value)
+
+
+def _foo(): pass
+
+
+class Function(Field):
+    """
+       A function. Note that this can't be any callable (it can't be a class, for example), but a real function
+    """
+    def __set__(self, instance, value):
+        def is_function(f):
+            return type(f) == type(_foo) or type(f) == type(open)
+
+        def err_prefix():
+            return "{}: Got {}; ".format(self._name, wrap_val(value)) if self._name else ""
+
+        if not is_function(value):
+            raise TypeError("{}Expected a function".format(err_prefix()))
         super().__set__(instance, value)
 
 

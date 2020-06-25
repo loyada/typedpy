@@ -1,3 +1,4 @@
+import operator
 from collections import OrderedDict
 
 from pytest import raises
@@ -6,6 +7,7 @@ from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
     Float, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything, serialize, NotField, \
     SerializableField
+from typedpy.serialization import FunctionCall
 
 
 class SimpleStruct(Structure):
@@ -284,7 +286,8 @@ def test_invalid_type_err():
     }
     with raises(ValueError) as excinfo:
         deserialize_structure(Example, data)
-    assert "could not deserialize all: value '' did not match <Number>. reason: all: Got ''; Expected a number" in str(excinfo.value)
+    assert "could not deserialize all: value '' did not match <Number>. reason: all: Got ''; Expected a number" in str(
+        excinfo.value)
 
 
 def test_invalid_type_err2():
@@ -587,20 +590,94 @@ def test_serializable_deserialize():
 
 def test_deserialization_map():
     class Foo(Structure):
-            m1 = Map[String, Anything]
-            m2 = Map
-            i = Integer
+        m1 = Map[String, Anything]
+        m2 = Map
+        i = Integer
 
-    deserialized = deserialize_structure(Foo, {'m1': {'a': 1, 'b': [1,2,3]},'m2': {1: 2, 'a': 'v'}, 'i': 3})
+    deserialized = deserialize_structure(Foo, {'m1': {'a': 1, 'b': [1, 2, 3]}, 'm2': {1: 2, 'a': 'v'}, 'i': 3})
     assert deserialized.m1['a'] == 1
 
 
 def test_deserialization_non_typedpy_attributes():
     class Foo(Structure):
-            m1 = Map[String, Anything]
-            m2 = Map
-            i = Integer
+        m1 = Map[String, Anything]
+        m2 = Map
+        i = Integer
 
-    deserialized = deserialize_structure(Foo, {'m1': {'a': 1, 'b': [1,2,3]},'m2': {1: 2, 'a': 'v'}, 'i': 3, 'x': [1,2,3]})
+    deserialized = deserialize_structure(Foo, {'m1': {'a': 1, 'b': [1, 2, 3]}, 'm2': {1: 2, 'a': 'v'}, 'i': 3,
+                                               'x': [1, 2, 3]})
     assert deserialized.m1['a'] == 1
-    assert deserialized.x == [1,2,3]
+    assert deserialized.x == [1, 2, 3]
+
+
+def test_mapper_variation_1():
+    class Foo(Structure):
+        m = Map
+        s = String
+        i = Integer
+
+    mapper = {
+        "m": "a",
+        "s": FunctionCall(func=lambda x: f'the string is {x}', args=['name'])
+    }
+
+    foo = deserialize_structure(Foo,
+                                {
+                                    'a': {'a': 1, 'b': [1, 2, 3]},
+                                    'name': 'Joe',
+                                    'i': 3
+                                },
+                                mapper,
+                                keep_undefined=False)
+
+    assert foo == Foo(i=3, m={'a': 1, 'b': [1, 2, 3]}, s='the string is Joe')
+
+
+def test_mapper_variation_2():
+    class Foo(Structure):
+        m = Map
+        s = String
+        i = Integer
+
+    mapper = {
+        "m": "a.b",
+        "s": FunctionCall(func=lambda x: f'the string is {x}', args=['name.first']),
+        'i': FunctionCall(func=operator.add, args=['i', 'j'])
+    }
+
+    foo = deserialize_structure(Foo,
+                                {
+                                    'a': {'b': {'x': 1, 'y': 2}},
+                                    'name': {'first': 'Joe', 'last': 'smith'},
+                                    'i': 3,
+                                    'j': 4
+                                },
+                                mapper,
+                                keep_undefined=False)
+
+    assert foo == Foo(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')
+
+
+def test_mapper_error():
+    class Foo(Structure):
+        m = Map
+        s = String
+        i = Integer
+
+    mapper = {
+        "m": "a.b",
+        "s": FunctionCall(func=lambda x: f'the string is {x}', args=['name.first']),
+        'i': FunctionCall(func=operator.add, args=['i', 'j'])
+    }
+
+    foo = deserialize_structure(Foo,
+                                {
+                                    'a': {'b': {'x': 1, 'y': 2}},
+                                    'name': {'first': 'Joe', 'last': 'smith'},
+                                    'i': 3,
+                                    'j': 4
+                                },
+                                mapper,
+                                keep_undefined=False)
+
+    assert foo == Foo(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')

@@ -1,10 +1,11 @@
 import json
 from collections.abc import Mapping
+from functools import reduce
 
 from typedpy.structures import TypedField, Structure, StructMeta
 from typedpy.fields import Field, Number, String, StructureReference, \
     Array, Map, ClassReference, Enum, MultiFieldWrapper, Boolean, Tuple, Set, Anything, AnyOf, AllOf, \
-    OneOf, NotField, SerializableField, SizedCollection, wrap_val
+    OneOf, NotField, SerializableField, SizedCollection, wrap_val, Function
 
 
 def deserialize_list_like(field, content_type, value, name):
@@ -140,7 +141,13 @@ def get_all_fields_by_name(cls):
     return all_fields_by_name
 
 
-def deserialize_structure(cls, the_dict, name=None):
+class FunctionCall(Structure):
+    func = Function
+    args = Array[String]
+    _required = ['func']
+
+
+def deserialize_structure(cls, the_dict, mapper={}, name=None, keep_undefined = False):
     """
         Deserialize a dict to a Structure instance, Jackson style.
         Note the top level must be a python dict - which implies that a JSON of
@@ -152,6 +159,8 @@ def deserialize_structure(cls, the_dict, name=None):
                 The target class
             the_dict(dict):
                 the source dictionary
+            mapper(dict): optional
+                a dict of attribute name of attribute to key in the input
             name(str): optional
                 name of the structure, used only internally, when there is a
                 class reference field. Users are not supposed to use this argument.
@@ -171,11 +180,35 @@ def deserialize_structure(cls, the_dict, name=None):
             return cls(deserialize_single_field(getattr(cls, field_name), the_dict, field_name))
         raise TypeError("{}: Expected a dictionary; Got {}".format(name, wrap_val(the_dict)))
 
-    kwargs = dict([(k, v) for k, v in the_dict.items() if k not in field_by_name])
+    kwargs = dict([(k, v) for k, v in the_dict.items() if k not in field_by_name and keep_undefined])
     for key, field in field_by_name.items():
-        if key in the_dict:
-            kwargs[key] = deserialize_single_field(field, the_dict[key], key)
+        if key in the_dict and key not in mapper:
+            processed_input = the_dict[key]
+        if key in mapper:
+            processed_input = get_processed_input(key, mapper, the_dict)
+        kwargs[key] = deserialize_single_field(field, processed_input, key)
+
     return cls(**kwargs)
+
+
+def _deep_get(dictionary, deep_key):
+    keys = deep_key.split('.')
+    return reduce(lambda d, key: d.get(key) if d else None, keys, dictionary)
+
+
+def get_processed_input(key, mapper, the_dict):
+    if key in mapper:
+        key_mapper = mapper[key]
+        if isinstance(key_mapper, (FunctionCall,)):
+            args = [_deep_get(the_dict, k) for k in key_mapper.args]
+            processed_input = key_mapper.func(*args)
+        elif isinstance(key_mapper, (str,)):
+            processed_input = _deep_get(the_dict, key_mapper)
+        else:
+            raise TypeError("mapper must be a key in the input or a FunctionCall")
+    else:
+        processed_input = the_dict[key]
+    return processed_input
 
 
 def serialize_val(field_definition, name, val):
@@ -288,5 +321,3 @@ def serialize(structure, compact=False):
     if not isinstance(structure, Structure):
         raise TypeError("serialize: must get a Structure. Got: {}".format(structure))
     return serialize_internal(structure=structure, compact=compact)
-
-

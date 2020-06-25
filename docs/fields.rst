@@ -33,6 +33,9 @@ Predefined Types
 
 .. autoclass:: Anything
 
+.. autoclass:: Function
+
+
 Numerical
 ---------
 

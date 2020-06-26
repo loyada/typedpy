@@ -1,3 +1,6 @@
+import sys
+
+import pytest
 from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, Field
@@ -249,6 +252,7 @@ def test_class_reference_success():
     assert foo.bars[1].st == 'b'
 
 
+@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.6 or higher")
 def test_array_with_function_returning_field():
     def MyField() -> Field:  return String()
 

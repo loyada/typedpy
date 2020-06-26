@@ -10,13 +10,13 @@ class B(Structure):
 
 
 def test_integer_instead_of_function_error():
-    with raises(ValueError) as excinfo:
+    with raises(TypeError) as excinfo:
         B(e=-5, i=5)
     assert "e: Got -5; Expected a function" in str(excinfo.value)
 
 
 def test_callable_but_not_a_function_error():
-    with raises(ValueError) as excinfo:
+    with raises(TypeError) as excinfo:
         B(e=String, i=5)
     assert "e: Got <class 'typedpy.fields.String'>; Expected a function" in str(excinfo.value)
 

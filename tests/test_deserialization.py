@@ -627,7 +627,7 @@ def test_mapper_variation_1():
                                     'name': 'Joe',
                                     'i': 3
                                 },
-                                mapper,
+                                mapper=mapper,
                                 keep_undefined=False)
 
     assert foo == Foo(i=3, m={'a': 1, 'b': [1, 2, 3]}, s='the string is Joe')
@@ -652,7 +652,7 @@ def test_mapper_variation_2():
                                     'i': 3,
                                     'j': 4
                                 },
-                                mapper,
+                                mapper=mapper,
                                 keep_undefined=False)
 
     assert foo == Foo(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')
@@ -666,18 +666,18 @@ def test_mapper_error():
 
     mapper = {
         "m": "a.b",
-        "s": FunctionCall(func=lambda x: f'the string is {x}', args=['name.first']),
+        "s": FunctionCall(func=lambda x: x, args=['name']),
         'i': FunctionCall(func=operator.add, args=['i', 'j'])
     }
 
-    foo = deserialize_structure(Foo,
-                                {
-                                    'a': {'b': {'x': 1, 'y': 2}},
-                                    'name': {'first': 'Joe', 'last': 'smith'},
-                                    'i': 3,
-                                    'j': 4
-                                },
-                                mapper,
-                                keep_undefined=False)
-
-    assert foo == Foo(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')
+    with raises(TypeError) as excinfo:
+        deserialize_structure(Foo,
+                              {
+                                  'a': {'b': {'x': 1, 'y': 2}},
+                                  'name': {'first': 'Joe', 'last': 'smith'},
+                                  'i': 3,
+                                  'j': 4
+                              },
+                              mapper=mapper,
+                              keep_undefined=False)
+    assert "s: Got {'first': 'Joe', 'last': 'smith'}; Expected a string" in str(excinfo.value)

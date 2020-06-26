@@ -106,7 +106,7 @@ def deserialize_single_field(field, source_val, name):
     elif isinstance(field, MultiFieldWrapper):
         value = deserialize_multifield_wrapper(field, source_val, name)
     elif isinstance(field, ClassReference):
-        value = deserialize_structure(getattr(field, '_ty'), source_val, name)
+        value = deserialize_structure_internal(getattr(field, '_ty'), source_val, name)
     elif isinstance(field, StructureReference):
         value = deserialize_structure_reference(getattr(field, '_newclass'), source_val)
     elif isinstance(field, Map):
@@ -147,7 +147,7 @@ class FunctionCall(Structure):
     _required = ['func']
 
 
-def deserialize_structure(cls, the_dict, mapper={}, name=None, keep_undefined = False):
+def deserialize_structure_internal(cls, the_dict, name=None, *, mapper=None, keep_undefined=False):
     """
         Deserialize a dict to a Structure instance, Jackson style.
         Note the top level must be a python dict - which implies that a JSON of
@@ -164,10 +164,14 @@ def deserialize_structure(cls, the_dict, mapper={}, name=None, keep_undefined = 
             name(str): optional
                 name of the structure, used only internally, when there is a
                 class reference field. Users are not supposed to use this argument.
+            keep_undefined(bool): optional
+                should it create attributes for keys that don't appear in the class? default is False.
 
         Returns:
             an instance of the provided :class:`Structure` deserialized
     """
+    if mapper is None:
+        mapper = {}
     field_by_name = get_all_fields_by_name(cls)
 
     if not isinstance(the_dict, dict):
@@ -182,13 +186,40 @@ def deserialize_structure(cls, the_dict, mapper={}, name=None, keep_undefined = 
 
     kwargs = dict([(k, v) for k, v in the_dict.items() if k not in field_by_name and keep_undefined])
     for key, field in field_by_name.items():
+        process = False
         if key in the_dict and key not in mapper:
             processed_input = the_dict[key]
-        if key in mapper:
+            process = True
+        elif key in mapper:
             processed_input = get_processed_input(key, mapper, the_dict)
-        kwargs[key] = deserialize_single_field(field, processed_input, key)
+            process = True
+        if process:
+            kwargs[key] = deserialize_single_field(field, processed_input, key)
 
     return cls(**kwargs)
+
+
+def deserialize_structure(cls, the_dict, *, mapper={}, keep_undefined=True):
+    """
+        Deserialize a dict to a Structure instance, Jackson style.
+        Note the top level must be a python dict - which implies that a JSON of
+        simply a number, or string, or array, is unsupported.
+        `See working examples in test. <https://github.com/loyada/typedpy/tree/master/tests/test_deserialization.py>`_
+
+        Arguments:
+            cls(type):
+                The target class
+            the_dict(dict):
+                the source dictionary
+            mapper(dict): optional
+                a dict of attribute name of attribute to key in the input
+            keep_undefined(bool): optional
+                should it create attributes for keys that don't appear in the class? default is True.
+
+        Returns:
+            an instance of the provided :class:`Structure` deserialized
+    """
+    return deserialize_structure_internal(cls, the_dict, mapper=mapper, keep_undefined=keep_undefined)
 
 
 def _deep_get(dictionary, deep_key):
@@ -279,7 +310,9 @@ def serialize_field(field_definition: Field, value):
     return serialize_val(field_definition, field_definition._name, value)
 
 
-def serialize_internal(structure, compact=False):
+def serialize_internal(structure, mapper=None, compact=False):
+    if mapper is None:
+        mapper = {}
     field_by_name = get_all_fields_by_name(structure.__class__)
 
     items = structure.items() if isinstance(structure, dict) \
@@ -297,11 +330,12 @@ def serialize_internal(structure, compact=False):
         for key, val in items:
             if val is None:
                 continue
-            result[key] = serialize_val(field_by_name.get(key, None), key, val)
+            mapped_key = mapper[key] if key in mapper else key
+            result[mapped_key] = serialize_val(field_by_name.get(key, None), key, val)
     return result
 
 
-def serialize(structure, compact=False):
+def serialize(structure, *, mapper=None, compact=False):
     """
     Serialize an instance of :class:`Structure` to a JSON-like dict.
     `See working examples in test. <https://github.com/loyada/typedpy/tree/master/tests/test_serialization.py>`_
@@ -310,6 +344,9 @@ def serialize(structure, compact=False):
         structure(:class:`Structure`):
             the structure instance to be serialized to JSON
 
+        mapper(dict): optional
+             a dictionary where the key is the name of the attribute in the structure, and the value is name of the
+             key to map its value to.
         compact(bool):
              whether to use a compact form for Structure that is a simple wrapper of a field.
              for example: if a Structure has only one field of an int, if compact is True
@@ -317,7 +354,12 @@ def serialize(structure, compact=False):
 
     Returns:
         a serialized Python object that can be directly converted to JSON
+        :param compact: in case there is a single attribute, it does not wrap it with a dictionary
+        :param structure: an instance of :class:`Structure`
+        :param mapper: a dict with the new key, by the attribute name
     """
+    if mapper is None:
+        mapper = {}
     if not isinstance(structure, Structure):
         raise TypeError("serialize: must get a Structure. Got: {}".format(structure))
-    return serialize_internal(structure=structure, compact=compact)
+    return serialize_internal(structure, mapper=mapper, compact=compact)

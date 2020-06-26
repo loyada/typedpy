@@ -161,6 +161,64 @@ Limitations and Guidance
 * If you create a completely new field type, that is not based on the predefined classes in Typedpy, it is not guaranteed to be supported. For example - if you define a custom field type using :func:`create_typed_field`, it is not supported
 
 
+Custom mapping in the deserialization
+=====================================
+
+What if there is no exact match between the serialized data and our Structure?
+Typedpy supports passing a custom mapper to the deserializer, so that the user can define how to deserialize each attribute.
+The mapper is a  dictionary, in which the key is the attribute name, and the value can be either a key in the source dict,
+or a :class:`FunctionCall` (a function and a list of keys in the source dict that are passed to the function).
+
+* When the mapping is from source key to attribute, nested keys are supported as well, using dot notation (i.e. "xxx.yyy.zzz").
+
+* When the mapping is using a function call, the provided function is expected to return the value that will be used as the input of the deserialization.
+
+An example can demonstrate the usage:
+
+
+.. code-block:: python
+
+    class Foo(Structure):
+        m = Map
+        s = String
+        i = Integer
+
+    mapper = {
+        "m": "a.b",
+        "s": FunctionCall(func=lambda x: f'the string is {x}', args=['name.first']),
+        'i': FunctionCall(func=operator.add, args=['i', 'j'])
+    }
+
+    foo = deserialize_structure(Foo,
+                                {
+                                    'a': {'b': {'x': 1, 'y': 2}},
+                                    'name': {'first': 'Joe', 'last': 'smith'},
+                                    'i': 3,
+                                    'j': 4
+                                },
+                                mapper=mapper,
+                                keep_undefined=False)
+    # keep_undefined=False ensures it does not also create attributes a, name, j in the deserialized instance
+    assert foo == Foo(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')
+
+
+Custom mapping in the deserialization
+=====================================
+ Similarly, you can provide a mapper when serializing. This mapper is simpler though - it simply allow to map an attribute
+to a key. It also does not support nested keys/attributes.
+For example:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        a = String
+        i = Integer
+
+    foo = Foo(a='string', i=1)
+    mapper = {'a': 'aaa', 'i': 'iii'}
+    assert serialize(foo, mapper=mapper) == {'aaa': 'string', 'iii': 1}
+
+
 
 Functions
 =========

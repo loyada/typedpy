@@ -204,3 +204,13 @@ def test_serialize_non_typedpy_attribute():
     foo = Foo(a='a', i=1)
     foo.x = {'x': 1, 's': 'abc'}
     assert serialize(foo)['x'] == {'x': 1, 's': 'abc'}
+
+
+def test_serialize_with_mapper():
+    class Foo(Structure):
+        a = String
+        i = Integer
+
+    foo = Foo(a='string', i=1)
+    mapper = {'a': 'aaa', 'i': 'iii'}
+    assert serialize(foo, mapper=mapper) == {'aaa': 'string', 'iii': 1}

@@ -86,7 +86,7 @@ Though the above example does not show it, the deserializer also supports the fo
    json.dumps(schema, indent=4)
 
 Serialization to a JSON that is not an object
----------------------------------------------
+=============================================
 If the structure is effectively a wrapper around a single field, Typedpy allows to serialize directly to the \
 JSON representing only that field, using the "compact" flag. For example:
 
@@ -100,7 +100,7 @@ JSON representing only that field, using the "compact" flag. For example:
     assert serialize(foo, compact=True)==['abcde', 234]
 
 Deserialization of a non-object JSON
-------------------------------------
+====================================
 If the JSON is not an object, and the target :class:`Structure` is a single field wrapper, then Typedpy \
 tries to deserialize directly to that field. For example:
 
@@ -119,11 +119,12 @@ tries to deserialize directly to that field. For example:
 .. _custom-serialization:
 
 Custom Serialization
---------------------
+====================
 Sometimes you might want to define your own serialization or deserialization of a field. \
 For example: suppose you have a datetime object in one of the properties. You want to serialize/deserialize \
 it using a custom format. For that, you can inherit from  :class:`SerializableField`
 
+(for an alternative solution, see :ref:`custom-mapping` )
 Example of custom deserialization:
 
 .. code-block:: python
@@ -160,6 +161,8 @@ Limitations and Guidance
 
 * If you create a completely new field type, that is not based on the predefined classes in Typedpy, it is not guaranteed to be supported. For example - if you define a custom field type using :func:`create_typed_field`, it is not supported
 
+
+.. _custom-mapping:
 
 Custom mapping in the deserialization
 =====================================

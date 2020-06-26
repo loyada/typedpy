@@ -2,9 +2,10 @@ from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, serialize, Set, AnyOf, DateField, Anything, Map
+    Float, serialize, Set, AnyOf, DateField, Anything, Map, Function
 from typedpy.extfields import DateTime
 from typedpy import serialize_field
+from typedpy.serialization import FunctionCall
 
 
 class SimpleStruct(Structure):
@@ -206,7 +207,7 @@ def test_serialize_non_typedpy_attribute():
     assert serialize(foo)['x'] == {'x': 1, 's': 'abc'}
 
 
-def test_serialize_with_mapper():
+def test_serialize_with_mapper_to_different_keys():
     class Foo(Structure):
         a = String
         i = Integer
@@ -214,3 +215,61 @@ def test_serialize_with_mapper():
     foo = Foo(a='string', i=1)
     mapper = {'a': 'aaa', 'i': 'iii'}
     assert serialize(foo, mapper=mapper) == {'aaa': 'string', 'iii': 1}
+
+
+def test_serialize_with_mapper_with_functions():
+    def my_func(): pass
+
+    class Foo(Structure):
+        function = Function
+        i = Integer
+
+    foo = Foo(function=my_func, i=1)
+    mapper = {
+        'function': FunctionCall(func=lambda f: f.__name__),
+        'i': FunctionCall(func=lambda x: x + 5)
+    }
+    assert serialize(foo, mapper=mapper) == {'function': 'my_func', 'i': 6}
+
+
+def test_serialize_with_mapper_with_function_converting_types():
+    class Foo(Structure):
+        num = Float
+        i = Integer
+
+    foo = Foo(num=5.5, i=999)
+    mapper = {
+        'num': FunctionCall(func=lambda f: [int(f)]),
+        'i': FunctionCall(func=lambda x: str(x))
+    }
+    assert serialize(foo, mapper=mapper) == {'num': [5], 'i': '999'}
+
+
+def test_serialize_with_mapper_with_function_with_args():
+    class Foo(Structure):
+        f = Float
+        i = Integer
+
+    foo = Foo(f=5.5, i=999)
+    mapper = {
+        'f': FunctionCall(func=lambda f: [int(f)], args=['i']),
+        'i': FunctionCall(func=lambda x: str(x), args=['f'])
+    }
+    assert serialize(foo, mapper=mapper) == {'f': [999], 'i': '5.5'}
+
+
+def test_serialize_with_mapper_error():
+    def my_func(): pass
+
+    class Foo(Structure):
+        function = Function
+        i = Integer
+
+    foo = Foo(function=my_func, i=1)
+    mapper = {
+        'function': 5,
+        'i': FunctionCall(func=lambda x: x + 5)
+    }
+    with raises(TypeError) as excinfo:
+        serialize(foo, mapper=mapper)
+    assert 'mapper must have a FunctionCall or a string' in str(excinfo.value)

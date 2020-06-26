@@ -658,6 +658,30 @@ def test_mapper_variation_2():
     assert foo == Foo(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')
 
 
+def test_mapper_variation_3():
+    class Foo(Structure):
+        m = Map
+        s = String
+        i = Integer
+
+    mapper = {
+        "m": "a.b",
+        "s": FunctionCall(func=lambda x: f'the string is {x}'),
+        'i': FunctionCall(func=lambda x: x*2)
+    }
+
+    foo = deserialize_structure(Foo,
+                                {
+                                    'a': {'b': {'x': 1, 'y': 2}},
+                                    's':  'Joe',
+                                    'i': 3
+                                },
+                                mapper=mapper,
+                                keep_undefined=False)
+
+    assert foo == Foo(i=6, m={'x': 1, 'y': 2}, s='the string is Joe')
+
+
 def test_mapper_error():
     class Foo(Structure):
         m = Map

@@ -202,11 +202,11 @@ An example can demonstrate the usage:
     assert foo == Foo(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')
 
 
-Custom mapping in the deserialization
-=====================================
- Similarly, you can provide a mapper when serializing. This mapper is simpler though - it simply allow to map an attribute
-to a key. It also does not support nested keys/attributes.
-For example:
+Custom mapping in the serialization
+===================================
+ Similarly, you can provide a mapper when serializing. This mapper is a bitsimpler though - for each attribute it allows
+to provide either an alternative key, or a transformation function. It also does not support nested keys/attributes.
+An example of changing keys names:
 
 .. code-block:: python
 
@@ -219,6 +219,24 @@ For example:
     assert serialize(foo, mapper=mapper) == {'aaa': 'string', 'iii': 1}
 
 
+An example of transforming:
+
+.. code-block:: python
+
+    def my_func(): pass
+
+    class Foo(Structure):
+        function = Function
+        i = Integer
+
+    foo = Foo(function=my_func, i=1)
+    mapper = {
+        'function': FunctionCall(func=lambda f: f.__name__),
+        'i': FunctionCall(func=lambda x: x + 5)
+    }
+    assert serialize(foo, mapper=mapper) == {'function': 'my_func', 'i': 6}
+
+
 
 Functions
 =========
@@ -226,5 +244,7 @@ Functions
 .. autofunction:: deserialize_structure
 
 .. autofunction:: serialize
+
+.. autofunction:: serialize_field
 
 

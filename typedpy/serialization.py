@@ -199,7 +199,7 @@ def deserialize_structure_internal(cls, the_dict, name=None, *, mapper=None, kee
     return cls(**kwargs)
 
 
-def deserialize_structure(cls, the_dict, *, mapper={}, keep_undefined=True):
+def deserialize_structure(cls, the_dict, *, mapper=None, keep_undefined=True):
     """
         Deserialize a dict to a Structure instance, Jackson style.
         Note the top level must be a python dict - which implies that a JSON of
@@ -231,7 +231,7 @@ def get_processed_input(key, mapper, the_dict):
     if key in mapper:
         key_mapper = mapper[key]
         if isinstance(key_mapper, (FunctionCall,)):
-            args = [_deep_get(the_dict, k) for k in key_mapper.args]
+            args = [_deep_get(the_dict, k) for k in key_mapper.args] if key_mapper.args else [the_dict.get(key)]
             processed_input = key_mapper.func(*args)
         elif isinstance(key_mapper, (str,)):
             processed_input = _deep_get(the_dict, key_mapper)
@@ -310,6 +310,18 @@ def serialize_field(field_definition: Field, value):
     return serialize_val(field_definition, field_definition._name, value)
 
 
+def _get_mapped_value(mapper, key, items):
+    if key in mapper:
+        key_mapper = mapper[key]
+        if isinstance(key_mapper, (FunctionCall,)):
+            args = [items.get(k) for k in key_mapper.args] if key_mapper.args else [items.get(key)]
+            return key_mapper.func(*args)
+        elif not isinstance(key_mapper, (FunctionCall,str)):
+            raise TypeError("mapper must have a FunctionCall or a string")
+
+    return None
+
+
 def serialize_internal(structure, mapper=None, compact=False):
     if mapper is None:
         mapper = {}
@@ -327,11 +339,14 @@ def serialize_internal(structure, mapper=None, compact=False):
         result = serialize_val(field_by_name.get(key, None), key, getattr(structure, key))
     else:
         result = {}
+        items_map = dict(items)
         for key, val in items:
             if val is None:
                 continue
-            mapped_key = mapper[key] if key in mapper else key
-            result[mapped_key] = serialize_val(field_by_name.get(key, None), key, val)
+            mapped_key = mapper[key] if key in mapper and isinstance(mapper[key], (str,)) else key
+            mapped_value = _get_mapped_value(mapper, key, items_map)
+            the_field_definition = Anything if mapped_value else field_by_name.get(key, None)
+            result[mapped_key] = serialize_val(the_field_definition, key, mapped_value or val)
     return result
 
 
@@ -346,7 +361,9 @@ def serialize(structure, *, mapper=None, compact=False):
 
         mapper(dict): optional
              a dictionary where the key is the name of the attribute in the structure, and the value is name of the
-             key to map its value to.
+             key to map its value to, or a :class:`FunctionCall` where the function is the transformation, and
+             the args are a list of attributes that are arguments to the function. if args is empty it function transform
+             the current attribute.
         compact(bool):
              whether to use a compact form for Structure that is a simple wrapper of a field.
              for example: if a Structure has only one field of an int, if compact is True

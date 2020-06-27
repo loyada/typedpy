@@ -705,3 +705,74 @@ def test_mapper_error():
                               mapper=mapper,
                               keep_undefined=False)
     assert "s: Got {'first': 'Joe', 'last': 'smith'}; Expected a string" in str(excinfo.value)
+
+
+def test_bad_path_in_mapper():
+    class Foo(Structure):
+        m = Map
+        s = String
+        i = Integer
+
+    mapper = {
+        "m": "a.x",
+        "s": FunctionCall(func=lambda x: x, args=['name']),
+        'i': FunctionCall(func=operator.add, args=['i', 'j'])
+    }
+
+    with raises(TypeError) as excinfo:
+        deserialize_structure(Foo,
+                              {
+                                  'a': {'b': {'x': 1, 'y': 2}},
+                                  'name': {'first': 'Joe', 'last': 'smith'},
+                                  'i': 3,
+                                  'j': 4
+                              },
+                              mapper=mapper,
+                              keep_undefined=False)
+    assert "m: expected a dict. Got None" in str(excinfo.value)
+
+
+def test_invalid_mapper_value():
+    class Foo(Structure):
+        m = Map
+        s = String
+        i = Integer
+
+    mapper = {
+        "m": 5,
+        "s": FunctionCall(func=lambda x: x, args=['name']),
+        'i': FunctionCall(func=operator.add, args=['i', 'j'])
+    }
+
+    with raises(TypeError) as excinfo:
+        deserialize_structure(Foo,
+                              {
+                                  'a': {'b': {'x': 1, 'y': 2}},
+                                  'name': {'first': 'Joe', 'last': 'smith'},
+                                  'i': 3,
+                                  'j': 4
+                              },
+                              mapper=mapper,
+                              keep_undefined=False)
+    assert "mapper value must be a key in the input or a FunctionCal. Got 5" in str(excinfo.value)
+
+
+def test_invalid_mapper():
+    class Foo(Structure):
+        m = Map
+        s = String
+        i = Integer
+
+    mapper = 5
+
+    with raises(TypeError) as excinfo:
+        deserialize_structure(Foo,
+                              {
+                                  'a': {'b': {'x': 1, 'y': 2}},
+                                  'name': {'first': 'Joe', 'last': 'smith'},
+                                  'i': 3,
+                                  'j': 4
+                              },
+                              mapper=mapper,
+                              keep_undefined=False)
+    assert "Mapper must be a mapping" in str(excinfo.value)

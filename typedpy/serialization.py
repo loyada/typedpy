@@ -1,3 +1,4 @@
+import collections
 import json
 from collections.abc import Mapping
 from functools import reduce
@@ -77,7 +78,7 @@ def deserialize_multifield_wrapper(field, source_val, name):
 
 def deserialize_map(map_field, source_val, name):
     if not isinstance(source_val, dict):
-        raise TypeError("{}: expected a dict".format(name))
+        raise TypeError("{}: expected a dict. Got {}".format(name, wrap_val(source_val)))
     if map_field.items:
         key_field, value_field = map_field.items
     else:
@@ -172,6 +173,8 @@ def deserialize_structure_internal(cls, the_dict, name=None, *, mapper=None, kee
     """
     if mapper is None:
         mapper = {}
+    if not isinstance(mapper, (collections.Mapping,)):
+        raise TypeError("Mapper must be a mapping")
     field_by_name = get_all_fields_by_name(cls)
 
     if not isinstance(the_dict, dict):
@@ -241,7 +244,7 @@ def get_processed_input(key, mapper, the_dict):
         elif isinstance(key_mapper, (str,)):
             processed_input = _deep_get(the_dict, key_mapper)
         else:
-            raise TypeError("mapper must be a key in the input or a FunctionCall")
+            raise TypeError("mapper value must be a key in the input or a FunctionCal. Got {}".format(wrap_val(key_mapper)))
     else:
         processed_input = the_dict[key]
     return processed_input
@@ -382,6 +385,8 @@ def serialize(structure, *, mapper=None, compact=False):
     """
     if mapper is None:
         mapper = {}
+    if not isinstance(mapper, (collections.Mapping,)):
+        raise TypeError("Mapper must be a mapping")
     if not isinstance(structure, Structure):
         raise TypeError("serialize: must get a Structure. Got: {}".format(structure))
     return serialize_internal(structure, mapper=mapper, compact=compact)

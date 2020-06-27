@@ -212,7 +212,12 @@ def deserialize_structure(cls, the_dict, *, mapper=None, keep_undefined=True):
             the_dict(dict):
                 the source dictionary
             mapper(dict): optional
-                a dict of attribute name of attribute to key in the input
+                the key is the target attribute name. The value can either be a path of the value in the source dict
+                using dot notation, for example: "aaa.bbb", or a :class:`FunctionCall`. In the latter case,
+                the function is the used to preprocess the input prior to deserialization/validation.
+                The args attribute in the function call is optional. If non provided, the input to the function is
+                the value with the same key. Otherwise it is the keys of the values in the input that are injected
+                to the provided function. See working examples in the tests link above.
             keep_undefined(bool): optional
                 should it create attributes for keys that don't appear in the class? default is True.
 

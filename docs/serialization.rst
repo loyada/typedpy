@@ -252,7 +252,7 @@ Structure class to be deserialized to.  \
 Both the Deserializer and Serializer accept an optional mapper. The mapper works similarly to the one described above \
 but it is a strict Typedpy Field, and the classes are self validating, so that it is impossible to have an instance \
 which is obviously invalid. \
-See below for the documentation of the classes -  :ref:`serialization-classes` \
+See below for the documentation of the :ref:`serialization-classes` \
 
 There are plenty of examples for usage here: \
 `Serialization examples - <https://github.com/loyada/typedpy/tree/master/tests/test_serialization.py>`_ \

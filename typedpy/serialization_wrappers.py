@@ -50,8 +50,8 @@ class Deserializer(Structure):
 
     """
 
-    target_class=StructureClass
-    mapper=Map[String, OneOf[String, FunctionCall]]
+    target_class = StructureClass
+    mapper = Map[String, OneOf[String, FunctionCall]]
 
     _required = ['target_class']
 
@@ -60,9 +60,9 @@ class Deserializer(Structure):
         if self.mapper:
             for key in self.mapper:
                 if key not in valid_keys:
-                    raise ValueError("Invalid key in mapper for class {}: {}. Keys must be one of the class fields.".format(self.target_class.__name__, key))
-
-
+                    raise ValueError(
+                        "Invalid key in mapper for class {}: {}. Keys must be one of the class fields.".format(
+                            self.target_class.__name__, key))
 
     def deserialize(self, input, keep_undefined=True):
         return deserialize_structure(self.target_class,
@@ -134,7 +134,8 @@ class Serializer(Structure):
                 if isinstance(args, (list,)):
                     for arg in args:
                         if arg not in valid_keys:
-                            raise ValueError("Mapper[{}] has a function call with an invalid argument: {}".format(key, arg))
+                            raise ValueError(
+                                "Mapper[{}] has a function call with an invalid argument: {}".format(key, arg))
 
     def serialize(self, compact=True):
         return serialize(self.source,

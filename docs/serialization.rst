@@ -254,12 +254,12 @@ but it is a strict Typedpy Field, and the classes are self validating, so that i
 which is obviously invalid. \
 See below for the documentation of the classes -  :ref:`serialization-classes` \
 
-There are plenty of examples for usage here:
-` <https://github.com/loyada/typedpy/tree/master/tests/test_serialization.py>`_
-` <https://github.com/loyada/typedpy/tree/master/tests/test_deserialization.py>`_
+There are plenty of examples for usage here: \
+`Serialization examples - <https://github.com/loyada/typedpy/tree/master/tests/test_serialization.py>`_ \
+`Deserialization examples - <https://github.com/loyada/typedpy/tree/master/tests/test_deserialization.py>`_ \
 
 
-Examples of invalid definitions that are caught immediately:
+Examples of invalid definitions that are caught immediately: \
 
 .. code-block:: python
 
@@ -295,7 +295,8 @@ Examples of invalid definitions that are caught immediately:
     # the following will raise a TypeError, since the Mapper types are wrong
     Deserializer(target_class=Bar, mapper= {'s': [1,2,3] })
 
-Here is a valid usage example, referring to the same Bar class defined in the previous example:
+
+Here is a valid usage example, referring to the same Bar class defined in the previous example: \
 
 .. code-block:: python
 

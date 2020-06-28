@@ -122,7 +122,7 @@ Custom Serialization
 ====================
 Sometimes you might want to define your own serialization or deserialization of a field. \
 For example: suppose you have a datetime object in one of the properties. You want to serialize/deserialize \
-it using a custom format. For that, you can inherit from  :class:`SerializableField`
+it using a custom format. For that, you can inherit from  :class:`SerializableField` \
 
 (for an alternative solution, see :ref:`custom-mapping` )
 Example of custom deserialization:
@@ -167,10 +167,10 @@ Limitations and Guidance
 Custom mapping in the deserialization
 =====================================
 
-What if there is no exact match between the serialized data and our Structure?
-Typedpy supports passing a custom mapper to the deserializer, so that the user can define how to deserialize each attribute.
-The mapper is a  dictionary, in which the key is the attribute name, and the value can be either a key in the source dict,
-or a :class:`FunctionCall` (a function and a list of keys in the source dict that are passed to the function).
+What if there is no exact match between the serialized data and our Structure? \
+Typedpy supports passing a custom mapper to the deserializer, so that the user can define how to deserialize each attribute. \
+The mapper is a  dictionary, in which the key is the attribute name, and the value can be either a key in the source dict, \
+or a :class:`FunctionCall` (a function and a list of keys in the source dict that are passed to the function). \
 
 * When the mapping is from source key to attribute, nested keys are supported as well, using dot notation (i.e. "xxx.yyy.zzz").
 
@@ -207,9 +207,9 @@ An example can demonstrate the usage:
 
 Custom mapping in the serialization
 ===================================
- Similarly, you can provide a mapper when serializing. This mapper is a bitsimpler though - for each attribute it allows
-to provide either an alternative key, or a transformation function. It also does not support nested keys/attributes.
-An example of changing keys names:
+ Similarly, you can provide a mapper when serializing. This mapper is a bitsimpler though - for each attribute it allows \
+to provide either an alternative key, or a transformation function. It also does not support nested keys/attributes. \
+An example of changing keys names: \
 
 .. code-block:: python
 
@@ -239,6 +239,95 @@ An example of transforming:
     }
     assert serialize(foo, mapper=mapper) == {'function': 'my_func', 'i': 6}
 
+
+
+Strict Serialization and Deserialization API
+============================================
+Starting at version 0.70, Typedpy provides a strict API, aligned with the principles of Typedpy. This API uses Typedpy \
+classes for serializer and deserializer. It is easier to understand, and catches obvious errors in the mapper early. \
+This is the preferable API to use. \
+There are 2 classes provided: :class:`Serializer` and :class:`Deserializer`.   \
+The Serializer class accepts the instance of the structure to be serialized, while the Deserializer accepts the target \
+Structure class to be deserialized to.  \
+Both the Deserializer and Serializer accept an optional mapper. The mapper works similarly to the one described above \
+but it is a strict Typedpy Field, and the classes are self validating, so that it is impossible to have an instance \
+which is obviously invalid. \
+See below for the documentation of the classes -  :ref:`serialization-classes` \
+
+There are plenty of examples for usage here:
+` <https://github.com/loyada/typedpy/tree/master/tests/test_serialization.py>`_
+` <https://github.com/loyada/typedpy/tree/master/tests/test_deserialization.py>`_
+
+
+Examples of invalid definitions that are caught immediately:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        f = Float
+        i = Integer
+
+    foo_instance = Foo(f=5.5, i=999)
+    # we define a mapper that has an invalid argument 'x', since 'x' is not an attribute of Foo.
+    mapper = {
+        'f': FunctionCall(func=lambda f: [int(f)], args=['i', 'x']),
+        'i': FunctionCall(func=lambda x: str(x), args=['f'])
+    }
+
+    # the following will raise a ValueError: "Mapper[f] has a function call with an invalid argument: x"
+    Serializer(foo, mapper=mapper)
+
+    class Bar(Structure):
+        m = Map
+        s = String
+        i = Integer
+
+    #this is an invalid mapper, since the key "xyz" is not an attribute in Bar
+    mapper = {
+        "xyz": "a.b",
+        "s": FunctionCall(func=lambda x: f'the string is {x}', args=['name.first']),
+        'i': FunctionCall(func=operator.add, args=['i', 'j'])
+    }
+
+    # the following will raise a ValueError: Invalid key in mapper for class Bar: xyz
+    Deserializer(target_class=Bar, mapper=mapper)
+
+    # the following will raise a TypeError, since the Mapper types are wrong
+    Deserializer(target_class=Bar, mapper= {'s': [1,2,3] })
+
+Here is a valid usage example, referring to the same Bar class defined in the previous example:
+
+.. code-block:: python
+
+    mapper = {
+        "m": "a.b",
+        "s": FunctionCall(func=lambda x: f'the string is {x}', args=['name.first']),
+        'i': FunctionCall(func=operator.add, args=['i', 'j'])
+    }
+
+    deserializer = Deserializer(target_class=Bar, mapper=mapper)
+
+    bar = deserializer.deserialize({
+            'a': {'b': {'x': 1, 'y': 2}},
+            'name': {'first': 'Joe', 'last': 'smith'},
+            'i': 3,
+            'j': 4
+        }, keep_undefined=False)
+
+    assert bar == Bar(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')
+
+
+.. _serialization-classes:
+
+Classes
+=======
+(starting at version 0.70)
+
+.. autoclass:: FunctionCall
+
+.. autoclass:: Serializer
+
+.. autoclass:: Deserializer
 
 
 Functions

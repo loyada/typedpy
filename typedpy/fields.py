@@ -157,6 +157,10 @@ class DecimalNumber(Number):
         super().__set__(instance, value)
 
 
+class StructureClass(TypedField):
+    _ty = StructMeta
+
+
 class String(TypedField):
     """
       A string value. Accepts input of `str`

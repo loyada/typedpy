@@ -20,8 +20,13 @@ from typedpy.json_schema_mapping import (
     )
 
 from typedpy.serialization import (
-    deserialize_structure, serialize, serialize_field
+    deserialize_structure, serialize, serialize_field, FunctionCall
 )
+
+from typedpy.serialization_wrappers import (
+    Serializer, Deserializer
+)
+
 from typedpy.extfields import (
     DateString, DateField, DateTime, TimeString, HostName, IPV4, JSONString, EmailAddress
 )

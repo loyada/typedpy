@@ -6,6 +6,7 @@ from typedpy import Structure, Array, Number, String, Integer, \
 from typedpy.extfields import DateTime
 from typedpy import serialize_field
 from typedpy.serialization import FunctionCall
+from typedpy.serialization_wrappers import Serializer
 
 
 class SimpleStruct(Structure):
@@ -273,3 +274,77 @@ def test_serialize_with_mapper_error():
     with raises(TypeError) as excinfo:
         serialize(foo, mapper=mapper)
     assert 'mapper must have a FunctionCall or a string' in str(excinfo.value)
+
+
+def test_serializer_with_mapper_with_function_with_args():
+    class Foo(Structure):
+        f = Float
+        i = Integer
+
+    foo = Foo(f=5.5, i=999)
+    mapper = {
+        'f': FunctionCall(func=lambda f: [int(f)], args=['i']),
+        'i': FunctionCall(func=lambda x: str(x), args=['f'])
+    }
+    assert Serializer(foo, mapper=mapper).serialize() == {'f': [999], 'i': '5.5'}
+
+
+def test_serializer_with_invalid_mapper_key_type():
+    class Foo(Structure):
+        f = Float
+        i = Integer
+
+    foo = Foo(f=5.5, i=999)
+    mapper = {
+         123 : FunctionCall(func=lambda f: [int(f)], args=['i']),
+        'i': FunctionCall(func=lambda x: str(x), args=['f'])
+    }
+    with raises(TypeError) as excinfo:
+        Serializer(foo, mapper=mapper)
+    assert 'mapper_key: Got 123; Expected a string' in str(excinfo.value)
+
+
+def test_serializer_with_invalid_mapper_value_type():
+    class Foo(Structure):
+        f = Float
+        i = Integer
+
+    foo = Foo(f=5.5, i=999)
+    mapper = {
+         'f' : 123,
+        'i': FunctionCall(func=lambda x: str(x), args=['f'])
+    }
+    with raises(ValueError) as excinfo:
+        Serializer(foo, mapper=mapper)
+    assert 'mapper_value: Got 123; Did not match any field option' in str(excinfo.value)
+
+
+def test_serializer_with_invalid_mapper_key():
+    class Foo(Structure):
+        f = Float
+        i = Integer
+
+    foo = Foo(f=5.5, i=999)
+    mapper = {
+        'x': FunctionCall(func=lambda f: [int(f)], args=['i']),
+        'i': FunctionCall(func=lambda x: str(x), args=['f'])
+    }
+    with raises(ValueError) as excinfo:
+        Serializer(foo, mapper=mapper)
+    assert 'Invalid key in mapper for class Foo: x. Keys must be one of the class fields.' in str(excinfo.value)
+
+
+def test_serializer_with_invalid_function_call_arg():
+    class Foo(Structure):
+        f = Float
+        i = Integer
+
+    foo = Foo(f=5.5, i=999)
+    mapper = {
+        'f': FunctionCall(func=lambda f: [int(f)], args=['i', 'x']),
+        'i': FunctionCall(func=lambda x: str(x), args=['f'])
+    }
+    with raises(ValueError) as excinfo:
+        Serializer(foo, mapper=mapper)
+    assert 'Mapper[f] has a function call with an invalid argument: x' in str(excinfo.value)
+

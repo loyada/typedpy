@@ -8,6 +8,7 @@ from typedpy import Structure, Array, Number, String, Integer, \
     Float, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything, serialize, NotField, \
     SerializableField
 from typedpy.serialization import FunctionCall
+from typedpy.serialization_wrappers import Deserializer
 
 
 class SimpleStruct(Structure):
@@ -667,13 +668,13 @@ def test_mapper_variation_3():
     mapper = {
         "m": "a.b",
         "s": FunctionCall(func=lambda x: f'the string is {x}'),
-        'i': FunctionCall(func=lambda x: x*2)
+        'i': FunctionCall(func=lambda x: x * 2)
     }
 
     foo = deserialize_structure(Foo,
                                 {
                                     'a': {'b': {'x': 1, 'y': 2}},
-                                    's':  'Joe',
+                                    's': 'Joe',
                                     'i': 3
                                 },
                                 mapper=mapper,
@@ -757,22 +758,60 @@ def test_invalid_mapper_value():
     assert "mapper value must be a key in the input or a FunctionCal. Got 5" in str(excinfo.value)
 
 
-def test_invalid_mapper():
+def test_valid_deserializer():
     class Foo(Structure):
         m = Map
         s = String
         i = Integer
 
-    mapper = 5
+    mapper = {
+        "m": "a.b",
+        "s": FunctionCall(func=lambda x: f'the string is {x}', args=['name.first']),
+        'i': FunctionCall(func=operator.add, args=['i', 'j'])
+    }
 
-    with raises(TypeError) as excinfo:
-        deserialize_structure(Foo,
-                              {
-                                  'a': {'b': {'x': 1, 'y': 2}},
-                                  'name': {'first': 'Joe', 'last': 'smith'},
-                                  'i': 3,
-                                  'j': 4
-                              },
-                              mapper=mapper,
-                              keep_undefined=False)
-    assert "Mapper must be a mapping" in str(excinfo.value)
+    deserializer = Deserializer(target_class=Foo, mapper=mapper)
+
+    foo = deserializer.deserialize(
+        {
+            'a': {'b': {'x': 1, 'y': 2}},
+            'name': {'first': 'Joe', 'last': 'smith'},
+            'i': 3,
+            'j': 4
+        },
+        keep_undefined=False)
+
+    assert foo == Foo(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')
+
+
+def test_deserializer_no_mapper():
+    class Foo(Structure):
+        m = Map
+        s = String
+        i = Integer
+
+    deserializer = Deserializer(target_class=Foo)
+
+    foo = deserializer.deserialize({
+        'm': {'x': 1},
+        's': 'abc',
+        'i': 9999})
+
+    assert foo.i == 9999
+
+
+def test_invalid_deserializer():
+    class Foo(Structure):
+        m = Map
+        s = String
+        i = Integer
+
+    mapper = {
+        "xyz": "a.b",
+        "s": FunctionCall(func=lambda x: f'the string is {x}', args=['name.first']),
+        'i': FunctionCall(func=operator.add, args=['i', 'j'])
+    }
+
+    with raises(ValueError) as excinfo:
+        Deserializer(target_class=Foo, mapper=mapper)
+    assert "Invalid key in mapper for class Foo: xyz. Keys must be one of the class fields" in str(excinfo.value)

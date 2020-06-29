@@ -26,6 +26,8 @@ A simple example:
 
 This structure validates itself, so that any attempt to create an invalid structure will raise an exception.
 
+* All fields are public, and fields names are not allowed to start with "_", since it implies non-public attributes.
+
 
 .. autoclass:: Structure
 

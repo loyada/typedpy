@@ -122,3 +122,10 @@ def test_defaults():
     assert p.foo is None
     assert p.name == 'Arthur'
     assert p.num == 0
+
+
+def test_invalid_field_name():
+    with pytest.raises(ValueError):
+        class Foo(Structure):
+            _abc = Integer
+            s = String

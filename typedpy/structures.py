@@ -147,7 +147,7 @@ class StructMeta(type):
     def __new__(mcs, name, bases, cls_dict):
         bases_params, bases_required = get_base_info(bases)
         for key, val in cls_dict.items():
-            if not key.startswith('_') and not isinstance(val, Field) and \
+            if key not in {'_required', '_additionalProperties', '_immutable'} and not isinstance(val, Field) and \
                     (Field in getattr(val, '__mro__', []) or is_function_returning_field(val)):
                 cls_dict[key] = val()
         for key, val in cls_dict.items():
@@ -155,6 +155,8 @@ class StructMeta(type):
                 cls_dict[key] = ClassReference(val)
         fields = [key for key, val in cls_dict.items() if isinstance(val, Field)]
         for field_name in fields:
+            if field_name.startswith('_'):
+                raise ValueError("{}: field name is not allowed to start with '_'".format(field_name))
             setattr(cls_dict[field_name], '_name', field_name)
         clsobj = super().__new__(mcs, name, bases, dict(cls_dict))
         clsobj._fields = fields

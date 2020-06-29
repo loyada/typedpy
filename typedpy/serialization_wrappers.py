@@ -91,7 +91,7 @@ class Serializer(Structure):
                            f = Float
 
                        foo = Foo(f=5.5, i=999)
-                       Serializer(foo)
+                       Serializer(source=foo)
 
 
                mapper(dict): optional
@@ -116,7 +116,7 @@ class Serializer(Structure):
                             'output_floats': FunctionCall(func=lambda f: [int(f)], args=['i']),
                             'output_int': FunctionCall(func=lambda x: str(x), args=['f'])
                         }
-                        assert Serializer(foo, mapper=mapper).serialize() == {'output_floats': [999], 'output_int': '5.5'}
+                        assert Serializer(source=foo, mapper=mapper).serialize() == {'output_floats': [999], 'output_int': '5.5'}
 
 
     """

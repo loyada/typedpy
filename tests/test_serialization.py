@@ -286,7 +286,7 @@ def test_serializer_with_mapper_with_function_with_args():
         'f': FunctionCall(func=lambda f: [int(f)], args=['i']),
         'i': FunctionCall(func=lambda x: str(x), args=['f'])
     }
-    assert Serializer(foo, mapper=mapper).serialize() == {'f': [999], 'i': '5.5'}
+    assert Serializer(source=foo, mapper=mapper).serialize() == {'f': [999], 'i': '5.5'}
 
 
 def test_serializer_with_invalid_mapper_key_type():

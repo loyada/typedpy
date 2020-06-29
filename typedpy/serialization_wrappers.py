@@ -46,6 +46,7 @@ class Deserializer(Structure):
                         "s": FunctionCall(func=lambda x: f'the string is {x}', args=['name.first']),
                         'i': FunctionCall(func=operator.add, args=['i', 'j'])
                     }
+                    Deserializer(target_class=Foo, mapper = mapper).deserializer(the_input_dict)
 
 
     """
@@ -115,7 +116,7 @@ class Serializer(Structure):
                             'output_floats': FunctionCall(func=lambda f: [int(f)], args=['i']),
                             'output_int': FunctionCall(func=lambda x: str(x), args=['f'])
                         }
-                        assert serialize(foo, mapper=mapper) == {'output_floats': [999], 'output_int': '5.5'}
+                        assert Serializer(foo, mapper=mapper).serialize() == {'output_floats': [999], 'output_int': '5.5'}
 
 
     """

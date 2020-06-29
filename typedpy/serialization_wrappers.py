@@ -79,25 +79,26 @@ class Serializer(Structure):
            self-validating. In other words, it prevents the user from creating an invalid mapper.
 
            Arguments:
-               source(:class:`StructureClass`):
-                   A class extending the abstract :class:`Structure` that this deserializer is build for.
+               source(:class:`Structure`):
+                   An instance of :class:`Structure` that this serializer is build for.
                    Example:
 
                    .. code-block:: python
 
                        class Foo(Structure):
-                           id = Integer
-                           name = String
+                           i = Integer
+                           f = Float
 
-                      Deserializer(target_class=Foo)
+                       foo = Foo(f=5.5, i=999)
+                       Serializer(foo)
 
 
                mapper(dict): optional
-                   The key is the target attribute name. The value can either be a path of the value in the source dict
+                   The key is the target key name. The value can either be a path of the value in the source object
                    using dot notation, for example: "aaa.bbb", or a :class:`FunctionCall`. In the latter case,
                    the function is the used to preprocess the input prior to deserialization/validation. \
                    The args attribute in the function call is optional. If non provided, the input to the function is
-                   the value with the same key. Otherwise it is the keys of the values in the input that are injected
+                   the attribute with the same key. Otherwise it is the names of the attributes  in the input that are injected
                    to the provided function. \
                    See working examples in the tests link above. \
                    This class will ensure that the mapper is a valid one for its target_class.
@@ -106,17 +107,15 @@ class Serializer(Structure):
                    .. code-block:: python
 
                         class Foo(Structure):
-                           m = Map
-                           s = String
-                           i = Integer
+                            f = Float
+                            i = Integer
 
                         foo = Foo(f=5.5, i=999)
                         mapper = {
-                           "m": "a.b",
-                           "s": FunctionCall(func=lambda x: f'the string is {x}', args=['name.first']),
-                           'i': FunctionCall(func=operator.add, args=['i', 'j'])
+                            'output_floats': FunctionCall(func=lambda f: [int(f)], args=['i']),
+                            'output_int': FunctionCall(func=lambda x: str(x), args=['f'])
                         }
-                        Serializer(foo, mapper=mapper)
+                        assert serialize(foo, mapper=mapper) == {'output_floats': [999], 'output_int': '5.5'}
 
 
     """

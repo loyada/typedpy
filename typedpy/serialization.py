@@ -145,7 +145,14 @@ def get_all_fields_by_name(cls):
 class FunctionCall(Structure):
     """
     Structure that represents a function call for the purpose of serialization mappers: \
-    Includes the function to be called, and a list of positional string arguments.
+    Includes the function to be called, and a list of keys of positional string arguments.
+    This is not a generic function call.
+
+    Arguments:
+        func(Function):
+            the function to be called. Note this must be a real function, not any callable.
+        args(Array[String]): optional
+            the keys of the arguments to be used as positional arguments for the function call
     """
     func = Function
     args = Array[String]

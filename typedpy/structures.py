@@ -155,8 +155,8 @@ class StructMeta(type):
                 cls_dict[key] = ClassReference(val)
         fields = [key for key, val in cls_dict.items() if isinstance(val, Field)]
         for field_name in fields:
-            if field_name.startswith('_'):
-                raise ValueError("{}: field name is not allowed to start with '_'".format(field_name))
+            if field_name.startswith('_') or field_name == 'kwargs':
+                raise ValueError("{}: invalid field name".format(field_name))
             setattr(cls_dict[field_name], '_name', field_name)
         clsobj = super().__new__(mcs, name, bases, dict(cls_dict))
         clsobj._fields = fields

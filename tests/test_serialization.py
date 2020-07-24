@@ -1,3 +1,5 @@
+import enum
+
 from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
@@ -296,7 +298,7 @@ def test_serializer_with_invalid_mapper_key_type():
 
     foo = Foo(f=5.5, i=999)
     mapper = {
-         123 : FunctionCall(func=lambda f: [int(f)], args=['i']),
+        123: FunctionCall(func=lambda f: [int(f)], args=['i']),
         'i': FunctionCall(func=lambda x: str(x), args=['f'])
     }
     with raises(TypeError) as excinfo:
@@ -311,7 +313,7 @@ def test_serializer_with_invalid_mapper_value_type():
 
     foo = Foo(f=5.5, i=999)
     mapper = {
-         'f' : 123,
+        'f': 123,
         'i': FunctionCall(func=lambda x: str(x), args=['f'])
     }
     with raises(ValueError) as excinfo:
@@ -348,3 +350,15 @@ def test_serializer_with_invalid_function_call_arg():
         Serializer(foo, mapper=mapper)
     assert 'Mapper[f] has a function call with an invalid argument: x' in str(excinfo.value)
 
+
+def test_enum_serialization_returns_string_name():
+    class Values(enum.Enum):
+        ABC = enum.auto()
+        DEF = enum.auto()
+        GHI = enum.auto()
+
+    class Example(Structure):
+        arr = Array[Enum[Values]]
+
+    e = Example(arr=[Values.GHI, Values.DEF, 'GHI'])
+    assert Serializer(e).serialize() == {'arr': ['GHI', 'DEF', 'GHI']}

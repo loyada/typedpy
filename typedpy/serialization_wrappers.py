@@ -123,20 +123,23 @@ class Serializer(Structure):
     source = Structure
     mapper = Map[String, OneOf[String, FunctionCall]]
 
+    _required = ['source']
+
     def __validate__(self):
         source_class = self.source.__class__
         valid_keys = set(get_all_fields_by_name(source_class).keys())
-        for key in self.mapper:
-            if key not in valid_keys:
-                raise ValueError("Invalid key in mapper for class {}: {}. Keys must be one of the class fields.".format(
-                    source_class.__name__, key))
-            if isinstance(self.mapper[key], (FunctionCall,)):
-                args = self.mapper[key].args
-                if isinstance(args, (list,)):
-                    for arg in args:
-                        if arg not in valid_keys:
-                            raise ValueError(
-                                "Mapper[{}] has a function call with an invalid argument: {}".format(key, arg))
+        if self.mapper:
+            for key in self.mapper:
+                if key not in valid_keys:
+                    raise ValueError("Invalid key in mapper for class {}: {}. Keys must be one of the class fields.".format(
+                        source_class.__name__, key))
+                if isinstance(self.mapper[key], (FunctionCall,)):
+                    args = self.mapper[key].args
+                    if isinstance(args, (list,)):
+                        for arg in args:
+                            if arg not in valid_keys:
+                                raise ValueError(
+                                    "Mapper[{}] has a function call with an invalid argument: {}".format(key, arg))
 
     def serialize(self, compact=True):
         return serialize(self.source,

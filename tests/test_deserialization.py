@@ -1,3 +1,4 @@
+import enum
 import operator
 from collections import OrderedDict
 
@@ -815,3 +816,16 @@ def test_invalid_deserializer():
     with raises(ValueError) as excinfo:
         Deserializer(target_class=Foo, mapper=mapper)
     assert "Invalid key in mapper for class Foo: xyz. Keys must be one of the class fields" in str(excinfo.value)
+
+
+def test_enum_deserialization_converts_to_enum():
+    class Values(enum.Enum):
+        ABC = enum.auto()
+        DEF = enum.auto()
+        GHI = enum.auto()
+
+    class Example(Structure):
+        arr = Array[Enum[Values]]
+
+    deserialized = Deserializer(target_class=Example).deserialize({'arr': ['GHI', 'DEF', 'ABC']})
+    assert deserialized.arr == [Values.GHI, Values.DEF, Values.ABC]

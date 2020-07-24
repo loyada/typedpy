@@ -1,6 +1,7 @@
 """
 Definitions of various types of fields. Supports JSON draft4 types.
 """
+import enum
 import re
 from abc import ABC
 from collections import OrderedDict
@@ -392,6 +393,8 @@ class _CollectionMeta(type):
 
 class _EnumMeta(type):
     def __getitem__(cls, values):
+        if isinstance(values, (type,)) and issubclass(values, (enum.Enum,)):
+            return cls(values=values)
         return cls(values=list(values))
 
 
@@ -620,13 +623,17 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
             elif isinstance(self.items, list):
                 additional_properties_forbidden = self.additionalItems is not None and \
                                                   self.additionalItems is False
-                if len(self.items) > len(value) or \
-                        (additional_properties_forbidden and len(self.items) > len(value)):
-                    raise ValueError("{}: Got {}; Expected an array of length {}".format(
-                        self._name, value, len(self.items)))
+                if not getattr(instance, '_skip_validation', False):
+                    if len(self.items) > len(value) or \
+                            (additional_properties_forbidden and len(self.items) > len(value)):
+                        raise ValueError("{}: Got {}; Expected an array of length {}".format(
+                            self._name, value, len(self.items)))
                 temp_st = Structure()
+                temp_st._skip_validation = getattr(instance, '_skip_validation', False)
                 res = []
                 for ind, item in enumerate(self.items):
+                    if ind >= len(value):
+                        continue
                     setattr(item, '_name', self._name + "_{}".format(str(ind)))
                     item.__set__(temp_st, value[ind])
                     res.append(getattr(temp_st, getattr(item, '_name')))
@@ -743,15 +750,26 @@ class Enum(Field, metaclass=_EnumMeta):
     """
 
     def __init__(self, *args, values, **kwargs):
+        self._is_enum = isinstance(values, (type,)) and issubclass(values, enum.Enum)
+        if self._is_enum:
+            self._enum_class = values
         self.values = values
         super().__init__(*args, **kwargs)
 
     def _validate(self, value):
-        if value not in self.values:
+        if self._is_enum:
+            enum_names = {v.name for v in self._enum_class}
+            if value not in enum_names and value not in self._enum_class:
+                raise ValueError('{}: Must be a value of {}'.format(self._name, self._enum_class))
+
+        elif value not in self.values:
             raise ValueError('{}: Must be one of {}'.format(self._name, self.values))
 
     def __set__(self, instance, value):
         self._validate(value)
+        if self._is_enum:
+            if isinstance(value, (str,)):
+                value = self._enum_class[value]
         super().__set__(instance, value)
 
 
@@ -1027,3 +1045,9 @@ class SerializableField(ABC):
 
     def deserialize(self, value): return value
 
+
+class ExceptionField(TypedField, SerializableField):
+    _ty = Exception
+
+    def serialize(self, value):
+        return str(value)

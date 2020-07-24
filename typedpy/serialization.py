@@ -1,4 +1,5 @@
 import collections
+import enum
 import json
 from collections.abc import Mapping
 from functools import reduce
@@ -266,6 +267,8 @@ def serialize_val(field_definition, name, val):
         return field_definition.serialize(val)
     if isinstance(val, (int, str, bool, float)) or val is None:
         return val
+    if isinstance(val, (enum.Enum,)):
+        return val.name
     if isinstance(field_definition, SizedCollection):
         if isinstance(field_definition, Map):
             if not isinstance(val, Mapping):

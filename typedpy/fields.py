@@ -6,7 +6,7 @@ import re
 from abc import ABC
 from collections import OrderedDict
 from functools import reduce
-from decimal import Decimal, getcontext, InvalidOperation
+from decimal import Decimal, InvalidOperation
 
 from typedpy.structures import Field, Structure, TypedField, ClassReference, StructMeta, is_function_returning_field
 
@@ -746,6 +746,21 @@ class Enum(Field, metaclass=_EnumMeta):
         Arguments:
              values(`list` or `set` or `tuple`):
                  allowed values. Can be of any type
+
+        Examples:
+
+        .. code-block:: python
+
+           class Values(enum.Enum):
+                ABC = enum.auto()
+                DEF = enum.auto()
+                GHI = enum.auto()
+
+           class Example(Structure):
+              arr = Array[Enum[Values]]
+              e = Enum['abc', 'x', 'def', 3]
+
+           Example(arr=[Values.ABC, 'DEF'],e=3)
 
     """
 

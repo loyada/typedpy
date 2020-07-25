@@ -185,7 +185,7 @@ def deserialize_structure_internal(cls, the_dict, name=None, *, mapper=None, kee
     """
     if mapper is None:
         mapper = {}
-    if not isinstance(mapper, (collections.Mapping,)):
+    if not isinstance(mapper, (Mapping,)):
         raise TypeError("Mapper must be a mapping")
     field_by_name = get_all_fields_by_name(cls)
 

@@ -759,7 +759,7 @@ class Enum(Field, metaclass=_EnumMeta):
     def _validate(self, value):
         if self._is_enum:
             enum_names = {v.name for v in self._enum_class}
-            if value not in enum_names and value not in self._enum_class:
+            if value not in enum_names and not isinstance(value, (self._enum_class,)):
                 raise ValueError('{}: Must be a value of {}'.format(self._name, self._enum_class))
 
         elif value not in self.values:

@@ -1062,6 +1062,10 @@ class SerializableField(ABC):
 
 
 class ExceptionField(TypedField, SerializableField):
+    """
+    As Exception. This is serialized as the string representation of the exception.
+    It does not support deserialization.
+    """
     _ty = Exception
 
     def serialize(self, value):

@@ -760,8 +760,8 @@ class Enum(Field, metaclass=_EnumMeta):
               arr = Array[Enum[Values]]
               e = Enum['abc', 'x', 'def', 3]
 
-           Example(arr=[Values.ABC, 'DEF'],e=3)
-
+           example = Example(arr=[Values.ABC, 'DEF'],e=3)
+           assert example.arr = [Values.ABC, Values.DEF]
     """
 
     def __init__(self, *args, values, **kwargs):

@@ -744,9 +744,11 @@ class Enum(Field, metaclass=_EnumMeta):
         Enum field. value can be one of predefined values
 
         Arguments:
-             values(`list` or `set` or `tuple`):
-                 allowed values. Can be of any type
-
+             values(`list` or `set` or `tuple`, alternatively an enum Type):
+                 allowed values. Can be of any type.
+                 Alternatively, can be an enum.Enum type. See example below.
+                 When defined with an enum.Enum, serialization converts to strings,
+                 while deserialization expects strings.
         Examples:
 
         .. code-block:: python
@@ -762,6 +764,10 @@ class Enum(Field, metaclass=_EnumMeta):
 
            example = Example(arr=[Values.ABC, 'DEF'],e=3)
            assert example.arr = [Values.ABC, Values.DEF]
+
+           # deserialization example:
+           deserialized = Deserializer(target_class=Example).deserialize({'arr': ['GHI', 'DEF', 'ABC'], 'e': 3})
+           assert deserialized.arr == [Values.GHI, Values.DEF, Values.ABC]
     """
 
     def __init__(self, *args, values, **kwargs):

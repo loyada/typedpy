@@ -35,6 +35,7 @@ Predefined Types
 
 .. autoclass:: Function
 
+.. autoclass:: ExceptionField
 
 Numerical
 ---------

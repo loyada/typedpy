@@ -61,39 +61,36 @@ Basic Example:
         foo = StructureReference(a=String, b = StructureReference(c = Number(minimum=10), d = Number(maximum=10)))
 
     Person(name="fo d", ssid="123", num=25, foo = {'a': 'aaa', 'b': {'c': 10, 'd': 1}})
-    # {ValueError}name: Does not match regular expression: [A-Za-z]+$
+    # ValueError: name: Got 'fo d'; Does not match regular expression: "[A-Za-z]+$"
 
     Person(name="fo", ssid=4, num=25, foo = {'a': 'aaa', 'b': {'c': 10, 'd': 1}})
-    #{TypeError}ssid: Expected a string
+    # TypeError: ssid: Got 4; Expected a string
 
 
     Person(name="fo", ssid="123", num=33,
         foo = {'a': 'aaa', 'b': {'c': 10, 'd': 1}})
-    #{ValueError}num: Expected a maxmimum of 30
+    #ValueError: num: Got 33; Expected a a multiple of 5
 
     Person(name="fo", ssid="123", num=10, foo = {'a': 'aaa', 'b': {'c': 0, 'd': 1}})
-    #{ValueError}c: Expected a minimum of 10
+    #ValueError: c: Got 0; Expected a minimum of 10
 
     Person(name="fo", ssid="123", num=10, foo = {'a': 'aaa', 'b': {'c': "", 'd': 1}})
-    #{TypeError}c: Expected a number
+    #TypeError: c: Got ''; Expected a number
 
     Person(ssid="123", num=10, foo = {'a': 'aaa', 'b': {'c': "", 'd': 1}})
-    #{TypeError}missing a required argument: 'name'
-
+    #TypeError: missing a required argument: 'name'
 
     person = Person(name ="aaa", ssid="123", num=10, foo = {'a': 'aaa', 'b': {'c': 10, 'd': 1}})
 
     person.num-=1
-    #ValueError: num: Expected a minimum of 10
-
-    person.foo.b.d
-    #1
+    #ValueError: num: Got 9; Expected a a multiple of 5
 
     person.foo.b = {'d': 1}
     #TypeError: missing a required argument: 'c'
 
     person.foo.b.d = 99
-    #ValueError: d: Expected a maxmimum of 10
+    #ValueError: d: Got 99; Expected a maximum of 10
+
 
 
 
@@ -111,34 +108,28 @@ Another example with Array, class reference, Enum, json-schema-style re-use:
         person = Person
         children = Array(uniqueItems=True, minItems= 3, items = [String, Number(maximum=10)])
 
-    >>> t = Example(quantity='many', price=10.0, category= 'cat1', children = [ 3, 2])
+    >>> Example(quantity='many', price=10.0, category= 'cat1', children = [3, 2])
     ValueError: children: Expected length of at least 3
 
-    >>> t = Example(quantity='many', price=10.0, category= 'cat1', children = [ 1,3, 2])
-    TypeError: children_0: Expected a string
+    >>> Example(quantity='many', price=10.0, category= 'cat1', children = [1, 3, 2])
+    TypeError: children_0: Got 1; Expected a string
 
-    >>> t = Example(quantity='many', price=10.0, category= 'cat1', children = [ "a",3, 2])
-    >>> t.children[1]
-    3
+    >>> exmpl = Example(quantity='many', price=10.0, category= 'cat1', children = [ "a",3, 2])
 
-    >>> t.children[1] = None
-    TypeError: children_1: Expected a number
+    >>> exmpl.children[1] = None
+    TypeError: children_1: Got None; Expected a number
 
-    >>> t.children[1] = 5
-    >>> t.children
+    >>> exmpl.children[1] = 5
+    >>> exmpl.children
     ['a', 5, 2]
 
-    >>> t.person = p
-    >>> t.person.name
+    >>> exmpl.person = person
+    >>> exmpl.person.name
     fo
 
-    >>> t.person.name = None
-    TypeError: name: Expected a string
+    >>> exmpl.person.name = None
+    TypeError: name: Got None; Expected a string
 
-    # quantity can also be a positive int
-    >>> t.quantity = 30
-    >>> t.quantity
-    30
 
 Contents:
 =========

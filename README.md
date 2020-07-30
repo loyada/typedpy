@@ -8,7 +8,6 @@
 ``typedpy`` is a library for type-safe, strict, Python structures. It supports Python 3.6+.
 
 ## Features
-[Detailed Documentation](http://dollarx.readthedocs.io/en/latest/)
 
 * Full featured, sophisticated, class-based type system
 

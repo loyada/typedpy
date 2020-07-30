@@ -52,9 +52,10 @@ class StructureReference(Field):
         super().__init__(kwargs)
 
     def __set__(self, instance, value):
-        if not isinstance(value, dict):
-            raise TypeError("{}: Expected a dictionary".format(self._name))
-        newval = self._newclass(**value)
+        if not(isinstance(value, (dict, Structure))):
+            raise TypeError("{}: Expected a dictionary or Structure; got {}".format(self._name, value))
+        extracted_values =  {k:v for (k, v) in value.__dict__.items() if k != '_instantiated'}if isinstance(value, (Structure,)) else value
+        newval = self._newclass(**extracted_values)
         super().__set__(instance, newval)
 
     def __str__(self):
@@ -127,7 +128,8 @@ class Number(Field):
         Number._validate_static(self, value)
 
     def __set__(self, instance, value):
-        self._validate(value)
+        if not getattr(instance, '_skip_validation', False):
+            self._validate(value)
         super().__set__(instance, value)
 
 
@@ -315,6 +317,7 @@ class _ListStruct(list):
         copied = self.copy()
         copied.append(value)
         setattr(self._instance, getattr(self._array, '_name', None), copied)
+        super().append(value)
 
     def extend(self, value):
         copied = self.copy()
@@ -358,6 +361,7 @@ class _DictStruct(dict):
         copied = self.copy()
         copied.__setitem__(key, value)
         setattr(self._instance, getattr(self._map, '_name', None), copied)
+        super().__setitem__(key, value)
 
     def __delitem__(self, key):
         copied = self.copy()

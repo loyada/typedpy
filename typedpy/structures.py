@@ -97,7 +97,7 @@ class Field:
             instance.__dict__[self._name] = deepcopy(value)
         else:
             instance.__dict__[self._name] = value
-        if getattr(instance, '_instantiated', False):
+        if getattr(instance, '_instantiated', False)  and not getattr(instance, '_skip_validation', False):
             instance.__validate__()
 
     def __str__(self):
@@ -181,6 +181,7 @@ class Structure(metaclass=StructMeta):
     """
     The base class to support strictly defined structures. When creating a new instance of
     a Structure, fields must be provided by name.
+    Supports basic constructs: string conversion, quality, copy, deep-copy, hash etc.
 
     Arguments:
         _required: optional
@@ -273,7 +274,17 @@ class Structure(metaclass=StructMeta):
         return '<Instance of {}. Properties: {}>'.format(name, ', '.join(props))
 
     def __eq__(self, other):
-        return str(self) == str(other)
+        if self.__class__ != other.__class__:
+            return False
+        internal_props = ['_instantiated']
+        for k, val in sorted(self.__dict__.items()):
+            if k not in internal_props and val!=other.__dict__.get(k):
+                return False
+        for k, val in sorted(other.__dict__.items()):
+            if k not in internal_props and val != self.__dict__.get(k):
+                return False
+        return True
+       # return str(self) == str(other)
 
     def __hash__(self):
         return str(self).__hash__()
@@ -286,6 +297,22 @@ class Structure(metaclass=StructMeta):
 
     def __validate__(self):
         pass
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        result._skip_validation = True
+        for k, v in self.__dict__.items():
+            setattr(result, k, deepcopy(v, memo))
+        delattr(result, '_skip_validation')
+        return result
+
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
 
 
 class ImmutableStructure(Structure):
@@ -327,7 +354,8 @@ class TypedField(Field):
             raise TypeError("{}Expected {}".format(err_prefix(), self._ty))
 
     def __set__(self, instance, value):
-        self._validate(value)
+        if not getattr(instance, '_skip_validation', False):
+            self._validate(value)
         super().__set__(instance, value)
 
 

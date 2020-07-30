@@ -8,6 +8,7 @@
 ``typedpy`` is a library for type-safe, strict, Python structures. It supports Python 3.6+.
 
 ## Features
+[Detailed Documentation](http://dollarx.readthedocs.io/en/latest/)
 
 * Full featured, sophisticated, class-based type system
 
@@ -15,15 +16,15 @@
 
 * Serialization, deserialization between JSON-like dict and class instance
 
-* Easily extensible. `Wrapper of any class as a Field <https://github.com/loyada/typedpy/tree/master/tests/test_typed_field_creator.py>`_
+* Easily extensible. [Wrapper of any class as a Field](https://github.com/loyada/typedpy/tree/master/tests/test_typed_field_creator.py)
 
-* `Inheritance/mixins of field <https://github.com/loyada/typedpy/tree/master/tests/test_inheritance.py>`_
+* [Inheritance/mixins of fields/classes](https://github.com/loyada/typedpy/tree/master/tests/test_inheritance.py)
 
 * Embedded structures within structures/fields and fields within fields
 
-* Supports collections: `Map <https://github.com/loyada/typedpy/tree/master/tests/test_Map.py>`_, `Set <https://github.com/loyada/typedpy/tree/master/tests/test_Set.py>`_, `Array <https://github.com/loyada/typedpy/tree/master/tests/test_array.py>`_, `Tuple <https://github.com/loyada/typedpy/tree/master/tests/test_tuple.py>`_
+* Supports the common collections
 
-* `Immutable Structures/Fields <https://github.com/loyada/typedpy/tree/master/tests/test_immutable.py>`_
+* [Immutable Structures/Fields](https://github.com/loyada/typedpy/tree/master/tests/test_immutable.py)
 
 * Clean Java-generics-like definitions, but more flexible. e.g.: Set[Integer], Map[String(maxLength=8), String]
 
@@ -34,12 +35,12 @@
 
 #### Documentation
 
-`Detailed documentation is here <http://typedpy.readthedocs.io/>`_
+[Detailed documentation is here](http://typedpy.readthedocs.io)
 
 #### Installation
 
-`PyPI page is here <https://pypi.python.org/pypi/typedpy>`_
-
+[PyPI page is here](https://pypi.python.org/pypi/typedpy)
+[Conda-Forge page is here](https://anaconda.org/conda-forge/typedpy)
 
 [travis]:https://travis-ci.org/loyada/typedpy
 [travis img]:https://travis-ci.org/loyada/typedpy.svg?branch=master

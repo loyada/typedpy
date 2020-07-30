@@ -1,5 +1,7 @@
-.. image:: https://travis-ci.org/loyada/typedpy.svg?branch=master
-    :target: https://travis-ci.org/loyada/typedpy
+[![][travis img]][travis]
+[![][docs img]][docs]
+
+[![][license img]][license]
 
 =======
 typedpy
@@ -10,7 +12,7 @@ typedpy
 Features
 --------
 
-* Class/Field definition
+* Full featured, sophisticated, class-based type system
 
 * Supports JSON schema draft4 features, including mapping schema-to-code and code-to-schema
 
@@ -43,3 +45,12 @@ Installation
 
 `PyPI page is here <https://pypi.python.org/pypi/typedpy>`_
 
+
+[travis]:https://travis-ci.org/loyada/typedpy
+[travis img]:https://travis-ci.org/loyada/typedpy.svg?branch=master
+
+[docs img]:https://readthedocs.org/projects/typedpy/badge/?version=latest
+[docs]:https://typedpy.readthedocs.io/en/latest/?badge=latest
+
+[license]:LICENSE.txt
+[license img]:https://img.shields.io/badge/License-Apache%202-blue.svg

@@ -40,6 +40,7 @@
 #### Installation
 
 [PyPI page is here](https://pypi.python.org/pypi/typedpy)
+
 [Conda-Forge page is here](https://anaconda.org/conda-forge/typedpy)
 
 [travis]:https://travis-ci.org/loyada/typedpy

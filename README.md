@@ -3,14 +3,11 @@
 
 [![][license img]][license]
 
-=======
-typedpy
-=======
+##### Typedpy
 
 ``typedpy`` is a library for type-safe, strict, Python structures. It supports Python 3.6+.
 
-Features
---------
+## Features
 
 * Full featured, sophisticated, class-based type system
 
@@ -35,13 +32,11 @@ Features
 **There are many examples under "tests/".**
 
 
-Documentation
-=============
+#### Documentation
 
 `Detailed documentation is here <http://typedpy.readthedocs.io/>`_
 
-Installation
-============
+#### Installation
 
 `PyPI page is here <https://pypi.python.org/pypi/typedpy>`_
 

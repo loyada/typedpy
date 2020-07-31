@@ -61,6 +61,39 @@ String output
 The string representation of structure instances shows exactly what are all the properties, even for hierarchical \
 structures and arbitrarily complex ones. This is useful for debugging.
 
+Magic Methods Support
+=====================
+Typepy supports the following operations for structure instances:
+
+* If your Structure is a wrapper for a collection, you can ask if an item is in it:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        s = Map[String, Anything]
+        _additionalProperties = False
+
+    f = Foo(s={'xxx': 123, 'yyy': 234, 'zzz': 'zzz'})
+    assert 'xxx' in f
+    assert 123 not in f
+
+* Equality operators
+
+* Hash functions
+
+* Copy, deepcopy
+
+* Readable string representation
+
+* dir(structure_instance) returns all the field names in the instance
+
+* "As boolean" operator. For example:
+
+.. code-block:: python
+
+    assert not Example()
+    assert Example(i=5)
+
 Combining with "Regular" Classes
 ================================
 

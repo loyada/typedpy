@@ -111,7 +111,6 @@ def test_contains_supported():
     class Foo(Structure):
         s = Map[String, Anything]
 
-        _required = ['s']
         _additionalProperties = False
 
     f = Foo(s={'xxx': 123, 'yyy': 234, 'zzz': 'zzz'})

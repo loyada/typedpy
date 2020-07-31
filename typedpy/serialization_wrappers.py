@@ -1,7 +1,7 @@
 from typedpy import Structure
 from typedpy.fields import StructureClass, Map, String, OneOf
-from typedpy.serialization import FunctionCall, get_all_fields_by_name, deserialize_structure, serialize
-
+from typedpy.serialization import FunctionCall, deserialize_structure, serialize
+from typedpy.structures import _get_all_fields_by_name
 
 class Deserializer(Structure):
     """
@@ -57,7 +57,7 @@ class Deserializer(Structure):
     _required = ['target_class']
 
     def __validate__(self):
-        valid_keys = set(get_all_fields_by_name(self.target_class).keys())
+        valid_keys = set(_get_all_fields_by_name(self.target_class).keys())
         if self.mapper:
             for key in self.mapper:
                 if key not in valid_keys:
@@ -127,7 +127,7 @@ class Serializer(Structure):
 
     def __validate__(self):
         source_class = self.source.__class__
-        valid_keys = set(get_all_fields_by_name(source_class).keys())
+        valid_keys = set(_get_all_fields_by_name(source_class).keys())
         if self.mapper:
             for key in self.mapper:
                 if key not in valid_keys:

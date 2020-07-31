@@ -97,7 +97,7 @@ class Field:
             instance.__dict__[self._name] = deepcopy(value)
         else:
             instance.__dict__[self._name] = value
-        if getattr(instance, '_instantiated', False)  and not getattr(instance, '_skip_validation', False):
+        if getattr(instance, '_instantiated', False) and not getattr(instance, '_skip_validation', False):
             instance.__validate__()
 
     def __str__(self):
@@ -133,6 +133,16 @@ def is_function_returning_field(field_definition_candidate):
         except Exception:
             return False
     return False
+
+
+def _get_all_fields_by_name(cls):
+    all_classes = reversed([c for c in cls.mro() if isinstance(c, StructMeta)])
+    all_fields_by_name = {}
+    for cl in all_classes:
+        field_by_name = dict([(k, v) for k, v in cl.__dict__.items()
+                              if isinstance(v, Field)])
+        all_fields_by_name.update(field_by_name)
+    return all_fields_by_name
 
 
 class StructMeta(type):
@@ -278,7 +288,7 @@ class Structure(metaclass=StructMeta):
             return False
         internal_props = ['_instantiated']
         for k, val in sorted(self.__dict__.items()):
-            if k not in internal_props and val!=other.__dict__.get(k):
+            if k not in internal_props and val != other.__dict__.get(k):
                 return False
         for k, val in sorted(other.__dict__.items()):
             if k not in internal_props and val != self.__dict__.get(k):
@@ -323,6 +333,18 @@ class Structure(metaclass=StructMeta):
     def __bool__(self):
         internal_props = ['_instantiated']
         return any([v is not None for k, v in self.__dict__.items() if k not in internal_props])
+
+    def __contains__(self, item):
+        field_by_name = _get_all_fields_by_name(self.__class__)
+        field_names = list(field_by_name.keys())
+        props = self.__class__.__dict__
+        required = props.get('_required', field_names)
+        additional_props = props.get('_additionalProperties', True)
+        if len(field_names) == 1 and required == field_names \
+                and additional_props is False:
+            return item in getattr(self, field_names[0], {})
+        else:
+            raise TypeError("{} does not support this operator".format(self.__class__.__name__))
 
 
 class ImmutableStructure(Structure):

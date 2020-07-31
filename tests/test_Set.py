@@ -118,6 +118,22 @@ def test_class_reference_in_set():
     assert Person(age=54, name="jo") not in people.data
 
 
+def test_copies_are_treated_correctly_using_hash_function():
+    class Person(Structure):
+        age = PositiveInt
+        name = String
+
+    class Peope(Structure):
+        data = Set[Person]
+
+    people = Peope(data={Person(age=54, name="john"), Person(age=34, name="jack"), Person(age=54, name="john")})
+    assert len(people.data) == 2
+    assert Person(age=54, name="john") in people.data
+    assert Person(age=55, name="john") not in people.data
+
+
+
+
 def test_simple_set_valid():
     assert 'abc' in Example(h={1, 2, 3, 'abc'}).h
 

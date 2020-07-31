@@ -1,6 +1,7 @@
 import copy
 
 import pytest
+from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, Enum, \
@@ -104,3 +105,29 @@ def test_dir(rich_object_example):
 def test_nonzero():
     assert not Example()
     assert Example(i=5)
+
+
+def test_contains_supported():
+    class Foo(Structure):
+        s = Map[String, Anything]
+
+        _required = ['s']
+        _additionalProperties = False
+
+    f = Foo(s={'xxx': 123, 'yyy': 234, 'zzz': 'zzz'})
+    assert 'xxx' in f
+    assert 123 not in f
+
+
+def test_contains_unsupported():
+    class Foo(Structure):
+        s = Map[String, Anything]
+        i = Integer
+
+        _required = ['s']
+        _additionalProperties = False
+
+    f = Foo(s={'xxx': 123, 'yyy': 234, 'zzz': 'zzz'})
+    with raises(TypeError) as excinfo:
+        assert 'xxx' in f
+    assert "Foo does not support this operator" in str(excinfo.value)

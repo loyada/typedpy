@@ -4,7 +4,7 @@ import json
 from collections.abc import Mapping
 from functools import reduce
 
-from typedpy.structures import TypedField, Structure, StructMeta
+from typedpy.structures import TypedField, Structure, _get_all_fields_by_name
 from typedpy.fields import Field, Number, String, StructureReference, \
     Array, Map, ClassReference, Enum, MultiFieldWrapper, Boolean, Tuple, Set, Anything, AnyOf, AllOf, \
     OneOf, NotField, SerializableField, SizedCollection, wrap_val, Function
@@ -133,16 +133,6 @@ def deserialize_structure_reference(cls, the_dict: dict):
     return kwargs
 
 
-def get_all_fields_by_name(cls):
-    all_classes = reversed([c for c in cls.mro() if isinstance(c, StructMeta)])
-    all_fields_by_name = {}
-    for cl in all_classes:
-        field_by_name = dict([(k, v) for k, v in cl.__dict__.items()
-                              if isinstance(v, Field)])
-        all_fields_by_name.update(field_by_name)
-    return all_fields_by_name
-
-
 class FunctionCall(Structure):
     """
     Structure that represents a function call for the purpose of serialization mappers: \
@@ -187,7 +177,7 @@ def deserialize_structure_internal(cls, the_dict, name=None, *, mapper=None, kee
         mapper = {}
     if not isinstance(mapper, (collections.abc.Mapping,)):
         raise TypeError("Mapper must be a mapping")
-    field_by_name = get_all_fields_by_name(cls)
+    field_by_name = _get_all_fields_by_name(cls)
 
     if not isinstance(the_dict, dict):
         props = cls.__dict__
@@ -347,7 +337,7 @@ def _get_mapped_value(mapper, key, items):
 def serialize_internal(structure, mapper=None, compact=False):
     if mapper is None:
         mapper = {}
-    field_by_name = get_all_fields_by_name(structure.__class__)
+    field_by_name = _get_all_fields_by_name(structure.__class__)
 
     items = structure.items() if isinstance(structure, dict) \
         else [(k, v) for (k, v) in structure.__dict__.items() if k != '_instantiated']

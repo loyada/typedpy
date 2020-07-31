@@ -284,7 +284,6 @@ class Structure(metaclass=StructMeta):
             if k not in internal_props and val != self.__dict__.get(k):
                 return False
         return True
-       # return str(self) == str(other)
 
     def __hash__(self):
         return str(self).__hash__()

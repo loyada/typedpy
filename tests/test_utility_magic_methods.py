@@ -1,5 +1,7 @@
 import copy
 
+import pytest
+
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, Enum, \
     Float, Map, AnyOf, Set, OneOf, Anything
@@ -37,8 +39,9 @@ class Example(Structure):
     _required = []
 
 
-def test_deepcopy_creates_new_instances():
-    source = Example(
+@pytest.fixture
+def rich_object_example():
+    return Example(
         anything={'a', 'b', 'c'},
         i=5,
         s='test',
@@ -57,6 +60,10 @@ def test_deepcopy_creates_new_instances():
         all=5,
         enum=3
     )
+
+
+def test_deepcopy_creates_new_instances(rich_object_example):
+    source = rich_object_example
     target = copy.deepcopy(source)
     assert target == source
     target.people[0].name = 'jack'
@@ -65,26 +72,8 @@ def test_deepcopy_creates_new_instances():
     assert source.anything == {'a', 'b', 'c'}
 
 
-def test_copy_creates_shallow_copy():
-    source = Example(
-        anything={'a', 'b', 'c'},
-        i=5,
-        s='test',
-        array_of_one_of=[{'a1': 8, 'a2': 0.5}, 0.5, 4, Person(name='john', ssid='123')],
-        complex_allof=BigPerson(name='john', ssid='123'),
-        any=[Person(name='john', ssid='123')],
-        array=[10, 7],
-        people=[Person(name='john', ssid='123')],
-        set={Person(name='john', ssid='123'), Person(name='john', ssid='234'), Person(name='john', ssid='345')},
-        embedded={
-            'a1': 8,
-            'a2': 0.5
-        },
-        person_by_label={'aaa': Person(name='john', ssid='123'), 'bbb': Person(name='jack', ssid='234')},
-        simplestruct=SimpleStruct(name='danny'),
-        all=5,
-        enum=3
-    )
+def test_copy_creates_shallow_copy(rich_object_example):
+    source = rich_object_example
     target = copy.copy(source)
     assert target == source
     target.people[0].name = 'jack'
@@ -106,29 +95,10 @@ def test_ne():
     assert target != source
 
 
-
-def test_dir():
-    source = Example(
-        anything={'a', 'b', 'c'},
-        i=5,
-        s='test',
-        array_of_one_of=[{'a1': 8, 'a2': 0.5}, 0.5, 4, Person(name='john', ssid='123')],
-        complex_allof=BigPerson(name='john', ssid='123'),
-        any=[Person(name='john', ssid='123')],
-        array=[10, 7],
-        people=[Person(name='john', ssid='123')],
-        set={Person(name='john', ssid='123'), Person(name='john', ssid='234'), Person(name='john', ssid='345')},
-        embedded={
-            'a1': 8,
-            'a2': 0.5
-        },
-        person_by_label={'aaa': Person(name='john', ssid='123'), 'bbb': Person(name='jack', ssid='234')},
-        simplestruct=SimpleStruct(name='danny'),
-        all=5,
-        enum=3
-    )
-    assert dir(source) == ['all', 'any', 'anything', 'array', 'array_of_one_of', 'complex_allof',
-                           'embedded', 'enum', 'i', 'people', 'person_by_label', 's', 'set', 'simplestruct']
+def test_dir(rich_object_example):
+    assert dir(rich_object_example) == ['all', 'any', 'anything', 'array', 'array_of_one_of', 'complex_allof',
+                                        'embedded', 'enum', 'i', 'people', 'person_by_label', 's', 'set',
+                                        'simplestruct']
 
 
 def test_nonzero():

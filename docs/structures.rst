@@ -61,8 +61,8 @@ String output
 The string representation of structure instances shows exactly what are all the properties, even for hierarchical \
 structures and arbitrarily complex ones. This is useful for debugging.
 
-Magic Methods Support
-=====================
+Other Magic Methods Support
+===========================
 Typepy supports the following operations for structure instances:
 
 * If your Structure is a wrapper for a collection, you can ask if an item is in it:
@@ -77,13 +77,10 @@ Typepy supports the following operations for structure instances:
     assert 'xxx' in f
     assert 123 not in f
 
-* Equality operators
 
 * Hash functions
 
 * Copy, deepcopy
-
-* Readable string representation
 
 * dir(structure_instance) returns all the field names in the instance
 

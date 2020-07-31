@@ -91,3 +91,46 @@ def test_copy_creates_shallow_copy():
     assert source.people[0].name == 'jack'
     target.anything.add('x')
     assert source.anything == {'a', 'b', 'c', 'x'}
+
+
+def test_ne():
+    source = Example(
+        anything={'a', 'b', 'c'},
+        i=5,
+        s='test')
+    target = copy.copy(source)
+    assert target == source
+    assert not target != source
+
+    target.i = 3
+    assert target != source
+
+
+
+def test_dir():
+    source = Example(
+        anything={'a', 'b', 'c'},
+        i=5,
+        s='test',
+        array_of_one_of=[{'a1': 8, 'a2': 0.5}, 0.5, 4, Person(name='john', ssid='123')],
+        complex_allof=BigPerson(name='john', ssid='123'),
+        any=[Person(name='john', ssid='123')],
+        array=[10, 7],
+        people=[Person(name='john', ssid='123')],
+        set={Person(name='john', ssid='123'), Person(name='john', ssid='234'), Person(name='john', ssid='345')},
+        embedded={
+            'a1': 8,
+            'a2': 0.5
+        },
+        person_by_label={'aaa': Person(name='john', ssid='123'), 'bbb': Person(name='jack', ssid='234')},
+        simplestruct=SimpleStruct(name='danny'),
+        all=5,
+        enum=3
+    )
+    assert dir(source) == ['all', 'any', 'anything', 'array', 'array_of_one_of', 'complex_allof',
+                           'embedded', 'enum', 'i', 'people', 'person_by_label', 's', 'set', 'simplestruct']
+
+
+def test_nonzero():
+    assert not Example()
+    assert Example(i=5)

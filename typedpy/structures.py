@@ -12,7 +12,7 @@ import sys
 # Structure inheritance,
 # fields of class reference
 # embedded structures
-from typing import get_type_hints
+from typing import get_type_hints, Iterable
 
 
 def make_signature(names, required, additional_properties, bases_params_by_name):
@@ -285,6 +285,9 @@ class Structure(metaclass=StructMeta):
                 return False
         return True
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __hash__(self):
         return str(self).__hash__()
 
@@ -312,6 +315,14 @@ class Structure(metaclass=StructMeta):
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
         return result
+
+    def __dir__(self) -> Iterable[str]:
+        internal_props = ['_instantiated']
+        return [k for k in sorted(self.__dict__) if k not in internal_props]
+
+    def __bool__(self):
+        internal_props = ['_instantiated']
+        return any([v is not None for k, v in self.__dict__.items() if k not in internal_props])
 
 
 class ImmutableStructure(Structure):

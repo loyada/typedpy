@@ -95,7 +95,7 @@ Combining with "Regular" Classes
 ================================
 
 Combining a structure with regular classes is straightforward.
-The only thing to remember, is that if you override the constructore, it must call the super() constructor.
+The only thing to remember, is that if you override the constructor, it must call the super() constructor.
 Example:
 
 .. code-block:: python

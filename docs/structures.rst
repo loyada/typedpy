@@ -118,7 +118,7 @@ Example:
     print(foo.multiply())
     # 60
 
-Validating s Structure As a Whole
+Validating a Structure As a Whole
 =================================
 There are cases where we want to validate a complex field, or a structure as a whole.
 For example, suppose we define a range field and we want to ensure min is not larger than max.

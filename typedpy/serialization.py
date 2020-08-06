@@ -51,7 +51,7 @@ def deserialize_set(set_field, value, name):
     return deserialize_list_like(set_field, set, value, name)
 
 
-def deserialize_multifield_wrapper(field, source_val, name):
+def deserialize_multifield_wrapper(field, source_val, name, keep_undefined=True):
     """
     Only primitive values are supported, otherwise deserialization is ambiguous,
     since it can only be verified when the structure is instantiated
@@ -60,7 +60,7 @@ def deserialize_multifield_wrapper(field, source_val, name):
     found_previous_match = False
     for field_option in field.get_fields():
         try:
-            deserialized = deserialize_single_field(field_option, source_val, name)
+            deserialized = deserialize_single_field(field_option, source_val, name, keep_undefined=keep_undefined)
             if isinstance(field, AnyOf):
                 return deserialized
             elif isinstance(field, NotField):
@@ -91,7 +91,7 @@ def deserialize_map(map_field, source_val, name):
     return res
 
 
-def deserialize_single_field(field, source_val, name):
+def deserialize_single_field(field, source_val, name, keep_undefined=True):
     if isinstance(field, (Number, String, Enum, Boolean)):
         field._validate(source_val)
         value = source_val
@@ -106,11 +106,11 @@ def deserialize_single_field(field, source_val, name):
     elif isinstance(field, Set):
         value = deserialize_set(field, source_val, name)
     elif isinstance(field, MultiFieldWrapper):
-        value = deserialize_multifield_wrapper(field, source_val, name)
+        value = deserialize_multifield_wrapper(field, source_val, name, keep_undefined=keep_undefined)
     elif isinstance(field, ClassReference):
-        value = deserialize_structure_internal(getattr(field, '_ty'), source_val, name)
+        value = deserialize_structure_internal(getattr(field, '_ty'), source_val, name, keep_undefined=keep_undefined)
     elif isinstance(field, StructureReference):
-        value = deserialize_structure_reference(getattr(field, '_newclass'), source_val)
+        value = deserialize_structure_reference(getattr(field, '_newclass'), source_val, keep_undefined=keep_undefined)
     elif isinstance(field, Map):
         value = deserialize_map(field, source_val, name)
     elif isinstance(field, SerializableField):
@@ -123,10 +123,11 @@ def deserialize_single_field(field, source_val, name):
     return value
 
 
-def deserialize_structure_reference(cls, the_dict: dict):
+def deserialize_structure_reference(cls, the_dict: dict, keep_undefined):
     field_by_name = dict([(k, v) for k, v in cls.__dict__.items()
                           if isinstance(v, Field) and k in the_dict])
-    kwargs = dict([(k, v) for k, v in the_dict.items() if k not in cls.__dict__])
+    kwargs = dict([(k, v) for k, v in the_dict.items() if k not in field_by_name and keep_undefined])
+
     for name, field in field_by_name.items():
         kwargs[name] = deserialize_single_field(field, the_dict[name], name)
     cls(**kwargs)
@@ -150,7 +151,7 @@ class FunctionCall(Structure):
     _required = ['func']
 
 
-def deserialize_structure_internal(cls, the_dict, name=None, *, mapper=None, keep_undefined=False):
+def deserialize_structure_internal(cls, the_dict, name=None, *, mapper=None, keep_undefined=True):
     """
         Deserialize a dict to a Structure instance, Jackson style.
         Note the top level must be a python dict - which implies that a JSON of
@@ -199,7 +200,7 @@ def deserialize_structure_internal(cls, the_dict, name=None, *, mapper=None, kee
             processed_input = get_processed_input(key, mapper, the_dict)
             process = True
         if process:
-            kwargs[key] = deserialize_single_field(field, processed_input, key)
+            kwargs[key] = deserialize_single_field(field, processed_input, key, keep_undefined=keep_undefined)
 
     return cls(**kwargs)
 

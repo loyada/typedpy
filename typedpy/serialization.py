@@ -392,5 +392,7 @@ def serialize(structure, *, mapper=None, compact=False):
     if not isinstance(mapper, (collections.abc.Mapping,)):
         raise TypeError("Mapper must be a mapping")
     if not isinstance(structure, Structure):
+        if structure is None:
+            return None
         raise TypeError("serialize: must get a Structure. Got: {}".format(structure))
     return serialize_internal(structure, mapper=mapper, compact=compact)

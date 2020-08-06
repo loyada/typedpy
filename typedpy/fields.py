@@ -778,7 +778,9 @@ class Enum(Field, metaclass=_EnumMeta):
         self._is_enum = isinstance(values, (type,)) and issubclass(values, enum.Enum)
         if self._is_enum:
             self._enum_class = values
-        self.values = values
+            self.values = list(values)
+        else:
+            self.values = values
         super().__init__(*args, **kwargs)
 
     def _validate(self, value):
@@ -796,6 +798,7 @@ class Enum(Field, metaclass=_EnumMeta):
             if isinstance(value, (str,)):
                 value = self._enum_class[value]
         super().__set__(instance, value)
+
 
 
 class EnumString(Enum, String):

@@ -85,9 +85,9 @@ class Field:
             self._immutable = immutable
 
     def __get__(self, instance, owner):
-        if instance and self._name not in instance.__dict__:
+        if instance is not None and self._name not in instance.__dict__:
             return self._default
-        return instance.__dict__[self._name] if instance else owner.__dict__[self._name]
+        return instance.__dict__[self._name] if instance is not None else owner.__dict__[self._name]
 
     def __set__(self, instance, value):
         if getattr(self, '_immutable', False) and self._name in instance.__dict__:
@@ -333,6 +333,10 @@ class Structure(metaclass=StructMeta):
     def __bool__(self):
         internal_props = ['_instantiated']
         return any([v is not None for k, v in self.__dict__.items() if k not in internal_props])
+
+    @classmethod
+    def get_all_fields_by_name(cls):
+        return _get_all_fields_by_name(cls)
 
     def __contains__(self, item):
         field_by_name = _get_all_fields_by_name(self.__class__)

@@ -130,3 +130,20 @@ def test_contains_unsupported():
     with raises(TypeError) as excinfo:
         assert 'xxx' in f
     assert "Foo does not support this operator" in str(excinfo.value)
+
+
+def test_get_field_by_name():
+    class Person(Structure):
+        _required = ['ssid']
+        name = String(pattern='[A-Za-z]+$', maxLength=8, default='Arthur')
+        ssid = String(minLength=3, pattern='[A-Za-z]+$')
+        num = Integer(maximum=30, minimum=10, multiplesOf="dd", exclusiveMaximum=False, default=0)
+        foo = StructureReference(a=String(), b=StructureReference(c=Number(minimum=10), d=Number(maximum=10)))
+
+    field_by_name = Person.get_all_fields_by_name()
+
+    assert set(field_by_name.keys()) == {'name', 'ssid', 'num', 'foo'}
+    ssid_field = field_by_name['ssid']
+    assert ssid_field.__class__ is String
+    assert ssid_field.pattern == '[A-Za-z]+$'
+    assert ssid_field.minLength == 3

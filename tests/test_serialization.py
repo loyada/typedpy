@@ -362,3 +362,24 @@ def test_enum_serialization_returns_string_name():
 
     e = Example(arr=[Values.GHI, Values.DEF, 'GHI'])
     assert Serializer(e).serialize() == {'arr': ['GHI', 'DEF', 'GHI']}
+
+
+def test_serialization_of_classreference_should_work():
+    class Bar(Structure):
+        x = Integer
+        y = Integer
+
+    class Foo(Structure):
+        a = Integer
+        bar1 = Bar
+        bar2 = Bar
+
+        _required = []
+
+    input_dict = {'a': 3, 'bar1': {'x': 3, 'y': 4, 'z': 5}}
+    foo = deserialize_structure(Foo, input_dict)
+    assert Serializer(source=foo.bar1).serialize() == {'x': 3, 'y': 4, 'z': 5}
+    s = Serializer(source=foo.bar2)
+    assert s.serialize() == None
+
+

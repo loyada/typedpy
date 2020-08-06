@@ -829,3 +829,17 @@ def test_enum_deserialization_converts_to_enum():
 
     deserialized = Deserializer(target_class=Example).deserialize({'arr': ['GHI', 'DEF', 'ABC']})
     assert deserialized.arr == [Values.GHI, Values.DEF, Values.ABC]
+
+
+def test_undefined_attributes_in_embedded_field_should_be_deserialized_correctly():
+    class Blah(Structure):
+        x = Integer
+        y = Integer
+
+    class Foo(Structure):
+        a = Integer
+        blah = Blah
+
+    input_dict = {'a': 3, 'blah': {'x': 3, 'y':4, 'z': 5}}
+    bar = deserialize_structure(Foo, input_dict)
+    assert bar.blah.z == 5

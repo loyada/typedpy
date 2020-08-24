@@ -26,6 +26,7 @@ setup(
     author_email="dan.loya@gmail.com",
     classifiers=classifiers,
     description="Type-safe Python",
+    long_description_content_type="text/markdown",
     license="MIT",
     long_description=long_description,
     url="http://github.com/loyada/typedpy",

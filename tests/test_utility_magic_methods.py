@@ -59,7 +59,8 @@ def rich_object_example():
         person_by_label={'aaa': Person(name='john', ssid='123'), 'bbb': Person(name='jack', ssid='234')},
         simplestruct=SimpleStruct(name='danny'),
         all=5,
-        enum=3
+        enum=3,
+        not_part_of_class_definition=1
     )
 
 
@@ -98,8 +99,20 @@ def test_ne():
 
 def test_dir(rich_object_example):
     assert dir(rich_object_example) == ['all', 'any', 'anything', 'array', 'array_of_one_of', 'complex_allof',
-                                        'embedded', 'enum', 'i', 'people', 'person_by_label', 's', 'set',
-                                        'simplestruct']
+                                        'embedded', 'enum', 'i', 'not_part_of_class_definition', 'people',
+                                        'person_by_label', 's', 'set', 'simplestruct']
+
+
+def test_to_and_from_dict(rich_object_example):
+    def to_dict(x):
+        return {key: getattr(x, key) for key in dir(x) if key != None}
+
+    target = to_dict(rich_object_example)
+    for k, v in target.items():
+        assert getattr(rich_object_example, k) == v
+
+    from_dict = Example(**target)
+    assert from_dict == rich_object_example
 
 
 def test_nonzero():

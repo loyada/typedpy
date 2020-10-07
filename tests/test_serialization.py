@@ -1,4 +1,5 @@
 import enum
+import pickle
 
 from pytest import raises
 
@@ -8,7 +9,7 @@ from typedpy import Structure, Array, Number, String, Integer, \
 from typedpy.extfields import DateTime
 from typedpy import serialize_field
 from typedpy.serialization import FunctionCall
-from typedpy.serialization_wrappers import Serializer
+from typedpy.serialization_wrappers import Serializer, Deserializer
 
 
 class SimpleStruct(Structure):
@@ -26,6 +27,9 @@ class Example(Structure):
 
 
 def test_successful_deserialization_with_many_types():
+    class Foo(Structure):
+        wrapped = Array[Example]
+
     source = {
         'i': 5,
         's': 'test',
@@ -113,6 +117,22 @@ def test_serializable_serialize_and_deserialize():
 
     deserialized = deserialize_structure(Foo, serialized)
     assert deserialized == Foo(i=3, d=[date(2019, 12, 4), date(2019, 12, 5)])
+
+
+def test_pickle_with_map_without_any_type_definition():
+    class Bar(Structure):
+        m = Map()
+        a = Integer
+
+    original = Bar(a=3, m={'abc': Bar(a=2, m={"x": "xx"}), 'bcd': 2})
+    serialized = serialize(original)
+    pickled = pickle.dumps(serialized)
+    unpickeled = pickle.loads(pickled)
+    deserialized = Deserializer(target_class=Bar).deserialize(unpickeled)
+    # there is no info on the fact that deserialized.m['abc'] should be converted to a Bar instance, so
+    # we convert it to a simple dict, to make it straight forward to compare
+    original.m['abc'] = Serializer(original.m['abc']).serialize()
+    assert deserialized == original
 
 
 def test_serializable_serialize_and_deserialize2():

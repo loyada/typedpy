@@ -268,7 +268,7 @@ def serialize_val(field_definition, name, val):
                 key_type, value_type = field_definition.items
                 return {serialize_val(key_type, name, k): serialize_val(value_type, name, v) for (k, v) in val.items()}
             else:
-                return val
+                return {serialize_val(Anything, name, k) : serialize_val(Anything, name, v) for (k, v) in val.items()}
         if isinstance(field_definition.items, list):
             return [serialize_val(field_definition.items[ind], name, v) for ind, v in enumerate(val)]
         elif isinstance(field_definition.items, Field):

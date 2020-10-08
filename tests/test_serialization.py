@@ -119,7 +119,7 @@ def test_serializable_serialize_and_deserialize():
     assert deserialized == Foo(i=3, d=[date(2019, 12, 4), date(2019, 12, 5)])
 
 
-def test_pickle_with_map_without_any_type_definition():
+def test_serialize_map_without_any_type_definition():
     class Bar(Structure):
         m = Map()
         a = Integer
@@ -127,7 +127,19 @@ def test_pickle_with_map_without_any_type_definition():
     original = Bar(a=3, m={'abc': Bar(a=2, m={"x": "xx"}), 'bcd': 2})
     serialized = serialize(original)
     pickled = pickle.dumps(serialized)
-    unpickeled = pickle.loads(pickled)
+    assert type(serialized['m']) == dict
+    assert type(serialized['m']['abc']) == dict
+    assert type(serialized['m']['abc']['m']) == dict
+
+
+def test_pickle_with_map_without_any_type_definition():
+    class Bar(Structure):
+        m = Map()
+        a = Integer
+
+    original = Bar(a=3, m={'abc': Bar(a=2, m={"x": "xx"}), 'bcd': 2})
+    serialized = serialize(original)
+    unpickeled = pickle.loads(pickle.dumps(serialized))
     deserialized = Deserializer(target_class=Bar).deserialize(unpickeled)
     # there is no info on the fact that deserialized.m['abc'] should be converted to a Bar instance, so
     # we convert it to a simple dict, to make it straight forward to compare
@@ -401,5 +413,3 @@ def test_serialization_of_classreference_should_work():
     assert Serializer(source=foo.bar1).serialize() == {'x': 3, 'y': 4, 'z': 5}
     s = Serializer(source=foo.bar2)
     assert s.serialize() == None
-
-

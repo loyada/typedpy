@@ -10,7 +10,7 @@ EmailAddress = String(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]+$)
 
 class JSONString(String):
     """
-      A string of a valid JSON
+    A string of a valid JSON
     """
 
     def __set__(self, instance, value):
@@ -20,13 +20,15 @@ class JSONString(String):
 
 class IPV4(String):
     """
-      A string field of a valid IP version 4
+    A string field of a valid IP version 4
     """
+
     _ipv4_re = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 
     def __set__(self, instance, value):
-        if IPV4._ipv4_re.match(value) and \
-                all(0 <= int(component) <= 255 for component in value.split(".")):
+        if IPV4._ipv4_re.match(value) and all(
+            0 <= int(component) <= 255 for component in value.split(".")
+        ):
             super().__set__(instance, value)
         else:
             raise ValueError("{}: wrong format for IP version 4".format(self._name))
@@ -34,7 +36,7 @@ class IPV4(String):
 
 class HostName(String):
     """
-      A string field of a valid host name
+    A string field of a valid host name
     """
 
     _host_name_re = re.compile(r"^[A-Za-z0-9][A-Za-z0-9\.\-]{1,255}$")
@@ -58,6 +60,7 @@ class DateString(TypedField):
               an alternative date format
 
     """
+
     _ty = str
 
     def __init__(self, *args, date_format="%Y-%m-%d", **kwargs):
@@ -76,6 +79,7 @@ class TimeString(TypedField):
     """
     A string field of the format '%H:%M:%S' that can be converted to a time
     """
+
     _ty = str
 
     def __set__(self, instance, value):
@@ -88,27 +92,28 @@ class TimeString(TypedField):
 
 class DateField(Field, SerializableField):
     """
-       A datetime.date field. Can accept either a date object, or a string
-       that can be converted to a date, using the date_format in the constructor.
+    A datetime.date field. Can accept either a date object, or a string
+    that can be converted to a date, using the date_format in the constructor.
 
-       Arguments:
-            date_format(str): optional
-                The date format used to convert to/from a string. Default is '%Y-%m-%d'
+    Arguments:
+         date_format(str): optional
+             The date format used to convert to/from a string. Default is '%Y-%m-%d'
 
-       Example:
+    Example:
 
-       .. code-block:: python
+    .. code-block:: python
 
-           class Foo(Structure):
-               date = DateField
+        class Foo(Structure):
+            date = DateField
 
-           foo(date = date.today())
-           foo(date = "2020-01-31")
+        foo(date = date.today())
+        foo(date = "2020-01-31")
 
-       This is a SerializableField, thus can be serialized/deserialized.
+    This is a SerializableField, thus can be serialized/deserialized.
 
     """
-    def __init__(self, *args, date_format='%Y-%m-%d', **kwargs):
+
+    def __init__(self, *args, date_format="%Y-%m-%d", **kwargs):
         self._date_format = date_format
         super().__init__(*args, **kwargs)
 
@@ -132,26 +137,27 @@ class DateField(Field, SerializableField):
 
 class DateTime(Field, SerializableField):
     """
-        A datetime.datetime field. Can accept either a datetime object, or a string
-        that can be converted to a date, using the date_format in the constructor.
-        Arguments:
-            datetime_format(str): optional
-                The format used to convert to/from a string. Default is '%m/%d/%y %H:%M:%S'
+    A datetime.datetime field. Can accept either a datetime object, or a string
+    that can be converted to a date, using the date_format in the constructor.
+    Arguments:
+        datetime_format(str): optional
+            The format used to convert to/from a string. Default is '%m/%d/%y %H:%M:%S'
 
-        Example:
+    Example:
 
-           .. code-block:: python
+       .. code-block:: python
 
-               class Foo(Structure):
-                   timestamp = DateTime
+           class Foo(Structure):
+               timestamp = DateTime
 
-               foo(timestamp = datetime.now())
-               foo(timestamp = "01/31/20 07:15:45")
+           foo(timestamp = datetime.now())
+           foo(timestamp = "01/31/20 07:15:45")
 
-        This is a SerializableField, thus can be serialized/deserialized.
+    This is a SerializableField, thus can be serialized/deserialized.
 
     """
-    def __init__(self, *args, datetime_format='%m/%d/%y %H:%M:%S', **kwargs):
+
+    def __init__(self, *args, datetime_format="%m/%d/%y %H:%M:%S", **kwargs):
         self._datetime_format = datetime_format
         super().__init__(*args, **kwargs)
 

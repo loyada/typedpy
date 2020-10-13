@@ -20,8 +20,6 @@ setup(
     name="typedpy",
     packages=["typedpy"],
     install_requires=[],
-    setup_requires=['pytest-runner', 'setuptools-lint'],
-    tests_require=['pytest', 'coverage', 'pytest-cov'],
     author="Danny Loya",
     author_email="dan.loya@gmail.com",
     classifiers=classifiers,

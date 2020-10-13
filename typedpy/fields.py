@@ -8,21 +8,29 @@ from collections import OrderedDict
 from functools import reduce
 from decimal import Decimal, InvalidOperation
 
-from typedpy.structures import Field, Structure, TypedField, ClassReference, StructMeta, is_function_returning_field
+from typedpy.structures import (
+    Field,
+    Structure,
+    TypedField,
+    ClassReference,
+    StructMeta,
+    is_function_returning_field,
+)
 
 
 def _map_to_field(item):
     if isinstance(item, StructMeta) and not isinstance(item, Field):
         return ClassReference(item)
-    if item in [None, ''] or isinstance(item, Field):
+    if item in [None, ""] or isinstance(item, Field):
         return item
-    elif Field in getattr(item, '__mro__', []):
+    elif Field in getattr(item, "__mro__", []):
         return item()
     else:
         raise TypeError("Expected a Field/Structure class or Field instance")
 
 
-def wrap_val(v): return "'{}'".format(v) if isinstance(v, str) else v
+def wrap_val(v):
+    return "'{}'".format(v) if isinstance(v, str) else v
 
 
 class StructureReference(Field):
@@ -42,6 +50,7 @@ class StructureReference(Field):
         )
 
     """
+
     counter = 0
 
     def __init__(self, **kwargs):
@@ -52,20 +61,28 @@ class StructureReference(Field):
         super().__init__(kwargs)
 
     def __set__(self, instance, value):
-        if not(isinstance(value, (dict, Structure))):
-            raise TypeError("{}: Expected a dictionary or Structure; got {}".format(self._name, value))
-        extracted_values =  {k:v for (k, v) in value.__dict__.items() if k != '_instantiated'}if isinstance(value, (Structure,)) else value
+        if not (isinstance(value, (dict, Structure))):
+            raise TypeError(
+                "{}: Expected a dictionary or Structure; got {}".format(
+                    self._name, value
+                )
+            )
+        extracted_values = (
+            {k: v for (k, v) in value.__dict__.items() if k != "_instantiated"}
+            if isinstance(value, (Structure,))
+            else value
+        )
         newval = self._newclass(**extracted_values)
         super().__set__(instance, newval)
 
     def __str__(self):
         props = []
         for k, val in sorted(self._newclass.__dict__.items()):
-            if val is not None and not k.startswith('_'):
-                props.append('{} = {}'.format(k, str(val)))
+            if val is not None and not k.startswith("_"):
+                props.append("{} = {}".format(k, str(val)))
 
-        propst = '. Properties: {}'.format(', '.join(props)) if props else ''
-        return '<Structure{}>'.format(propst)
+        propst = ". Properties: {}".format(", ".join(props)) if props else ""
+        return "<Structure{}>".format(propst)
 
 
 class ImmutableField(Field):
@@ -89,8 +106,15 @@ class Number(Field):
 
     """
 
-    def __init__(self, *args, multiplesOf=None, minimum=None,
-                 maximum=None, exclusiveMaximum=None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        multiplesOf=None,
+        minimum=None,
+        maximum=None,
+        exclusiveMaximum=None,
+        **kwargs
+    ):
         self.multiplesOf = multiplesOf
         self.minimum = minimum
         self.maximum = maximum
@@ -103,32 +127,43 @@ class Number(Field):
             return isinstance(val, (float, int, Decimal))
 
         def err_prefix():
-            return "{}: Got {}; ".format(self._name, wrap_val(value)) if self._name else ""
+            return (
+                "{}: Got {}; ".format(self._name, wrap_val(value)) if self._name else ""
+            )
 
         if not is_number(value):
             raise TypeError("{}Expected a number".format(err_prefix()))
-        if isinstance(self.multiplesOf, float) and \
-                int(value / self.multiplesOf) != value / self.multiplesOf or \
-                isinstance(self.multiplesOf, int) and value % self.multiplesOf:
-            raise ValueError("{}Expected a a multiple of {}".format(
-                err_prefix(), self.multiplesOf))
+        if (
+            isinstance(self.multiplesOf, float)
+            and int(value / self.multiplesOf) != value / self.multiplesOf
+            or isinstance(self.multiplesOf, int)
+            and value % self.multiplesOf
+        ):
+            raise ValueError(
+                "{}Expected a a multiple of {}".format(err_prefix(), self.multiplesOf)
+            )
         if (is_number(self.minimum)) and self.minimum > value:
-            raise ValueError("{}Expected a minimum of {}".format(
-                err_prefix(), self.minimum))
+            raise ValueError(
+                "{}Expected a minimum of {}".format(err_prefix(), self.minimum)
+            )
         if is_number(self.maximum):
             if self.exclusiveMaximum and self.maximum == value:
-                raise ValueError("{}Expected a maximum of less than {}".format(
-                    err_prefix(), self.maximum))
+                raise ValueError(
+                    "{}Expected a maximum of less than {}".format(
+                        err_prefix(), self.maximum
+                    )
+                )
             else:
                 if self.maximum < value:
-                    raise ValueError("{}Expected a maximum of {}".format(
-                        err_prefix(), self.maximum))
+                    raise ValueError(
+                        "{}Expected a maximum of {}".format(err_prefix(), self.maximum)
+                    )
 
     def _validate(self, value):
         Number._validate_static(self, value)
 
     def __set__(self, instance, value):
-        if not getattr(instance, '_skip_validation', False):
+        if not getattr(instance, "_skip_validation", False):
             self._validate(value)
         super().__set__(instance, value)
 
@@ -137,6 +172,7 @@ class Integer(TypedField, Number):
     """
     An extension of :class:`Number` for an integer. Accepts int
     """
+
     _ty = int
 
     def _validate(self, value):
@@ -166,21 +202,21 @@ class StructureClass(TypedField):
 
 class String(TypedField):
     """
-      A string value. Accepts input of `str`
+    A string value. Accepts input of `str`
 
-      Arguments:
-          minLength(int): optional
-              minimal length
-          maxLength(int): optional
-              maximal lengthr
-          pattern(str): optional
-              string of a regular expression
+    Arguments:
+        minLength(int): optional
+            minimal length
+        maxLength(int): optional
+            maximal lengthr
+        pattern(str): optional
+            string of a regular expression
 
-      """
+    """
+
     _ty = str
 
-    def __init__(self, *args, minLength=None, maxLength=None,
-                 pattern=None, **kwargs):
+    def __init__(self, *args, minLength=None, maxLength=None, pattern=None, **kwargs):
         self.minLength = minLength
         self.maxLength = maxLength
         self.pattern = pattern
@@ -194,38 +230,49 @@ class String(TypedField):
     @staticmethod
     def _validate_static(self, value):
         def err_prefix():
-            return "{}: Got {}; ".format(self._name, wrap_val(value)) if self._name else ""
+            return (
+                "{}: Got {}; ".format(self._name, wrap_val(value)) if self._name else ""
+            )
 
         if not isinstance(value, str):
             raise TypeError("{}Expected a string".format(err_prefix()))
         if self.maxLength is not None and len(value) > self.maxLength:
-            raise ValueError("{}Expected a maximum length of {}".format(
-                err_prefix(), self.maxLength))
+            raise ValueError(
+                "{}Expected a maximum length of {}".format(err_prefix(), self.maxLength)
+            )
         if self.minLength is not None and len(value) < self.minLength:
-            raise ValueError("{}Expected a minimum length of {}".format(
-                err_prefix(), self.minLength))
+            raise ValueError(
+                "{}Expected a minimum length of {}".format(err_prefix(), self.minLength)
+            )
         if self.pattern is not None and not self._compiled_pattern.match(value):
-            raise ValueError('{}Does not match regular expression: "{}"'.format(
-                err_prefix(), self.pattern))
+            raise ValueError(
+                '{}Does not match regular expression: "{}"'.format(
+                    err_prefix(), self.pattern
+                )
+            )
 
     def __set__(self, instance, value):
         self._validate(value)
         super().__set__(instance, value)
 
 
-def _foo(): pass
+def _foo():
+    pass
 
 
 class Function(Field):
     """
-       A function. Note that this can't be any callable (it can't be a class, for example), but a real function
+    A function. Note that this can't be any callable (it can't be a class, for example), but a real function
     """
+
     def __set__(self, instance, value):
         def is_function(f):
             return type(f) == type(_foo) or type(f) == type(open)
 
         def err_prefix():
-            return "{}: Got {}; ".format(self._name, wrap_val(value)) if self._name else ""
+            return (
+                "{}: Got {}; ".format(self._name, wrap_val(value)) if self._name else ""
+            )
 
         if not is_function(value):
             raise TypeError("{}Expected a function".format(err_prefix()))
@@ -249,6 +296,7 @@ class Anything(Field):
         Foo(i=5, some_content = Bar())
 
     """
+
     pass
 
 
@@ -256,6 +304,7 @@ class Float(TypedField, Number):
     """
     An extension of :class:`Number` for a float
     """
+
     _ty = float
 
     def _validate(self, value):
@@ -267,6 +316,7 @@ class Boolean(TypedField):
     """
     Value of type bool. True or False.
     """
+
     _ty = bool
 
 
@@ -277,7 +327,7 @@ class Positive(Number):
 
     def __set__(self, instance, value):
         if value <= 0:
-            raise ValueError('{}: Must be positive'.format(self._name))
+            raise ValueError("{}: Must be positive".format(self._name))
         super().__set__(instance, value)
 
 
@@ -285,13 +335,15 @@ class PositiveFloat(Float, Positive):
     """
     An combination of :class:`Float` and :class:`Positive`
     """
+
     pass
 
 
 class PositiveInt(Integer, Positive):
     """
-       An combination of :class:`Integer` and :class:`Positive`
-       """
+    An combination of :class:`Integer` and :class:`Positive`
+    """
+
     pass
 
 
@@ -311,34 +363,34 @@ class _ListStruct(list):
     def __setitem__(self, key, value):
         copied = self.copy()
         copied.__setitem__(key, value)
-        setattr(self._instance, getattr(self._array, '_name', None), copied)
+        setattr(self._instance, getattr(self._array, "_name", None), copied)
 
     def append(self, value):
         copied = self.copy()
         copied.append(value)
-        setattr(self._instance, getattr(self._array, '_name', None), copied)
+        setattr(self._instance, getattr(self._array, "_name", None), copied)
         super().append(value)
 
     def extend(self, value):
         copied = self.copy()
         copied.extend(value)
-        setattr(self._instance, getattr(self._array, '_name', None), copied)
-        setattr(self._instance, getattr(self._array, '_name', None), copied)
+        setattr(self._instance, getattr(self._array, "_name", None), copied)
+        setattr(self._instance, getattr(self._array, "_name", None), copied)
 
     def insert(self, index: int, value):
         copied = self.copy()
         copied.insert(index, value)
-        setattr(self._instance, getattr(self._array, '_name', None), copied)
+        setattr(self._instance, getattr(self._array, "_name", None), copied)
 
     def remove(self, ind):
         copied = self.copy()
         copied.remove(ind)
-        setattr(self._instance, getattr(self._array, '_name', None), copied)
+        setattr(self._instance, getattr(self._array, "_name", None), copied)
 
     def pop(self, index: int = -1):
         copied = self.copy()
         res = copied.pop(index)
-        setattr(self._instance, getattr(self._array, '_name', None), copied)
+        setattr(self._instance, getattr(self._array, "_name", None), copied)
         return res
 
 
@@ -360,18 +412,18 @@ class _DictStruct(dict):
     def __setitem__(self, key, value):
         copied = self.copy()
         copied.__setitem__(key, value)
-        setattr(self._instance, getattr(self._map, '_name', None), copied)
+        setattr(self._instance, getattr(self._map, "_name", None), copied)
         super().__setitem__(key, value)
 
     def __delitem__(self, key):
         copied = self.copy()
         del copied[key]
-        setattr(self._instance, getattr(self._map, '_name', None), copied)
+        setattr(self._instance, getattr(self._map, "_name", None), copied)
 
     def update(self, *args, **kwargs):
         copied = self.copy()
         res = copied.update(*args, **kwargs)
-        setattr(self._instance, getattr(self._map, '_name', None), copied)
+        setattr(self._instance, getattr(self._map, "_name", None), copied)
         return res
 
 
@@ -380,9 +432,9 @@ class _CollectionMeta(type):
         def validate_and_get_field(val):
             if isinstance(val, Field):
                 return val
-            elif Field in getattr(val, '__mro__', {}):
+            elif Field in getattr(val, "__mro__", {}):
                 return val()
-            elif Structure in getattr(val, '__mro__', {}):
+            elif Structure in getattr(val, "__mro__", {}):
                 return ClassReference(val)
             elif is_function_returning_field(val):
                 return val()
@@ -407,9 +459,9 @@ class _JSONSchemaDraft4ReuseMeta(type):
         def validate_and_get_field(val):
             if isinstance(val, Field):
                 return val
-            elif Field in getattr(val, '__mro__', {}):
+            elif Field in getattr(val, "__mro__", {}):
                 return val()
-            elif Structure in getattr(val, '__mro__', {}):
+            elif Structure in getattr(val, "__mro__", {}):
                 return ClassReference(val)
             elif is_function_returning_field(val):
                 return val()
@@ -430,11 +482,13 @@ class SizedCollection(object):
 
     def validate_size(self, items, name):
         if self.minItems is not None and len(items) < self.minItems:
-            raise ValueError("{}: Expected length of at least {}".format(
-                name, self.minItems))
+            raise ValueError(
+                "{}: Expected length of at least {}".format(name, self.minItems)
+            )
         if self.maxItems is not None and len(items) > self.maxItems:
-            raise ValueError("{}: Expected length of at most {}".format(
-                name, self.maxItems))
+            raise ValueError(
+                "{}: Expected length of at most {}".format(name, self.maxItems)
+            )
 
 
 class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
@@ -462,29 +516,35 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
 
 
     """
+
     _ty = set
 
-    def __init__(self, *args, items=None,
-                 **kwargs):
+    def __init__(self, *args, items=None, **kwargs):
         self.items = _map_to_field(items)
 
-        if isinstance(self.items, TypedField) and not \
-                getattr(getattr(self.items, '_ty'), '__hash__'):
-            raise TypeError("Set element of type {} is not hashable".format(
-                getattr(self.items, '_ty')))
+        if isinstance(self.items, TypedField) and not getattr(
+            getattr(self.items, "_ty"), "__hash__"
+        ):
+            raise TypeError(
+                "Set element of type {} is not hashable".format(
+                    getattr(self.items, "_ty")
+                )
+            )
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):
         if not isinstance(value, set):
-            raise TypeError("{}: Got {}; Expected {}".format(self._name, wrap_val(value), set))
+            raise TypeError(
+                "{}: Got {}; Expected {}".format(self._name, wrap_val(value), set)
+            )
         self.validate_size(value, self._name)
         if self.items is not None:
             temp_st = Structure()
-            setattr(self.items, '_name', self._name)
+            setattr(self.items, "_name", self._name)
             res = set()
             for val in value:
                 self.items.__set__(temp_st, val)
-                res.add(getattr(temp_st, getattr(self.items, '_name')))
+                res.add(getattr(temp_st, getattr(self.items, "_name")))
                 value = res
         super().__set__(instance, value)
 
@@ -515,9 +575,10 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
 
     _ty = dict
 
-    def __init__(self, *args, items=None,
-                 **kwargs):
-        if items is not None and (not isinstance(items, (tuple, list)) or len(items) != 2):
+    def __init__(self, *args, items=None, **kwargs):
+        if items is not None and (
+            not isinstance(items, (tuple, list)) or len(items) != 2
+        ):
             raise TypeError("items is expected to be a list/tuple of two fields")
         if items is None:
             self.items = None
@@ -526,9 +587,14 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
             for item in items:
                 self.items.append(_map_to_field(item))
             key_field = self.items[0]
-            if isinstance(key_field, TypedField) and not getattr(getattr(key_field, '_ty'), '__hash__'):
-                raise TypeError("Key field of type {}, with underlying type of {} is not hashable".format(
-                    key_field, getattr(key_field, '_ty')))
+            if isinstance(key_field, TypedField) and not getattr(
+                getattr(key_field, "_ty"), "__hash__"
+            ):
+                raise TypeError(
+                    "Key field of type {}, with underlying type of {} is not hashable".format(
+                        key_field, getattr(key_field, "_ty")
+                    )
+                )
         self._custom_deep_copy_implementation = True
         super().__init__(*args, **kwargs)
 
@@ -540,15 +606,16 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
         if self.items is not None:
             temp_st = Structure()
             key_field, value_field = self.items[0], self.items[1]
-            setattr(key_field, '_name', self._name + '_key')
-            setattr(value_field, '_name', self._name + '_value')
+            setattr(key_field, "_name", self._name + "_key")
+            setattr(value_field, "_name", self._name + "_value")
             res = OrderedDict()
 
             for key, val in value.items():
                 key_field.__set__(temp_st, key)
                 value_field.__set__(temp_st, val)
-                res[getattr(temp_st, getattr(key_field, '_name'))] = getattr(
-                    temp_st, getattr(value_field, '_name'))
+                res[getattr(temp_st, getattr(key_field, "_name"))] = getattr(
+                    temp_st, getattr(value_field, "_name")
+                )
             value = res
         super().__set__(instance, _DictStruct(self, instance, value))
 
@@ -587,10 +654,12 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 people = Array[Person]
 
     """
+
     _ty = list
 
-    def __init__(self, *args, items=None, uniqueItems=None, additionalItems=None,
-                 **kwargs):
+    def __init__(
+        self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
+    ):
         """
         Constructor
         :param args: pass-through
@@ -617,31 +686,36 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
         if self.items is not None:
             if isinstance(self.items, Field):
                 temp_st = Structure()
-                setattr(self.items, '_name', self._name)
+                setattr(self.items, "_name", self._name)
                 res = []
                 for i, val in enumerate(value):
-                    setattr(self.items, '_name', self._name + "_{}".format(str(i)))
+                    setattr(self.items, "_name", self._name + "_{}".format(str(i)))
                     self.items.__set__(temp_st, val)
-                    res.append(getattr(temp_st, getattr(self.items, '_name')))
+                    res.append(getattr(temp_st, getattr(self.items, "_name")))
                 value = res
             elif isinstance(self.items, list):
-                additional_properties_forbidden = self.additionalItems is not None and \
-                                                  self.additionalItems is False
-                if not getattr(instance, '_skip_validation', False):
-                    if len(self.items) > len(value) or \
-                            (additional_properties_forbidden and len(self.items) > len(value)):
-                        raise ValueError("{}: Got {}; Expected an array of length {}".format(
-                            self._name, value, len(self.items)))
+                additional_properties_forbidden = (
+                    self.additionalItems is not None and self.additionalItems is False
+                )
+                if not getattr(instance, "_skip_validation", False):
+                    if len(self.items) > len(value) or (
+                        additional_properties_forbidden and len(self.items) > len(value)
+                    ):
+                        raise ValueError(
+                            "{}: Got {}; Expected an array of length {}".format(
+                                self._name, value, len(self.items)
+                            )
+                        )
                 temp_st = Structure()
-                temp_st._skip_validation = getattr(instance, '_skip_validation', False)
+                temp_st._skip_validation = getattr(instance, "_skip_validation", False)
                 res = []
                 for ind, item in enumerate(self.items):
                     if ind >= len(value):
                         continue
-                    setattr(item, '_name', self._name + "_{}".format(str(ind)))
+                    setattr(item, "_name", self._name + "_{}".format(str(ind)))
                     item.__set__(temp_st, value[ind])
-                    res.append(getattr(temp_st, getattr(item, '_name')))
-                res += value[len(self.items):]
+                    res.append(getattr(temp_st, getattr(item, "_name")))
+                res += value[len(self.items) :]
                 value = res
 
         super().__set__(instance, _ListStruct(self, instance, value))
@@ -649,13 +723,21 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
 
 def verify_type_and_uniqueness(the_type, value, name, has_unique_items):
     if not isinstance(value, the_type):
-        raise TypeError("{}: Got {}; Expected {}".format(name, wrap_val(value), str(the_type)))
+        raise TypeError(
+            "{}: Got {}; Expected {}".format(name, wrap_val(value), str(the_type))
+        )
     if has_unique_items:
-        unique = reduce(lambda unique_vals, x: unique_vals.append(x) or
-                        unique_vals if x not in unique_vals
-                        else unique_vals, value, [])
+        unique = reduce(
+            lambda unique_vals, x: unique_vals.append(x) or unique_vals
+            if x not in unique_vals
+            else unique_vals,
+            value,
+            [],
+        )
         if len(unique) < len(value):
-            raise ValueError("{}: Got {}; Expected unique items".format(name, wrap_val(value)))
+            raise ValueError(
+                "{}: Got {}; Expected unique items".format(name, wrap_val(value))
+            )
 
 
 class Tuple(TypedField, metaclass=_CollectionMeta):
@@ -696,10 +778,10 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
         e = Tuple[AnyOf[Integer, Foo]]
 
     """
+
     _ty = tuple
 
-    def __init__(self, *args, items, uniqueItems=None,
-                 **kwargs):
+    def __init__(self, *args, items, uniqueItems=None, **kwargs):
         """
         Constructor
         :param args: pass-through
@@ -727,17 +809,20 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
     def __set__(self, instance, value):
         verify_type_and_uniqueness(tuple, value, self._name, self.uniqueItems)
         if len(self.items) != len(value) and len(self.items) > 1:
-            raise ValueError("{}: Got {}; Expected a tuple of length {}".format(
-                self._name, wrap_val(value), len(self.items)))
+            raise ValueError(
+                "{}: Got {}; Expected a tuple of length {}".format(
+                    self._name, wrap_val(value), len(self.items)
+                )
+            )
 
         temp_st = Structure()
         res = []
         items = self.items if len(self.items) > 1 else self.items * len(value)
         for ind, item in enumerate(items):
-            setattr(item, '_name', self._name + "_{}".format(str(ind)))
+            setattr(item, "_name", self._name + "_{}".format(str(ind)))
             item.__set__(temp_st, value[ind])
-            res.append(getattr(temp_st, getattr(item, '_name')))
-            res += value[len(items):]
+            res.append(getattr(temp_st, getattr(item, "_name")))
+            res += value[len(items) :]
         value = tuple(res)
 
         super().__set__(instance, value)
@@ -745,33 +830,33 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
 
 class Enum(Field, metaclass=_EnumMeta):
     """
-        Enum field. value can be one of predefined values
+    Enum field. value can be one of predefined values
 
-        Arguments:
-             values(`list` or `set` or `tuple`, alternatively an enum Type):
-                 allowed values. Can be of any type.
-                 Alternatively, can be an enum.Enum type. See example below.
-                 When defined with an enum.Enum, serialization converts to strings,
-                 while deserialization expects strings.
-        Examples:
+    Arguments:
+         values(`list` or `set` or `tuple`, alternatively an enum Type):
+             allowed values. Can be of any type.
+             Alternatively, can be an enum.Enum type. See example below.
+             When defined with an enum.Enum, serialization converts to strings,
+             while deserialization expects strings.
+    Examples:
 
-        .. code-block:: python
+    .. code-block:: python
 
-           class Values(enum.Enum):
-                ABC = enum.auto()
-                DEF = enum.auto()
-                GHI = enum.auto()
+       class Values(enum.Enum):
+            ABC = enum.auto()
+            DEF = enum.auto()
+            GHI = enum.auto()
 
-           class Example(Structure):
-              arr = Array[Enum[Values]]
-              e = Enum['abc', 'x', 'def', 3]
+       class Example(Structure):
+          arr = Array[Enum[Values]]
+          e = Enum['abc', 'x', 'def', 3]
 
-           example = Example(arr=[Values.ABC, 'DEF'],e=3)
-           assert example.arr = [Values.ABC, Values.DEF]
+       example = Example(arr=[Values.ABC, 'DEF'],e=3)
+       assert example.arr = [Values.ABC, Values.DEF]
 
-           # deserialization example:
-           deserialized = Deserializer(target_class=Example).deserialize({'arr': ['GHI', 'DEF', 'ABC'], 'e': 3})
-           assert deserialized.arr == [Values.GHI, Values.DEF, Values.ABC]
+       # deserialization example:
+       deserialized = Deserializer(target_class=Example).deserialize({'arr': ['GHI', 'DEF', 'ABC'], 'e': 3})
+       assert deserialized.arr == [Values.GHI, Values.DEF, Values.ABC]
     """
 
     def __init__(self, *args, values, **kwargs):
@@ -787,10 +872,12 @@ class Enum(Field, metaclass=_EnumMeta):
         if self._is_enum:
             enum_names = {v.name for v in self._enum_class}
             if value not in enum_names and not isinstance(value, (self._enum_class,)):
-                raise ValueError('{}: Must be a value of {}'.format(self._name, self._enum_class))
+                raise ValueError(
+                    "{}: Must be a value of {}".format(self._name, self._enum_class)
+                )
 
         elif value not in self.values:
-            raise ValueError('{}: Must be one of {}'.format(self._name, self.values))
+            raise ValueError("{}: Must be one of {}".format(self._name, self.values))
 
     def __set__(self, instance, value):
         self._validate(value)
@@ -798,7 +885,6 @@ class Enum(Field, metaclass=_EnumMeta):
             if isinstance(value, (str,)):
                 value = self._enum_class[value]
         super().__set__(instance, value)
-
 
 
 class EnumString(Enum, String):
@@ -815,6 +901,7 @@ class EnumString(Enum, String):
         EnumString(values=predefined_list, minLength=3)
 
     """
+
     pass
 
 
@@ -836,7 +923,7 @@ class Sized(Field):
 
     def __set__(self, instance, value):
         if len(value) > self.maxlen:
-            raise ValueError('{}: Too long'.format(self._name))
+            raise ValueError("{}: Too long".format(self._name))
         super().__set__(instance, value)
 
 
@@ -847,11 +934,11 @@ class SizedString(String, Sized):
 def _str_for_multioption_field(instance):
     name = instance.__class__.__name__
     if instance.get_fields():
-        fields_st = ', '.join([str(field) for field in instance.get_fields()])
-        propst = ' [{}]'.format(fields_st)
+        fields_st = ", ".join([str(field) for field in instance.get_fields()])
+        propst = " [{}]".format(fields_st)
     else:
-        propst = ''
-    return '<{}{}>'.format(name, propst)
+        propst = ""
+    return "<{}{}>".format(name, propst)
 
 
 class MultiFieldWrapper(object):
@@ -894,7 +981,7 @@ class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __set__(self, instance, value):
         for field in self.get_fields():
-            setattr(field, '_name', self._name)
+            setattr(field, "_name", self._name)
             field.__set__(instance, value)
         super().__set__(instance, value)
 
@@ -924,7 +1011,7 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     def __set__(self, instance, value):
         matched = False
         for field in self.get_fields():
-            setattr(field, '_name', self._name)
+            setattr(field, "_name", self._name)
             try:
                 field.__set__(instance, value)
                 matched = True
@@ -933,7 +1020,11 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             except ValueError:
                 pass
         if not matched:
-            raise ValueError("{}: {} Did not match any field option".format(self._name, wrap_val(value)))
+            raise ValueError(
+                "{}: {} Did not match any field option".format(
+                    self._name, wrap_val(value)
+                )
+            )
         super().__set__(instance, value)
 
     def __str__(self):
@@ -962,7 +1053,7 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     def __set__(self, instance, value):
         matched = 0
         for field in self.get_fields():
-            setattr(field, '_name', self._name)
+            setattr(field, "_name", self._name)
             try:
                 field.__set__(instance, value)
                 matched += 1
@@ -971,9 +1062,15 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             except ValueError:
                 pass
         if not matched:
-            raise ValueError("{}: Got {}; Did not match any field option".format(self._name, value))
+            raise ValueError(
+                "{}: Got {}; Did not match any field option".format(self._name, value)
+            )
         if matched > 1:
-            raise ValueError("{}: Got {}; Matched more than one field option".format(self._name, value))
+            raise ValueError(
+                "{}: Got {}; Matched more than one field option".format(
+                    self._name, value
+                )
+            )
         super().__set__(instance, value)
 
     def __str__(self):
@@ -1002,7 +1099,7 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __set__(self, instance, value):
         for field in self.get_fields():
-            setattr(field, '_name', self._name)
+            setattr(field, "_name", self._name)
             try:
                 field.__set__(instance, value)
             except TypeError:
@@ -1010,8 +1107,11 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             except ValueError:
                 pass
             else:
-                raise ValueError("{}: Got {}; Expected not to match any field definition".
-                                 format(self._name, wrap_val(value)))
+                raise ValueError(
+                    "{}: Got {}; Expected not to match any field definition".format(
+                        self._name, wrap_val(value)
+                    )
+                )
         super().__set__(instance, value)
 
     def __str__(self):
@@ -1019,7 +1119,6 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
 
 class ValidatedTypedField(TypedField):
-
     def __set__(self, instance, value):
         self._validate_func(value)  # pylint: disable=E1101
         super().__set__(instance, value)
@@ -1058,7 +1157,11 @@ def create_typed_field(classname, cls, validate_func=None):
             return
         validate_func(value)
 
-    return type(classname, (ValidatedTypedField,), {'_validate_func': validate_wrapper, '_ty': cls})
+    return type(
+        classname,
+        (ValidatedTypedField,),
+        {"_validate_func": validate_wrapper, "_ty": cls},
+    )
 
 
 class SerializableField(ABC):
@@ -1069,9 +1172,11 @@ class SerializableField(ABC):
       deserialize(self, value)
     """
 
-    def serialize(self, value): return value
+    def serialize(self, value):
+        return value
 
-    def deserialize(self, value): return value
+    def deserialize(self, value):
+        return value
 
 
 class ExceptionField(TypedField, SerializableField):
@@ -1079,6 +1184,7 @@ class ExceptionField(TypedField, SerializableField):
     As Exception. This is serialized as the string representation of the exception.
     It does not support deserialization.
     """
+
     _ty = Exception
 
     def serialize(self, value):

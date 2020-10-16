@@ -84,6 +84,8 @@ Typepy supports the following operations for structure instances:
 
 * dir(structure_instance) returns all the field names in the instance
 
+* pickle (with the exception of StructuredReference)
+
 * "As boolean" operator. For example:
 
 .. code-block:: python

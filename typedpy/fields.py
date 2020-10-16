@@ -49,6 +49,8 @@ class StructureReference(Field):
             age = AnyOf[PositiveInt, PositiveFloat]
         )
 
+
+    Important: Since Typedpy dynamically creates an internal class for it, this field cannot be pickled!
     """
 
     counter = 0
@@ -74,6 +76,9 @@ class StructureReference(Field):
         )
         newval = self._newclass(**extracted_values)
         super().__set__(instance, newval)
+
+    def __serialize__(self, value):
+        raise TypeError("{}: StructuredReference Cannot be pickled".format(self._name))
 
     def __str__(self):
         props = []
@@ -107,13 +112,13 @@ class Number(Field):
     """
 
     def __init__(
-        self,
-        *args,
-        multiplesOf=None,
-        minimum=None,
-        maximum=None,
-        exclusiveMaximum=None,
-        **kwargs
+            self,
+            *args,
+            multiplesOf=None,
+            minimum=None,
+            maximum=None,
+            exclusiveMaximum=None,
+            **kwargs
     ):
         self.multiplesOf = multiplesOf
         self.minimum = minimum
@@ -134,10 +139,10 @@ class Number(Field):
         if not is_number(value):
             raise TypeError("{}Expected a number".format(err_prefix()))
         if (
-            isinstance(self.multiplesOf, float)
-            and int(value / self.multiplesOf) != value / self.multiplesOf
-            or isinstance(self.multiplesOf, int)
-            and value % self.multiplesOf
+                isinstance(self.multiplesOf, float)
+                and int(value / self.multiplesOf) != value / self.multiplesOf
+                or isinstance(self.multiplesOf, int)
+                and value % self.multiplesOf
         ):
             raise ValueError(
                 "{}Expected a a multiple of {}".format(err_prefix(), self.multiplesOf)
@@ -361,37 +366,76 @@ class _ListStruct(list):
         super().__init__(mylist)
 
     def __setitem__(self, key, value):
-        copied = self.copy()
+        copied = super().copy()
         copied.__setitem__(key, value)
-        setattr(self._instance, getattr(self._array, "_name", None), copied)
+        setattr(self._instance, getattr(self._array, "_name", None),
+                _ListStruct(array=self._array, struct_instance=self._instance, mylist=copied)
+                )
 
     def append(self, value):
-        copied = self.copy()
+        copied = super().copy()
         copied.append(value)
-        setattr(self._instance, getattr(self._array, "_name", None), copied)
+        setattr(self._instance, getattr(self._array, "_name", None),
+                _ListStruct(array=self._array, struct_instance=self._instance, mylist=copied)
+                )
         super().append(value)
 
     def extend(self, value):
-        copied = self.copy()
+        copied = super().copy()
         copied.extend(value)
-        setattr(self._instance, getattr(self._array, "_name", None), copied)
-        setattr(self._instance, getattr(self._array, "_name", None), copied)
+        if getattr(self, "_instance", None):
+            setattr(self._instance, getattr(self._array, "_name", None),
+                    _ListStruct(array=self._array, struct_instance=self._instance, mylist=copied))
 
     def insert(self, index: int, value):
-        copied = self.copy()
+        copied = super().copy()
         copied.insert(index, value)
-        setattr(self._instance, getattr(self._array, "_name", None), copied)
+        setattr(self._instance, getattr(self._array, "_name", None),
+                _ListStruct(array=self._array, struct_instance=self._instance, mylist=copied)
+                )
 
     def remove(self, ind):
-        copied = self.copy()
+        copied = super().copy()
         copied.remove(ind)
-        setattr(self._instance, getattr(self._array, "_name", None), copied)
+        setattr(self._instance, getattr(self._array, "_name", None),
+                _ListStruct(array=self._array, struct_instance=self._instance, mylist=copied)
+                )
 
     def pop(self, index: int = -1):
-        copied = self.copy()
+        copied = super().copy()
         res = copied.pop(index)
-        setattr(self._instance, getattr(self._array, "_name", None), copied)
+        setattr(self._instance, getattr(self._array, "_name", None),
+                _ListStruct(array=self._array, struct_instance=self._instance, mylist=copied)
+                )
         return res
+
+    def __reduce__(self):
+        # This is a nasty hack to deal with the fact the deepcopy will call __setstate__() and after that
+        # iteratively append to the list to recreate a copy of the original list.
+        # Since __setstate__ already creates the list (used when unpickling), after the appending
+        # process we would end up with the list doubled.
+        # The root of the problem is that _ListStruct extends list, which is handled differently
+        # by deepcopy _reconstructor() function.
+        # Our hack checks if the construction function is from deepcopy. If it is - we  drop the
+        # state since deepcopy doesn't need it to create a copy.
+        res = super().__reduce__()
+        construction_func = res[0]
+        if construction_func.__module__ == 'copyreg' and construction_func.__name__ == '_reconstructor':
+            return res[0], res[1]
+        return res
+
+    def __getstate__(self):
+        return {
+            "the_instance": self._instance,
+            "the_array": self._array,
+            "the_values": super(),
+        }
+
+    def __setstate__(self, state):
+        self._array = state["the_array"]
+        self._instance = state["the_instance"]
+        super().__init__(state["the_values"])
+
 
 
 class _DictStruct(dict):
@@ -412,7 +456,8 @@ class _DictStruct(dict):
     def __setitem__(self, key, value):
         copied = self.copy()
         copied.__setitem__(key, value)
-        setattr(self._instance, getattr(self._map, "_name", None), copied)
+        if getattr(self, "_instance", None):
+            setattr(self._instance, getattr(self._map, "_name", None), copied)
         super().__setitem__(key, value)
 
     def __delitem__(self, key):
@@ -425,6 +470,14 @@ class _DictStruct(dict):
         res = copied.update(*args, **kwargs)
         setattr(self._instance, getattr(self._map, "_name", None), copied)
         return res
+
+    def __getstate__(self):
+        return {"_instance": self._instance, "_map": self._map, "mydict": self.copy()}
+
+    def __setstate__(self, state):
+        self._map = state["_map"]
+        self._instance = state["_instance"]
+        super().__init__(state["mydict"])
 
 
 class _CollectionMeta(type):
@@ -523,7 +576,7 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
         self.items = _map_to_field(items)
 
         if isinstance(self.items, TypedField) and not getattr(
-            getattr(self.items, "_ty"), "__hash__"
+                getattr(self.items, "_ty"), "__hash__"
         ):
             raise TypeError(
                 "Set element of type {} is not hashable".format(
@@ -577,7 +630,7 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
 
     def __init__(self, *args, items=None, **kwargs):
         if items is not None and (
-            not isinstance(items, (tuple, list)) or len(items) != 2
+                not isinstance(items, (tuple, list)) or len(items) != 2
         ):
             raise TypeError("items is expected to be a list/tuple of two fields")
         if items is None:
@@ -588,7 +641,7 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 self.items.append(_map_to_field(item))
             key_field = self.items[0]
             if isinstance(key_field, TypedField) and not getattr(
-                getattr(key_field, "_ty"), "__hash__"
+                    getattr(key_field, "_ty"), "__hash__"
             ):
                 raise TypeError(
                     "Key field of type {}, with underlying type of {} is not hashable".format(
@@ -658,7 +711,7 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
     _ty = list
 
     def __init__(
-        self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
+            self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
     ):
         """
         Constructor
@@ -694,12 +747,11 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
                     res.append(getattr(temp_st, getattr(self.items, "_name")))
                 value = res
             elif isinstance(self.items, list):
-                additional_properties_forbidden = (
-                    self.additionalItems is not None and self.additionalItems is False
-                )
+                additional_properties_forbidden = self.additionalItems is False
+
                 if not getattr(instance, "_skip_validation", False):
                     if len(self.items) > len(value) or (
-                        additional_properties_forbidden and len(self.items) > len(value)
+                            additional_properties_forbidden and len(self.items) > len(value)
                     ):
                         raise ValueError(
                             "{}: Got {}; Expected an array of length {}".format(
@@ -715,7 +767,7 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
                     setattr(item, "_name", self._name + "_{}".format(str(ind)))
                     item.__set__(temp_st, value[ind])
                     res.append(getattr(temp_st, getattr(item, "_name")))
-                res += value[len(self.items) :]
+                res += value[len(self.items):]
                 value = res
 
         super().__set__(instance, _ListStruct(self, instance, value))
@@ -822,7 +874,7 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
             setattr(item, "_name", self._name + "_{}".format(str(ind)))
             item.__set__(temp_st, value[ind])
             res.append(getattr(temp_st, getattr(item, "_name")))
-            res += value[len(items) :]
+            res += value[len(items):]
         value = tuple(res)
 
         super().__set__(instance, value)
@@ -1171,6 +1223,11 @@ class SerializableField(ABC):
       serialize(self, value),
       deserialize(self, value)
     """
+
+    def __serialize__(self, value):
+        if getattr(self, '__getstate__', None):
+            return self.__getstate__()
+        return self.serialize(value)
 
     def serialize(self, value):
         return value

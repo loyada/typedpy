@@ -127,6 +127,9 @@ class Field:
         ):
             instance.__validate__()
 
+    def __serialize__(self, value):
+        return value
+
     def __str__(self):
         def as_str(the_val):
             """
@@ -291,6 +294,15 @@ class Structure(metaclass=StructMeta):
                 raise ValueError("Structure is immutable")
             value = deepcopy(value)
         super().__setattr__(key, value)
+
+    def __getstate__(self):
+        fields_by_name = _get_all_fields_by_name(self.__class__)
+        return {
+            name: field.__serialize__(getattr(self, name, None))
+            for (name, field) in fields_by_name.items()
+            if name in self.__dict__
+        }
+
 
     def __str__(self):
         def list_to_str(values):

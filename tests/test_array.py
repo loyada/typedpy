@@ -78,6 +78,22 @@ def test_update_append():
     assert t.a == ['aa', 5, 2, 6]
 
 
+def test_append_maintains_field_definition():
+    t = Example(a=['aa', 5, 2])
+    t.a.append(6)
+    with raises(TypeError) as excinfo:
+        t.a[0] = 0
+    assert "a_0: Got 0; Expected a string" in str(excinfo.value)
+
+
+def test_append_maintains_field_definition_validate_pop():
+    t = Example(a=['aa', 5, 2])
+    t.a.append(6)
+    with raises(TypeError) as excinfo:
+        t.a.pop(0)
+    assert "a_0: Got 5; Expected a string" in str(excinfo.value)
+
+
 def test_update_too_short_err():
     t = Example(a=['aa', 5, 2])
     with raises(ValueError) as excinfo:
@@ -147,10 +163,20 @@ def test_extend_err():
 
 
 def test_extend_valid():
+    from typedpy.fields import _ListStruct
+
     e = Example(b=[1, 2, 3])
     e.b.extend([5, 9])
     assert e.b == [1, 2, 3, 5, 9]
+    assert e.b.__class__ == _ListStruct
 
+
+def test_extend_maintains_field_definition():
+    e = Example(b=[1, 2, 3])
+    e.b.extend([5, 9])
+    with raises(TypeError) as excinfo:
+        e.b[0] = "xxx"
+    assert "b_0: Got 'xxx'; Expected a number" in str(excinfo.value)
 
 def test_insert_err():
     e = Example(b=[1, 2, 3])

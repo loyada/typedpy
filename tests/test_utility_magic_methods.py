@@ -64,14 +64,26 @@ def rich_object_example():
     )
 
 
-def test_deepcopy_creates_new_instances(rich_object_example):
+def test_deepcopy_creates_new_instances_basic_equality(rich_object_example):
     source = rich_object_example
     target = copy.deepcopy(source)
     assert target == source
+
+
+def test_deepcopy_creates_new_instances_changing_embedded_values_in_array(rich_object_example):
+    source = rich_object_example
+    target = copy.deepcopy(source)
     target.people[0].name = 'jack'
     assert source.people[0].name == 'john'
     target.anything.add('x')
     assert source.anything == {'a', 'b', 'c'}
+
+
+def test_deepcopy_creates_new_instances_changing_embedded_values_in_map(rich_object_example):
+    source = rich_object_example
+    target = copy.deepcopy(source)
+    target.person_by_label['aaa'].name = 'smith'
+    assert source.person_by_label['aaa'].name == 'john'
 
 
 def test_copy_creates_shallow_copy(rich_object_example):

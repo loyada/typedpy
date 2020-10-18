@@ -75,7 +75,8 @@ class StructureReference(Field):
             else value
         )
         newval = self._newclass(**extracted_values)
-        super().__set__(instance, newval)
+        super().__set__(instance,   newval)
+
 
     def __serialize__(self, value):
         raise TypeError("{}: StructuredReference Cannot be pickled".format(self._name))
@@ -360,23 +361,23 @@ class _ListStruct(list):
     Will not bypass the validation of the Array.
     """
 
-    def __init__(self, array, struct_instance, mylist):
-        self._array = array
+    def __init__(self, array: Field, struct_instance: Structure, mylist):
+        self._field_definition = array
         self._instance = struct_instance
         super().__init__(mylist)
 
     def __setitem__(self, key, value):
         copied = super().copy()
         copied.__setitem__(key, value)
-        setattr(self._instance, getattr(self._array, "_name", None),
-                _ListStruct(array=self._array, struct_instance=self._instance, mylist=copied)
+        setattr(self._instance, getattr(self._field_definition, "_name", None),
+                _ListStruct(array=self._field_definition, struct_instance=self._instance, mylist=copied)
                 )
 
     def append(self, value):
         copied = super().copy()
         copied.append(value)
-        setattr(self._instance, getattr(self._array, "_name", None),
-                _ListStruct(array=self._array, struct_instance=self._instance, mylist=copied)
+        setattr(self._instance, getattr(self._field_definition, "_name", None),
+                _ListStruct(array=self._field_definition, struct_instance=self._instance, mylist=copied)
                 )
         super().append(value)
 
@@ -384,28 +385,28 @@ class _ListStruct(list):
         copied = super().copy()
         copied.extend(value)
         if getattr(self, "_instance", None):
-            setattr(self._instance, getattr(self._array, "_name", None),
-                    _ListStruct(array=self._array, struct_instance=self._instance, mylist=copied))
+            setattr(self._instance, getattr(self._field_definition, "_name", None),
+                    _ListStruct(array=self._field_definition, struct_instance=self._instance, mylist=copied))
 
     def insert(self, index: int, value):
         copied = super().copy()
         copied.insert(index, value)
-        setattr(self._instance, getattr(self._array, "_name", None),
-                _ListStruct(array=self._array, struct_instance=self._instance, mylist=copied)
+        setattr(self._instance, getattr(self._field_definition, "_name", None),
+                _ListStruct(array=self._field_definition, struct_instance=self._instance, mylist=copied)
                 )
 
     def remove(self, ind):
         copied = super().copy()
         copied.remove(ind)
-        setattr(self._instance, getattr(self._array, "_name", None),
-                _ListStruct(array=self._array, struct_instance=self._instance, mylist=copied)
+        setattr(self._instance, getattr(self._field_definition, "_name", None),
+                _ListStruct(array=self._field_definition, struct_instance=self._instance, mylist=copied)
                 )
 
     def pop(self, index: int = -1):
         copied = super().copy()
         res = copied.pop(index)
-        setattr(self._instance, getattr(self._array, "_name", None),
-                _ListStruct(array=self._array, struct_instance=self._instance, mylist=copied)
+        setattr(self._instance, getattr(self._field_definition, "_name", None),
+                _ListStruct(array=self._field_definition, struct_instance=self._instance, mylist=copied)
                 )
         return res
 
@@ -427,15 +428,14 @@ class _ListStruct(list):
     def __getstate__(self):
         return {
             "the_instance": self._instance,
-            "the_array": self._array,
+            "the_array": self._field_definition,
             "the_values": super(),
         }
 
     def __setstate__(self, state):
-        self._array = state["the_array"]
+        self._field_definition = state["the_array"]
         self._instance = state["the_instance"]
         super().__init__(state["the_values"])
-
 
 
 class _DictStruct(dict):
@@ -449,7 +449,7 @@ class _DictStruct(dict):
     """
 
     def __init__(self, the_map, struct_instance, mydict):
-        self._map = the_map
+        self._field_definition = the_map
         self._instance = struct_instance
         super().__init__(mydict)
 
@@ -457,25 +457,25 @@ class _DictStruct(dict):
         copied = self.copy()
         copied.__setitem__(key, value)
         if getattr(self, "_instance", None):
-            setattr(self._instance, getattr(self._map, "_name", None), copied)
+            setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
         super().__setitem__(key, value)
 
     def __delitem__(self, key):
         copied = self.copy()
         del copied[key]
-        setattr(self._instance, getattr(self._map, "_name", None), copied)
+        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
 
     def update(self, *args, **kwargs):
         copied = self.copy()
         res = copied.update(*args, **kwargs)
-        setattr(self._instance, getattr(self._map, "_name", None), copied)
+        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
         return res
 
     def __getstate__(self):
-        return {"_instance": self._instance, "_map": self._map, "mydict": self.copy()}
+        return {"_instance": self._instance, "_map": self._field_definition, "mydict": self.copy()}
 
     def __setstate__(self, state):
-        self._map = state["_map"]
+        self._field_definition = state["_map"]
         self._instance = state["_instance"]
         super().__init__(state["mydict"])
 

@@ -1,6 +1,7 @@
 import enum
 import pickle
 
+import pytest
 from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
@@ -26,11 +27,9 @@ class Example(Structure):
     enum = Enum(values=[1, 2, 3])
 
 
-def test_successful_deserialization_with_many_types():
-    class Foo(Structure):
-        wrapped = Array[Example]
-
-    source = {
+@pytest.fixture()
+def serialized_source():
+    return {
         'i': 5,
         's': 'test',
         'array': [10, 7],
@@ -44,9 +43,17 @@ def test_successful_deserialization_with_many_types():
         'all': 5,
         'enum': 3
     }
-    example = deserialize_structure(Example, source)
+
+
+@pytest.fixture()
+def example(serialized_source):
+    return deserialize_structure(Example, serialized_source)
+
+
+def test_successful_deserialization_with_many_types(serialized_source, example):
+    example = deserialize_structure(Example, serialized_source)
     result = serialize(example)
-    assert result == source
+    assert result == serialized_source
 
 
 def test_some_empty_fields():
@@ -193,30 +200,41 @@ def test_serialize_map():
     assert serialized['m1'] == {'a': [1, 2, 3], 'b': 1}
 
 
-def test_serialize_field_basic_field():
-    source = {
-        'i': 5,
-        's': 'test',
-        'array': [10, 7],
-        'embedded': {
-            'a1': 8,
-            'a2': 0.5
-        },
-        'simple_struct': {
-            'name': 'danny'
-        },
-        'all': 5,
-        'enum': 3
-    }
-    example = deserialize_structure(Example, source)
-    assert serialize_field(Example.array, example.array) == source['array']
+def test_serialize_field_basic_field(serialized_source, example):
+    assert serialize_field(Example.array, example.array) == serialized_source['array']
 
 
 def test_serialize_wrong_value():
     with raises(TypeError) as excinfo:
-        serialize("foo")
-        # this is to cater to Python 3.6
-    assert "serialize: must get a Structure. Got: foo" in str(excinfo.value)
+        serialize({'abc': 123})
+    assert "serialize: Not a Structure or Field that with an obvious serialization." \
+           " Got: {'abc': 123}. Maybe try serialize_field() instead?" in str(excinfo.value)
+
+
+def test_serialize_with_structured_reference(example, serialized_source):
+    assert serialize(example.embedded) == serialized_source['embedded']
+
+
+def test_serialize_with_array(example, serialized_source):
+    assert serialize(example.array) == serialized_source['array']
+
+
+def test_serialize_with_class_reference(example, serialized_source):
+    assert serialize(example.simple_struct) == serialized_source['simple_struct']
+
+
+def test_serialize_with_map():
+    class Foo(Structure):
+        m = Map[String, Anything]
+
+    original = {'a': [1, 2, 3], 'b': 1}
+
+    foo = Foo(m=original)
+    assert serialize(foo.m) == original
+
+
+def test_serialize_with_number(example, serialized_source):
+    assert serialize(example.i) == serialized_source['i']
 
 
 def test_serialize_field_complex_field():

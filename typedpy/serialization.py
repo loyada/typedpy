@@ -3,7 +3,9 @@ import enum
 import json
 from collections.abc import Mapping
 from functools import reduce
+from typing import Dict
 
+from typedpy.fields import _ListStruct
 from typedpy.structures import TypedField, Structure, _get_all_fields_by_name
 from typedpy.fields import (
     Field,
@@ -26,7 +28,7 @@ from typedpy.fields import (
     SerializableField,
     SizedCollection,
     wrap_val,
-    Function,
+    Function, _DictStruct,
 )
 
 
@@ -57,7 +59,7 @@ def deserialize_list_like(field, content_type, value, name):
             except (ValueError, TypeError) as e:
                 raise ValueError("{}_{}: {}".format(name, i, str(e)))
             values.append(res)
-        values += value[len(items) :]
+        values += value[len(items):]
     return content_type(values)
 
 
@@ -132,9 +134,9 @@ def deserialize_single_field(field, source_val, name, keep_undefined=True):
         field._validate(source_val)
         value = source_val
     elif (
-        isinstance(field, TypedField)
-        and getattr(field, "_ty", "") in {str, int, float}
-        and isinstance(source_val, getattr(field, "_ty", ""))
+            isinstance(field, TypedField)
+            and getattr(field, "_ty", "") in {str, int, float}
+            and isinstance(source_val, getattr(field, "_ty", ""))
     ):
         value = source_val
     elif isinstance(field, Array):
@@ -211,7 +213,7 @@ class FunctionCall(Structure):
 
 
 def deserialize_structure_internal(
-    cls, the_dict, name=None, *, mapper=None, keep_undefined=True
+        cls, the_dict, name=None, *, mapper=None, keep_undefined=True
 ):
     """
     Deserialize a dict to a Structure instance, Jackson style.
@@ -338,7 +340,7 @@ def get_processed_input(key, mapper, the_dict):
 
 def serialize_val(field_definition, name, val):
     if isinstance(field_definition, SerializableField) and isinstance(
-        field_definition, Field
+            field_definition, Field
     ):
         return field_definition.serialize(val)
     if isinstance(val, (int, str, bool, float)) or val is None:
@@ -350,8 +352,8 @@ def serialize_val(field_definition, name, val):
             if not isinstance(val, Mapping):
                 raise TypeError("{} Expected a Mapping", name)
             if (
-                isinstance(field_definition.items, list)
-                and len(field_definition.items) == 2
+                    isinstance(field_definition.items, list)
+                    and len(field_definition.items) == 2
             ):
                 key_type, value_type = field_definition.items
                 return {
@@ -450,10 +452,10 @@ def serialize_internal(structure, mapper=None, compact=False):
     fields = list(field_by_name.keys())
     additional_props = props.get("_additionalProperties", True)
     if (
-        len(fields) == 1
-        and props.get("_required", fields) == fields
-        and additional_props is False
-        and compact
+            len(fields) == 1
+            and props.get("_required", fields) == fields
+            and additional_props is False
+            and compact
     ):
         key = fields[0]
         result = serialize_val(
@@ -480,14 +482,16 @@ def serialize_internal(structure, mapper=None, compact=False):
     return result
 
 
-def serialize(structure, *, mapper=None, compact=False):
+def serialize(value, *, mapper: Dict = None, compact=False):
     """
     Serialize an instance of :class:`Structure` to a JSON-like dict.
     `See working examples in test. <https://github.com/loyada/typedpy/tree/master/tests/test_serialization.py>`_
 
     Arguments:
-        structure(:class:`Structure`):
-            the structure instance to be serialized to JSON
+        value(:class:`Structure` or a field value with an obvious serialization):
+            The value to be serialized - a structure instance, or a field value for which typedpy can deduce the
+             serialization.
+            In the general case, if you just need to serialize a field value, it's better to use serialize_field().
 
         mapper(dict): optional
              a dictionary where the key is the name of the attribute in the structure, and the value is name of the
@@ -509,8 +513,14 @@ def serialize(structure, *, mapper=None, compact=False):
         mapper = {}
     if not isinstance(mapper, (collections.abc.Mapping,)):
         raise TypeError("Mapper must be a mapping")
-    if not isinstance(structure, Structure):
-        if structure is None:
-            return None
-        raise TypeError("serialize: must get a Structure. Got: {}".format(structure))
-    return serialize_internal(structure, mapper=mapper, compact=compact)
+    if not isinstance(value, (Structure, StructureReference)):
+        if value is None or isinstance(value, (int, str, bool, float)):
+            return value
+        if isinstance(value, (_ListStruct, _DictStruct)):
+            field_definition = value._field_definition
+            return serialize_val(field_definition, field_definition._name, value)
+        if isinstance(value, (enum.Enum,)):
+            return value.name
+        raise TypeError("serialize: Not a Structure or Field that with an obvious serialization. Got: {}."
+                        " Maybe try serialize_field() instead?".format(value))
+    return serialize_internal(value, mapper=mapper, compact=compact)

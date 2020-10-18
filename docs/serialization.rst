@@ -98,6 +98,7 @@ JSON representing only that field, using the "compact" flag. For example:
 
     foo = Foo(s=['abcde', 234])
     assert serialize(foo, compact=True)==['abcde', 234]
+    assert serialize(foo.s) == ['abcde', 234]
 
 Deserialization of a non-object JSON
 ====================================

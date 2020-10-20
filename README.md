@@ -1,6 +1,6 @@
 [![][travis img]][travis]
 [![][docs img]][docs]
-![coverage img]
+[![][coverage img]][coverage]
 
 [![][license img]][license]
 
@@ -56,6 +56,7 @@
 [license]:LICENSE.txt
 [license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
 
+[coverage]:coverage_html_report/index.html
 [coverage img]:coverage.svg
 
 [conda-forge]:https://anaconda.org/conda-forge/typedpy/

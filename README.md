@@ -1,6 +1,7 @@
 [![][travis img]][travis]
 [![][docs img]][docs]
 [![][coverage img]]
+
 [![][license img]][license]
 
 ##### Typedpy

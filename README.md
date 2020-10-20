@@ -8,11 +8,11 @@
 [![][pypi img]][pypi]
 
 
-##### Typedpy
+## Typedpy - Strict Type System for Python
 
 ``typedpy`` is a library for type-safe, strict, Python structures. It supports Python 3.6+.
 
-## Features
+### Features
 
 * Full featured, sophisticated, class-based type system
 

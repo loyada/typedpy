@@ -303,7 +303,6 @@ class Structure(metaclass=StructMeta):
             if name in self.__dict__
         }
 
-
     def __str__(self):
         def list_to_str(values):
             as_strings = [to_str(v) for v in values]

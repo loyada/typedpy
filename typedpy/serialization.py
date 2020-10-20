@@ -28,7 +28,8 @@ from typedpy.fields import (
     SerializableField,
     SizedCollection,
     wrap_val,
-    Function, _DictStruct,
+    Function,
+    _DictStruct,
 )
 
 
@@ -59,7 +60,7 @@ def deserialize_list_like(field, content_type, value, name):
             except (ValueError, TypeError) as e:
                 raise ValueError("{}_{}: {}".format(name, i, str(e)))
             values.append(res)
-        values += value[len(items):]
+        values += value[len(items) :]
     return content_type(values)
 
 
@@ -134,9 +135,9 @@ def deserialize_single_field(field, source_val, name, keep_undefined=True):
         field._validate(source_val)
         value = source_val
     elif (
-            isinstance(field, TypedField)
-            and getattr(field, "_ty", "") in {str, int, float}
-            and isinstance(source_val, getattr(field, "_ty", ""))
+        isinstance(field, TypedField)
+        and getattr(field, "_ty", "") in {str, int, float}
+        and isinstance(source_val, getattr(field, "_ty", ""))
     ):
         value = source_val
     elif isinstance(field, Array):
@@ -213,7 +214,7 @@ class FunctionCall(Structure):
 
 
 def deserialize_structure_internal(
-        cls, the_dict, name=None, *, mapper=None, keep_undefined=True
+    cls, the_dict, name=None, *, mapper=None, keep_undefined=True
 ):
     """
     Deserialize a dict to a Structure instance, Jackson style.
@@ -340,7 +341,7 @@ def get_processed_input(key, mapper, the_dict):
 
 def serialize_val(field_definition, name, val):
     if isinstance(field_definition, SerializableField) and isinstance(
-            field_definition, Field
+        field_definition, Field
     ):
         return field_definition.serialize(val)
     if isinstance(val, (int, str, bool, float)) or val is None:
@@ -352,8 +353,8 @@ def serialize_val(field_definition, name, val):
             if not isinstance(val, Mapping):
                 raise TypeError("{} Expected a Mapping", name)
             if (
-                    isinstance(field_definition.items, list)
-                    and len(field_definition.items) == 2
+                isinstance(field_definition.items, list)
+                and len(field_definition.items) == 2
             ):
                 key_type, value_type = field_definition.items
                 return {
@@ -452,10 +453,10 @@ def serialize_internal(structure, mapper=None, compact=False):
     fields = list(field_by_name.keys())
     additional_props = props.get("_additionalProperties", True)
     if (
-            len(fields) == 1
-            and props.get("_required", fields) == fields
-            and additional_props is False
-            and compact
+        len(fields) == 1
+        and props.get("_required", fields) == fields
+        and additional_props is False
+        and compact
     ):
         key = fields[0]
         result = serialize_val(
@@ -521,6 +522,8 @@ def serialize(value, *, mapper: Dict = None, compact=False):
             return serialize_val(field_definition, field_definition._name, value)
         if isinstance(value, (enum.Enum,)):
             return value.name
-        raise TypeError("serialize: Not a Structure or Field that with an obvious serialization. Got: {}."
-                        " Maybe try serialize_field() instead?".format(value))
+        raise TypeError(
+            "serialize: Not a Structure or Field that with an obvious serialization. Got: {}."
+            " Maybe try serialize_field() instead?".format(value)
+        )
     return serialize_internal(value, mapper=mapper, compact=compact)

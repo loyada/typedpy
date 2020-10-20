@@ -4,6 +4,10 @@
 
 [![][license img]][license]
 
+[![][conda-forge img]][conda-forge]
+[![][pypi img]][pypi]
+
+
 ##### Typedpy
 
 ``typedpy`` is a library for type-safe, strict, Python structures. It supports Python 3.6+.
@@ -53,3 +57,9 @@
 [license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
 
 [coverage img]:coverage.svg
+
+[conda-forge]:https://anaconda.org/conda-forge/typedpy/
+[conda-forge img]:https://anaconda.org/conda-forge/typedpy/badges/installer/conda.svg
+
+[pypi]:https://pypi.org/project/typedpy/
+[pypi img]:https://img.shields.io/pypi/v/typedpy.svg

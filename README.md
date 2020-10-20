@@ -1,6 +1,6 @@
 [![][travis img]][travis]
 [![][docs img]][docs]
-
+[![][coverage img]]
 [![][license img]][license]
 
 ##### Typedpy
@@ -50,3 +50,5 @@
 
 [license]:LICENSE.txt
 [license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
+
+[coverage img]:coverage.svg

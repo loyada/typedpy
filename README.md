@@ -1,6 +1,6 @@
 [![][travis img]][travis]
 [![][docs img]][docs]
-[![][coverage img]]
+![coverage img]
 
 [![][license img]][license]
 

@@ -68,9 +68,9 @@ class Deserializer(Structure):
                         )
                     )
 
-    def deserialize(self, input, keep_undefined=True):
+    def deserialize(self, input_data, keep_undefined=True):
         return deserialize_structure(
-            self.target_class, input, mapper=self.mapper, keep_undefined=keep_undefined
+            self.target_class, input_data, mapper=self.mapper, keep_undefined=keep_undefined
         )
 
 
@@ -129,25 +129,29 @@ class Serializer(Structure):
 
     def __validate__(self):
         source_class = self.source.__class__
+
+        def verify_key_in_mapper(key, valid_keys):
+            if key not in valid_keys:
+                raise ValueError(
+                    "Invalid key in mapper for class {}: {}. Keys must be one of the class fields.".format(
+                        source_class.__name__, key
+                    )
+                )
+            if isinstance(self.mapper[key], (FunctionCall,)):
+                args = self.mapper[key].args
+                if isinstance(args, (list,)):
+                    for arg in args:
+                        if arg not in valid_keys:
+                            raise ValueError(
+                                "Mapper[{}] has a function call with an invalid argument: {}".format(
+                                    key, arg
+                                )
+                            )
+
         valid_keys = set(_get_all_fields_by_name(source_class).keys())
         if self.mapper:
             for key in self.mapper:
-                if key not in valid_keys:
-                    raise ValueError(
-                        "Invalid key in mapper for class {}: {}. Keys must be one of the class fields.".format(
-                            source_class.__name__, key
-                        )
-                    )
-                if isinstance(self.mapper[key], (FunctionCall,)):
-                    args = self.mapper[key].args
-                    if isinstance(args, (list,)):
-                        for arg in args:
-                            if arg not in valid_keys:
-                                raise ValueError(
-                                    "Mapper[{}] has a function call with an invalid argument: {}".format(
-                                        key, arg
-                                    )
-                                )
+                verify_key_in_mapper(key, valid_keys)
 
     def serialize(self, compact=True):
         return serialize(self.source, mapper=self.mapper, compact=compact)

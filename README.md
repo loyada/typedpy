@@ -5,6 +5,8 @@
 [![][license img]][license]
 
 [![][conda-forge img]][conda-forge]
+![pylint img]
+
 [![][pypi img]][pypi]
 
 
@@ -58,6 +60,8 @@
 
 [coverage]:https://github.com/loyada/typedpy/blob/master/coverage.txt
 [coverage img]:coverage.svg
+
+[pylint img]:pylint.svg
 
 [conda-forge]:https://anaconda.org/conda-forge/typedpy/
 [conda-forge img]:https://anaconda.org/conda-forge/typedpy/badges/installer/conda.svg

@@ -1,12 +1,12 @@
 [![][travis img]][travis]
 [![][docs img]][docs]
 [![][coverage img]][coverage]
+![pylint img]
+
 
 [![][license img]][license]
 
 [![][conda-forge img]][conda-forge]
-![pylint img]
-
 [![][pypi img]][pypi]
 
 

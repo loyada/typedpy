@@ -127,10 +127,10 @@ class DateField(Field, SerializableField):
         if isinstance(value, str):
             as_date = datetime.strptime(value, self._date_format).date()
             super().__set__(instance, as_date)
-        elif isinstance(value, date):
-            super().__set__(instance, value)
         elif isinstance(value, datetime):
             super().__set__(instance, value.date())
+        elif isinstance(value, date):
+            super().__set__(instance, value)
         else:
             raise TypeError("{}: expected date, datetime, or str".format(self._name))
 

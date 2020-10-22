@@ -208,9 +208,10 @@ An example can demonstrate the usage:
 
 Custom mapping in the serialization
 ===================================
- Similarly, you can provide a mapper when serializing. This mapper is a bitsimpler though - for each attribute it allows \
-to provide either an alternative key, or a transformation function. It also does not support nested keys/attributes. \
-An example of changing keys names: \
+ Similarly, you can provide a mapper when serializing. This mapper is a bit different  -  to define
+ a nested mapping, it uses the key of the form "field-name._mapper". It supports nested fields as long as they are not
+in a Map.
+A simple example of changing the field name:
 
 .. code-block:: python
 
@@ -223,7 +224,7 @@ An example of changing keys names: \
     assert serialize(foo, mapper=mapper) == {'aaa': 'string', 'iii': 1}
 
 
-An example of transforming:
+An simple example of transformation:
 
 .. code-block:: python
 
@@ -240,6 +241,58 @@ An example of transforming:
     }
     assert serialize(foo, mapper=mapper) == {'function': 'my_func', 'i': 6}
 
+
+An example of nested mapping in an array field:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        a = String
+        i = Integer
+
+    class Bar(Structure):
+        wrapped = Array[Foo]
+
+    bar = Bar(wrapped=[Foo(a='string1', i=1), Foo(a='string2', i=2)])
+    mapper = {'wrapped._mapper': {'a': 'aaa', 'i': 'iii'}, 'wrapped': 'other'}
+    assert serialize(bar, mapper=mapper) ==
+           {'other': [{'aaa': 'string1', 'iii': 1}, {'aaa': 'string2', 'iii': 2}]}
+
+
+An example of a deep nested mapper:
+
+.. code-block:: python
+
+  class Foo(Structure):
+        a = String
+        i = Integer
+
+    class Bar(Structure):
+        foo = Foo
+        array = Array
+
+    class Example(Structure):
+        bar = Bar
+        number = Integer
+
+    example = Example(number=1,
+                      bar=Bar(foo=Foo(a="string", i=5), array=[1, 2])
+                      )
+    # our mapper doubles the value of the field  bar->foo->i
+    mapper = {'bar._mapper': {'foo._mapper': {"i": FunctionCall(func=lambda x: x * 2)}}}
+    serialized = serialize(example, mapper=mapper)
+    assert serialized == \
+           {
+               "number": 1,
+               "bar":
+                   {
+                       "foo": {
+                           "a": "string",
+                           "i": 10  #   result of mapping: 5*2
+                       },
+                       "array": [1, 2]
+                   }
+           }
 
 
 Strict Serialization and Deserialization API

@@ -70,7 +70,10 @@ class Deserializer(Structure):
 
     def deserialize(self, input_data, keep_undefined=True):
         return deserialize_structure(
-            self.target_class, input_data, mapper=self.mapper, keep_undefined=keep_undefined
+            self.target_class,
+            input_data,
+            mapper=self.mapper,
+            keep_undefined=keep_undefined,
         )
 
 
@@ -123,15 +126,13 @@ class Serializer(Structure):
     """
 
     source = Structure
-    mapper = Map[String, OneOf[String, FunctionCall]]
+    mapper = Map[String, OneOf[String, FunctionCall, Map]]
 
     _required = ["source"]
 
     def __validate__(self):
-        source_class = self.source.__class__
-
-        def verify_key_in_mapper(key, valid_keys):
-            if key not in valid_keys:
+        def verify_key_in_mapper(key, valid_keys, source_class):
+            if key.split(".")[0] not in valid_keys:
                 raise ValueError(
                     "Invalid key in mapper for class {}: {}. Keys must be one of the class fields.".format(
                         source_class.__name__, key
@@ -148,10 +149,11 @@ class Serializer(Structure):
                                 )
                             )
 
+        source_class = self.source.__class__
         valid_keys = set(_get_all_fields_by_name(source_class).keys())
         if self.mapper:
             for key in self.mapper:
-                verify_key_in_mapper(key, valid_keys)
+                verify_key_in_mapper(key, valid_keys, source_class)
 
     def serialize(self, compact=True):
         return serialize(self.source, mapper=self.mapper, compact=compact)

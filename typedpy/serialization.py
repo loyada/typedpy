@@ -339,7 +339,7 @@ def get_processed_input(key, mapper, the_dict):
     return processed_input
 
 
-def serialize_val(field_definition, name, val):
+def serialize_val(field_definition, name, val, mapper=None):
     if isinstance(field_definition, SerializableField) and isinstance(
         field_definition, Field
     ):
@@ -368,22 +368,25 @@ def serialize_val(field_definition, name, val):
                 }
         if isinstance(field_definition.items, list):
             return [
-                serialize_val(field_definition.items[ind], name, v)
+                serialize_val(field_definition.items[ind], name, v, mapper=mapper)
                 for ind, v in enumerate(val)
             ]
         elif isinstance(field_definition.items, Field):
-            return [serialize_val(field_definition.items, name, i) for i in val]
+            return [
+                serialize_val(field_definition.items, name, i, mapper=mapper)
+                for i in val
+            ]
         else:
-            return [serialize_val(None, name, i) for i in val]
+            return [serialize_val(None, name, i, mapper=mapper) for i in val]
     if isinstance(val, (list, set, tuple)):
         return [serialize_val(None, name, i) for i in val]
     if isinstance(field_definition, Anything):
         if isinstance(val, Structure):
-            return serialize(val)
+            return serialize(val, mapper=mapper)
         elif isinstance(val, Field):
-            return serialize_val(None, name, val)
+            return serialize_val(None, name, val, mapper=mapper)
     if isinstance(val, Structure) or isinstance(field_definition, Field):
-        return serialize_internal(val)
+        return serialize_internal(val, mapper=mapper)
     # nothing worked. Not a typedpy field. Last ditch effort.
     try:
         return json.loads(json.dumps(val))
@@ -477,8 +480,9 @@ def serialize_internal(structure, mapper=None, compact=False):
             the_field_definition = (
                 Anything if mapped_value else field_by_name.get(key, None)
             )
+            sub_mapper = mapper.get(f"{key}._mapper", {})
             result[mapped_key] = serialize_val(
-                the_field_definition, key, mapped_value or val
+                the_field_definition, key, mapped_value or val, mapper=sub_mapper
             )
     return result
 

@@ -270,6 +270,53 @@ def test_serialize_with_mapper_to_different_keys():
     assert serialize(foo, mapper=mapper) == {'aaa': 'string', 'iii': 1}
 
 
+def test_serialize_with_mapper_to_different_keys_in_array():
+    class Foo(Structure):
+        a = String
+        i = Integer
+
+    class Bar(Structure):
+        wrapped = Array[Foo]
+
+    bar = Bar(wrapped=[Foo(a='string1', i=1), Foo(a='string2', i=2)])
+    mapper = {'wrapped._mapper': {'a': 'aaa', 'i': 'iii'}, 'wrapped': 'other'}
+    serialized = serialize(bar, mapper=mapper)
+    assert serialized == \
+           {'other': [{'aaa': 'string1', 'iii': 1}, {'aaa': 'string2', 'iii': 2}]}
+
+
+def test_serialize_with_deep_mapper():
+    class Foo(Structure):
+        a = String
+        i = Integer
+
+    class Bar(Structure):
+        foo = Foo
+        array = Array
+
+    class Example(Structure):
+        bar = Bar
+        number = Integer
+
+    example = Example(number=1,
+                      bar=Bar(foo=Foo(a="string", i=5), array=[1, 2])
+                      )
+    mapper = {'bar._mapper': {'foo._mapper': {"i": FunctionCall(func=lambda x: x * 2)}}}
+    serialized = serialize(example, mapper=mapper)
+    assert serialized == \
+           {
+               "number": 1,
+               "bar":
+                   {
+                       "foo": {
+                           "a": "string",
+                           "i": 10
+                       },
+                       "array": [1, 2]
+                   }
+           }
+
+
 def test_serialize_with_mapper_with_functions():
     def my_func(): pass
 

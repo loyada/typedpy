@@ -1267,12 +1267,9 @@ class SerializableField(ABC):
     can override the method:
       serialize(self, value),
       deserialize(self, value)
-    """
 
-    def __serialize__(self, value):
-        if getattr(self, "__getstate__", None):
-            return self.__getstate__()
-        return self.serialize(value)
+    These methods are not being used for pickling.
+    """
 
     def serialize(self, value):
         return value

@@ -112,13 +112,13 @@ class Field:
         if getattr(self, "_immutable", False) and self._name in instance.__dict__:
             raise ValueError("{}: Field is immutable".format(self._name))
         if getattr(self, "_immutable", False) and not getattr(
-                self, "_custom_deep_copy_implementation", False
+            self, "_custom_deep_copy_implementation", False
         ):
             instance.__dict__[self._name] = deepcopy(value)
         else:
             instance.__dict__[self._name] = value
         if getattr(instance, "_instantiated", False) and not getattr(
-                instance, "_skip_validation", False
+            instance, "_skip_validation", False
         ):
             instance.__validate__()
 
@@ -167,7 +167,9 @@ def _get_all_fields_by_name(cls):
     all_classes = reversed([c for c in cls.mro() if isinstance(c, StructMeta)])
     all_fields_by_name = {}
     for the_class in all_classes:
-        field_by_name = {k: v for k, v in the_class.__dict__.items() if isinstance(v, Field)}
+        field_by_name = {
+            k: v for k, v in the_class.__dict__.items() if isinstance(v, Field)
+        }
         all_fields_by_name.update(field_by_name)
     return all_fields_by_name
 
@@ -185,12 +187,12 @@ class StructMeta(type):
         bases_params, bases_required = get_base_info(bases)
         for key, val in cls_dict.items():
             if (
-                    key not in {"_required", "_additionalProperties", "_immutable"}
-                    and not isinstance(val, Field)
-                    and (
+                key not in {"_required", "_additionalProperties", "_immutable"}
+                and not isinstance(val, Field)
+                and (
                     Field in getattr(val, "__mro__", [])
                     or is_function_returning_field(val)
-            )
+                )
             ):
                 cls_dict[key] = val()
         for key, val in cls_dict.items():
@@ -320,7 +322,7 @@ class Structure(metaclass=StructMeta):
 
         name = self.__class__.__name__
         if name.startswith("StructureReference_") and self.__class__.__bases__ == (
-                Structure,
+            Structure,
         ):
             name = "Structure"
         props = []
@@ -351,7 +353,7 @@ class Structure(metaclass=StructMeta):
 
     def __delitem__(self, key):
         if isinstance(getattr(self, "_required"), list) and key in getattr(
-                self, "_required"
+            self, "_required"
         ):
             raise ValueError("{} is mandatory".format(key))
         del self.__dict__[key]
@@ -396,9 +398,9 @@ class Structure(metaclass=StructMeta):
         required = props.get("_required", field_names)
         additional_props = props.get("_additionalProperties", True)
         if (
-                len(field_names) == 1
-                and required == field_names
-                and additional_props is False
+            len(field_names) == 1
+            and required == field_names
+            and additional_props is False
         ):
             return item in getattr(self, field_names[0], {})
 

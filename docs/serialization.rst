@@ -208,9 +208,9 @@ An example can demonstrate the usage:
 
 Custom mapping in the serialization
 ===================================
- Similarly, you can provide a mapper when serializing. This mapper is a bit different  -  to define
- a nested mapping, it uses the key of the form "field-name._mapper". It supports nested fields as long as they are not
-in a Map.
+ Similarly, you can provide a mapper when serializing. This mapper is a bit different  -  to define \
+a nested mapping, it uses the key of the form "field-name._mapper". It supports nested fields as long as they are not \
+in a Map. \
 A simple example of changing the field name:
 
 .. code-block:: python

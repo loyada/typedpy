@@ -61,7 +61,7 @@
 [coverage]:https://github.com/loyada/typedpy/blob/master/coverage.txt
 [coverage img]:coverage.svg
 
-[pylint img]:pylint.svg
+[pylint img]:https://htmlpreview.github.io/?https://github.com/loyada/typedpy/blob/master/pylint.svg
 
 [conda-forge]:https://anaconda.org/conda-forge/typedpy/
 [conda-forge img]:https://anaconda.org/conda-forge/typedpy/badges/installer/conda.svg

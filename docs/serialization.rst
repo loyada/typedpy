@@ -177,6 +177,8 @@ or a :class:`FunctionCall` (a function and a list of keys in the source dict tha
 
 * When the mapping is using a function call, the provided function is expected to return the value that will be used as the input of the deserialization.
 
+* To determine mapping for an embedded field/structure, use the notation: "<field name>._mapper". See example below.
+
 An example can demonstrate the usage:
 
 
@@ -204,6 +206,53 @@ An example can demonstrate the usage:
                                 keep_undefined=False)
     # keep_undefined=False ensures it does not also create attributes a, name, j in the deserialized instance
     assert foo == Foo(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')
+
+An example of mapping of a field item within a list:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        a = String
+        i = Integer
+
+    class Bar(Structure):
+        wrapped = Array[Foo]
+
+    mapper = {'wrapped._mapper': {'a': 'aaa', 'i': 'iii'}, 'wrapped': 'other'}
+    deserializer = Deserializer(target_class=Bar, mapper=mapper)
+    deserialized = deserializer.deserialize(
+        {
+            'other': [
+                {'aaa': 'string1', 'iii': 1},
+                {'aaa': 'string2', 'iii': 2}
+            ]
+        },
+        keep_undefined=False)
+
+    assert deserialized == Bar(wrapped=[Foo(a='string1', i=1), Foo(a='string2', i=2)])
+
+An example of nested mapping:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        a = String
+        i = Integer
+        s = StructureReference(st=String, arr=Array)
+
+    mapper = {
+        'a': 'aaa',
+        'i': 'iii',
+        's._mapper': {"arr": FunctionCall(func=lambda x: x * 3, args=['xxx'])}
+    }
+    deserializer = Deserializer(target_class=Foo, mapper=mapper)
+    deserialized = deserializer.deserialize({
+            'aaa': 'string',
+            'iii': 1,
+            's': {'st': 'string', 'xxx': [1, 2, 3]}},
+        keep_undefined=False)
+
+    assert deserialized == Foo(a='string', i=1, s={'st': 'string', 'arr': [1, 2, 3, 1, 2, 3, 1, 2, 3]})
 
 
 Custom mapping in the serialization

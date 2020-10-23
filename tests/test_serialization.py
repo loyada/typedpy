@@ -233,6 +233,16 @@ def test_serialize_with_map():
     assert serialize(foo.m) == original
 
 
+def test_serialize_with_anything_field():
+    class Foo(Structure):
+        m = Map[String, Anything]
+
+    original = {'a': [1, 2, 3], 'b': 1}
+
+    foo = Foo(m=original)
+    assert serialize(foo.m) == original
+
+
 def test_serialize_with_number(example, serialized_source):
     assert serialize(example.i) == serialized_source['i']
 
@@ -358,6 +368,15 @@ def test_serialize_with_mapper_with_function_with_args():
     assert serialize(foo, mapper=mapper) == {'f': [999], 'i': '5.5'}
 
 
+def test_serialize_invalid_mapper_type():
+    class Foo(Structure):
+        i = Integer
+
+    with raises(TypeError) as excinfo:
+        serialize(Foo(i=1), mapper=[1,2])
+    assert 'Mapper must be a mapping' in str(excinfo.value)
+
+
 def test_serialize_with_mapper_error():
     def my_func(): pass
 
@@ -478,3 +497,17 @@ def test_serialization_of_classreference_should_work():
     assert Serializer(source=foo.bar1).serialize() == {'x': 3, 'y': 4, 'z': 5}
     s = Serializer(source=foo.bar2)
     assert s.serialize() == None
+
+
+def test_serialize_enum_field_directly():
+    class Values(enum.Enum):
+        ABC = enum.auto()
+        DEF = enum.auto()
+        GHI = enum.auto()
+
+
+    class Foo(Structure):
+        arr = Array[Enum[Values]]
+
+    foo = Foo(arr=[Values.ABC, Values.DEF])
+    assert serialize(foo.arr[0]) == 'ABC'

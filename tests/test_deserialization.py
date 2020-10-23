@@ -266,7 +266,7 @@ def test_allof_wrong_value_err():
 
     with raises(ValueError) as excinfo:
         deserialize_structure(Foo, {'bar': 1})
-    assert "could not deserialize bar: value 1 did not match <Array>. reason: bar: must be an iterable; got 1" in str(
+    assert "could not deserialize bar: value 1 did not match <Array>. reason: bar: must be list, set, or tuple; got 1" in str(
         excinfo.value)
 
 
@@ -328,7 +328,7 @@ def test_invalid_type_for_array_err():
     }
     with raises(ValueError) as excinfo:
         deserialize_structure(Example, data)
-    assert "array: must be an iterable" in str(excinfo.value)
+    assert "array: must be list, set, or tuple" in str(excinfo.value)
 
 
 def test_array_has_simple_item_in_definition():
@@ -403,7 +403,7 @@ def test_multifield_with_diffrerent_types():
 
 def test_multifield_with_diffrerent_types_no_match():
     class Foo(Structure):
-        any = AnyOf[Map, Set, String]
+        any = AnyOf[Map, Set[String], String]
 
     with raises(ValueError) as excinfo:
         deserialize_structure(Foo, {'any': [1, 2, 3]})
@@ -538,7 +538,7 @@ def test_deserialize_set_err1():
     serialized = {'a': 3, 't': 4}
     with raises(ValueError) as excinfo:
         deserialize_structure(Foo, serialized)
-    assert "t: must be an iterable" in str(excinfo.value)
+    assert "t: must be list, set, or tuple" in str(excinfo.value)
 
 
 def test_deserialize_set_err2():
@@ -684,7 +684,7 @@ def test_mapper_variation_3():
     assert foo == Foo(i=6, m={'x': 1, 'y': 2}, s='the string is Joe')
 
 
-def test_mapper_error():
+def test_mapper_error1():
     class Foo(Structure):
         m = Map
         s = String
@@ -707,6 +707,24 @@ def test_mapper_error():
                               mapper=mapper,
                               keep_undefined=False)
     assert "s: Got {'first': 'Joe', 'last': 'smith'}; Expected a string" in str(excinfo.value)
+
+def test_mapper_error1():
+    class Foo(Structure):
+        m = Map
+        s = String
+
+    mapper = ['m']
+
+    with raises(TypeError) as excinfo:
+        deserialize_structure(Foo,
+                              {
+                                  'a': {'b': {'x': 1, 'y': 2}},
+                                  'name': {'first': 'Joe', 'last': 'smith'},
+                                  'i': 3,
+                                  'j': 4
+                              },
+                              mapper=mapper)
+    assert "Mapper must be a mapping" in str(excinfo.value)
 
 
 def test_bad_path_in_mapper():
@@ -785,6 +803,78 @@ def test_valid_deserializer():
     assert foo == Foo(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')
 
 
+def test_mapper_in_list():
+    class Foo(Structure):
+        a = String
+        i = Integer
+
+    class Bar(Structure):
+        wrapped = Array[Foo]
+
+    mapper = {'wrapped._mapper': {'a': 'aaa', 'i': 'iii'}, 'wrapped': 'other'}
+    deserializer = Deserializer(target_class=Bar, mapper=mapper)
+    deserialized = deserializer.deserialize(
+        {
+            'other': [
+                {'aaa': 'string1', 'iii': 1},
+                {'aaa': 'string2', 'iii': 2}
+            ]
+        },
+        keep_undefined=False)
+
+    assert deserialized == Bar(wrapped=[Foo(a='string1', i=1), Foo(a='string2', i=2)])
+
+
+def test_mapper_in_embedded_structure():
+    class Foo(Structure):
+        a = String
+        i = Integer
+        s = StructureReference(st=String, arr=Array)
+
+    mapper = {'a': 'aaa', 'i': 'iii', 's._mapper':
+        {"arr": FunctionCall(func=lambda x: x * 2, args=['xxx'])}}
+    deserializer = Deserializer(target_class=Foo, mapper=mapper)
+    deserialized = deserializer.deserialize(
+        {
+            'aaa': 'string',
+            'iii': 1,
+            's': {'st': 'string', 'xxx': [1, 2, 3]}},
+        keep_undefined=False)
+
+    assert deserialized == Foo(a='string', i=1, s={'st': 'string', 'arr': [1, 2, 3, 1, 2, 3]})
+
+
+def test_deserialize_with_deep_mapper():
+    class Foo(Structure):
+        a = String
+        i = Integer
+
+    class Bar(Structure):
+        foo = Foo
+        array = Array
+
+    class Example(Structure):
+        bar = Bar
+        number = Integer
+
+    mapper = {'bar._mapper': {'foo._mapper': {"i": FunctionCall(func=lambda x: x * 2)}}}
+    deserializer = Deserializer(target_class=Example, mapper=mapper)
+    deserialized = deserializer.deserialize(
+        {
+            "number": 1,
+            "bar":
+                {
+                    "foo": {
+                        "a": "string",
+                        "i": 10
+                    },
+                    "array": [1, 2]
+                }
+        },
+        keep_undefined=False)
+    assert deserialized == Example(number=1, bar=Bar(foo=Foo(a="string", i=20), array=[1, 2]))
+
+
 def test_deserializer_no_mapper():
     class Foo(Structure):
         m = Map
@@ -840,6 +930,6 @@ def test_undefined_attributes_in_embedded_field_should_be_deserialized_correctly
         a = Integer
         blah = Blah
 
-    input_dict = {'a': 3, 'blah': {'x': 3, 'y':4, 'z': 5}}
+    input_dict = {'a': 3, 'blah': {'x': 3, 'y': 4, 'z': 5}}
     bar = deserialize_structure(Foo, input_dict)
     assert bar.blah.z == 5

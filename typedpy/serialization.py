@@ -33,50 +33,66 @@ from typedpy.fields import (
 )
 
 
-def deserialize_list_like(field, content_type, value, name):
-    try:
-        iter(value)
-    except TypeError:
-        raise ValueError("{}: must be an iterable; got {}".format(name, value))
+def deserialize_list_like(
+    field, content_type, value, name, *, keep_undefined=True, mapper=None
+):
+    # try:
+    #    iter(value)
+    # except TypeError:
+    if not isinstance(value, (list, tuple, set)):
+        raise ValueError("{}: must be list, set, or tuple; got {}".format(name, value))
 
     values = []
     items = field.items
     if isinstance(items, Field):
-        list_items = []
         for i, v in enumerate(value):
             item_name = "{}_{}".format(name, i)
             try:
-                list_item = deserialize_single_field(items, v, item_name)
+                list_item = deserialize_single_field(
+                    items, v, item_name, keep_undefined=keep_undefined, mapper=mapper
+                )
             except (ValueError, TypeError) as e:
                 prefix = (
                     "" if str(e).startswith(item_name) else "{}: ".format(item_name)
                 )
                 raise ValueError("{}{}".format(prefix, str(e)))
             values.append(list_item)
-    else:
+    elif isinstance(items, (list, tuple)):
         for i, item in enumerate(items):
             try:
-                res = deserialize_single_field(item, value[i], name)
+                res = deserialize_single_field(
+                    item, value[i], name, keep_undefined=keep_undefined, mapper=mapper
+                )
             except (ValueError, TypeError) as e:
                 raise ValueError("{}_{}: {}".format(name, i, str(e)))
             values.append(res)
         values += value[len(items) :]
+    else:
+        values = value
     return content_type(values)
 
 
-def deserialize_array(array_field, value, name):
-    return deserialize_list_like(array_field, list, value, name)
+def deserialize_array(array_field, value, name, *, keep_undefined=True, mapper):
+    return deserialize_list_like(
+        array_field, list, value, name, keep_undefined=keep_undefined, mapper=mapper
+    )
 
 
-def deserialize_tuple(tuple_field, value, name):
-    return deserialize_list_like(tuple_field, tuple, value, name)
+def deserialize_tuple(tuple_field, value, name, *, keep_undefined=True, mapper):
+    return deserialize_list_like(
+        tuple_field, tuple, value, name, keep_undefined=keep_undefined, mapper=mapper
+    )
 
 
-def deserialize_set(set_field, value, name):
-    return deserialize_list_like(set_field, set, value, name)
+def deserialize_set(set_field, value, name, *, keep_undefined=True, mapper):
+    return deserialize_list_like(
+        set_field, set, value, name, keep_undefined=keep_undefined, mapper=mapper
+    )
 
 
-def deserialize_multifield_wrapper(field, source_val, name, keep_undefined=True):
+def deserialize_multifield_wrapper(
+    field, source_val, name, *, keep_undefined=True, mapper=None
+):
     """
     Only primitive values are supported, otherwise deserialization is ambiguous,
     since it can only be verified when the structure is instantiated
@@ -86,7 +102,11 @@ def deserialize_multifield_wrapper(field, source_val, name, keep_undefined=True)
     for field_option in field.get_fields():
         try:
             deserialized = deserialize_single_field(
-                field_option, source_val, name, keep_undefined=keep_undefined
+                field_option,
+                source_val,
+                name,
+                keep_undefined=keep_undefined,
+                mapper=mapper,
             )
             if isinstance(field, AnyOf):
                 return deserialized
@@ -130,7 +150,9 @@ def deserialize_map(map_field, source_val, name):
     return res
 
 
-def deserialize_single_field(field, source_val, name, keep_undefined=True):
+def deserialize_single_field(
+    field, source_val, name, *, mapper=None, keep_undefined=True
+):
     if isinstance(field, (Number, String, Enum, Boolean)):
         field._validate(source_val)
         value = source_val
@@ -141,22 +163,35 @@ def deserialize_single_field(field, source_val, name, keep_undefined=True):
     ):
         value = source_val
     elif isinstance(field, Array):
-        value = deserialize_array(field, source_val, name)
+        value = deserialize_array(
+            field, source_val, name, keep_undefined=keep_undefined, mapper=mapper
+        )
     elif isinstance(field, Tuple):
-        value = deserialize_tuple(field, source_val, name)
+        value = deserialize_tuple(
+            field, source_val, name, keep_undefined=keep_undefined, mapper=mapper
+        )
     elif isinstance(field, Set):
-        value = deserialize_set(field, source_val, name)
+        value = deserialize_set(
+            field, source_val, name, keep_undefined=keep_undefined, mapper=mapper
+        )
     elif isinstance(field, MultiFieldWrapper):
         value = deserialize_multifield_wrapper(
-            field, source_val, name, keep_undefined=keep_undefined
+            field, source_val, name, keep_undefined=keep_undefined, mapper=mapper
         )
     elif isinstance(field, ClassReference):
         value = deserialize_structure_internal(
-            getattr(field, "_ty"), source_val, name, keep_undefined=keep_undefined
+            getattr(field, "_ty"),
+            source_val,
+            name,
+            keep_undefined=keep_undefined,
+            mapper=mapper,
         )
     elif isinstance(field, StructureReference):
         value = deserialize_structure_reference(
-            getattr(field, "_newclass"), source_val, keep_undefined=keep_undefined
+            getattr(field, "_newclass"),
+            source_val,
+            keep_undefined=keep_undefined,
+            mapper=mapper,
         )
     elif isinstance(field, Map):
         value = deserialize_map(field, source_val, name)
@@ -173,14 +208,8 @@ def deserialize_single_field(field, source_val, name, keep_undefined=True):
     return value
 
 
-def deserialize_structure_reference(cls, the_dict: dict, keep_undefined):
-    field_by_name = dict(
-        [
-            (k, v)
-            for k, v in cls.__dict__.items()
-            if isinstance(v, Field) and k in the_dict
-        ]
-    )
+def deserialize_structure_reference(cls, the_dict: dict, *, keep_undefined, mapper):
+    field_by_name = {k: v for k, v in cls.__dict__.items() if isinstance(v, Field)}
     kwargs = dict(
         [
             (k, v)
@@ -189,10 +218,32 @@ def deserialize_structure_reference(cls, the_dict: dict, keep_undefined):
         ]
     )
 
-    for name, field in field_by_name.items():
-        kwargs[name] = deserialize_single_field(field, the_dict[name], name)
+    kwargs.update(construct_fields_map(field_by_name, keep_undefined, mapper, the_dict))
     cls(**kwargs)
     return kwargs
+
+
+def construct_fields_map(field_by_name, keep_undefined, mapper, the_dict):
+    result = {}
+    for key, field in field_by_name.items():
+        process = False
+        processed_input = None
+        if key in the_dict and key not in mapper:
+            processed_input = the_dict[key]
+            process = True
+        elif key in mapper:
+            processed_input = get_processed_input(key, mapper, the_dict)
+            process = True
+        if process:
+            sub_mapper = mapper.get(f"{key}._mapper", {})
+            result[key] = deserialize_single_field(
+                field,
+                processed_input,
+                key,
+                mapper=sub_mapper,
+                keep_undefined=keep_undefined,
+            )
+    return result
 
 
 class FunctionCall(Structure):
@@ -265,18 +316,7 @@ def deserialize_structure_internal(
             if k not in field_by_name and keep_undefined
         ]
     )
-    for key, field in field_by_name.items():
-        process = False
-        if key in the_dict and key not in mapper:
-            processed_input = the_dict[key]
-            process = True
-        elif key in mapper:
-            processed_input = get_processed_input(key, mapper, the_dict)
-            process = True
-        if process:
-            kwargs[key] = deserialize_single_field(
-                field, processed_input, key, keep_undefined=keep_undefined
-            )
+    kwargs.update(construct_fields_map(field_by_name, keep_undefined, mapper, the_dict))
 
     return cls(**kwargs)
 
@@ -317,25 +357,22 @@ def _deep_get(dictionary, deep_key):
 
 
 def get_processed_input(key, mapper, the_dict):
-    if key in mapper:
-        key_mapper = mapper[key]
-        if isinstance(key_mapper, (FunctionCall,)):
-            args = (
-                [_deep_get(the_dict, k) for k in key_mapper.args]
-                if key_mapper.args
-                else [the_dict.get(key)]
-            )
-            processed_input = key_mapper.func(*args)
-        elif isinstance(key_mapper, (str,)):
-            processed_input = _deep_get(the_dict, key_mapper)
-        else:
-            raise TypeError(
-                "mapper value must be a key in the input or a FunctionCal. Got {}".format(
-                    wrap_val(key_mapper)
-                )
-            )
+    key_mapper = mapper[key]
+    if isinstance(key_mapper, (FunctionCall,)):
+        args = (
+            [_deep_get(the_dict, k) for k in key_mapper.args]
+            if key_mapper.args
+            else [the_dict.get(key)]
+        )
+        processed_input = key_mapper.func(*args)
+    elif isinstance(key_mapper, (str,)):
+        processed_input = _deep_get(the_dict, key_mapper)
     else:
-        processed_input = the_dict[key]
+        raise TypeError(
+            "mapper value must be a key in the input or a FunctionCal. Got {}".format(
+                wrap_val(key_mapper)
+            )
+        )
     return processed_input
 
 
@@ -350,8 +387,6 @@ def serialize_val(field_definition, name, val, mapper=None):
         return val.name
     if isinstance(field_definition, SizedCollection):
         if isinstance(field_definition, Map):
-            if not isinstance(val, Mapping):
-                raise TypeError("{} Expected a Mapping", name)
             if (
                 isinstance(field_definition.items, list)
                 and len(field_definition.items) == 2
@@ -380,13 +415,11 @@ def serialize_val(field_definition, name, val, mapper=None):
             return [serialize_val(None, name, i, mapper=mapper) for i in val]
     if isinstance(val, (list, set, tuple)):
         return [serialize_val(None, name, i) for i in val]
-    if isinstance(field_definition, Anything):
-        if isinstance(val, Structure):
-            return serialize(val, mapper=mapper)
-        elif isinstance(val, Field):
-            return serialize_val(None, name, val, mapper=mapper)
+    if isinstance(field_definition, Anything) and isinstance(val, Structure):
+        return serialize(val, mapper=mapper)
     if isinstance(val, Structure) or isinstance(field_definition, Field):
         return serialize_internal(val, mapper=mapper)
+
     # nothing worked. Not a typedpy field. Last ditch effort.
     try:
         return json.loads(json.dumps(val))

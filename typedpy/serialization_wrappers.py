@@ -53,7 +53,7 @@ class Deserializer(Structure):
     """
 
     target_class = StructureClass
-    mapper = Map[String, OneOf[String, FunctionCall]]
+    mapper = Map[String, OneOf[String, FunctionCall, Map]]
 
     _required = ["target_class"]
 
@@ -61,7 +61,7 @@ class Deserializer(Structure):
         valid_keys = set(_get_all_fields_by_name(self.target_class).keys())
         if self.mapper:
             for key in self.mapper:
-                if key not in valid_keys:
+                if key.split(".")[0] not in valid_keys:
                     raise ValueError(
                         "Invalid key in mapper for class {}: {}. Keys must be one of the class fields.".format(
                             self.target_class.__name__, key

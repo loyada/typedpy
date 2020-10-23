@@ -59,7 +59,7 @@
 [license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
 
 [coverage]:https://github.com/loyada/typedpy/blob/master/coverage.txt
-[coverage img]:coverage.svg
+[coverage img]:https://raw.githubusercontent.com/loyada/typedpy/master/coverage.svg
 
 [pylint img]:https://raw.githubusercontent.com/loyada/typedpy/master/pylint.svg
 

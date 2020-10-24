@@ -20,7 +20,7 @@
 
 * Supports JSON schema draft4 features, including mapping schema-to-code and code-to-schema
 
-* Serialization, deserialization between JSON-like dict and class instance
+* Serialization, deserialization between JSON-like dict and typedpy objects, including costumes mapping. Support for pickling.
 
 * Easily extensible. [Wrapper of any class as a Field](https://github.com/loyada/typedpy/tree/master/tests/test_typed_field_creator.py)
 
@@ -32,7 +32,7 @@
 
 * [Immutable Structures/Fields](https://github.com/loyada/typedpy/tree/master/tests/test_immutable.py)
 
-* Clean Java-generics-like definitions, but more flexible. e.g.: Set[Integer], Map[String(maxLength=8), String]
+* Clean Java-generics-like definitions, but more flexible. e.g.: Set[AnyOf[Integer(minimum=10), Array]], Map[String(maxLength=8), String]
 
 * No dependencies on third-party libs
 

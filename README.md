@@ -1,7 +1,9 @@
 [![][travis img]][travis]
 [![][docs img]][docs]
+
 [![][coverage img]][coverage]
 [![][mutation img]][mutation]
+
 ![pylint img]
 
 

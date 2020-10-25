@@ -372,11 +372,7 @@ class _ListStruct(list):
         setattr(
             self._instance,
             getattr(self._field_definition, "_name", None),
-            _ListStruct(
-                array=self._field_definition,
-                struct_instance=self._instance,
-                mylist=copied,
-            ),
+            copied
         )
 
     def append(self, value):
@@ -385,11 +381,7 @@ class _ListStruct(list):
         setattr(
             self._instance,
             getattr(self._field_definition, "_name", None),
-            _ListStruct(
-                array=self._field_definition,
-                struct_instance=self._instance,
-                mylist=copied,
-            ),
+            copied
         )
         super().append(value)
 
@@ -400,11 +392,7 @@ class _ListStruct(list):
             setattr(
                 self._instance,
                 getattr(self._field_definition, "_name", None),
-                _ListStruct(
-                    array=self._field_definition,
-                    struct_instance=self._instance,
-                    mylist=copied,
-                ),
+                copied
             )
 
     def insert(self, index: int, value):
@@ -413,11 +401,7 @@ class _ListStruct(list):
         setattr(
             self._instance,
             getattr(self._field_definition, "_name", None),
-            _ListStruct(
-                array=self._field_definition,
-                struct_instance=self._instance,
-                mylist=copied,
-            ),
+            copied
         )
 
     def remove(self, ind):
@@ -426,11 +410,7 @@ class _ListStruct(list):
         setattr(
             self._instance,
             getattr(self._field_definition, "_name", None),
-            _ListStruct(
-                array=self._field_definition,
-                struct_instance=self._instance,
-                mylist=copied,
-            ),
+            copied
         )
 
     def pop(self, index: int = -1):
@@ -439,11 +419,7 @@ class _ListStruct(list):
         setattr(
             self._instance,
             getattr(self._field_definition, "_name", None),
-            _ListStruct(
-                array=self._field_definition,
-                struct_instance=self._instance,
-                mylist=copied,
-            ),
+            copied
         )
         return res
 
@@ -456,7 +432,10 @@ class _ListStruct(list):
 
     def __deepcopy__(self, memo={}):
         vals = [deepcopy(v) for v in self[:]]
-        return _ListStruct(array=deepcopy(self._field_definition), struct_instance=memo[id(self._instance)], mylist=vals)
+        return _ListStruct(
+            array=deepcopy(self._field_definition),
+            struct_instance=memo[id(self._instance)],
+            mylist=vals)
 
     def __setstate__(self, state):
         self._field_definition = state["the_array"]

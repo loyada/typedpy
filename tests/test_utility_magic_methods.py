@@ -84,6 +84,17 @@ def test_deepcopy_creates_new_instances_changing_embedded_values_in_array(rich_o
     assert source.anything == {'a', 'b', 'c'}
 
 
+def test_deepcopy_maintains_field_definiton_validations(rich_object_example):
+    source = rich_object_example
+    target = copy.deepcopy(source)
+    with raises(TypeError) as ex:
+        target.array[0] = "xyz"
+    assert "array_0: Expected <class 'int'>" in str(ex.value)
+    with raises(ValueError) as ex:
+        target.array.insert(0, 3)
+    assert "array_0: Got 3; Expected a a multiple of 5" in str(ex.value)
+
+
 def test_deepcopy_creates_new_instances_changing_embedded_values_in_map(rich_object_example):
     source = rich_object_example
     target = copy.deepcopy(source)

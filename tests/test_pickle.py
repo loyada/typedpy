@@ -43,7 +43,8 @@ def test_complex_pickle():
         date='191204',
         enum_arr=["ABC", "DEF", "ABC"])
     print(original.__getstate__())
-    unpickled = pickle.loads(pickle.dumps(original))
+    pickled = pickle.dumps(original)
+    unpickled = pickle.loads(pickled)
     assert unpickled == original
 
 

@@ -75,7 +75,12 @@ def test_deepcopy_creates_new_instances_changing_embedded_values_in_array(rich_o
     target = copy.deepcopy(source)
     target.people[0].name = 'jack'
     assert source.people[0].name == 'john'
+    assert target.people[0].name == 'jack'
+    target.array.append(5)
+    assert target.array == [10, 7, 5]
+    assert source.array == [10, 7]
     target.anything.add('x')
+    assert target.anything == {'a', 'b', 'c', 'x'}
     assert source.anything == {'a', 'b', 'c'}
 
 

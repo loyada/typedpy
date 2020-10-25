@@ -5,6 +5,7 @@ import enum
 import re
 from abc import ABC
 from collections import OrderedDict
+from copy import deepcopy
 from functools import reduce
 from decimal import Decimal, InvalidOperation
 
@@ -446,30 +447,16 @@ class _ListStruct(list):
         )
         return res
 
-    def __reduce__(self):
-        # This is a nasty hack to deal with the fact the deepcopy will call __setstate__() and after that
-        # iteratively append to the list to recreate a copy of the original list.
-        # Since __setstate__ already creates the list (used when unpickling), after the appending
-        # process we would end up with the list doubled.
-        # The root of the problem is that _ListStruct extends list, which is handled differently
-        # by deepcopy _reconstructor() function.
-        # Our hack checks if the construction function is from deepcopy. If it is - we  drop the
-        # state since deepcopy doesn't need it to create a copy.
-        res = super().__reduce__()
-        construction_func = res[0]
-        if (
-            construction_func.__module__ == "copyreg"
-            and construction_func.__name__ == "_reconstructor"
-        ):
-            return res[0], res[1]
-        return res
-
     def __getstate__(self):
         return {
             "the_instance": self._instance,
             "the_array": self._field_definition,
-            "the_values": super(),
+            "the_values": self[:],
         }
+
+    def __deepcopy__(self, memo={}):
+        vals = [deepcopy(v) for v in self[:]]
+        return _ListStruct(array=deepcopy(self._field_definition), struct_instance=memo[id(self._instance)], mylist=vals)
 
     def __setstate__(self, state):
         self._field_definition = state["the_array"]

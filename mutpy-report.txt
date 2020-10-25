@@ -1,0 +1,827 @@
+[*] Start mutation process:
+   - targets: typedpy
+   - tests: tests
+<Structure: Person. Properties: aaa = <String>, foo = <Structure. Properties: a = <String>, b = <Structure. Properties: c = <Number. Properties: minimum = 10>, d = <Number. Properties: maximum = 10>>>, name = <String. Properties: maxLength = 8, pattern = '[A-Za-z]+$'>, num = <Integer. Properties: exclusiveMaximum = False, maximum = 30, minimum = 10, multiplesOf = 'dd'>, ssid = <String. Properties: minLength = 3, pattern = '[A-Za-z]+$'>>
+fo
+<String. Properties: maxLength = 8, pattern = '[A-Za-z]+$'>
+<Instance of Person. Properties: foo = <Instance of Structure. Properties: a = 'aaa', b = <Instance of Structure. Properties: c = 15, d = 1>>, name = 'fo', num = 25, ssid = 'fff'>
+<Instance of Trade. Properties: category = 'a', children = [aa,8,2], person = <Instance of Person. Properties: foo = <Instance of Structure. Properties: a = 'aaa', b = <Instance of Structure. Properties: c = 15, d = 1>>, name = 'fo', num = 25, ssid = 'fff'>, price = 10.0, quantity = 'ddd', tradable = 'foo'>
+60
+{
+    "type": "object",
+    "properties": {
+        "i": {
+            "type": "integer",
+            "maximum": 10
+        },
+        "s": {
+            "type": "string",
+            "maxLength": 5
+        },
+        "a": {
+            "type": "array",
+            "items": [
+                {
+                    "type": "integer",
+                    "multiplesOf": 5
+                },
+                {
+                    "type": "number"
+                }
+            ]
+        },
+        "foo": {
+            "type": "object",
+            "properties": {
+                "a1": {
+                    "type": "integer"
+                },
+                "a2": {
+                    "type": "float"
+                }
+            },
+            "required": [
+                "a1",
+                "a2"
+            ],
+            "additionalProperties": true
+        },
+        "ss": {
+            "$ref": "#/definitions/SimpleStruct"
+        },
+        "all": {
+            "allOf": [
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "integer"
+                }
+            ]
+        },
+        "enum": {
+            "enum": [
+                1,
+                2,
+                3
+            ]
+        }
+    },
+    "required": [
+        "i",
+        "s",
+        "a",
+        "foo",
+        "ss",
+        "all",
+        "enum"
+    ],
+    "additionalProperties": true,
+    "definitions": {
+        "SimpleStruct": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "maxLength": 8,
+                    "pattern": "[A-Za-z]+$"
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "additionalProperties": true
+        }
+    }
+}
+
+**************************
+
+class SimpleStruct(Structure):
+    _required = ['name']
+    name = String(maxLength=8, pattern='[A-Za-z]+$')
+
+
+
+class Duba(Structure):
+    _required = ['i', 's', 'a', 'foo', 'ss', 'all', 'enum']
+    i = Integer(maximum=10)
+    s = String(maxLength=5)
+    a = Array(items=[Integer(multiplesOf=5), Number()])
+    foo = StructureReference(_required=['a1', 'a2'], a1=Integer(), a2=Float())
+    ss = SimpleStruct
+    all = AllOf(fields=[Number(), Integer()])
+    enum = Enum(values=[1, 2, 3])
+[*] 378 tests passed:
+   - test_Set [0.07004 s]
+   - test_inheritance [0.04193 s]
+   - test_decimal [0.04705 s]
+   - test_immutable [0.04108 s]
+   - test_integer [0.03335 s]
+   - test_serialization [0.07157 s]
+   - test_pickle [0.03936 s]
+   - test_typed_field_creator [0.03744 s]
+   - test_independent_field_declaration [0.03868 s]
+   - test_classreference [0.04268 s]
+   - test_sized [0.03437 s]
+   - test_string [0.05144 s]
+   - test_tuple [0.04260 s]
+   - test_higher_order [0.03685 s]
+   - test_Map [0.05727 s]
+   - test_extfields [0.03540 s]
+   - flaskutil [0.04416 s]
+   - test_example1_person [0.04628 s]
+   - test_enum [0.04021 s]
+   - test_deserialization [0.08052 s]
+   - test_simplified_representation [0.04276 s]
+   - test_array [0.06534 s]
+   - test_struct_to_schema [0.04161 s]
+   - test_utility_magic_methods [0.04954 s]
+   - test_jsonschema_draft4_style_reuse [0.05432 s]
+   - examples [0.03355 s]
+   - test_function [0.03735 s]
+   - test_schema_to_code [0.04418 s]
+[*] Start mutants generation and execution:
+   - [#   1] COD typedpy.extfields: [0.19644 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#   2] COI typedpy.extfields: [0.19385 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#   3] COI typedpy.extfields: [0.19521 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#   4] COI typedpy.extfields: [0.19463 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#   5] COI typedpy.extfields: [0.19505 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#   6] COI typedpy.extfields: [0.19338 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#   7] COI typedpy.extfields: [0.19473 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#   8] COI typedpy.extfields: [0.19489 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#   9] COI typedpy.extfields: [0.19508 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  10] EXS typedpy.extfields: [0.20976 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  11] EXS typedpy.extfields: [0.19843 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  12] IHD typedpy.extfields: [0.19898 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  13] IHD typedpy.extfields: [0.20162 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  14] IOD typedpy.extfields: [0.19908 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  15] IOD typedpy.extfields: [0.19680 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  16] IOD typedpy.extfields: [0.19636 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  17] IOD typedpy.extfields: [0.19876 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  18] IOD typedpy.extfields: [0.19687 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  19] IOD typedpy.extfields: [0.19465 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  20] IOD typedpy.extfields: [0.19989 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  21] IOD typedpy.extfields: [0.19549 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  22] IOD typedpy.extfields: [0.19403 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  23] IOD typedpy.extfields: [0.19806 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  24] IOD typedpy.extfields: [0.19628 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  25] IOD typedpy.extfields: [0.19869 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  26] IOD typedpy.extfields: [0.21273 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  27] IOD typedpy.extfields: [0.20669 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  28] IOP typedpy.extfields: [0.22453 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  29] IOP typedpy.extfields: [0.20275 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  30] IOP typedpy.extfields: [0.20248 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  31] IOP typedpy.extfields: [0.19924 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  32] IOP typedpy.extfields: [0.19864 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  33] IOP typedpy.extfields: [0.19403 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  34] IOP typedpy.extfields: [0.20711 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  35] LCR typedpy.extfields: [0.19883 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  36] ROR typedpy.extfields: [0.19717 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  37] ROR typedpy.extfields: [0.19787 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  38] ROR typedpy.extfields: [0.21102 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  39] ROR typedpy.extfields: [0.20435 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  40] ROR typedpy.extfields: [0.19663 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  41] ROR typedpy.extfields: [0.20063 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  42] SCD typedpy.extfields: [0.19720 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  43] SCD typedpy.extfields: [0.20009 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  44] SCD typedpy.extfields: [0.19656 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  45] SCD typedpy.extfields: [0.20050 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  46] SCD typedpy.extfields: [0.20087 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  47] SCD typedpy.extfields: [0.17814 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  48] SCD typedpy.extfields: [0.18146 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  49] SCI typedpy.extfields: [0.17498 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  50] SCI typedpy.extfields: [0.18450 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  51] SCI typedpy.extfields: [0.18424 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  52] SCI typedpy.extfields: [0.18579 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  53] SCI typedpy.extfields: [0.19989 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  54] SCI typedpy.extfields: [0.19644 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  55] SCI typedpy.extfields: [0.18786 s] killed by tests/test_struct_to_schema.py::test_datestring_field
+   - [#  56] AOD typedpy.fields: [0.18637 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  57] AOR typedpy.fields: [0.16083 s] incompetent
+   - [#  58] AOR typedpy.fields: [0.18419 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  59] AOR typedpy.fields: [0.18158 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  60] AOR typedpy.fields: [0.17853 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  61] AOR typedpy.fields: [0.18028 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  62] AOR typedpy.fields: [0.18842 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  63] AOR typedpy.fields: [0.18483 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  64] AOR typedpy.fields: [0.18743 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  65] AOR typedpy.fields: [0.16493 s] incompetent
+   - [#  66] AOR typedpy.fields: [0.17414 s] incompetent
+   - [#  67] AOR typedpy.fields: [0.19011 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  68] AOR typedpy.fields: [0.20230 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  69] AOR typedpy.fields: [0.18809 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  70] AOR typedpy.fields: [0.19283 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  71] AOR typedpy.fields: [0.19195 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  72] AOR typedpy.fields: [0.19611 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  73] ASR typedpy.fields: [0.18653 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  74] ASR typedpy.fields: [0.19579 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  75] ASR typedpy.fields: [0.19001 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  76] ASR typedpy.fields: [0.18865 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  77] BCR typedpy.fields: [0.18453 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  78] COD typedpy.fields: [0.17676 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  79] COD typedpy.fields: [0.18064 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  80] COD typedpy.fields: [0.18821 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  81] COD typedpy.fields: [0.18759 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  82] COD typedpy.fields: [0.18859 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  83] COD typedpy.fields: [0.17093 s] incompetent
+   - [#  84] COD typedpy.fields: [0.18832 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  85] COD typedpy.fields: [0.18825 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  86] COD typedpy.fields: [0.20301 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  87] COD typedpy.fields: [0.18445 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  88] COD typedpy.fields: [0.16470 s] incompetent
+   - [#  89] COD typedpy.fields: [0.16377 s] incompetent
+   - [#  90] COD typedpy.fields: [0.17588 s] incompetent
+   - [#  91] COD typedpy.fields: [0.19692 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  92] COD typedpy.fields: [0.19071 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  93] COD typedpy.fields: [0.19485 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  94] COD typedpy.fields: [0.20371 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  95] COD typedpy.fields: [0.20983 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  96] COD typedpy.fields: [0.19961 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  97] COD typedpy.fields: [0.20462 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  98] COD typedpy.fields: [0.19761 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [#  99] COI typedpy.fields: [0.18626 s] incompetent
+   - [# 100] COI typedpy.fields: [0.16570 s] incompetent
+   - [# 101] COI typedpy.fields: [0.17229 s] incompetent
+   - [# 102] COI typedpy.fields: [0.17278 s] incompetent
+   - [# 103] COI typedpy.fields: [0.17926 s] incompetent
+   - [# 104] COI typedpy.fields: [0.19670 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 105] COI typedpy.fields: [0.19050 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 106] COI typedpy.fields: [0.19750 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 107] COI typedpy.fields: [0.19604 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 108] COI typedpy.fields: [0.18885 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 109] COI typedpy.fields: [0.18847 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 110] COI typedpy.fields: [0.18988 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 111] COI typedpy.fields: [0.19453 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 112] COI typedpy.fields: [0.19340 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 113] COI typedpy.fields: [0.17284 s] incompetent
+   - [# 114] COI typedpy.fields: [0.18020 s] incompetent
+   - [# 115] COI typedpy.fields: [0.18363 s] killed by tests/test_utility_magic_methods.py::test_contains_supported
+   - [# 116] COI typedpy.fields: [0.17432 s] killed by tests/test_utility_magic_methods.py::test_contains_supported
+   - [# 117] COI typedpy.fields: [0.17484 s] killed by tests/test_utility_magic_methods.py::test_contains_supported
+   - [# 118] COI typedpy.fields: [0.19335 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 119] COI typedpy.fields: [0.19149 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 120] COI typedpy.fields: [0.18930 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 121] COI typedpy.fields: [0.19530 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 122] COI typedpy.fields: [0.16474 s] killed by tests/test_simplified_representation.py::test_class_definition_err1
+   - [# 123] COI typedpy.fields: [0.16323 s] incompetent
+   - [# 124] COI typedpy.fields: [0.16365 s] incompetent
+   - [# 125] COI typedpy.fields: [0.16667 s] incompetent
+   - [# 126] COI typedpy.fields: [0.16787 s] incompetent
+   - [# 127] COI typedpy.fields: [0.16957 s] killed by tests/test_simplified_representation.py::test_class_definition_err1
+   - [# 128] COI typedpy.fields: [0.17021 s] incompetent
+   - [# 129] COI typedpy.fields: [0.19954 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 130] COI typedpy.fields: [0.19116 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 131] COI typedpy.fields: [0.19041 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 132] COI typedpy.fields: [0.18958 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 133] COI typedpy.fields: [0.18974 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 134] COI typedpy.fields: [0.18987 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 135] COI typedpy.fields: [0.18981 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 136] COI typedpy.fields: [0.18973 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 137] COI typedpy.fields: [0.17952 s] killed by tests/test_utility_magic_methods.py::test_contains_supported
+   - [# 138] COI typedpy.fields: [0.19745 s] killed by tests/test_utility_magic_methods.py::test_contains_supported
+   - [# 139] COI typedpy.fields: [0.21514 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 140] COI typedpy.fields: [0.20832 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 141] COI typedpy.fields: [0.19221 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 142] COI typedpy.fields: [0.17226 s] incompetent
+   - [# 143] COI typedpy.fields: [0.18018 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 144] COI typedpy.fields: [0.15469 s] incompetent
+   - [# 145] COI typedpy.fields: [0.16196 s] incompetent
+   - [# 146] COI typedpy.fields: [0.17775 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 147] COI typedpy.fields: [0.16685 s] incompetent
+   - [# 148] COI typedpy.fields: [0.18778 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 149] COI typedpy.fields: [0.18370 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 150] COI typedpy.fields: [0.21106 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 151] COI typedpy.fields: [0.20441 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 152] COI typedpy.fields: [0.20275 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 153] COI typedpy.fields: [0.20362 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 154] COI typedpy.fields: [0.20572 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 155] COI typedpy.fields: [0.20977 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 156] COI typedpy.fields: [0.20652 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 157] COI typedpy.fields: [0.20815 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 158] COI typedpy.fields: [0.20568 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 159] COI typedpy.fields: [0.20912 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 160] COI typedpy.fields: [0.20851 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 161] COI typedpy.fields: [0.20931 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 162] COI typedpy.fields: [0.20804 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 163] COI typedpy.fields: [0.20880 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 164] COI typedpy.fields: [0.20569 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 165] COI typedpy.fields: [0.20701 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 166] COI typedpy.fields: [0.22163 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 167] COI typedpy.fields: [0.22566 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 168] COI typedpy.fields: [0.22026 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 169] COI typedpy.fields: [0.27358 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 170] COI typedpy.fields: [0.26977 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 171] COI typedpy.fields: [0.23795 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 172] COI typedpy.fields: [0.22323 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 173] COI typedpy.fields: [0.20866 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 174] COI typedpy.fields: [0.20734 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 175] COI typedpy.fields: [0.20574 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 176] COI typedpy.fields: [0.20692 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 177] DDL typedpy.fields: [0.22110 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 178] DDL typedpy.fields: [0.20789 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 179] EHD typedpy.fields: [0.17720 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 180] EHD typedpy.fields: [0.17870 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 181] EHD typedpy.fields: [0.18003 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 182] EHD typedpy.fields: [0.18311 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 183] EHD typedpy.fields: [0.18215 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 184] EHD typedpy.fields: [0.18828 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 185] EXS typedpy.fields: [0.18368 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 186] EXS typedpy.fields: [0.18179 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 187] IHD typedpy.fields: [0.18383 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 188] IHD typedpy.fields: [0.19030 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 189] IHD typedpy.fields: [0.19408 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 190] IHD typedpy.fields: [0.18284 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 191] IHD typedpy.fields: [0.18712 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 192] IHD typedpy.fields: [0.18393 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 193] IHD typedpy.fields: [0.19083 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 194] IHD typedpy.fields: [0.18137 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 195] IHD typedpy.fields: [0.18011 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 196] IHD typedpy.fields: [0.18314 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 197] IOD typedpy.fields: [0.15922 s] incompetent
+   - [# 198] IOD typedpy.fields: [0.18150 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 199] IOD typedpy.fields: [0.18133 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 200] IOD typedpy.fields: [0.18291 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 201] IOD typedpy.fields: [0.16738 s] incompetent
+   - [# 202] IOD typedpy.fields: [0.18734 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 203] IOD typedpy.fields: [0.19523 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 204] IOD typedpy.fields: [0.19022 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 205] IOD typedpy.fields: [0.17509 s] killed by tests/test_utility_magic_methods.py::test_contains_supported
+   - [# 206] IOD typedpy.fields: [0.18988 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 207] IOD typedpy.fields: [0.18960 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 208] IOD typedpy.fields: [0.19630 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 209] IOD typedpy.fields: [0.19186 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 210] IOD typedpy.fields: [0.19106 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 211] IOD typedpy.fields: [0.18387 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 212] IOD typedpy.fields: [0.18679 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 213] IOD typedpy.fields: [0.18530 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 214] IOD typedpy.fields: [0.18461 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 215] IOD typedpy.fields: [0.18464 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 216] IOD typedpy.fields: [0.18294 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 217] IOD typedpy.fields: [0.18212 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 218] IOD typedpy.fields: [0.16651 s] incompetent
+   - [# 219] IOD typedpy.fields: [0.18982 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 220] IOD typedpy.fields: [0.18759 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 221] IOD typedpy.fields: [0.18822 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 222] IOD typedpy.fields: [0.18372 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 223] IOD typedpy.fields: [0.18207 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 224] IOD typedpy.fields: [0.16266 s] incompetent
+   - [# 225] IOD typedpy.fields: [0.18851 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 226] IOD typedpy.fields: [0.16503 s] killed by tests/test_simplified_representation.py::test_class_definition_err2
+   - [# 227] IOD typedpy.fields: [0.18294 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 228] IOD typedpy.fields: [0.18263 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 229] IOD typedpy.fields: [0.18390 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 230] IOD typedpy.fields: [0.18659 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 231] IOD typedpy.fields: [0.19592 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 232] IOD typedpy.fields: [0.20637 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 233] IOD typedpy.fields: [0.22515 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 234] IOD typedpy.fields: [0.19792 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 235] IOD typedpy.fields: [0.20289 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 236] IOD typedpy.fields: [0.20464 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 237] IOD typedpy.fields: [0.19711 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 238] IOD typedpy.fields: [0.19367 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 239] IOD typedpy.fields: [0.19706 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 240] IOD typedpy.fields: [0.18106 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 241] IOD typedpy.fields: [0.18704 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 242] IOD typedpy.fields: [0.19297 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 243] IOD typedpy.fields: [0.19280 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 244] IOD typedpy.fields: [0.19364 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 245] IOD typedpy.fields: [0.19932 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 246] IOD typedpy.fields: [0.19569 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 247] IOD typedpy.fields: [0.19533 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 248] IOP typedpy.fields: [0.19967 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 249] IOP typedpy.fields: [0.19428 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 250] IOP typedpy.fields: [0.19362 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 251] IOP typedpy.fields: [0.19166 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 252] IOP typedpy.fields: [0.19334 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 253] IOP typedpy.fields: [0.19537 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 254] IOP typedpy.fields: [0.19239 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 255] IOP typedpy.fields: [0.19466 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 256] IOP typedpy.fields: [0.19745 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 257] IOP typedpy.fields: [0.19424 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 258] IOP typedpy.fields: [0.20234 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 259] IOP typedpy.fields: [0.20223 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 260] IOP typedpy.fields: [0.19364 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 261] IOP typedpy.fields: [0.19474 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 262] IOP typedpy.fields: [0.19893 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 263] IOP typedpy.fields: [0.19807 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 264] IOP typedpy.fields: [0.19300 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 265] IOP typedpy.fields: [0.19040 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 266] IOP typedpy.fields: [0.19753 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 267] IOP typedpy.fields: [0.19859 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 268] IOP typedpy.fields: [0.19352 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 269] IOP typedpy.fields: [0.20009 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 270] IOP typedpy.fields: [0.22268 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 271] IOP typedpy.fields: [0.21166 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 272] IOP typedpy.fields: [0.21698 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 273] IOP typedpy.fields: [0.21969 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 274] IOP typedpy.fields: [0.20160 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 275] IOP typedpy.fields: [0.20841 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 276] IOP typedpy.fields: [0.20049 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 277] IOP typedpy.fields: [0.19919 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 278] IOP typedpy.fields: [0.19524 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 279] IOP typedpy.fields: [0.20297 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 280] IOP typedpy.fields: [0.20163 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 281] IOP typedpy.fields: [0.19940 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 282] LCR typedpy.fields: [0.17671 s] incompetent
+   - [# 283] LCR typedpy.fields: [0.19705 s] incompetent
+   - [# 284] LCR typedpy.fields: [0.20832 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 285] LCR typedpy.fields: [0.22597 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 286] LCR typedpy.fields: [0.20535 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 287] LCR typedpy.fields: [0.20986 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 288] LCR typedpy.fields: [0.20369 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 289] LCR typedpy.fields: [0.19800 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 290] LCR typedpy.fields: [0.18397 s] incompetent
+   - [# 291] LCR typedpy.fields: [0.18311 s] incompetent
+   - [# 292] LCR typedpy.fields: [0.18667 s] killed by tests/test_utility_magic_methods.py::test_contains_supported
+   - [# 293] LCR typedpy.fields: [0.19916 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 294] LCR typedpy.fields: [0.19639 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 295] LCR typedpy.fields: [0.17921 s] incompetent
+   - [# 296] LCR typedpy.fields: [0.17911 s] incompetent
+   - [# 297] LCR typedpy.fields: [0.20686 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 298] LCR typedpy.fields: [0.18243 s] incompetent
+   - [# 299] LCR typedpy.fields: [0.19930 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 300] LCR typedpy.fields: [0.17374 s] incompetent
+   - [# 301] LCR typedpy.fields: [0.20284 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 302] LCR typedpy.fields: [0.19850 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 303] LCR typedpy.fields: [0.19872 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 304] LCR typedpy.fields: [0.19842 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 305] LCR typedpy.fields: [0.19781 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 306] LCR typedpy.fields: [0.19792 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 307] LCR typedpy.fields: [0.20313 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 308] ROR typedpy.fields: [0.19585 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 309] ROR typedpy.fields: [0.19634 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 310] ROR typedpy.fields: [0.19691 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 311] ROR typedpy.fields: [0.19861 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 312] ROR typedpy.fields: [0.19913 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 313] ROR typedpy.fields: [0.19426 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 314] ROR typedpy.fields: [0.19796 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 315] ROR typedpy.fields: [0.20278 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 316] ROR typedpy.fields: [0.20743 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 317] ROR typedpy.fields: [0.20178 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 318] ROR typedpy.fields: [0.20088 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 319] ROR typedpy.fields: [0.20032 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 320] ROR typedpy.fields: [0.19866 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 321] ROR typedpy.fields: [0.22329 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 322] ROR typedpy.fields: [0.20977 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 323] ROR typedpy.fields: [0.20972 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 324] ROR typedpy.fields: [0.20701 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 325] ROR typedpy.fields: [0.20605 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 326] ROR typedpy.fields: [0.20019 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 327] ROR typedpy.fields: [0.17249 s] incompetent
+   - [# 328] ROR typedpy.fields: [0.19918 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 329] ROR typedpy.fields: [0.20908 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 330] ROR typedpy.fields: [0.20795 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 331] ROR typedpy.fields: [0.20071 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 332] ROR typedpy.fields: [0.20396 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 333] ROR typedpy.fields: [0.19956 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 334] ROR typedpy.fields: [0.20170 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 335] ROR typedpy.fields: [0.20178 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 336] ROR typedpy.fields: [0.19990 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 337] ROR typedpy.fields: [0.20149 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 338] ROR typedpy.fields: [0.19955 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 339] ROR typedpy.fields: [0.19745 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 340] ROR typedpy.fields: [0.19827 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 341] ROR typedpy.fields: [0.20791 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 342] ROR typedpy.fields: [0.20349 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 343] ROR typedpy.fields: [0.20059 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 344] ROR typedpy.fields: [0.20637 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 345] SCD typedpy.fields: [0.19692 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 346] SCD typedpy.fields: [0.19863 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 347] SCD typedpy.fields: [0.20385 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 348] SCD typedpy.fields: [0.19803 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 349] SCD typedpy.fields: [0.19870 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 350] SCD typedpy.fields: [0.19762 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 351] SCD typedpy.fields: [0.19668 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 352] SCD typedpy.fields: [0.18013 s] killed by tests/test_utility_magic_methods.py::test_contains_supported
+   - [# 353] SCD typedpy.fields: [0.19732 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 354] SCD typedpy.fields: [0.19751 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 355] SCD typedpy.fields: [0.20236 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 356] SCD typedpy.fields: [0.20601 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 357] SCD typedpy.fields: [0.21272 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 358] SCD typedpy.fields: [0.16814 s] killed by tests/test_utility_magic_methods.py::test_contains_supported
+   - [# 359] SCD typedpy.fields: [0.19882 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 360] SCD typedpy.fields: [0.19630 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 361] SCD typedpy.fields: [0.19715 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 362] SCD typedpy.fields: [0.19701 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 363] SCD typedpy.fields: [0.17977 s] killed by tests/test_utility_magic_methods.py::test_contains_supported
+   - [# 364] SCD typedpy.fields: [0.17515 s] incompetent
+   - [# 365] SCD typedpy.fields: [0.19812 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 366] SCD typedpy.fields: [0.19807 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 367] SCD typedpy.fields: [0.19767 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 368] SCD typedpy.fields: [0.22889 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 369] SCD typedpy.fields: [0.22448 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 370] SCD typedpy.fields: [0.22347 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 371] SCD typedpy.fields: [0.22375 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 372] SCD typedpy.fields: [0.20078 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 373] SCD typedpy.fields: [0.20205 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 374] SCD typedpy.fields: [0.20654 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 375] SCD typedpy.fields: [0.20088 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 376] SCD typedpy.fields: [0.19259 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 377] SCD typedpy.fields: [0.19599 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 378] SCD typedpy.fields: [0.19746 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 379] SCD typedpy.fields: [0.19659 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 380] SCD typedpy.fields: [0.19622 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 381] SCD typedpy.fields: [0.19755 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 382] SCD typedpy.fields: [0.19498 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 383] SCI typedpy.fields: [0.19668 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 384] SCI typedpy.fields: [0.22312 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 385] SCI typedpy.fields: [0.22020 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 386] SCI typedpy.fields: [0.19305 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 387] SCI typedpy.fields: [0.19350 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 388] SCI typedpy.fields: [0.19647 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 389] SCI typedpy.fields: [0.19346 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 390] SCI typedpy.fields: [0.19466 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 391] SCI typedpy.fields: [0.21996 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 392] SCI typedpy.fields: [0.22206 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 393] SCI typedpy.fields: [0.21859 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 394] SCI typedpy.fields: [0.22288 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 395] SCI typedpy.fields: [0.21993 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 396] SCI typedpy.fields: [0.22365 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 397] SCI typedpy.fields: [0.22203 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 398] SIR typedpy.fields: [0.22045 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 399] SIR typedpy.fields: [0.22077 s] killed by tests/test_struct_to_schema.py::test_array_no_items_definition
+   - [# 400] ASR typedpy.json_schema_mapping: [0.20193 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 401] ASR typedpy.json_schema_mapping: [0.20341 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 402] ASR typedpy.json_schema_mapping: [0.21079 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 403] ASR typedpy.json_schema_mapping: [0.22049 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 404] ASR typedpy.json_schema_mapping: [0.19810 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 405] ASR typedpy.json_schema_mapping: [0.21526 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 406] ASR typedpy.json_schema_mapping: [0.20004 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 407] ASR typedpy.json_schema_mapping: [0.21111 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 408] COD typedpy.json_schema_mapping: [0.21938 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 409] COD typedpy.json_schema_mapping: [0.21712 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 410] COI typedpy.json_schema_mapping: [0.21768 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 411] COI typedpy.json_schema_mapping: [0.23927 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 412] COI typedpy.json_schema_mapping: [0.22730 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 413] COI typedpy.json_schema_mapping: [0.21082 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 414] COI typedpy.json_schema_mapping: [0.19853 s] incompetent
+   - [# 415] COI typedpy.json_schema_mapping: [0.19870 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 416] COI typedpy.json_schema_mapping: [0.20719 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 417] COI typedpy.json_schema_mapping: [0.23030 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 418] COI typedpy.json_schema_mapping: [0.21988 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 419] COI typedpy.json_schema_mapping: [0.22159 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 420] COI typedpy.json_schema_mapping: [0.22015 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 421] COI typedpy.json_schema_mapping: [0.21635 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 422] COI typedpy.json_schema_mapping: [0.20087 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 423] COI typedpy.json_schema_mapping: [0.20179 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 424] COI typedpy.json_schema_mapping: [0.20303 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 425] COI typedpy.json_schema_mapping: [0.19858 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 426] COI typedpy.json_schema_mapping: [0.19855 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 427] COI typedpy.json_schema_mapping: [0.19912 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 428] COI typedpy.json_schema_mapping: [0.19835 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 429] COI typedpy.json_schema_mapping: [0.19829 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 430] COI typedpy.json_schema_mapping: [0.19841 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 431] DDL typedpy.json_schema_mapping: [0.16645 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 432] DDL typedpy.json_schema_mapping: [0.16991 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 433] DDL typedpy.json_schema_mapping: [0.16968 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 434] DDL typedpy.json_schema_mapping: [0.16965 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 435] DDL typedpy.json_schema_mapping: [0.17190 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 436] DDL typedpy.json_schema_mapping: [0.17020 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 437] DDL typedpy.json_schema_mapping: [0.17125 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 438] IOD typedpy.json_schema_mapping: [0.16767 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 439] IOD typedpy.json_schema_mapping: [0.16846 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 440] LCR typedpy.json_schema_mapping: [0.16643 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 441] LCR typedpy.json_schema_mapping: [0.16726 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 442] ROR typedpy.json_schema_mapping: [0.16609 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 443] ROR typedpy.json_schema_mapping: [0.16803 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 444] ROR typedpy.json_schema_mapping: [0.16939 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 445] ROR typedpy.json_schema_mapping: [0.16901 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 446] SCI typedpy.json_schema_mapping: [0.16680 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 447] SCI typedpy.json_schema_mapping: [0.17128 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 448] SIR typedpy.json_schema_mapping: [0.16817 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 449] ASR typedpy.serialization: [0.16490 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 450] BCR typedpy.serialization: [0.16510 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 451] COD typedpy.serialization: [0.16820 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 452] COD typedpy.serialization: [0.16768 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 453] COD typedpy.serialization: [0.16770 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 454] COD typedpy.serialization: [0.16907 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 455] COD typedpy.serialization: [0.16909 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 456] COD typedpy.serialization: [0.16931 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 457] COD typedpy.serialization: [0.16811 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 458] COD typedpy.serialization: [0.16856 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 459] COD typedpy.serialization: [0.16836 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 460] COD typedpy.serialization: [0.16881 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 461] COI typedpy.serialization: [0.16888 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 462] COI typedpy.serialization: [0.16819 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 463] COI typedpy.serialization: [0.16837 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 464] COI typedpy.serialization: [0.16761 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 465] COI typedpy.serialization: [0.16871 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 466] COI typedpy.serialization: [0.16769 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 467] COI typedpy.serialization: [0.16850 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 468] COI typedpy.serialization: [0.16796 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 469] COI typedpy.serialization: [0.16746 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 470] COI typedpy.serialization: [0.16753 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 471] COI typedpy.serialization: [0.17034 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 472] COI typedpy.serialization: [0.18280 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 473] COI typedpy.serialization: [0.16931 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 474] COI typedpy.serialization: [0.17020 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 475] COI typedpy.serialization: [0.16836 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 476] COI typedpy.serialization: [0.16833 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 477] COI typedpy.serialization: [0.16887 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 478] COI typedpy.serialization: [0.16836 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 479] COI typedpy.serialization: [0.16803 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 480] COI typedpy.serialization: [0.16894 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 481] COI typedpy.serialization: [0.16872 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 482] COI typedpy.serialization: [0.16785 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 483] COI typedpy.serialization: [0.16824 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 484] COI typedpy.serialization: [0.16773 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 485] COI typedpy.serialization: [0.16845 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 486] COI typedpy.serialization: [0.16849 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 487] COI typedpy.serialization: [0.16840 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 488] COI typedpy.serialization: [0.16883 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 489] COI typedpy.serialization: [0.16781 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 490] COI typedpy.serialization: [0.16722 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 491] COI typedpy.serialization: [0.16714 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 492] COI typedpy.serialization: [0.16793 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 493] COI typedpy.serialization: [0.16770 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 494] COI typedpy.serialization: [0.16867 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 495] COI typedpy.serialization: [0.16832 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 496] COI typedpy.serialization: [0.16862 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 497] COI typedpy.serialization: [0.16764 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 498] COI typedpy.serialization: [0.16808 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 499] COI typedpy.serialization: [0.16788 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 500] COI typedpy.serialization: [0.16806 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 501] COI typedpy.serialization: [0.16913 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 502] COI typedpy.serialization: [0.16810 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 503] COI typedpy.serialization: [0.17203 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 504] COI typedpy.serialization: [0.16771 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 505] COI typedpy.serialization: [0.16941 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 506] COI typedpy.serialization: [0.16830 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 507] COI typedpy.serialization: [0.16830 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 508] COI typedpy.serialization: [0.16837 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 509] COI typedpy.serialization: [0.16793 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 510] COI typedpy.serialization: [0.16830 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 511] COI typedpy.serialization: [0.16814 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 512] COI typedpy.serialization: [0.16766 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 513] COI typedpy.serialization: [0.16829 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 514] COI typedpy.serialization: [0.16831 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 515] COI typedpy.serialization: [0.16843 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 516] COI typedpy.serialization: [0.16758 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 517] COI typedpy.serialization: [0.16893 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 518] EHD typedpy.serialization: [0.16474 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 519] EHD typedpy.serialization: [0.16721 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 520] EXS typedpy.serialization: [0.16668 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 521] EXS typedpy.serialization: [0.16859 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 522] EXS typedpy.serialization: [0.16819 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 523] EXS typedpy.serialization: [0.16725 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 524] LCR typedpy.serialization: [0.16465 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 525] LCR typedpy.serialization: [0.16865 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 526] LCR typedpy.serialization: [0.16802 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 527] LCR typedpy.serialization: [0.16865 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 528] LCR typedpy.serialization: [0.16888 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 529] LCR typedpy.serialization: [0.16833 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 530] LCR typedpy.serialization: [0.16926 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 531] LCR typedpy.serialization: [0.16908 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 532] LCR typedpy.serialization: [0.16952 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 533] LCR typedpy.serialization: [0.16905 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 534] LCR typedpy.serialization: [0.16790 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 535] LCR typedpy.serialization: [0.16923 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 536] LCR typedpy.serialization: [0.16858 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 537] LCR typedpy.serialization: [0.16778 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 538] LCR typedpy.serialization: [0.16842 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 539] LCR typedpy.serialization: [0.16798 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 540] ROR typedpy.serialization: [0.16462 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 541] ROR typedpy.serialization: [0.16805 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 542] ROR typedpy.serialization: [0.16845 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 543] ROR typedpy.serialization: [0.16817 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 544] ROR typedpy.serialization: [0.16926 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 545] ROR typedpy.serialization: [0.16906 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 546] SIR typedpy.serialization: [0.16605 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 547] COD typedpy.serialization_wrappers: [0.16600 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 548] COD typedpy.serialization_wrappers: [0.16715 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 549] COD typedpy.serialization_wrappers: [0.16863 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 550] COI typedpy.serialization_wrappers: [0.16859 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 551] COI typedpy.serialization_wrappers: [0.16770 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 552] COI typedpy.serialization_wrappers: [0.16768 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 553] COI typedpy.serialization_wrappers: [0.16792 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 554] COI typedpy.serialization_wrappers: [0.16794 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 555] COI typedpy.serialization_wrappers: [0.16819 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 556] COI typedpy.serialization_wrappers: [0.16814 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 557] IOD typedpy.serialization_wrappers: [0.16676 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 558] IOD typedpy.serialization_wrappers: [0.16853 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 559] SCI typedpy.serialization_wrappers: [0.16614 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 560] SCI typedpy.serialization_wrappers: [0.16737 s] killed by tests/test_struct_to_schema.py::test_class_reference_in_definitions
+   - [# 561] AOR typedpy.structures: [0.00000 s] incompetent
+   - [# 562] AOR typedpy.structures: [0.00000 s] incompetent
+   - [# 563] AOR typedpy.structures: [0.23301 s] incompetent
+   - [# 564] COD typedpy.structures: [0.23532 s] incompetent
+   - [# 565] COD typedpy.structures: [0.23564 s] incompetent
+   - [# 566] COD typedpy.structures: [0.23654 s] incompetent
+   - [# 567] COD typedpy.structures: [0.23682 s] incompetent
+   - [# 568] COD typedpy.structures: [0.23942 s] incompetent
+   - [# 569] COD typedpy.structures: [0.23582 s] incompetent
+   - [# 570] COD typedpy.structures: [0.23624 s] incompetent
+   - [# 571] COD typedpy.structures: [0.23666 s] incompetent
+   - [# 572] COD typedpy.structures: [0.23686 s] incompetent
+   - [# 573] COD typedpy.structures: [0.23632 s] incompetent
+   - [# 574] COD typedpy.structures: [0.23628 s] incompetent
+   - [# 575] COD typedpy.structures: [0.23516 s] incompetent
+   - [# 576] COD typedpy.structures: [0.23663 s] incompetent
+   - [# 577] COD typedpy.structures: [0.23563 s] incompetent
+   - [# 578] COD typedpy.structures: [0.23754 s] incompetent
+   - [# 579] COD typedpy.structures: [0.24325 s] incompetent
+   - [# 580] COD typedpy.structures: [0.24211 s] incompetent
+   - [# 581] COD typedpy.structures: [0.24924 s] incompetent
+   - [# 582] COD typedpy.structures: [0.24160 s] incompetent
+   - [# 583] COI typedpy.structures: [0.23580 s] incompetent
+   - [# 584] COI typedpy.structures: [0.24717 s] incompetent
+   - [# 585] COI typedpy.structures: [0.25307 s] incompetent
+   - [# 586] COI typedpy.structures: [0.25277 s] incompetent
+   - [# 587] COI typedpy.structures: [0.24807 s] incompetent
+   - [# 588] COI typedpy.structures: [0.24704 s] incompetent
+   - [# 589] COI typedpy.structures: [0.25065 s] incompetent
+   - [# 590] COI typedpy.structures: [0.24769 s] incompetent
+   - [# 591] COI typedpy.structures: [0.24857 s] incompetent
+   - [# 592] COI typedpy.structures: [0.27519 s] incompetent
+   - [# 593] COI typedpy.structures: [0.26191 s] incompetent
+   - [# 594] COI typedpy.structures: [0.24050 s] incompetent
+   - [# 595] COI typedpy.structures: [0.24273 s] incompetent
+   - [# 596] COI typedpy.structures: [0.24252 s] incompetent
+   - [# 597] COI typedpy.structures: [0.00000 s] incompetent
+   - [# 598] COI typedpy.structures: [0.00000 s] incompetent
+   - [# 599] COI typedpy.structures: [0.00000 s] incompetent
+   - [# 600] COI typedpy.structures: [0.00000 s] incompetent
+   - [# 601] COI typedpy.structures: [0.24661 s] incompetent
+   - [# 602] COI typedpy.structures: [0.28106 s] incompetent
+   - [# 603] COI typedpy.structures: [0.26101 s] incompetent
+   - [# 604] COI typedpy.structures: [0.28139 s] incompetent
+   - [# 605] COI typedpy.structures: [0.25908 s] incompetent
+   - [# 606] COI typedpy.structures: [0.26532 s] incompetent
+   - [# 607] COI typedpy.structures: [0.24306 s] incompetent
+   - [# 608] COI typedpy.structures: [0.23819 s] incompetent
+   - [# 609] COI typedpy.structures: [0.23787 s] incompetent
+   - [# 610] COI typedpy.structures: [0.23898 s] incompetent
+   - [# 611] COI typedpy.structures: [0.23834 s] incompetent
+   - [# 612] COI typedpy.structures: [0.24554 s] incompetent
+   - [# 613] COI typedpy.structures: [0.23541 s] incompetent
+   - [# 614] COI typedpy.structures: [0.23846 s] incompetent
+   - [# 615] COI typedpy.structures: [0.23904 s] incompetent
+   - [# 616] COI typedpy.structures: [0.23887 s] incompetent
+   - [# 617] COI typedpy.structures: [0.23778 s] incompetent
+   - [# 618] COI typedpy.structures: [0.24636 s] incompetent
+   - [# 619] COI typedpy.structures: [0.25708 s] incompetent
+   - [# 620] COI typedpy.structures: [0.23741 s] incompetent
+   - [# 621] COI typedpy.structures: [0.24112 s] incompetent
+   - [# 622] COI typedpy.structures: [0.24475 s] incompetent
+   - [# 623] COI typedpy.structures: [0.24765 s] incompetent
+   - [# 624] DDL typedpy.structures: [0.00000 s] incompetent
+   - [# 625] DDL typedpy.structures: [0.23553 s] incompetent
+   - [# 626] EHD typedpy.structures: [0.00000 s] incompetent
+   - [# 627] EXS typedpy.structures: [0.24556 s] incompetent
+   - [# 628] IOD typedpy.structures: [0.25566 s] incompetent
+   - [# 629] IOD typedpy.structures: [0.19839 s] killed by tests/test_utility_magic_methods.py::test_contains_supported
+   - [# 630] IOD typedpy.structures: [0.27143 s] incompetent
+   - [# 631] IOD typedpy.structures: [0.25083 s] incompetent
+   - [# 632] IOD typedpy.structures: [0.27739 s] incompetent
+   - [# 633] IOD typedpy.structures: [0.27225 s] incompetent
+   - [# 634] IOP typedpy.structures: [0.30820 s] incompetent
+   - [# 635] IOP typedpy.structures: [0.28068 s] incompetent
+   - [# 636] IOP typedpy.structures: [0.30168 s] incompetent
+   - [# 637] LCR typedpy.structures: [0.29542 s] incompetent
+   - [# 638] LCR typedpy.structures: [0.29676 s] incompetent
+   - [# 639] LCR typedpy.structures: [0.28437 s] incompetent
+   - [# 640] LCR typedpy.structures: [0.27308 s] incompetent
+   - [# 641] LCR typedpy.structures: [0.26053 s] incompetent
+   - [# 642] LCR typedpy.structures: [0.25427 s] incompetent
+   - [# 643] LCR typedpy.structures: [0.25302 s] incompetent
+   - [# 644] LCR typedpy.structures: [0.25457 s] incompetent
+   - [# 645] LCR typedpy.structures: [0.25475 s] incompetent
+   - [# 646] LCR typedpy.structures: [0.25825 s] incompetent
+   - [# 647] LCR typedpy.structures: [0.00000 s] incompetent
+   - [# 648] LCR typedpy.structures: [0.25338 s] incompetent
+   - [# 649] LCR typedpy.structures: [0.00000 s] incompetent
+   - [# 650] LCR typedpy.structures: [0.25402 s] incompetent
+   - [# 651] LCR typedpy.structures: [0.25805 s] incompetent
+   - [# 652] LCR typedpy.structures: [0.25117 s] incompetent
+   - [# 653] LCR typedpy.structures: [0.25180 s] incompetent
+   - [# 654] LCR typedpy.structures: [0.30627 s] incompetent
+   - [# 655] LCR typedpy.structures: [0.30273 s] incompetent
+   - [# 656] LCR typedpy.structures: [0.27073 s] incompetent
+   - [# 657] LCR typedpy.structures: [0.25896 s] incompetent
+   - [# 658] ROR typedpy.structures: [0.25195 s] incompetent
+   - [# 659] ROR typedpy.structures: [0.24947 s] incompetent
+   - [# 660] ROR typedpy.structures: [0.27009 s] incompetent
+   - [# 661] ROR typedpy.structures: [0.00000 s] incompetent
+   - [# 662] ROR typedpy.structures: [0.27742 s] incompetent
+   - [# 663] ROR typedpy.structures: [0.28762 s] incompetent
+   - [# 664] ROR typedpy.structures: [0.25463 s] incompetent
+   - [# 665] ROR typedpy.structures: [0.26931 s] incompetent
+   - [# 666] ROR typedpy.structures: [0.25474 s] incompetent
+   - [# 667] ROR typedpy.structures: [0.26191 s] incompetent
+   - [# 668] ROR typedpy.structures: [0.28220 s] incompetent
+   - [# 669] SCD typedpy.structures: [0.27087 s] incompetent
+   - [# 670] SCD typedpy.structures: [0.25078 s] incompetent
+   - [# 671] SCD typedpy.structures: [0.23945 s] incompetent
+   - [# 672] SCI typedpy.structures: [0.23924 s] incompetent
+   - [# 673] SCI typedpy.structures: [0.00000 s] incompetent
+   - [# 674] SCI typedpy.structures: [0.21871 s] incompetent
+   - [# 675] SCI typedpy.structures: [0.21664 s] incompetent
+   - [# 676] SIR typedpy.structures: [0.23197 s] incompetent
+   - [# 677] SIR typedpy.structures: [0.20859 s] incompetent
+[*] Mutation score [144.00660 s]: 100.0%
+   - all: 677
+   - killed: 523 (77.3%)
+   - survived: 0 (0.0%)
+   - incompetent: 154 (22.7%)
+   - timeout: 0 (0.0%)

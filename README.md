@@ -1,6 +1,7 @@
 [![][travis img]][travis]
 [![][docs img]][docs]
 [![][coverage img]][coverage]
+[![][mutation img]][mutation]
 ![pylint img]
 
 
@@ -60,6 +61,9 @@
 
 [coverage]:https://github.com/loyada/typedpy/blob/master/coverage.txt
 [coverage img]:https://raw.githubusercontent.com/loyada/typedpy/master/coverage.svg
+
+[mutation]:ttps://github.com/loyada/typedpy/blob/master/mutpy-report.txt
+[mutation img]:https://raw.githubusercontent.com/loyada/typedpy/master/pylint.svg
 
 [pylint img]:https://raw.githubusercontent.com/loyada/typedpy/master/pylint.svg
 

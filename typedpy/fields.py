@@ -262,10 +262,6 @@ class String(TypedField):
         super().__set__(instance, value)
 
 
-def _foo():
-    pass
-
-
 class Function(Field):
     """
     A function. Note that this can't be any callable (it can't be a class, for example), but a real function
@@ -273,7 +269,7 @@ class Function(Field):
 
     def __set__(self, instance, value):
         def is_function(f):
-            return type(f) == type(_foo) or type(f) == type(open)
+            return type(f) == type(lambda x:x) or type(f) == type(open)
 
         def err_prefix():
             return (
@@ -367,60 +363,38 @@ class _ListStruct(list):
         super().__init__(mylist)
 
     def __setitem__(self, key, value):
-        copied = super().copy()
+        copied = self[:]
         copied.__setitem__(key, value)
-        setattr(
-            self._instance,
-            getattr(self._field_definition, "_name", None),
-            copied
-        )
+        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
 
     def append(self, value):
-        copied = super().copy()
+        copied = self[:]
         copied.append(value)
-        setattr(
-            self._instance,
-            getattr(self._field_definition, "_name", None),
-            copied
-        )
+        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
         super().append(value)
 
     def extend(self, value):
-        copied = super().copy()
+        copied = self[:]
         copied.extend(value)
         if getattr(self, "_instance", None):
             setattr(
-                self._instance,
-                getattr(self._field_definition, "_name", None),
-                copied
+                self._instance, getattr(self._field_definition, "_name", None), copied
             )
 
     def insert(self, index: int, value):
-        copied = super().copy()
+        copied = self[:]
         copied.insert(index, value)
-        setattr(
-            self._instance,
-            getattr(self._field_definition, "_name", None),
-            copied
-        )
+        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
 
     def remove(self, ind):
-        copied = super().copy()
+        copied = self[:]
         copied.remove(ind)
-        setattr(
-            self._instance,
-            getattr(self._field_definition, "_name", None),
-            copied
-        )
+        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
 
     def pop(self, index: int = -1):
-        copied = super().copy()
+        copied = self[:]
         res = copied.pop(index)
-        setattr(
-            self._instance,
-            getattr(self._field_definition, "_name", None),
-            copied
-        )
+        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
         return res
 
     def __getstate__(self):
@@ -435,7 +409,8 @@ class _ListStruct(list):
         return _ListStruct(
             array=deepcopy(self._field_definition),
             struct_instance=memo[id(self._instance)],
-            mylist=vals)
+            mylist=vals,
+        )
 
     def __setstate__(self, state):
         self._field_definition = state["the_array"]

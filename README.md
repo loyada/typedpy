@@ -64,7 +64,7 @@
 [coverage]:https://github.com/loyada/typedpy/blob/master/coverage.txt
 [coverage img]:https://raw.githubusercontent.com/loyada/typedpy/master/coverage.svg
 
-[mutation]:ttps://github.com/loyada/typedpy/blob/master/mutpy-report.txt
+[mutation]:https://github.com/loyada/typedpy/blob/master/mutpy-report.txt
 [mutation img]:https://raw.githubusercontent.com/loyada/typedpy/master/mutation-testing.svg
 
 [pylint img]:https://raw.githubusercontent.com/loyada/typedpy/master/pylint.svg

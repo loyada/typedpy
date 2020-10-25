@@ -2,10 +2,10 @@ Name                                Stmts   Miss Branch BrPart  Cover   Missing
 -------------------------------------------------------------------------------
 typedpy/__init__.py                     6      0      0      0   100%
 typedpy/extfields.py                   77      0     19      0   100%
-typedpy/fields.py                     521      6    190      2    99%   266, 551->552, 552, 797->798, 798, 1262, 1265, 1277
+typedpy/fields.py                     519      5    192      3    99%   272->exit, 505->506, 506, 751->752, 752, 1216, 1219, 1231
 typedpy/json_schema_mapping.py        182      1     63      0    99%   346
 typedpy/serialization.py              224      0    140      0   100%
 typedpy/serialization_wrappers.py      37      0     20      2    96%   141->exit, 143->exit
 typedpy/structures.py                 230      7    118      5    96%   307-310, 315->316, 316, 317->318, 318, 319->320, 320, 337->338, 338, 344->345, 345
 -------------------------------------------------------------------------------
-TOTAL                                1277     14    550      9    99%
+TOTAL                                1275     13    552     10    99%

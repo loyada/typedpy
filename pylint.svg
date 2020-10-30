@@ -13,11 +13,11 @@
         <path fill="url(#b)" d="M0 0h213v20H0z"/>
     </g>
     <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
-        <text x="89.5" y="15" fill="#010101" fill-opacity=".3">pylint-score-Fri 10/23/2020</text>
-        <text x="88.5" y="14">pylint-score-Fri 10/23/2020</text>
+        <text x="89.5" y="15" fill="#010101" fill-opacity=".3">pylint-score-Fri 10/30/2020</text>
+        <text x="88.5" y="14">pylint-score-Fri 10/30/2020</text>
     </g>
     <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
-        <text x="196.0" y="15" fill="#010101" fill-opacity=".3">9.23</text>
-        <text x="195.0" y="14">9.23</text>
+        <text x="196.0" y="15" fill="#010101" fill-opacity=".3">9.34</text>
+        <text x="195.0" y="14">9.34</text>
     </g>
 </svg>

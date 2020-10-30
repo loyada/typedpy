@@ -1,7 +1,6 @@
 import collections
 import enum
 import json
-from collections.abc import Mapping
 from functools import reduce
 from typing import Dict
 
@@ -36,9 +35,6 @@ from typedpy.fields import (
 def deserialize_list_like(
     field, content_type, value, name, *, keep_undefined=True, mapper=None
 ):
-    # try:
-    #    iter(value)
-    # except TypeError:
     if not isinstance(value, (list, tuple, set)):
         raise ValueError("{}: must be list, set, or tuple; got {}".format(name, value))
 
@@ -55,7 +51,7 @@ def deserialize_list_like(
                 prefix = (
                     "" if str(e).startswith(item_name) else "{}: ".format(item_name)
                 )
-                raise ValueError("{}{}".format(prefix, str(e)))
+                raise ValueError("{}{}".format(prefix, str(e))) from e
             values.append(list_item)
     elif isinstance(items, (list, tuple)):
         for i, item in enumerate(items):
@@ -64,7 +60,7 @@ def deserialize_list_like(
                     item, value[i], name, keep_undefined=keep_undefined, mapper=mapper
                 )
             except (ValueError, TypeError) as e:
-                raise ValueError("{}_{}: {}".format(name, i, str(e)))
+                raise ValueError("{}_{}: {}".format(name, i, str(e))) from e
             values.append(res)
         values += value[len(items) :]
     else:
@@ -119,7 +115,7 @@ def deserialize_multifield_wrapper(
             elif isinstance(field, OneOf) and found_previous_match:
                 raise ValueError(
                     "could not deserialize {}: value {} matches more than one match".format(
-                        name, wrap_val(source_val), field
+                        name, wrap_val(source_val)
                     )
                 )
             found_previous_match = True
@@ -129,7 +125,7 @@ def deserialize_multifield_wrapper(
                     "could not deserialize {}: value {} did not match {}. reason: {}".format(
                         name, wrap_val(source_val), field_option, str(e)
                     )
-                )
+                ) from e
     return deserialized
 
 
@@ -424,7 +420,7 @@ def serialize_val(field_definition, name, val, mapper=None):
     try:
         return json.loads(json.dumps(val))
     except Exception as ex:
-        raise ValueError(f"{name}: cannot serialize value: {ex}")
+        raise ValueError(f"{name}: cannot serialize value: {ex}") from ex
 
 
 def serialize_field(field_definition: Field, value):

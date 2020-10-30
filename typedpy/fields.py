@@ -269,7 +269,7 @@ class Function(Field):
 
     def __set__(self, instance, value):
         def is_function(f):
-            return type(f) == type(lambda x:x) or type(f) == type(open)
+            return type(f) == type(lambda x: x) or type(f) == type(open)
 
         def err_prefix():
             return (
@@ -513,7 +513,7 @@ class _JSONSchemaDraft4ReuseMeta(type):
         return cls([validate_and_get_field(item)])
 
 
-class SizedCollection(object):
+class SizedCollection:
     def __init__(self, *args, minItems=None, maxItems=None, **kwargs):
         self.minItems = minItems
         self.maxItems = maxItems
@@ -979,7 +979,7 @@ def _str_for_multioption_field(instance):
     return "<{}{}>".format(name, propst)
 
 
-class MultiFieldWrapper(object):
+class MultiFieldWrapper:
     """
     An abstract base class for AllOf, AnyOf, OneOf, etc.
     It provides flexibility in reading the "fields" argument.

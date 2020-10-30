@@ -185,6 +185,7 @@ class StructMeta(type):
 
     def __new__(cls, name, bases, cls_dict):
         bases_params, bases_required = get_base_info(bases)
+        add_annotations_to_class_dict(cls_dict)
         for key, val in cls_dict.items():
             if (
                 key not in {"_required", "_additionalProperties", "_immutable"}
@@ -222,6 +223,30 @@ class StructMeta(type):
                 strv = "'{}'".format(val) if isinstance(val, str) else str(val)
                 props.append("{} = {}".format(k, strv))
         return "<Structure: {}. Properties: {}>".format(name, ", ".join(props))
+
+
+def add_annotations_to_class_dict(cls_dict):
+
+    annotations = cls_dict.get("__annotations__", {})
+    if isinstance(annotations, dict):
+        for k, v in annotations.items():
+            first_arg = getattr(v, "__args__", [0])[0]
+            mros = getattr(first_arg, "__mro__", getattr(v, "__mro__", []))
+            if isinstance(v, (Field, Structure)) or Field in mros or Structure in mros:
+                cls_dict[k] = v
+            elif v in {int, float, str, dict, list, tuple, set}:
+                from .fields import Integer, Float, String, Map, Array, Tuple, Set
+
+                type_mapping = {
+                    int: Integer,
+                    str: String,
+                    float: Float,
+                    dict: Map,
+                    set: Set,
+                    list: Array,
+                    tuple: Tuple,
+                }
+                cls_dict[k] = type_mapping[v]
 
 
 class Structure(metaclass=StructMeta):

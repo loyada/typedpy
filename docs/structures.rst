@@ -181,25 +181,25 @@ So, the following class
 
 .. code-block:: python
 
-class Foo(Structure):
-    i: Integer
-    s: String(maxLength=10)
-    map = Map[String, Integer]
-    bar: Bar
-    s1: str
-    m: list
+    class Foo(Structure):
+        i: Integer
+        s: String(maxLength=10)
+        map = Map[String, Integer]
+        bar: Bar
+        s1: str
+        m: list
 
 Is converted by Typedpy automatically to this:
 
 .. code-block:: python
 
-class Foo(Structure):
-    i = Integer
-    s = String(maxLength=10)
-    map = Map[String, Integer]
-    bar = Bar
-    s1 = String
-    m= Array
+    class Foo(Structure):
+        i = Integer
+        s = String(maxLength=10)
+        map = Map[String, Integer]
+        bar = Bar
+        s1 = String
+        m = Array
 
 This provides you with all the run-time checking and other typedpy functionality even if you use regular Python types.
 Two examples:

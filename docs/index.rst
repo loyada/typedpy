@@ -32,6 +32,8 @@ Features
 
 * No dependencies on third-party libs
 
+* Dataclass-like syntax
+
 
 Examples
 ----------
@@ -66,7 +68,6 @@ Basic Example:
     Person(name="fo", ssid=4, num=25, foo = {'a': 'aaa', 'b': {'c': 10, 'd': 1}})
     # TypeError: ssid: Got 4; Expected a string
 
-
     Person(name="fo", ssid="123", num=33,
         foo = {'a': 'aaa', 'b': {'c': 10, 'd': 1}})
     #ValueError: num: Got 33; Expected a a multiple of 5
@@ -90,8 +91,6 @@ Basic Example:
 
     person.foo.b.d = 99
     #ValueError: d: Got 99; Expected a maximum of 10
-
-
 
 
 Another example with Array, class reference, Enum, json-schema-style re-use:
@@ -124,9 +123,6 @@ Another example with Array, class reference, Enum, json-schema-style re-use:
     ['a', 5, 2]
 
     >>> exmpl.person = person
-    >>> exmpl.person.name
-    fo
-
     >>> exmpl.person.name = None
     TypeError: name: Got None; Expected a string
 

@@ -235,7 +235,7 @@ def add_annotations_to_class_dict(cls_dict):
             if isinstance(v, (Field, Structure)) or Field in mros or Structure in mros:
                 cls_dict[k] = v
             elif v in {int, float, str, dict, list, tuple, set}:
-                from .fields import Integer, Float, String, Map, Array, Tuple, Set
+                from .fields import Integer, Float, String, Map, Array, Tuple, Set, Boolean
 
                 type_mapping = {
                     int: Integer,
@@ -245,6 +245,7 @@ def add_annotations_to_class_dict(cls_dict):
                     set: Set,
                     list: Array,
                     tuple: Tuple,
+                    bool: Boolean
                 }
                 cls_dict[k] = type_mapping[v]
 

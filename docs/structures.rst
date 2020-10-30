@@ -23,7 +23,6 @@ A simple example:
         num = Integer(maximum=30)
         foo = Array[PositiveFloat]
 
-
 This structure validates itself, so that any attempt to create an invalid structure will raise an exception.
 
 * All fields are public, and fields names are not allowed to start with "_", since it implies non-public attributes.
@@ -170,3 +169,64 @@ In the example above, any Range instance is guaranteed to be valid, even if you 
 | Of the two approaches described, usually the second approach is more elegant.
 
 `See usage of both approaches here <https://github.com/loyada/typedpy/tree/master/tests/test_higher_order.py>`_
+
+Alternative Syntax
+==================
+(starting at version 1.35)
+Since many are used to the Dataclasses syntax, Typedpy supports its format for defining fields in the structure class. \
+Furthermore, if provided with standard builtin types, it will convert them automatically to their equivalent Typedpy \
+Field types.
+
+So, the following class
+
+.. code-block:: python
+
+class Foo(Structure):
+    i: Integer
+    s: String(maxLength=10)
+    map = Map[String, Integer]
+    bar: Bar
+    s1: str
+    m: list
+
+Is converted by Typedpy automatically to this:
+
+.. code-block:: python
+
+class Foo(Structure):
+    i = Integer
+    s = String(maxLength=10)
+    map = Map[String, Integer]
+    bar = Bar
+    s1 = String
+    m= Array
+
+This provides you with all the run-time checking and other typedpy functionality even if you use regular Python types.
+Two examples:
+
+.. code-block:: python
+
+    class Example1(Structure):
+        i: int
+        f: float
+        mylist: list
+        map: dict
+
+    e = Example1(i=1, f=0.5, mylist=['x'], map={'x': 'y'})
+
+    # the following line will throw a TypeError with the message: "mylist: Got 7; Expected <class 'list'>"
+    e.mylist = 7
+
+
+    class ExampleOfImmutable(ImmutableStructure):
+        i: int
+        mylist: list
+        map: dict
+
+    e = ExampleOfImmutable(i=1, mylist=['x'], map={'x': 'y'})
+
+    # the following line will throw a ValueError with the message: "Structure is immutable"
+    e.mylist.append('y')
+
+Limitations: The automatic conversion of Python types to Typedpy Fields applies to the basic python types, i.e \
+bool, int, float, str, dict, set, tuple, list.

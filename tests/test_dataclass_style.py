@@ -1,6 +1,6 @@
 from pytest import raises
 
-from typedpy import AllOf, Enum, Number, Float, Structure
+from typedpy import AllOf, Enum, Number, Float, Structure, ImmutableStructure
 from typedpy import Integer, String, Array, StructureReference
 
 
@@ -69,4 +69,29 @@ def test_type_conversion_to_typedpy_validation_err_for_standard_field():
     with raises(ValueError) as excinfo:
         MixedTypesExample(i=50, s="xyz", s1="asd", a="a", simple=SimpleStruct(name="John"))
     assert "i: Got 50; Expected a maximum of 10" in str(excinfo.value)
+
+
+def test_all_fields_use_alternate_format():
+    class Example1(Structure):
+        i: int
+        f: float
+        mylist: list
+        map: dict
+
+    e = Example1(i=1, f=0.5, mylist=['x'], map={'x': 'y'})
+    with raises(TypeError) as excinfo:
+        e.mylist = 7
+    assert "mylist: Got 7; Expected <class 'list'>" in str(excinfo.value)
+
+
+def test_all_fields_use_alternate_format_immutable():
+    class ExampleOfImmutable(ImmutableStructure):
+        i: int
+        mylist: list
+        map: dict
+
+    e = ExampleOfImmutable(i=1, mylist=['x'], map={'x': 'y'})
+    with raises(ValueError) as excinfo:
+        e.mylist.append('y')
+    assert "Structure is immutable" in str(excinfo.value)
 

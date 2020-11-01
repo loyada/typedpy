@@ -9,6 +9,11 @@ import sys
 
 from typing import get_type_hints, Iterable
 
+REQUIRED = "_required"
+DEFAULTS = "_defaults"
+ADDITIONAL_PROPERTIES = "_additionalProperties"
+IS_IMMUTABLE = "_immutable"
+
 
 def make_signature(names, required, additional_properties, bases_params_by_name):
     """
@@ -80,7 +85,7 @@ def get_base_info(bases):
                 if param.default is not None and param.kind != Parameter.VAR_KEYWORD:
                     bases_required.append(k)
                 bases_params[k] = param
-        additional_props = base.__dict__.get("_additionalProperties", True)
+        additional_props = base.__dict__.get(ADDITIONAL_PROPERTIES, True)
         if additional_props and bases_params["kwargs"].kind == Parameter.VAR_KEYWORD:
             del bases_params["kwargs"]
 
@@ -98,6 +103,16 @@ class Field:
         self._default = default
         if immutable is not None:
             self._immutable = immutable
+        if default:
+            self._try_default_value(default)
+
+    def _try_default_value(self, default):
+        try:
+            self.__set__(Structure(), default)
+        except Exception as e:
+            raise e.__class__(
+                "Invalid default value: {}; Reason: {}".format(default, str(e))
+            ) from e
 
     def __get__(self, instance, owner):
         if instance is not None and self._name not in instance.__dict__:
@@ -109,9 +124,9 @@ class Field:
         )
 
     def __set__(self, instance, value):
-        if getattr(self, "_immutable", False) and self._name in instance.__dict__:
+        if getattr(self, IS_IMMUTABLE, False) and self._name in instance.__dict__:
             raise ValueError("{}: Field is immutable".format(self._name))
-        if getattr(self, "_immutable", False) and not getattr(
+        if getattr(self, IS_IMMUTABLE, False) and not getattr(
             self, "_custom_deep_copy_implementation", False
         ):
             instance.__dict__[self._name] = deepcopy(value)
@@ -174,6 +189,38 @@ def _get_all_fields_by_name(cls):
     return all_fields_by_name
 
 
+def _instantiate_fields_if_needed(cls_dict: dict, defaults: dict):
+    for key, val in cls_dict.items():
+        if (
+            key not in {REQUIRED, ADDITIONAL_PROPERTIES, IS_IMMUTABLE, DEFAULTS}
+            and not isinstance(val, Field)
+            and (
+                Field in getattr(val, "__mro__", []) or is_function_returning_field(val)
+            )
+        ):
+            new_val = val(default=defaults[key]) if key in defaults else val()
+            cls_dict[key] = new_val
+
+
+def _apply_default_and_update_required_not_to_include_fields_with_defaults(
+    cls_dict: dict, defaults: dict, fields: list
+):
+    required_fields = set(cls_dict.get(REQUIRED, []))
+    required_fields_predefined = REQUIRED in cls_dict
+    for field_name in fields:
+        if field_name in defaults and not getattr(
+            cls_dict[field_name], "_default", None
+        ):
+            cls_dict[field_name]._try_default_value(defaults[field_name])
+            cls_dict[field_name]._default = defaults[field_name]
+        if getattr(cls_dict[field_name], "_default", None):
+            if field_name in required_fields:
+                required_fields.remove(field_name)
+        elif not required_fields_predefined:
+            required_fields.add(field_name)
+    cls_dict[REQUIRED] = list(required_fields)
+
+
 class StructMeta(type):
     """
     Metaclass for Structure. Manipulates it to ensure the fields are set up correctly.
@@ -186,16 +233,9 @@ class StructMeta(type):
     def __new__(cls, name, bases, cls_dict):
         bases_params, bases_required = get_base_info(bases)
         add_annotations_to_class_dict(cls_dict)
-        for key, val in cls_dict.items():
-            if (
-                key not in {"_required", "_additionalProperties", "_immutable"}
-                and not isinstance(val, Field)
-                and (
-                    Field in getattr(val, "__mro__", [])
-                    or is_function_returning_field(val)
-                )
-            ):
-                cls_dict[key] = val()
+        defaults = cls_dict[DEFAULTS]
+        _instantiate_fields_if_needed(cls_dict=cls_dict, defaults=defaults)
+
         for key, val in cls_dict.items():
             if isinstance(val, StructMeta) and not isinstance(val, Field):
                 cls_dict[key] = ClassReference(val)
@@ -204,13 +244,20 @@ class StructMeta(type):
             if field_name.startswith("_") or field_name == "kwargs":
                 raise ValueError("{}: invalid field name".format(field_name))
             setattr(cls_dict[field_name], "_name", field_name)
+
+        _apply_default_and_update_required_not_to_include_fields_with_defaults(
+            cls_dict=cls_dict, defaults=defaults, fields=fields
+        )
+
+        cls_dict.pop(DEFAULTS, None)
         clsobj = super().__new__(cls, name, bases, dict(cls_dict))
+
         clsobj._fields = fields
         default_required = (
             list(set(bases_required + fields)) if bases_params else fields
         )
-        required = cls_dict.get("_required", default_required)
-        additional_props = cls_dict.get("_additionalProperties", True)
+        required = cls_dict.get(REQUIRED, default_required)
+        additional_props = cls_dict.get(ADDITIONAL_PROPERTIES, True)
         sig = make_signature(clsobj._fields, required, additional_props, bases_params)
         setattr(clsobj, "__signature__", sig)
         return clsobj
@@ -226,16 +273,27 @@ class StructMeta(type):
 
 
 def add_annotations_to_class_dict(cls_dict):
-
     annotations = cls_dict.get("__annotations__", {})
+    defaults = {}
     if isinstance(annotations, dict):
         for k, v in annotations.items():
             first_arg = getattr(v, "__args__", [0])[0]
             mros = getattr(first_arg, "__mro__", getattr(v, "__mro__", []))
             if isinstance(v, (Field, Structure)) or Field in mros or Structure in mros:
+                if k in cls_dict:
+                    defaults[k] = cls_dict[k]
                 cls_dict[k] = v
             elif v in {int, float, str, dict, list, tuple, set}:
-                from .fields import Integer, Float, String, Map, Array, Tuple, Set, Boolean
+                from .fields import (
+                    Integer,
+                    Float,
+                    String,
+                    Map,
+                    Array,
+                    Tuple,
+                    Set,
+                    Boolean,
+                )
 
                 type_mapping = {
                     int: Integer,
@@ -245,9 +303,14 @@ def add_annotations_to_class_dict(cls_dict):
                     set: Set,
                     list: Array,
                     tuple: Tuple,
-                    bool: Boolean
+                    bool: Boolean,
                 }
-                cls_dict[k] = type_mapping[v]
+                the_type = type_mapping[v]
+                if k in cls_dict:
+                    the_type = the_type(default=cls_dict[k])
+                    defaults[k] = cls_dict[k]
+                cls_dict[k] = the_type
+    cls_dict[DEFAULTS] = defaults
 
 
 class Structure(metaclass=StructMeta):
@@ -310,7 +373,7 @@ class Structure(metaclass=StructMeta):
         self._instantiated = True
 
     def __setattr__(self, key, value):
-        if getattr(self, "_immutable", False):
+        if getattr(self, IS_IMMUTABLE, False):
             if key in self.__dict__:
                 raise ValueError("Structure is immutable")
             value = deepcopy(value)
@@ -335,16 +398,16 @@ class Structure(metaclass=StructMeta):
             ]
             return ",".join(as_strings)
 
-        def to_str(val):
-            if isinstance(val, list):
-                return "[{}]".format(list_to_str(val))
-            if isinstance(val, tuple):
-                return "({})".format(list_to_str(val))
-            if isinstance(val, set):
-                return "{{{}}}".format(list_to_str(val))
-            if isinstance(val, dict):
-                return "{{{}}}".format(dict_to_str(val))
-            return str(val)
+        def to_str(the_val):
+            if isinstance(the_val, list):
+                return "[{}]".format(list_to_str(the_val))
+            if isinstance(the_val, tuple):
+                return "({})".format(list_to_str(the_val))
+            if isinstance(the_val, set):
+                return "{{{}}}".format(list_to_str(the_val))
+            if isinstance(the_val, dict):
+                return "{{{}}}".format(dict_to_str(the_val))
+            return str(the_val)
 
         name = self.__class__.__name__
         if name.startswith("StructureReference_") and self.__class__.__bases__ == (
@@ -378,9 +441,7 @@ class Structure(metaclass=StructMeta):
         return str(self).__hash__()
 
     def __delitem__(self, key):
-        if isinstance(getattr(self, "_required"), list) and key in getattr(
-            self, "_required"
-        ):
+        if isinstance(getattr(self, REQUIRED), list) and key in getattr(self, REQUIRED):
             raise ValueError("{} is mandatory".format(key))
         del self.__dict__[key]
 
@@ -421,8 +482,8 @@ class Structure(metaclass=StructMeta):
         field_by_name = _get_all_fields_by_name(self.__class__)
         field_names = list(field_by_name.keys())
         props = self.__class__.__dict__
-        required = props.get("_required", field_names)
-        additional_props = props.get("_additionalProperties", True)
+        required = props.get(REQUIRED, field_names)
+        additional_props = props.get(ADDITIONAL_PROPERTIES, True)
         if (
             len(field_names) == 1
             and required == field_names

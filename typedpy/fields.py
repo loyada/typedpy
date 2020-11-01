@@ -522,11 +522,15 @@ class SizedCollection:
     def validate_size(self, items, name):
         if self.minItems is not None and len(items) < self.minItems:
             raise ValueError(
-                "{}: Expected length of at least {}".format(name, self.minItems)
+                "{}: Expected length of at least {}; Got {}".format(
+                    name, self.minItems, items
+                )
             )
         if self.maxItems is not None and len(items) > self.maxItems:
             raise ValueError(
-                "{}: Expected length of at most {}".format(name, self.maxItems)
+                "{}: Expected length of at most {}; Got {}".format(
+                    name, self.maxItems, items
+                )
             )
 
 

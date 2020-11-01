@@ -1,6 +1,6 @@
 import pytest
 
-from typedpy import StructureReference, Structure, String, Number, PositiveInt, Integer
+from typedpy import StructureReference, Structure, String, Number, PositiveInt, Integer, Array
 
 
 class Person(Structure):
@@ -122,6 +122,24 @@ def test_defaults():
     assert p.foo is None
     assert p.name == 'Arthur'
     assert p.num == 0
+
+
+def test_invalid_defaults_raise_error1():
+    with pytest.raises(TypeError) as excinfo:
+        class Foo(Structure):
+            i = Integer(default="x")
+    assert "Invalid default value: x" in str(excinfo.value)
+
+
+def test_invalid_defaults_raise_error2():
+    with pytest.raises(ValueError) as excinfo:
+        Integer(minimum=5, default=2)
+
+
+def test_invalid_defaults_raise_error3():
+    with pytest.raises(ValueError) as excinfo:
+            Array(minItems=3, default=[1])
+    assert "Invalid default value: [1]" in str(excinfo.value)
 
 
 def test_invalid_field_name():

@@ -95,3 +95,69 @@ def test_all_fields_use_alternate_format_immutable():
         e.mylist.append('y')
     assert "Structure is immutable" in str(excinfo.value)
 
+
+def test_default_values():
+    class Example(Structure):
+        i: int = 5
+        mylist: list = [1,2,3]
+        map: dict
+        f: Float = 0.5
+        f2 = Float(default=1.5)
+
+    e = Example(map={'x': 'y'})
+    assert e.i == 5
+    assert e.mylist == [1,2,3]
+    assert e.map == {'x': 'y'}
+    assert e.f == 0.5
+    assert e.f2 == 1.5
+
+
+def test_default_values_use_equals_on_field_instance():
+    class Example(Structure):
+        f: Float() = 0.5
+        map: dict
+        arr: Array[SimpleStruct] = [SimpleStruct(name="John")]
+
+    e = Example(map={'x': 'y'})
+    assert e.f == 0.5
+    assert e.arr[0].name == "John"
+
+
+def test_default_values_use_equals_on_field_instance_with_overriding_required():
+    class Example(Structure):
+        f: Float() = 0.5
+        map: dict
+        arr: Array[SimpleStruct] = [SimpleStruct(name="John")]
+        i = Integer(default=5)
+        _required = ['arr', i]
+
+    e = Example(map={'x': 'y'})
+    assert e.f == 0.5
+    assert e.arr[0].name == "John"
+    assert e.i == 5
+
+
+def test_some_default_values_missing_required():
+    class Example(Structure):
+        i: int = 5
+        mylist: list
+        map: dict
+        f: Float = 0.5
+        f2 = Float(default=1.5)
+
+    with raises(TypeError) as excinfo:
+        Example(map={'x': 'y'})
+    assert "missing a required argument: 'mylist'" in str(excinfo.value)
+
+
+def test_some_default_values_predefined_required():
+    class ExampleOfImmutable(Structure):
+        i: int = 5
+        mylist: list
+        map: dict
+        f: Float = 0.5
+        f2 = Float(default=1.5)
+        _required = ['f2']
+
+    assert ExampleOfImmutable(map={'x': 'y'}).f == 0.5
+

@@ -20,6 +20,7 @@ from typedpy.fields import (
 )
 
 from typedpy.extfields import DateString
+from typedpy.structures import ADDITIONAL_PROPERTIES
 
 
 def as_str(val):
@@ -96,7 +97,7 @@ def structure_to_schema(structure, definitions_schema):
     props = structure.__dict__
     fields = [key for key, val in props.items() if isinstance(val, Field)]
     required = props.get("_required", fields)
-    additional_props = props.get("_additionalProperties", True)
+    additional_props = props.get(ADDITIONAL_PROPERTIES, True)
     if len(fields) == 1 and required == fields and additional_props is False:
         return (
             convert_to_schema(props[fields[0]], definitions_schema),
@@ -284,7 +285,7 @@ class StructureReferenceMapper(Mapper):
     def get_paramlist_from_schema(schema, definitions):
         body = []
         body += (
-            [("_additionalProperties", False)]
+            [(ADDITIONAL_PROPERTIES, False)]
             if not schema.get("additionalProperties", True)
             else []
         )

@@ -5,7 +5,13 @@ from functools import reduce
 from typing import Dict
 
 from typedpy.fields import _ListStruct
-from typedpy.structures import TypedField, Structure, _get_all_fields_by_name
+from typedpy.structures import (
+    TypedField,
+    Structure,
+    _get_all_fields_by_name,
+    ADDITIONAL_PROPERTIES,
+    REQUIRED,
+)
 from typedpy.fields import (
     Field,
     Number,
@@ -294,8 +300,8 @@ def deserialize_structure_internal(
     if not isinstance(the_dict, dict):
         props = cls.__dict__
         fields = list(field_by_name.keys())
-        required = props.get("_required", fields)
-        additional_props = props.get("_additionalProperties", True)
+        required = props.get(REQUIRED, fields)
+        additional_props = props.get(ADDITIONAL_PROPERTIES, True)
         if len(fields) == 1 and required == fields and additional_props is False:
             field_name = fields[0]
             return cls(
@@ -483,10 +489,10 @@ def serialize_internal(structure, mapper=None, compact=False):
     )
     props = structure.__class__.__dict__
     fields = list(field_by_name.keys())
-    additional_props = props.get("_additionalProperties", True)
+    additional_props = props.get(ADDITIONAL_PROPERTIES, True)
     if (
         len(fields) == 1
-        and props.get("_required", fields) == fields
+        and props.get(REQUIRED, fields) == fields
         and additional_props is False
         and compact
     ):

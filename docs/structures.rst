@@ -182,26 +182,28 @@ So, the following class
 .. code-block:: python
 
     class Foo(Structure):
-        i: Integer
+        i: Integer = 10
         s: String(maxLength=10)
         map = Map[String, Integer]
         bar: Bar
         s1: str
-        m: list
+        m: list = [1,2,3]
 
 Is converted by Typedpy automatically to this:
 
 .. code-block:: python
 
     class Foo(Structure):
-        i = Integer
+        i = Integer(default=10)
         s = String(maxLength=10)
         map = Map[String, Integer]
         bar = Bar
         s1 = String
-        m = Array
+        m = Array(default=[1,2,3])
 
 This provides you with all the run-time checking and other typedpy functionality even if you use regular Python types.
+It also applies default values (see fields 'm', 'i' above).
+
 Two examples:
 
 .. code-block:: python
@@ -219,14 +221,16 @@ Two examples:
 
 
     class ExampleOfImmutable(ImmutableStructure):
-        i: int
-        mylist: list
+        i: Integer = 5
+        mylist: list = [1,2]
         map: dict
 
-    e = ExampleOfImmutable(i=1, mylist=['x'], map={'x': 'y'})
+    e = ExampleOfImmutable(i=1, map={'x': 'y'})
+
+    assert e.mylist == [1,2]
 
     # the following line will throw a ValueError with the message: "Structure is immutable"
-    e.mylist.append('y')
+    e.mylist.append(3)
 
 Limitations: The automatic conversion of Python types to Typedpy Fields applies to the basic python types, i.e \
 bool, int, float, str, dict, set, tuple, list.

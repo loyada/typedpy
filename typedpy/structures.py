@@ -9,6 +9,8 @@ import sys
 
 from typing import get_type_hints, Iterable
 
+from typedpy.commons import wrap_val
+
 REQUIRED = "_required"
 DEFAULTS = "_defaults"
 ADDITIONAL_PROPERTIES = "_additionalProperties"
@@ -111,7 +113,7 @@ class Field:
             self.__set__(Structure(), default)
         except Exception as e:
             raise e.__class__(
-                "Invalid default value: {}; Reason: {}".format(default, str(e))
+                "Invalid default value: {}; Reason: {}".format(wrap_val(default), str(e))
             ) from e
 
     def __get__(self, instance, owner):
@@ -307,7 +309,10 @@ def add_annotations_to_class_dict(cls_dict):
                 }
                 the_type = type_mapping[v]
                 if k in cls_dict:
-                    the_type = the_type(default=cls_dict[k])
+                    try:
+                        the_type = the_type(default=cls_dict[k])
+                    except Exception as e:
+                        raise e.__class__("{}: {}".format(k, str(e))) from e
                     defaults[k] = cls_dict[k]
                 cls_dict[k] = the_type
     cls_dict[DEFAULTS] = defaults

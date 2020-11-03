@@ -9,6 +9,7 @@ from copy import deepcopy
 from functools import reduce
 from decimal import Decimal, InvalidOperation
 
+from typedpy.commons import wrap_val
 from typedpy.structures import (
     Field,
     Structure,
@@ -28,10 +29,6 @@ def _map_to_field(item):
         return item()
     else:
         raise TypeError("Expected a Field/Structure class or Field instance")
-
-
-def wrap_val(v):
-    return "'{}'".format(v) if isinstance(v, str) else v
 
 
 class StructureReference(Field):

@@ -46,14 +46,14 @@ In contrast, in Typedpy:
 
     Foo(i=5).i = "xyz"
     # raises:
-    # TypeError: i: Expected <class 'int'>
+    # TypeError: i: Expected <class 'int'>; Got 'xyz'
 
     def func(i):
         return Foo(i=i)
 
     func("xyz")
     # raises:
-    # TypeError: i: Expected <class 'int'>
+    # TypeError: i: Expected <class 'int'>; Got 'xyz'
 
 Let's examine usage of default values, in the following dataclass-based code:
 
@@ -165,7 +165,7 @@ In typedpy, in contrast, we will get an appropriate exception:
         a: Array[Integer]
 
     Foo(a=[1, [] 'x', {}])
-    # TypeError: a_1: Expected <class 'int'>
+    # TypeError: a_1: Expected <class 'int'>; Got []
 
 This section demonstrated how Typedpy can fulfill most of the functions of Dataclasses in a more developer-friendly way.
 The clear advantage of Dataclass over Typedpy is that in a straightforward initialization, the IDE (e.g. PyCharm) identifies \

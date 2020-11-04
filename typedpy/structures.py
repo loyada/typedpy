@@ -539,7 +539,7 @@ class TypedField(Field):
             return "{}: ".format(self._name) if self._name else ""
 
         if not isinstance(value, (self._ty)) and value is not None:
-            raise TypeError("{}Expected {}".format(err_prefix(), self._ty))
+            raise TypeError("{}Expected {}; Got {}".format(err_prefix(), self._ty, wrap_val(value)))
 
     def __set__(self, instance, value):
         if not getattr(instance, "_skip_validation", False):

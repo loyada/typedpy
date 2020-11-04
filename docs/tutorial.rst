@@ -173,7 +173,7 @@ type errors and highlights them. \
 
 Given that, can we use both together, and thus get the best of both? \
 
-In simple cases, as long as the fields are the basic types (not from the "typing" library or Typedpy Fields, the answer \
+In simple cases, as long as the fields are the basic types (not from the "typing" library or Typedpy Fields), the answer \
 is yes.
 The following code is valid, and behaves the way you would hope:
 
@@ -188,8 +188,8 @@ The following code is valid, and behaves the way you would hope:
 In the example above you get the best of both worlds - The dynamic validation of typedpy, and the initialization validation
 of Dataclasses that is supported by the IDE.
 
-This section focused on how Typedpy performs the main functionality of Dataclass. But Typedpy has a reach features set
-beyond that. This will be covered in the next chapters.
+This section focused on how Typedpy performs the main functionality of Dataclass. But Typedpy has a rich feature set
+beyond that. These features will be covered in the following chapters.
 
 
 

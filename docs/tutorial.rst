@@ -185,8 +185,11 @@ The following code is valid, and behaves the way you would hope:
         s: str
         mylist: list
 
-In the example above you get the best of both world - The dynamic validation of typedpy, and the initialization validation
+In the example above you get the best of both worlds - The dynamic validation of typedpy, and the initialization validation
 of Dataclasses that is supported by the IDE.
+
+This section focused on how Typedpy performs the main functionality of Dataclass. But Typedpy has a reach features set
+beyond that. This will be covered in the next chapters.
 
 
 

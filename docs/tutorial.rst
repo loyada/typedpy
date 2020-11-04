@@ -1,0 +1,187 @@
+=================
+Tutorial
+=================
+
+
+.. currentmodule:: typedpy
+
+.. contents:: :local:
+
+Why not just use Dataclasses?
+=============================
+Python Dataclasses are very useful but they have limited functionality.
+Their main value is catching errors before execution, since the IDE is aware of them.
+Let's examine some examples of dataclasses functionality aspects, and how it would look in Typedpy:
+
+Dataclasses do not protect you from post-instantiation errors. The following code will work:
+.. code-block:: python
+
+    @dataclass(frozen=True)
+    class FooDataClass:
+        i: int
+
+    FooDataClass(i=5).i = "xyz"
+
+As well as the following:
+.. code-block:: python
+
+    @dataclass(frozen=True)
+    class FooDataClass:
+        i: int
+
+    def func(i):
+        return FooDataClass(i=i)
+
+    func("xyz")
+
+This is unfortunate, since in both cases we clearly created invalid instances of FooDataClass.
+In contrast, in Typedpy:
+.. code-block:: python
+
+    class Foo(Structure):
+        i: int
+
+    Foo(i=5).i = "xyz"
+    # raises:
+    # TypeError: i: Expected <class 'int'>
+
+    def func(i):
+        return Foo(i=i)
+
+    func("xyz")
+    # raises:
+    # TypeError: i: Expected <class 'int'>
+
+Let's examine usage of default values, in the following dataclass-based code:
+.. code-block:: python
+
+    @dataclass(frozen=True)
+    class FooDataClass:
+        a: dict
+        i: int = "a"
+        s: str = 5
+
+Note that this code has an error: we switched the default values of i and s. Value "a" is not a valid int.
+In contrast, in Typedpy:
+
+.. code-block:: python
+
+    class Foo(ImmutableStructure):
+         a: dict
+         i: int = "a"
+         s: str = 5
+
+    # it immediately raises on exception:
+    # TypeError: i: Invalid default value: 'a'; Reason: Expected <class 'int'>
+
+The error will be caught immediately.
+With dataclass, although the class is "frozen" (i.e. supposed to be immutable), we can do the following:
+
+.. code-block:: python
+
+    f = FooDataClass(a = {'a': 1})
+    # no run time checks for nested objects, even though it is frozen!
+    f.a['a'] = 2
+
+That is probably not what we want in an immutable object.
+In Typedpy, if we instantiate an immutable structure, it behaves like you would expect:
+
+.. code-block:: python
+
+    class Foo(ImmutableStructure):
+        a: dict
+        i: int = 5
+
+    f = Foo(a = {'a': 1})
+    f.a['a'] = 2
+    # raises a ValueError: Structure is immutable
+
+    # Alternatively, we can define a single field as immutable:
+    class ImmutableMap(ImmutableField, Map): pass
+
+    class Foo(Structure):
+        a: ImmutableMap
+        i: int = 5
+
+    Foo(m={'a': 1}, i = 5).m['x'] = 5
+    # ValueError: m: Field is immutable
+
+Let's examine inheritance. In the following code:
+
+.. code-block:: python
+
+@dataclass
+class FooDataClass:
+    a: List
+    i: int
+    t: List[int]
+
+class Bar(FooDataClass):
+    a: str
+    b: str
+
+We forgot to add the dataclass decorator to Bar, but it inherits from FooDataClass. So is it a dataclass or not? \
+It is, but probably not what we intend. Its constructor looks exactly like FooDataClass, and it ignores the fields \
+in its own body. So it is a dataclass, but ignores its own fields. This is a strange outcome(if add the dataclass \
+decorator to it, and then Bar will behave as expected).
+
+In Typedpy, inheritance works the way we expect:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        a: list
+        i: int
+        t: Array[Integer]
+
+    class Bar(Foo):
+        a: str
+
+    print(Bar(a="xyz", i =5, t = []))
+    # <Instance of Bar. Properties: a = 'xyz', i = 5, t = []>
+
+Finally, let's examine generics-style types. The following dataclass code is valid:
+
+.. code-block:: python
+
+    @dataclass(frozen=True)
+    class FooDataClass:
+        a: List[int]
+
+    FooDataClass(a=[1, [], 'x', {}])
+
+Again - this is likely not what we would expect, since a has a value that does not fit its definition.
+In typedpy, in contrast, we will get an appropriate exception:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        a: Array[Integer]
+
+    Foo(a=[1, [] 'x', {}])
+    # TypeError: a_1: Expected <class 'int'>
+
+This section demonstrated how Typedpy can fulfill most of the functions of Dataclasses in a more developer-friendly way.
+The clear advantage of Dataclass over Typedpy is that in a straightforward initialization, the IDE (e.g. PyCharm) identifies
+type errors and highlights them. \
+
+Given that, can we use both together, and thus get the best of both? \
+
+In simple cases, as long as the fields are the basic types (not from the "typing" library or Typedpy Fields, the answer \
+is yes.
+The following code is valid, and behaves the way you would hope:
+
+.. code-block:: python
+
+    @dataclass
+    class FooDataClass(Structure):
+        i: int
+        s: str
+        mylist: list
+
+In the example above you get the best of both world - The dynamic validation of typedpy, and the initialization validation
+of Dataclasses that is supported by the IDE.
+
+
+
+

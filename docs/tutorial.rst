@@ -17,7 +17,7 @@ Dataclasses do not protect you from post-instantiation errors. The following cod
 
 .. code-block:: python
 
-    @dataclass(frozen=True)
+    @dataclass
     class FooDataClass:
         i: int
 
@@ -27,7 +27,7 @@ As well as the following:
 
 .. code-block:: python
 
-    @dataclass(frozen=True)
+    @dataclass
     class FooDataClass:
         i: int
 

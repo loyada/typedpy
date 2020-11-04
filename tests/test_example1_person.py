@@ -128,7 +128,7 @@ def test_invalid_defaults_raise_error1():
     with pytest.raises(TypeError) as excinfo:
         class Foo(Structure):
             i = Integer(default="x")
-    assert "Invalid default value: x" in str(excinfo.value)
+    assert "Invalid default value: 'x'" in str(excinfo.value)
 
 
 def test_invalid_defaults_raise_error2():

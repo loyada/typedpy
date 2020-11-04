@@ -124,10 +124,11 @@ Let's examine inheritance. In the following code:
         a: str
         b: str
 
-We forgot to add the dataclass decorator to Bar, but it inherits from FooDataClass. So is it a dataclass or not? \
-It is, but probably not what we intend. Its constructor looks exactly like FooDataClass, and it ignores the fields \
-in its own body. So it is a dataclass, but ignores its own fields. This is a strange outcome(if add the dataclass \
-decorator to it, and then Bar will behave as expected).
+We forgot to add the dataclass decorator to Bar, but it inherits from FooDataClass. So is it a dataclass or not?
+
+It is, but probably not what we intended. Its constructor looks exactly like FooDataClass, and it ignores the fields \
+in its own body. So it is a dataclass, but ignores its own fields.
+This is an unintuitive outcome (if we add the dataclass decorator to it, and then Bar will behave as expected).
 
 In Typedpy, inheritance works the way we expect:
 
@@ -154,7 +155,8 @@ Finally, let's examine generics-style types. The following dataclass code is val
 
     FooDataClass(a=[1, [], 'x', {}])
 
-Again - this is likely not what we would expect, since a has a value that does not fit its definition.
+Again - this is likely not what we would expect, since 'a' has a value that does not conform to its definition.
+
 In typedpy, in contrast, we will get an appropriate exception:
 
 .. code-block:: python
@@ -166,7 +168,7 @@ In typedpy, in contrast, we will get an appropriate exception:
     # TypeError: a_1: Expected <class 'int'>
 
 This section demonstrated how Typedpy can fulfill most of the functions of Dataclasses in a more developer-friendly way.
-The clear advantage of Dataclass over Typedpy is that in a straightforward initialization, the IDE (e.g. PyCharm) identifies
+The clear advantage of Dataclass over Typedpy is that in a straightforward initialization, the IDE (e.g. PyCharm) identifies \
 type errors and highlights them. \
 
 Given that, can we use both together, and thus get the best of both? \

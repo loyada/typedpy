@@ -14,6 +14,7 @@ Their main value is catching errors before execution, since the IDE is aware of 
 Let's examine some examples of dataclasses functionality aspects, and how it would look in Typedpy:
 
 Dataclasses do not protect you from post-instantiation errors. The following code will work:
+
 .. code-block:: python
 
     @dataclass(frozen=True)
@@ -23,6 +24,7 @@ Dataclasses do not protect you from post-instantiation errors. The following cod
     FooDataClass(i=5).i = "xyz"
 
 As well as the following:
+
 .. code-block:: python
 
     @dataclass(frozen=True)
@@ -36,6 +38,7 @@ As well as the following:
 
 This is unfortunate, since in both cases we clearly created invalid instances of FooDataClass.
 In contrast, in Typedpy:
+
 .. code-block:: python
 
     class Foo(Structure):
@@ -53,6 +56,7 @@ In contrast, in Typedpy:
     # TypeError: i: Expected <class 'int'>
 
 Let's examine usage of default values, in the following dataclass-based code:
+
 .. code-block:: python
 
     @dataclass(frozen=True)
@@ -110,15 +114,15 @@ Let's examine inheritance. In the following code:
 
 .. code-block:: python
 
-@dataclass
-class FooDataClass:
-    a: List
-    i: int
-    t: List[int]
+    @dataclass
+    class FooDataClass:
+        a: List
+        i: int
+        t: List[int]
 
-class Bar(FooDataClass):
-    a: str
-    b: str
+    class Bar(FooDataClass):
+        a: str
+        b: str
 
 We forgot to add the dataclass decorator to Bar, but it inherits from FooDataClass. So is it a dataclass or not? \
 It is, but probably not what we intend. Its constructor looks exactly like FooDataClass, and it ignores the fields \

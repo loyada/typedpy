@@ -7,6 +7,18 @@ Tutorial
 
 .. contents:: :local:
 
+Contents:
+=========
+.. toctree::
+   :maxdepth: 2
+
+   tutorial-basics
+   tutorial-advanced
+   tutorial-serialization-mapping
+   tutorial-schema
+   tutorial-webservice
+
+
 Why not just use Dataclasses?
 =============================
 Python Dataclasses are very useful but they have limited functionality.
@@ -59,18 +71,21 @@ Let's examine usage of default values, in the following dataclass-based code:
 
 .. code-block:: python
 
-    @dataclass(frozen=True)
+    @dataclass
     class FooDataClass:
         a: dict
         i: int = "a"
         s: str = 5
 
+    print(FooDataClass(a = {}).i)
+    # prints "a"
 Note that this code has an error: we switched the default values of i and s. Value "a" is not a valid int.
+Yet, the code will not raise an exception.
 In contrast, in Typedpy:
 
 .. code-block:: python
 
-    class Foo(ImmutableStructure):
+    class Foo(Structure):
          a: dict
          i: int = "a"
          s: str = 5
@@ -79,9 +94,13 @@ In contrast, in Typedpy:
     # TypeError: i: Invalid default value: 'a'; Reason: Expected <class 'int'>
 
 The error will be caught immediately.
+Next, will look at immutability.
 With dataclass, although the class is "frozen" (i.e. supposed to be immutable), we can do the following:
 
 .. code-block:: python
+    @dataclass(frozen=True)
+    class FooDataClass:
+        a: dict
 
     f = FooDataClass(a = {'a': 1})
     # no run time checks for nested objects, even though it is frozen!
@@ -94,7 +113,6 @@ In Typedpy, if we instantiate an immutable structure, it behaves like you would 
 
     class Foo(ImmutableStructure):
         a: dict
-        i: int = 5
 
     f = Foo(a = {'a': 1})
     f.a['a'] = 2
@@ -105,7 +123,6 @@ In Typedpy, if we instantiate an immutable structure, it behaves like you would 
 
     class Foo(Structure):
         a: ImmutableMap
-        i: int = 5
 
     Foo(m={'a': 1}, i = 5).m['x'] = 5
     # ValueError: m: Field is immutable
@@ -127,7 +144,7 @@ Let's examine inheritance. In the following code:
 We forgot to add the dataclass decorator to Bar, but it inherits from FooDataClass. So is it a dataclass or not?
 
 It is, but probably not what we intended. Its constructor looks exactly like FooDataClass, and it ignores the fields \
-in its own body. So it is a dataclass, but ignores its own fields.
+in its own body. So it is a dataclass, but ignores its own spec.
 This is an unintuitive outcome (if we add the dataclass decorator to it, and then Bar will behave as expected).
 
 In Typedpy, inheritance works the way we expect:

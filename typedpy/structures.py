@@ -6,6 +6,7 @@ from copy import deepcopy
 from collections import OrderedDict
 from inspect import Signature, Parameter
 import sys
+import typing
 
 from typing import get_type_hints, Iterable
 
@@ -113,7 +114,9 @@ class Field:
             self.__set__(Structure(), default)
         except Exception as e:
             raise e.__class__(
-                "Invalid default value: {}; Reason: {}".format(wrap_val(default), str(e))
+                "Invalid default value: {}; Reason: {}".format(
+                    wrap_val(default), str(e)
+                )
             ) from e
 
     def __get__(self, instance, owner):
@@ -274,6 +277,61 @@ class StructMeta(type):
         return "<Structure: {}. Properties: {}>".format(name, ", ".join(props))
 
 
+def convert_basic_types(v):
+    from .fields import (
+        Integer,
+        Float,
+        String,
+        Map,
+        Array,
+        Tuple,
+        Set,
+        Boolean,
+        ImmutableSet,
+    )
+
+    type_mapping = {
+        int: Integer,
+        str: String,
+        float: Float,
+        dict: Map,
+        set: Set,
+        list: Array,
+        tuple: Tuple,
+        bool: Boolean,
+        frozenset: ImmutableSet,
+    }
+    return type_mapping.get(v, None)
+
+
+def get_typing_lib_info(v):
+    mapped_simple_type = convert_basic_types(v)
+    if mapped_simple_type:
+        return mapped_simple_type
+    python_ver_higher_than_36 = sys.version_info[0:2] != (3, 6)
+
+    generic_alias = getattr(typing, "_GenericAlias", None)
+    special_generic_alias = getattr(typing, "_SpecialGenericAlias", None)
+    is_typing_generic = python_ver_higher_than_36 and isinstance(
+        v, (generic_alias, special_generic_alias)
+    )
+    if not is_typing_generic:
+        return None
+    origin = getattr(v, "__origin__", None)
+    mapped_type = convert_basic_types(origin)
+    args_raw = getattr(v, "__args__", None)
+    if not args_raw:
+        return mapped_type()
+    mapped_args = [
+        get_typing_lib_info(a) for a in args_raw if not isinstance(a, typing.TypeVar)
+    ]
+    if not all(mapped_args):
+        raise TypeError("invalid type {}".format(v))
+    if mapped_args:
+        return mapped_type(items=mapped_args)
+    return mapped_type()
+
+
 def add_annotations_to_class_dict(cls_dict):
     annotations = cls_dict.get("__annotations__", {})
     defaults = {}
@@ -285,36 +343,16 @@ def add_annotations_to_class_dict(cls_dict):
                 if k in cls_dict:
                     defaults[k] = cls_dict[k]
                 cls_dict[k] = v
-            elif v in {int, float, str, dict, list, tuple, set}:
-                from .fields import (
-                    Integer,
-                    Float,
-                    String,
-                    Map,
-                    Array,
-                    Tuple,
-                    Set,
-                    Boolean,
-                )
-
-                type_mapping = {
-                    int: Integer,
-                    str: String,
-                    float: Float,
-                    dict: Map,
-                    set: Set,
-                    list: Array,
-                    tuple: Tuple,
-                    bool: Boolean,
-                }
-                the_type = type_mapping[v]
-                if k in cls_dict:
-                    try:
-                        the_type = the_type(default=cls_dict[k])
-                    except Exception as e:
-                        raise e.__class__("{}: {}".format(k, str(e))) from e
-                    defaults[k] = cls_dict[k]
-                cls_dict[k] = the_type
+            else:
+                the_type = get_typing_lib_info(v)
+                if the_type:
+                    if k in cls_dict:
+                        try:
+                            the_type = the_type(default=cls_dict[k])
+                        except Exception as e:
+                            raise e.__class__("{}: {}".format(k, str(e))) from e
+                        defaults[k] = cls_dict[k]
+                    cls_dict[k] = the_type
     cls_dict[DEFAULTS] = defaults
 
 
@@ -539,7 +577,9 @@ class TypedField(Field):
             return "{}: ".format(self._name) if self._name else ""
 
         if not isinstance(value, (self._ty)) and value is not None:
-            raise TypeError("{}Expected {}; Got {}".format(err_prefix(), self._ty, wrap_val(value)))
+            raise TypeError(
+                "{}Expected {}; Got {}".format(err_prefix(), self._ty, wrap_val(value))
+            )
 
     def __set__(self, instance, value):
         if not getattr(instance, "_skip_validation", False):

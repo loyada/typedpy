@@ -1,3 +1,8 @@
+import sys
+from dataclasses import dataclass, FrozenInstanceError
+from typing import List, FrozenSet, Dict
+
+import pytest
 from pytest import raises
 
 from typedpy import AllOf, Enum, Number, Float, Structure, ImmutableStructure
@@ -29,8 +34,8 @@ class MixedTypesExample(Structure):
 
 def test_partially_use_annotation():
     print(Example)
-    assert Example(i=9, s="xyz", all=4).i==9
-    assert Example(i=9, s="xyz", all=4).all==4
+    assert Example(i=9, s="xyz", all=4).i == 9
+    assert Example(i=9, s="xyz", all=4).all == 4
 
     with raises(ValueError):
         Example(i=20, s="xyz")
@@ -61,7 +66,7 @@ def test_type_conversion_to_typedpy_str_representation():
 
 def test_type_conversion_to_typedpy_validation_err_for_converted_type():
     with raises(TypeError) as excinfo:
-        MixedTypesExample(i=5, s="xyz", s1="asd",  simple=SimpleStruct(name="John"), a="a")
+        MixedTypesExample(i=5, s="xyz", s1="asd", simple=SimpleStruct(name="John"), a="a")
     assert "a: Expected <class 'dict'>" in str(excinfo.value)
 
 
@@ -99,14 +104,14 @@ def test_all_fields_use_alternate_format_immutable():
 def test_default_values():
     class Example(Structure):
         i: int = 5
-        mylist: list = [1,2,3]
+        mylist: list = [1, 2, 3]
         map: dict
         f: Float = 0.5
         f2 = Float(default=1.5)
 
     e = Example(map={'x': 'y'})
     assert e.i == 5
-    assert e.mylist == [1,2,3]
+    assert e.mylist == [1, 2, 3]
     assert e.map == {'x': 'y'}
     assert e.f == 0.5
     assert e.f2 == 1.5
@@ -161,3 +166,48 @@ def test_some_default_values_predefined_required():
 
     assert ExampleOfImmutable(map={'x': 'y'}).f == 0.5
 
+
+@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
+def test_valid_typing_valid1():
+    class ExampleWithTyping(Structure):
+        mylist: List[List[int]]
+        i: Integer(minimum=50)
+        myset: FrozenSet
+
+    e = ExampleWithTyping(myset={1, 2, 3}, i=100, mylist=[[1, 2, 3]])
+    assert e.mylist[0] == [1, 2, 3]
+
+
+@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
+def test_valid_typing_valid2():
+    class ExampleWithTyping(Structure):
+        mymap: Dict[str, List]
+        myset: FrozenSet[int]
+
+    assert str(ExampleWithTyping) == '<Structure: ExampleWithTyping. Properties: mymap = <Map. Properties: items' \
+                                     ' = [<String>, <Array>]>, myset = <ImmutableSet. Properties: items = <Integer>>>'
+    e = ExampleWithTyping(myset={1, 2, 3}, mymap={"x": [1, 2, 3]})
+    assert e.mymap["x"] == [1, 2, 3]
+
+
+@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
+def test_typing_error():
+    class ExampleWithTyping(Structure):
+        mymap: Dict[str, List]
+
+    with raises(TypeError) as exc_info:
+        ExampleWithTyping(mymap={"x": 5})
+    assert "mymap_value: Got 5; Expected <class 'list'>" in str(exc_info.value)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
+def test_valid_typing_and_dataclass():
+    @dataclass(frozen=True)
+    class ExampleWithTyping(Structure):
+        mylist: List[List[int]]
+        i: Integer(minimum=50)
+        myset: FrozenSet
+
+    e = ExampleWithTyping(myset=frozenset({2, 3}), i=100, mylist=[[1, 2, 3]])
+    with raises(FrozenInstanceError):
+        e.mylist = frozenset()

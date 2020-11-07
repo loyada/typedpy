@@ -1,6 +1,6 @@
 from pytest import raises
 
-from typedpy import Structure, Number, String, Integer, Set, AnyOf, Map, PositiveInt
+from typedpy import Structure, Number, String, Integer, Set, AnyOf, Map, PositiveInt, ImmutableSet
 
 
 class Example(Structure):
@@ -12,6 +12,7 @@ class Example(Structure):
     f = Set[Integer]
     g = Set[AnyOf(fields=[String(minLength=3), Number(minimum=10)])]
     h = Set
+    frozen = ImmutableSet[Integer]
 
 
 def test_invalid_items_definitions_err1():
@@ -142,3 +143,16 @@ def test_simple_set_invalid():
     with raises(TypeError) as excinfo:
         Example(h=[1, 2, 3])
     assert "h: Got [1, 2, 3]; Expected <class 'set'>" in str(excinfo.value)
+
+
+def test_immutable_no_update():
+    e = Example(frozen={1,2,3})
+    with raises(AttributeError) as excinfo:
+        e.frozen.add(4)
+    assert "'frozenset' object has no attribute 'add'" in str(excinfo.value)
+
+
+def test_immutable_content():
+    e = Example(frozen={1,2,3})
+    assert 1 in e.frozen
+

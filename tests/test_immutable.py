@@ -16,6 +16,7 @@ class B(ImmutableStructure):
     y = Number
     z = Array[Number]
     m = Map[String, Number]
+    m2 = Map[String, Array]
     a = A
 
 
@@ -63,6 +64,13 @@ def test_immutable_structure_map_updates_err():
     assert "Structure is immutable" in str(excinfo.value)
 
 
+def test_nested_object_reference_update():
+    xlist = [1,2,3]
+    b = B(m2 = {"x": xlist})
+    xlist.append(1)
+    assert b.m2['x'] == [1,2,3]
+
+
 def test_changing_reference():
     a = A(x=3, y="abc")
     b = B(a=a)
@@ -81,6 +89,15 @@ def test_changing_reference2():
     example = ExampleWithArray(a=[a1, a2])
     a1.x += 1
     assert example.a[0] == A(x=1, y="abc")
+
+
+
+def test_changing_reference_err1():
+    a = A(x=3, y="abc")
+    b = B(a=a)
+    with raises(ValueError) as excinfo:
+        b.a = A(x=3, y="abc")
+    assert "Structure is immutable" in str(excinfo.value)
 
 
 def test_changing_reference_of_field():

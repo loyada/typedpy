@@ -328,6 +328,7 @@ def get_typing_lib_info(v):
     if not all(mapped_args):
         raise TypeError("invalid type {}".format(v))
     if mapped_args:
+        mapped_args = mapped_args if len(mapped_args)>1 else mapped_args[0]
         return mapped_type(items=mapped_args)
     return mapped_type()
 

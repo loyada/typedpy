@@ -201,6 +201,17 @@ def test_typing_error():
 
 
 @pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
+def test_typing_error_in_generic():
+    class ExampleWithTyping(Structure):
+        i: Integer
+        a: List[int]
+
+    with raises(TypeError) as exc_info:
+        ExampleWithTyping(i=5, a=[1, 2, 3, "x"])
+    assert "a_3: Expected <class 'int'>; Got 'x'" in str(exc_info.value)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_valid_typing_and_dataclass():
     @dataclass(frozen=True)
     class ExampleWithTyping(Structure):

@@ -21,6 +21,7 @@ from typedpy.structures import (
 
 
 def _map_to_field(item):
+    item = item[0] if isinstance(item, (list, tuple)) and len(item) == 1 else item
     if isinstance(item, StructMeta) and not isinstance(item, Field):
         return ClassReference(item)
     if item in [None, ""] or isinstance(item, Field):
@@ -573,19 +574,20 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
         super().__init__(*args, **kwargs)
 
     def __set__(self, instance, value):
-        if not isinstance(value, set):
+        cls = self.__class__._ty
+        if not isinstance(value, cls):
             raise TypeError(
-                "{}: Got {}; Expected {}".format(self._name, wrap_val(value), set)
+                "{}: Got {}; Expected {}".format(self._name, wrap_val(value), cls)
             )
         self.validate_size(value, self._name)
         if self.items is not None:
             temp_st = Structure()
             setattr(self.items, "_name", self._name)
-            res = set()
+            res = []
             for val in value:
                 self.items.__set__(temp_st, val)
-                res.add(getattr(temp_st, getattr(self.items, "_name")))
-                value = res
+                res.append(getattr(temp_st, getattr(self.items, "_name")))
+            value = cls(res)
         super().__set__(instance, value)
 
 
@@ -1201,6 +1203,51 @@ def create_typed_field(classname, cls, validate_func=None):
         (ValidatedTypedField,),
         {"_validate_func": validate_wrapper, "_ty": cls},
     )
+
+
+class ImmutableSet(Set, ImmutableField):
+    _ty = frozenset
+
+    def __set__(self, instance, value):
+        if not isinstance(value, (set, frozenset)):
+            raise TypeError(
+                "{}: Got {}; Expected {}".format(self._name, wrap_val(value), set)
+            )
+        self.validate_size(value, self._name)
+        if self.items is not None:
+            temp_st = Structure()
+            setattr(self.items, "_name", self._name)
+            res = set()
+            for val in value:
+                self.items.__set__(temp_st, val)
+                res.add(getattr(temp_st, getattr(self.items, "_name")))
+                value = res
+        corrected_value = value if isinstance(value, frozenset) else frozenset(value)
+        super().__set__(instance, corrected_value)
+
+
+class ImmutableMap(ImmutableField, Map):
+    pass
+
+
+class ImmutableArray(ImmutableField, Array):
+    pass
+
+
+class ImmutableString(ImmutableField, String):
+    pass
+
+
+class ImmutableNumber(ImmutableField, Number):
+    pass
+
+
+class ImmutableInteger(ImmutableField, Integer):
+    pass
+
+
+class ImmutableFloat(ImmutableField, Float):
+    pass
 
 
 class SerializableField(ABC):

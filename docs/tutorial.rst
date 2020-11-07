@@ -98,6 +98,7 @@ Next, will look at immutability.
 With dataclass, although the class is "frozen" (i.e. supposed to be immutable), we can do the following:
 
 .. code-block:: python
+
     @dataclass(frozen=True)
     class FooDataClass:
         a: dict
@@ -144,7 +145,12 @@ Let's examine inheritance. In the following code:
 We forgot to add the dataclass decorator to Bar, but it inherits from FooDataClass. So is it a dataclass or not?
 
 It is, but probably not what we intended. Its constructor looks exactly like FooDataClass, and it ignores the fields \
-in its own body. So it is a dataclass, but ignores its own spec.
+in its own body. So it is a dataclass, but ignores its own spec. So the valid instantiation of Bar looks like:
+
+.. code-block:: python
+
+    Bar(a=[5], i=5, t=[5])
+
 This is an unintuitive outcome (if we add the dataclass decorator to it, and then Bar will behave as expected).
 
 In Typedpy, inheritance works the way we expect:

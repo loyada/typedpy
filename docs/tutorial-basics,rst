@@ -2,6 +2,19 @@
 Tutorial - Basics
 =================
 
-Let's start with a scenario: You created a function that processes trades. A trade has many parameters:
+Let's start with a scenario: You created a system that processes trades. A trade has many parameters. Some of them:
+* price - a positive integer
+* quantity
+* Participants details
+* identifiers of instrument
+* date and time
+* venue
+The trades are passed around by throughout the system. Typically every function/component validates the content of the
+parameters. This can result in a a lot of boilerplate code, inconsistencies in the expectations from the values of the
+properties. For example, Different functions can expect different date format.
+Ideally, the specification should be expressed decleratively, and the trade object will be guranteed to conform to the specs.
+This means that the validation is self-contained.
+This where Typedpy shines. We could define something like the following:
+
 
 

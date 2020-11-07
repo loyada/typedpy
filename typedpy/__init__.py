@@ -37,6 +37,13 @@ from typedpy.fields import (
     Anything,
     SerializableField,
     Function,
+    ImmutableMap,
+    ImmutableArray,
+    ImmutableSet,
+    ImmutableFloat,
+    ImmutableString,
+    ImmutableInteger,
+    ImmutableNumber,
 )
 
 from typedpy.json_schema_mapping import (

@@ -310,12 +310,14 @@ def convert_basic_types(v):
 
 def get_typing_lib_info(v):
     from .fields import AnyOf
+    class Foo: pass
+
     py_version = sys.version_info[0:2]
     python_ver_atleast_than_37 = py_version >= (3, 6)
     python_ver_atleast_39 = py_version >= (3, 9)
 
-    generic_alias = getattr(typing, "_GenericAlias", None)
-    special_generic_alias = getattr(typing, "_SpecialGenericAlias", None)
+    generic_alias = getattr(typing, "_GenericAlias", Foo)
+    special_generic_alias = getattr(typing, "_SpecialGenericAlias", Foo)
     origin = getattr(v, "__origin__", None)
     is_typing_generic = (python_ver_atleast_than_37 and isinstance(v, (generic_alias, special_generic_alias))) or (
          python_ver_atleast_39 and origin in {list, dict, tuple, set, frozenset, typing.Union})

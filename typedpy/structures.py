@@ -324,6 +324,8 @@ def get_typing_lib_info(v):
     if not is_typing_generic:
         return convert_basic_types(v)
     mapped_type = convert_basic_types(origin)
+    if mapped_type is None:
+        raise TypeError("{} type is not supported".format(v))
     args_raw = getattr(v, "__args__", None)
     if not args_raw:
         return mapped_type()

@@ -1,6 +1,6 @@
 import sys
 from dataclasses import dataclass, FrozenInstanceError
-from typing import List, FrozenSet, Dict, Union
+from typing import List, FrozenSet, Dict, Union, Iterable
 
 import pytest
 from pytest import raises
@@ -210,6 +210,13 @@ def test_typing_error_in_generic():
         ExampleWithTyping(i=5, a=[1, 2, 3, "x"])
     assert "a_3: Expected <class 'int'>; Got 'x'" in str(exc_info.value)
 
+@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
+def test_typing_error_unsupported():
+    with raises(TypeError) as exc_info:
+        class ExampleWithTyping(Structure):
+            i: Iterable[int]
+            a: List[int]
+    assert "typing.Iterable[int] type is not supported" in str(exc_info.value)
 
 
 @pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")

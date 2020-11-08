@@ -211,6 +211,23 @@ def test_typing_error_in_generic():
     assert "a_3: Expected <class 'int'>; Got 'x'" in str(exc_info.value)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.7 or higher")
+def test_typing_error_in_generic_pep585_err():
+    class ExampleWithTyping(Structure):
+        i: Integer
+        a: list[int]
+
+    e = ExampleWithTyping(i=5, a=[1, 2, 3])
+    assert e.a[0] == 1
+    with raises(TypeError) as exc_info:
+        e.a[2] = "x"
+    assert "a_2: Expected <class 'int'>; Got 'x'" in str(exc_info.value)
+
+    with raises(TypeError) as exc_info:
+        ExampleWithTyping(i=5, a=[1, 2, 3, "x"])
+    assert "a_3: Expected <class 'int'>; Got 'x'" in str(exc_info.value)
+
+
 @pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_valid_typing_and_dataclass():
     @dataclass(frozen=True)

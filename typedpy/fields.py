@@ -16,7 +16,7 @@ from typedpy.structures import (
     TypedField,
     ClassReference,
     StructMeta,
-    is_function_returning_field,
+    is_function_returning_field, IS_IMMUTABLE,
 )
 
 
@@ -358,22 +358,33 @@ class _ListStruct(list):
     def __init__(self, array: Field, struct_instance: Structure, mylist):
         self._field_definition = array
         self._instance = struct_instance
-        super().__init__(mylist)
+        super().__init__(self._get_defensive_copy_if_needed(mylist))
+
+    def _get_defensive_copy_if_needed(self, value):
+        instance = getattr(self, "_instance", None)
+        if instance:
+            immutable = getattr(self._instance, IS_IMMUTABLE, False)
+            return deepcopy(value) if immutable else value
+        return value
 
     def __setitem__(self, key, value):
-        copied = self[:]
-        copied.__setitem__(key, value)
+        copied =  self[:]
+        copied.__setitem__(key, self._get_defensive_copy_if_needed(value))
         setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+
+    def __getitem__(self, item):
+        val = super().__getitem__(item)
+        return self._get_defensive_copy_if_needed(val)
 
     def append(self, value):
         copied = self[:]
-        copied.append(value)
+        copied.append(self._get_defensive_copy_if_needed(value))
         setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
         super().append(value)
 
     def extend(self, value):
         copied = self[:]
-        copied.extend(value)
+        copied.extend(self._get_defensive_copy_if_needed(value))
         if getattr(self, "_instance", None):
             setattr(
                 self._instance, getattr(self._field_definition, "_name", None), copied
@@ -381,7 +392,7 @@ class _ListStruct(list):
 
     def insert(self, index: int, value):
         copied = self[:]
-        copied.insert(index, value)
+        copied.insert(index, self._get_defensive_copy_if_needed(value))
         setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
 
     def remove(self, ind):
@@ -431,14 +442,31 @@ class _DictStruct(dict):
         self._instance = struct_instance
         super().__init__(mydict)
 
+    def _get_defensive_copy_if_needed(self, value):
+        instance = getattr(self, "_instance", None)
+        if instance:
+            immutable = getattr(self._instance, IS_IMMUTABLE, False)
+            return deepcopy(value) if immutable else value
+        return value
+
     def __setitem__(self, key, value):
         copied = self.copy()
-        copied.__setitem__(key, value)
+        val = self._get_defensive_copy_if_needed(value)
+        copied.__setitem__(key, val)
         if getattr(self, "_instance", None):
-            setattr(
-                self._instance, getattr(self._field_definition, "_name", None), copied
-            )
-        super().__setitem__(key, value)
+            setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+
+        super().__setitem__(key, val)
+
+    def __getitem__(self, item):
+        val = super().__getitem__(item)
+        return self._get_defensive_copy_if_needed(val)
+
+    def items(self):
+        return ((k, self._get_defensive_copy_if_needed(v)) for k, v in super(_DictStruct, self).items())
+
+    def values(self):
+        return (self._get_defensive_copy_if_needed(v) for v in super(_DictStruct, self).values())
 
     def __delitem__(self, key):
         copied = self.copy()
@@ -658,7 +686,6 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 res[getattr(temp_st, getattr(key_field, "_name"))] = getattr(
                     temp_st, getattr(value_field, "_name")
                 )
-            value = res
         super().__set__(instance, _DictStruct(self, instance, value))
 
 

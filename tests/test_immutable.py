@@ -1,5 +1,5 @@
 from pytest import raises
-from typedpy import String, Number, Structure, ImmutableField, ImmutableStructure, Array, Map, Integer
+from typedpy import String, Number, Structure, ImmutableField, ImmutableStructure, Array, Map, Integer, ImmutableMap
 
 
 class ImmutableString(String, ImmutableField): pass
@@ -65,10 +65,10 @@ def test_immutable_structure_map_updates_err():
 
 
 def test_nested_object_reference_update():
-    xlist = [1,2,3]
-    b = B(m2 = {"x": xlist})
+    xlist = [1, 2, 3]
+    b = B(m2={"x": xlist})
     xlist.append(1)
-    assert b.m2['x'] == [1,2,3]
+    assert b.m2['x'] == [1, 2, 3]
 
 
 def test_changing_reference():
@@ -90,6 +90,21 @@ def test_changing_reference2():
     a1.x += 1
     assert example.a[0] == A(x=1, y="abc")
 
+
+def test_assessors_provides_defensive_copy():
+    class Example(ImmutableStructure):
+        arr = Array
+        m = Map
+
+    e = Example(arr=[{'x': 1}], m={'x': [1, 2, 3]})
+    e.arr[0]['x'] = 2
+    e.m['x'][0] = 0
+    for k, v in e.m.items():
+        v.append(4)
+    for v in e.m.values():
+        v.append(5)
+
+    assert e == Example(arr=[{'x': 1}], m={'x': [1, 2, 3]})
 
 
 def test_changing_reference_err1():
@@ -117,14 +132,11 @@ def test_changing_reference_of_field():
 
 
 def test_changing_map_field():
-    class Foo(ImmutableField, Map): pass
-
     class ExampleWithImmutableField(Structure):
-        foo = Foo[String, Integer]
+        foo = ImmutableMap[String, Integer]
 
     original_map = {'a': 1, 'b': 2}
     example = ExampleWithImmutableField(foo=original_map)
     with raises(ValueError) as excinfo:
         example.foo['c'] = 1
     assert "foo: Field is immutable" in str(excinfo.value)
-

@@ -95,7 +95,8 @@ In contrast, in Typedpy:
 
 The error will be caught immediately.
 Next, will look at immutability.
-With dataclass, although the class is "frozen" (i.e. supposed to be immutable), we can do the following:
+With dataclass, we can define a class is "frozen". It's important to understand that the effect of it is limited \
+to blocking explicit re-assignment of fields. However, we can do the following:
 
 .. code-block:: python
 
@@ -103,21 +104,33 @@ With dataclass, although the class is "frozen" (i.e. supposed to be immutable), 
     class FooDataClass:
         a: dict
 
-    f = FooDataClass(a = {'a': 1})
+    my_dict = {'a': 1}
+    f = FooDataClass(a = my_dict)
+
     # no run time checks for nested objects, even though it is frozen!
     f.a['a'] = 2
 
+    # no defensive copy, so we change content by holding a reference:
+    my_dict.clear()
+    assert f.a == {}
+
 That is probably not what we want in an immutable object.
-In Typedpy, if we instantiate an immutable structure, it behaves like you would expect:
+In Typedpy, if we instantiate an immutable structure, though it has limitations, generally it behaves like you
+would expect:
 
 .. code-block:: python
 
     class Foo(ImmutableStructure):
         a: dict
 
-    f = Foo(a = {'a': 1})
+    my_dict = {'a': [1,2,3]}
+    f = Foo(a = my_dict)
     f.a['a'] = 2
     # raises a ValueError: Structure is immutable
+
+    # changing a reference doesn't work. It uses defensive copies
+    my_dict['a'].append(4)
+    assert f.a['a'] == [1,2,3]
 
     # Alternatively, we can define a single field as immutable:
     class ImmutableMap(ImmutableField, Map): pass
@@ -191,12 +204,12 @@ In typedpy, in contrast, we will get an appropriate exception:
     # TypeError: a_1: Expected <class 'int'>; Got []
 
 This section demonstrated how Typedpy can fulfill most of the functions of Dataclasses in a more developer-friendly way.
-The clear advantage of Dataclass over Typedpy is that in a straightforward initialization, the IDE (e.g. PyCharm) identifies \
+A clear advantage of Dataclass over Typedpy is that in a straightforward initialization, the IDE (e.g. PyCharm) identifies \
 type errors and highlights them. \
 
 Given that, can we use both together, and thus get the best of both? \
 
-In simple cases, as long as the fields are the basic types (not from the "typing" library or Typedpy Fields), the answer \
+In simple cases, as long as the fields are the basic types, the answer \
 is yes.
 The following code is valid, and behaves the way you would hope:
 
@@ -204,9 +217,9 @@ The following code is valid, and behaves the way you would hope:
 
     @dataclass
     class FooDataClass(Structure):
-        i: int
+        i: List[Dict]  # in python 3.9+ you can also do i: list[dict]
         s: str
-        mylist: list
+        m: dict
 
 In the example above you get the best of both worlds - The dynamic validation of typedpy, and the initialization validation
 of Dataclasses that is supported by the IDE.

@@ -1,6 +1,6 @@
 import sys
 from dataclasses import dataclass, FrozenInstanceError
-from typing import List, FrozenSet, Dict
+from typing import List, FrozenSet, Dict, Union
 
 import pytest
 from pytest import raises
@@ -209,6 +209,20 @@ def test_typing_error_in_generic():
     with raises(TypeError) as exc_info:
         ExampleWithTyping(i=5, a=[1, 2, 3, "x"])
     assert "a_3: Expected <class 'int'>; Got 'x'" in str(exc_info.value)
+
+
+
+@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
+def test_typing_error_in_generic_union_mapps_to_anyof():
+    class ExampleWithTyping(Structure):
+        a: Union[int, float, str]
+
+    assert str(ExampleWithTyping) == '<Structure: ExampleWithTyping. Properties: ' \
+                                     'a = <AnyOf [<Integer>, <Float>, <String>]>>'
+    e = ExampleWithTyping(a='x')
+    with raises(ValueError) as exc_info:
+        e.a = []
+    assert "a: [] Did not match any field option" in str(exc_info.value)
 
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.7 or higher")

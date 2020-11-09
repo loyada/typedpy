@@ -4,7 +4,8 @@ import pickle
 import pytest
 from pytest import raises
 
-from typedpy import Integer, String, Array, Map, Structure, Set, Enum, StructureReference, Float, Anything, DateField
+from typedpy import Integer, String, Array, Map, Structure, Set, Enum, StructureReference, Anything, DateField, \
+    ImmutableStructure
 
 
 class Values(enum.Enum):
@@ -18,6 +19,20 @@ class Foo(Structure):
 
 
 class Example(Structure):
+    i = Integer
+    s = String
+    anything = Anything
+    arr = Array[String(maxLength=10)]
+    arr2 = Array[Foo]
+    map1 = Map[String, Array[Integer]]
+    map2 = Map[String, Foo]
+    bar = Set
+    enum_arr = Array[Enum[Values]]
+    date = DateField(date_format="%y%m%d")
+    _required = []
+
+
+class ImmutableExample(ImmutableStructure):
     i = Integer
     s = String
     anything = Anything
@@ -46,10 +61,31 @@ def original_object():
         enum_arr=["ABC", "DEF", "ABC"])
 
 
+@pytest.fixture()
+def original_immutable_object():
+    return ImmutableExample(
+        i=5,
+        s="abc",
+        arr=['aa', 'bb'],
+        anything=Foo(m={1: 1, 2: 2}),
+        arr2=[Foo(m={1: 1, 2: 2})],
+        map1={'x': [1, 2], 'y': [3, 4]},
+        map2={'x': Foo(m={1: 1, 2: 2})},
+        bar={2, 3, 2, 4},
+        date='191204',
+        enum_arr=["ABC", "DEF", "ABC"])
+
+
 def test_complex_pickle(original_object):
     pickled = pickle.dumps(original_object)
     unpickled = pickle.loads(pickled)
     assert unpickled == original_object
+
+
+def test_complex_pickle_of_immutable(original_immutable_object):
+    pickled = pickle.dumps(original_immutable_object)
+    unpickled = pickle.loads(pickled)
+    assert unpickled == original_immutable_object
 
 
 def test_pickle_maintains_field_definition_validations(original_object):

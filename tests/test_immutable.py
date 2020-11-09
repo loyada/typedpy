@@ -107,6 +107,86 @@ def test_assessors_provides_defensive_copy():
     assert e == Example(arr=[{'x': 1}], m={'x': [1, 2, 3]})
 
 
+def test_assessors_blocks_direct_updates_to_map():
+    class Example(ImmutableStructure):
+        arr = Array
+        m = Map
+
+    e = Example(arr=[{'x': 1}], m={'x': [1, 2, 3]})
+    with raises(ValueError):
+        e.m['x'] = 0
+    with raises(ValueError):
+        e.m.pop('x')
+    with raises(ValueError):
+        e.m.update({})
+    with raises(ValueError):
+        e.m.clear()
+
+
+def test_assessors_blocks_direct_updates_to_array():
+    class Example(ImmutableStructure):
+        arr = Array
+        m = Map
+
+    e = Example(arr=[{'x': 1}], m={'x': [1, 2, 3]})
+    with raises(ValueError):
+        e.arr[0] = 0
+    with raises(ValueError):
+        e.arr.pop(0)
+    with raises(ValueError):
+        e.arr.remove(0)
+    with raises(ValueError):
+        e.arr.clear()
+    with raises(ValueError):
+        e.arr.append(1)
+    with raises(ValueError):
+        e.arr.extend([])
+
+
+def test_array_iterator_return_defensive_copies_for_immutables():
+    class Example(ImmutableStructure):
+        arr = Array
+        m = Map
+
+    e = Example(arr=[{'x': 1}], m={'x': [1, 2, 3]})
+    for i in e.arr:
+        i['x'] = 1000
+    assert e.arr == [{'x': 1}]
+
+
+def test_array_iterator_return_direct_reference_for_mutables():
+    class Example(Structure):
+        arr = Array
+        m = Map
+
+    e = Example(arr=[{'x': 1}], m={'x': [1, 2, 3]})
+    for i in e.arr:
+        i['x'] = 1000
+    assert e.arr == [{'x': 1000}]
+
+
+def test_map_iterator_return_defensive_copies_for_immutables():
+    class Example(ImmutableStructure):
+        arr = Array
+        m = Map
+
+    e = Example(arr=[{'x': 1}], m={'x': [1, 2, 3]})
+    for k,v in e.m.items():
+        v.append(4)
+    assert e.m == {'x': [1, 2, 3]}
+
+
+def test_map_iterator_return_direct_reference_for_mutables():
+    class Example(Structure):
+        arr = Array
+        m = Map
+
+    e = Example(arr=[{'x': 1}], m={'x': [1, 2, 3]})
+    for k, v in e.m.items():
+        v.append(4)
+    assert e.m == {'x': [1, 2, 3, 4]}
+
+
 def test_changing_reference_err1():
     a = A(x=3, y="abc")
     b = B(a=a)

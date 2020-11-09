@@ -16,7 +16,7 @@ from typedpy.structures import (
     TypedField,
     ClassReference,
     StructMeta,
-    is_function_returning_field, IS_IMMUTABLE,
+    is_function_returning_field, IS_IMMUTABLE, ImmutableMixin,
 )
 
 
@@ -345,23 +345,6 @@ class PositiveInt(Integer, Positive):
     """
 
     pass
-
-
-class ImmutableMixin:
-    _field_definition = None
-    _instance = None
-
-    def _get_defensive_copy_if_needed(self, value):
-        return deepcopy(value) if self._is_immutable() else value
-
-    def _is_immutable(self):
-        instance = getattr(self, "_instance", None)
-        return getattr(self._instance, IS_IMMUTABLE, False) if instance else False
-
-    def _raise_if_immutable(self):
-        if self._is_immutable():
-            name = self._field_definition, "_name", None
-            raise ValueError("{}: Structure is immutable".format(name))
 
 
 class _ListStruct(list, ImmutableMixin):

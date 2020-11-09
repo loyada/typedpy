@@ -1,5 +1,6 @@
 from pytest import raises
-from typedpy import String, Number, Structure, ImmutableField, ImmutableStructure, Array, Map, Integer, ImmutableMap
+from typedpy import String, Number, Structure, ImmutableField, ImmutableStructure, Array, Map, Integer, ImmutableMap, \
+    Set
 
 
 class ImmutableString(String, ImmutableField): pass
@@ -17,6 +18,7 @@ class B(ImmutableStructure):
     z = Array[Number]
     m = Map[String, Number]
     m2 = Map[String, Array]
+    s = Set
     a = A
 
 
@@ -48,6 +50,21 @@ def test_immutable_structure_updates_err():
     with raises(ValueError) as excinfo:
         b.y = 1
     assert "Structure is immutable" in str(excinfo.value)
+
+
+def test_set_get_defensive_copy_if_immutable():
+    b = B(s={1, 2, 3, 4})
+    b.s.add(5)
+    assert 5 not in b.s
+
+
+def test_set_get_reference_if_mutable():
+    class Example(Structure):
+        s: Set[Integer]
+
+    e = Example(s={1, 2, 3, 4})
+    e.s.add(5)
+    assert 5 in e.s
 
 
 def test_immutable_structure_array_updates_err():
@@ -171,7 +188,7 @@ def test_map_iterator_return_defensive_copies_for_immutables():
         m = Map
 
     e = Example(arr=[{'x': 1}], m={'x': [1, 2, 3]})
-    for k,v in e.m.items():
+    for k, v in e.m.items():
         v.append(4)
     assert e.m == {'x': [1, 2, 3]}
 

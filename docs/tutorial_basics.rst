@@ -35,7 +35,7 @@ Tutorial - Basics
      class Trade(ImmutableStructure):
             price: DecimalNumber(maximum=10000, minimum=0)
             quantity: PositiveInt(maximum=100000, multiplesOf=5)
-            symbol: String(pattern='[A-Z]', maxLength=6)
+            symbol: String(pattern='[A-Z]+$', maxLength=6)
             denomination: Enum[Currency]
             participant_buyer: Trader
             participant_seller: Trader
@@ -65,6 +65,7 @@ where:
 | Now, we can pass trades around, and we are guaranteed that they are well formed and valid. There is no need to write
   boilerplate validation code in various functions again and again. Typedpy will block any attempt to create, or mutate
   a structure so that there is a point in time in which we have an invalid trade.
+|
 | Furthermore, since Trade is defined as immutable, we are guaranteed that no one tempered with them by accident. Again,
   Typedpy will block any such attempt.
 | We also get a myriad of utilities, such as the ability to compare trades and print a trade, for free.

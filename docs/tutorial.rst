@@ -4,8 +4,6 @@ Tutorial
 
 .. currentmodule:: typedpy
 
-.. contents:: :local:
-
 Contents:
 =========
 .. toctree::
@@ -14,7 +12,7 @@ Contents:
    tutorial_basics
    tutorial-advanced
 
-
+.. contents:: :local:
 
 Why not just use Dataclasses?
 =============================
@@ -172,7 +170,7 @@ In Typedpy, inheritance works the way we expect:
         t: List[int]
 
     class Bar(Foo):
-        a: str
+        a: str          # overriding "a" field
 
     print(Bar(a="xyz", i =5, t = []))
     # <Instance of Bar. Properties: a = 'xyz', i = 5, t = []>

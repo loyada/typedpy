@@ -29,10 +29,11 @@ Tutorial - Basics
      class Trader(ImmutableStructure):
             price: DecimalNumber(maximum=10000, minimum=0)
             quantity: PositiveInt(maximum=100000, multiplesOf=5)
+            denomination: Enum[Currency]
             participant_buyer: Trader
             participant_seller: Trader
             timestamp: DateField
-            vanue: Enum[Venue]
+            venue: Enum[Venue]
 
 where:
 
@@ -48,7 +49,15 @@ where:
             AMEX = enum.auto()
             NASDAQ = enum.auto()
 
+     class Currency(enum.Enum):
+            USD = enum.auto()
+            GBP = enum.auto()
+            EUR = enum.auto()
 
-Now, we can pass instances of trades around, and we are guaranteed that they are valid, and no one tempered with them
-by accident.
+
+| Now, we can pass trades around, and we are guaranteed that they are well formed and valid. There is no way to create \
+  an invalid instance of trade. Also, since Trade is defined as immutable, we are guaranteed that no one tempered with them \
+  by accident.
+| We also get for free a meriad of utilties, such as the ability to compare two trades and print a trade.
+
 

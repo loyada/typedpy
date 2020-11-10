@@ -13,9 +13,7 @@ Contents:
 
    tutorial_basics
    tutorial-advanced
-   tutorial-serialization-mapping
-   tutorial-schema
-   tutorial-webservice
+
 
 
 Why not just use Dataclasses?

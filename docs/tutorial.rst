@@ -2,7 +2,6 @@
 Tutorial
 =================
 
-
 .. currentmodule:: typedpy
 
 .. contents:: :local:
@@ -12,7 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   tutorial-basics
+   tutorial_basics
    tutorial-advanced
    tutorial-serialization-mapping
    tutorial-schema
@@ -115,8 +114,7 @@ to blocking explicit re-assignment of fields. However, we can do the following:
     assert f.a == {}
 
 That is probably not what we want in an immutable object.
-In Typedpy, if we instantiate an immutable structure, though it has limitations, generally it behaves like you
-would expect:
+In Typedpy, if we instantiate an immutable structure, it behaves like you would expect:
 
 .. code-block:: python
 
@@ -130,7 +128,7 @@ would expect:
 
     # changing a reference doesn't work. It uses defensive copies
     my_dict['a'].append(4)
-    assert f.a['a'] == [1,2,3]
+    assert 4 not in f.a['a']
 
     # Alternatively, we can define a single field as immutable:
     class ImmutableMap(ImmutableField, Map): pass
@@ -173,7 +171,7 @@ In Typedpy, inheritance works the way we expect:
     class Foo(Structure):
         a: list
         i: int
-        t: Array[Integer]
+        t: List[int]
 
     class Bar(Foo):
         a: str
@@ -187,7 +185,7 @@ Finally, let's examine generics-style types. The following dataclass code is val
 
     @dataclass(frozen=True)
     class FooDataClass:
-        a: List[int]
+        a: List[int]   # Alternatively, we can use Typedpy classes: Array[Integer]
 
     FooDataClass(a=[1, [], 'x', {}])
 
@@ -198,7 +196,7 @@ In typedpy, in contrast, we will get an appropriate exception:
 .. code-block:: python
 
     class Foo(Structure):
-        a: Array[Integer]
+        a: List[int]
 
     Foo(a=[1, [] 'x', {}])
     # TypeError: a_1: Expected <class 'int'>; Got []
@@ -209,20 +207,21 @@ type errors and highlights them. \
 
 Given that, can we use both together, and thus get the best of both? \
 
-In simple cases, as long as the fields are the basic types, the answer \
-is yes.
-The following code is valid, and behaves the way you would hope:
+For the most common types, and if you don't have default values, the answer is yes.
+These include int, bool, float, str, dict, set, list, tuple, frozenset.
+Thus, the following code is valid, and behaves the way you would hope:
 
 .. code-block:: python
 
     @dataclass
-    class FooDataClass(Structure):
+    class FooHybrid(Structure):
         i: List[Dict]  # in python 3.9+ you can also do i: list[dict]
-        s: str
         m: dict
+        s: str
 
-In the example above you get the best of both worlds - The dynamic validation of typedpy, and the initialization validation
-of Dataclasses that is supported by the IDE.
+
+In the example above you get the best of both worlds - The dynamic validation of typedpy, and the initialization \
+validation of Dataclasses that is supported by the IDE.
 
 This section focused on how Typedpy performs the main functionality of Dataclass. But Typedpy has a rich feature set
 beyond that. These features will be covered in the following chapters.

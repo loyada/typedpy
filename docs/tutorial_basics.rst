@@ -15,13 +15,15 @@ Tutorial - Basics
 * identifiers of instrument
 * date and time
 * venue
-| The trades are passed around by throughout the system. Often that will create an unwieldy list of function parameters
-  or a dict with names of the fields and there value. This is also an antipattern, since it relies on all the collabotors
+| The trades are passed around by throughout the system. Often that will result in an unwieldy list of function parameters,
+  or a dict with names of the fields and their value. This is an anti-pattern, since it relies on all the collaborators
   having knowledge about the implementation of the field names and values, as well as the hope that no one updated the
-  dictionary.
+  dictionary. In short - a brittle code.
+|
 | Furthermore, typically every function/component validates the content of the parameters. This can result in a a lot
-  of boilerplate code, inconsistencies in the expectations from the values of the properties. For example, Different
-  functions can expect different date format.
+  of repetitive boilerplate code, or inconsistencies in the expectations from the values of the properties. For example, Different
+  functions might expect different date format.
+|
 | Ideally, the specification should be expressed declaratively, and the trade object will be guaranteed to
   conform to the specs.
 | This means that the validation is self-contained. Also, you may want a guarantee that the trade was not changed in

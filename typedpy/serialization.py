@@ -10,7 +10,7 @@ from typedpy.structures import (
     Structure,
     _get_all_fields_by_name,
     ADDITIONAL_PROPERTIES,
-    REQUIRED,
+    REQUIRED_FIELDS,
 )
 from typedpy.fields import (
     Field,
@@ -300,7 +300,7 @@ def deserialize_structure_internal(
     if not isinstance(the_dict, dict):
         props = cls.__dict__
         fields = list(field_by_name.keys())
-        required = props.get(REQUIRED, fields)
+        required = props.get(REQUIRED_FIELDS, fields)
         additional_props = props.get(ADDITIONAL_PROPERTIES, True)
         if len(fields) == 1 and required == fields and additional_props is False:
             field_name = fields[0]
@@ -492,7 +492,7 @@ def serialize_internal(structure, mapper=None, compact=False):
     additional_props = props.get(ADDITIONAL_PROPERTIES, True)
     if (
         len(fields) == 1
-        and props.get(REQUIRED, fields) == fields
+        and props.get(REQUIRED_FIELDS, fields) == fields
         and additional_props is False
         and compact
     ):

@@ -31,6 +31,18 @@ This structure validates itself, so that any attempt to create an invalid struct
 .. autoclass:: Structure
 
 
+Required Fields and Optional Fields
+===================================
+| By using the "_required" property in the class definition, we can define a list of fields that are required.
+| This means that if not all of them are provided in the instantiation, then Typedpy will raise and appropriate exception.
+| By default, all the fields are required.
+| In case it is simpler to describe the fields that are optional (for example, we have 10 fields and only one
+  of them is optiona), we can use the "_optional" property.
+| If both "_required" property is stated, then "_optional" will be ignored.
+|
+| Every field that has a default value, is automatically optional.
+
+
 Immutability
 ============
 .. autoclass:: ImmutableStructure

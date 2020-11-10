@@ -7,18 +7,18 @@ Tutorial - Basics
 .. contents:: :local:
 
 
+Basic Use Cases
+===============
+
+
 | Let's start with a scenario: You created a system that processes trades (we assume simple equity trades).
-| A trade has many parameters. Some of them:
-* price - a positive integer
-* quantity
-* Participants details
-* identifiers of instrument
-* date and time
-* venue
+| A trade has many parameters: price, quantity, Participants details, symbol, date and time, venue etc.
+|
 | The trades are passed around by throughout the system. Often that will result in an unwieldy list of function parameters,
   or a dict with names of the fields and their value. This is an anti-pattern, since it relies on all the collaborators
   having knowledge about the implementation of the field names and values, as well as the hope that no one updated the
-  dictionary. In short - a brittle code.
+  dictionary. Another common problem is partially constructed instance (the developer forgot one of the fields).
+| In short - we have a brittle and unmaintainable code.
 |
 | Furthermore, typically every function/component validates the content of the parameters. This can result in a a lot
   of repetitive boilerplate code, or inconsistencies in the expectations from the values of the properties. For example, Different
@@ -33,7 +33,7 @@ Tutorial - Basics
 .. code-block:: python
 
      class Trade(ImmutableStructure):
-            price: DecimalNumber(maximum=10000, minimum=0)
+            notional: DecimalNumber(maximum=10000, minimum=0)
             quantity: PositiveInt(maximum=100000, multiplesOf=5)
             symbol: String(pattern='[A-Z]+$', maxLength=6)
             denomination: Enum[Currency]
@@ -46,7 +46,7 @@ where:
 
 .. code-block:: python
 
-     class Trader(Structure):
+     class Trader(ImmutableStructure):
             lei: String(pattern='[0-9A-Z]{18}[0-9]{2}$')
             alias: String(maxLength=32)
 
@@ -63,11 +63,53 @@ where:
 
 
 | Now, we can pass trades around, and we are guaranteed that they are well formed and valid. There is no need to write
-  boilerplate validation code in various functions again and again. Typedpy will block any attempt to create, or mutate
-  a structure so that there is a point in time in which we have an invalid trade.
+  boilerplate validation code in various functions again and again. Typedpy **will block any attempt to create or mutate
+  a structure so that there at no point we have an invalid instance**.
 |
 | Furthermore, since Trade is defined as immutable, we are guaranteed that no one tempered with them by accident. Again,
   Typedpy will block any such attempt.
 | We also get a myriad of utilities, such as the ability to compare trades and print a trade, for free.
+
+
+Structure Validation
+====================
+| After a while, we are told that the total value of our trades (notional * quantity) must not exceed 1,000,000 of the denomination.
+| We also need to guarantee that the buyer is not the seller.
+| This is trickier, since it involves interactions between two fields. Fortunately, this is supported:
+
+.. code-block:: python
+
+     MAX_ALLOWED_TOTAL_VALUE = 10000000
+
+     class Trade(ImmutableStructure):
+        .... # no change
+        ....
+
+         def __validate__(self):
+             if self.quantity * self.notional > MAX_ALLOWED_TOTAL_VALUE:
+                 raise ValueError("trade value is too high")
+              if self.participant_seller == self.participant_buyer:
+            raise ValueError("buyer cannot be seller")
+
+And that's it.
+
+Defaults
+========
+Next, we are asked to add an *optional* comments field to trade. By *default*, it should be an empty string.
+This is done by updating the Trade structure as follows:
+
+.. code-block:: python
+
+     class Trade(ImmutableStructure):
+        .... # no change
+        ....
+        comments: str = ''
+
+
+Optional
+
+
+
+
 
 

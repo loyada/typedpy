@@ -13,11 +13,11 @@ from typing import get_type_hints, Iterable
 
 from typedpy.commons import wrap_val
 
-REQUIRED = "_required"
+REQUIRED_FIELDS = "_required"
 DEFAULTS = "_defaults"
 ADDITIONAL_PROPERTIES = "_additionalProperties"
 IS_IMMUTABLE = "_immutable"
-
+OPTIONAL_FIELDS = "_optional"
 
 class ImmutableMixin:
     _field_definition = None
@@ -220,7 +220,7 @@ def _get_all_fields_by_name(cls):
 def _instantiate_fields_if_needed(cls_dict: dict, defaults: dict):
     for key, val in cls_dict.items():
         if (
-            key not in {REQUIRED, ADDITIONAL_PROPERTIES, IS_IMMUTABLE, DEFAULTS}
+            key not in {REQUIRED_FIELDS, ADDITIONAL_PROPERTIES, IS_IMMUTABLE, DEFAULTS, OPTIONAL_FIELDS}
             and not isinstance(val, Field)
             and (
                 Field in getattr(val, "__mro__", []) or is_function_returning_field(val)
@@ -233,20 +233,22 @@ def _instantiate_fields_if_needed(cls_dict: dict, defaults: dict):
 def _apply_default_and_update_required_not_to_include_fields_with_defaults(
     cls_dict: dict, defaults: dict, fields: list
 ):
-    required_fields = set(cls_dict.get(REQUIRED, []))
-    required_fields_predefined = REQUIRED in cls_dict
+    required_fields = set(cls_dict.get(REQUIRED_FIELDS, []))
+    optional_fields = set(cls_dict.get(OPTIONAL_FIELDS, []))
+    required_fields_predefined = REQUIRED_FIELDS in cls_dict
     for field_name in fields:
         if field_name in defaults and not getattr(
             cls_dict[field_name], "_default", None
         ):
             cls_dict[field_name]._try_default_value(defaults[field_name])
             cls_dict[field_name]._default = defaults[field_name]
-        if getattr(cls_dict[field_name], "_default", None):
+        if getattr(cls_dict[field_name], "_default", None) is not None:
             if field_name in required_fields:
                 required_fields.remove(field_name)
         elif not required_fields_predefined:
-            required_fields.add(field_name)
-    cls_dict[REQUIRED] = list(required_fields)
+            if field_name not in optional_fields:
+                required_fields.add(field_name)
+    cls_dict[REQUIRED_FIELDS] = list(required_fields)
 
 
 class StructMeta(type):
@@ -284,7 +286,7 @@ class StructMeta(type):
         default_required = (
             list(set(bases_required + fields)) if bases_params else fields
         )
-        required = cls_dict.get(REQUIRED, default_required)
+        required = cls_dict.get(REQUIRED_FIELDS, default_required)
         additional_props = cls_dict.get(ADDITIONAL_PROPERTIES, True)
         sig = make_signature(clsobj._fields, required, additional_props, bases_params)
         setattr(clsobj, "__signature__", sig)
@@ -415,6 +417,18 @@ class Structure(metaclass=StructMeta):
                 # this raises an exception:
                 Foo(name="John")
 
+        _optional: optional
+            If we don't state the "_required" field, we can state which fields are optional instead.
+            Example:
+
+            .. code-block:: python
+
+                class Foo(Structure):
+                    id = Integer
+                    name = String
+                    _optional = ['name']
+
+
         _additionalProperties(bool): optional
             Is it allowed to add additional properties that are not defined in the class definition?
             the default is True.
@@ -518,7 +532,7 @@ class Structure(metaclass=StructMeta):
         return str(self).__hash__()
 
     def __delitem__(self, key):
-        if isinstance(getattr(self, REQUIRED), list) and key in getattr(self, REQUIRED):
+        if isinstance(getattr(self, REQUIRED_FIELDS), list) and key in getattr(self, REQUIRED_FIELDS):
             raise ValueError("{} is mandatory".format(key))
         del self.__dict__[key]
 
@@ -559,7 +573,7 @@ class Structure(metaclass=StructMeta):
         field_by_name = _get_all_fields_by_name(self.__class__)
         field_names = list(field_by_name.keys())
         props = self.__class__.__dict__
-        required = props.get(REQUIRED, field_names)
+        required = props.get(REQUIRED_FIELDS, field_names)
         additional_props = props.get(ADDITIONAL_PROPERTIES, True)
         if (
             len(field_names) == 1

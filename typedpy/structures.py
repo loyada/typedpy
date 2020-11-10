@@ -2,6 +2,7 @@
 The Skeleton classes to support strictly defined structures:
 Structure, Field, StructureReference, ClassReference, TypedField
 """
+import enum
 from copy import deepcopy
 from collections import OrderedDict
 from inspect import Signature, Parameter
@@ -16,6 +17,23 @@ REQUIRED = "_required"
 DEFAULTS = "_defaults"
 ADDITIONAL_PROPERTIES = "_additionalProperties"
 IS_IMMUTABLE = "_immutable"
+
+
+class ImmutableMixin:
+    _field_definition = None
+    _instance = None
+
+    def _get_defensive_copy_if_needed(self, value):
+        return deepcopy(value) if self._is_immutable() else value
+
+    def _is_immutable(self):
+        instance = getattr(self, "_instance", None)
+        return getattr(self._instance, IS_IMMUTABLE, False) if instance else False
+
+    def _raise_if_immutable(self):
+        if self._is_immutable():
+            name = self._field_definition, "_name", None
+            raise ValueError("{}: Structure is immutable".format(name))
 
 
 def make_signature(names, required, additional_properties, bases_params_by_name):
@@ -122,11 +140,16 @@ class Field:
     def __get__(self, instance, owner):
         if instance is not None and self._name not in instance.__dict__:
             return self._default
-        return (
+        res = (
             instance.__dict__[self._name]
             if instance is not None
             else owner.__dict__[self._name]
         )
+        is_immutable = (instance is not None and
+                        getattr(instance, IS_IMMUTABLE, False) or
+                        getattr(self, IS_IMMUTABLE, False))
+        needs_defensive_copy = not isinstance(res, (ImmutableMixin, int, float, str, bool, enum.Enum)) or res is None
+        return deepcopy(res) if (is_immutable and needs_defensive_copy) else res
 
     def __set__(self, instance, value):
         if getattr(self, IS_IMMUTABLE, False) and self._name in instance.__dict__:

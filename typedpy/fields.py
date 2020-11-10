@@ -16,7 +16,7 @@ from typedpy.structures import (
     TypedField,
     ClassReference,
     StructMeta,
-    is_function_returning_field,
+    is_function_returning_field, IS_IMMUTABLE, ImmutableMixin,
 )
 
 
@@ -111,13 +111,13 @@ class Number(Field):
     """
 
     def __init__(
-        self,
-        *args,
-        multiplesOf=None,
-        minimum=None,
-        maximum=None,
-        exclusiveMaximum=None,
-        **kwargs
+            self,
+            *args,
+            multiplesOf=None,
+            minimum=None,
+            maximum=None,
+            exclusiveMaximum=None,
+            **kwargs
     ):
         self.multiplesOf = multiplesOf
         self.minimum = minimum
@@ -138,10 +138,10 @@ class Number(Field):
         if not is_number(value):
             raise TypeError("{}Expected a number".format(err_prefix()))
         if (
-            isinstance(self.multiplesOf, float)
-            and int(value / self.multiplesOf) != value / self.multiplesOf
-            or isinstance(self.multiplesOf, int)
-            and value % self.multiplesOf
+                isinstance(self.multiplesOf, float)
+                and int(value / self.multiplesOf) != value / self.multiplesOf
+                or isinstance(self.multiplesOf, int)
+                and value % self.multiplesOf
         ):
             raise ValueError(
                 "{}Expected a a multiple of {}".format(err_prefix(), self.multiplesOf)
@@ -347,7 +347,7 @@ class PositiveInt(Integer, Positive):
     pass
 
 
-class _ListStruct(list):
+class _ListStruct(list, ImmutableMixin):
     """
     This is a useful wrapper for the content of list in an Array field.
     It ensures that an update of the form:
@@ -355,23 +355,46 @@ class _ListStruct(list):
     Will not bypass the validation of the Array.
     """
 
+    class ListIteratorProxy:
+        def __init__(self, the_list):
+            self.the_list = the_list
+            self.index = 0
+
+        def __next__(self):
+            if len(self.the_list) > self.index:
+                self.index += 1
+                return self.the_list[self.index - 1]
+            raise StopIteration
+
     def __init__(self, array: Field, struct_instance: Structure, mylist):
         self._field_definition = array
         self._instance = struct_instance
-        super().__init__(mylist)
+        super().__init__(self._get_defensive_copy_if_needed(mylist))
 
     def __setitem__(self, key, value):
+        self._raise_if_immutable()
         copied = self[:]
         copied.__setitem__(key, value)
         setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
 
+    def __getitem__(self, item):
+        val = super().__getitem__(item)
+        return self._get_defensive_copy_if_needed(val)
+
+    def __iter__(self):
+        if self._is_immutable():
+            return _ListStruct.ListIteratorProxy(self)
+        return super(_ListStruct, self).__iter__()
+
     def append(self, value):
+        self._raise_if_immutable()
         copied = self[:]
         copied.append(value)
         setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
         super().append(value)
 
     def extend(self, value):
+        self._raise_if_immutable()
         copied = self[:]
         copied.extend(value)
         if getattr(self, "_instance", None):
@@ -380,16 +403,27 @@ class _ListStruct(list):
             )
 
     def insert(self, index: int, value):
+        self._raise_if_immutable()
         copied = self[:]
         copied.insert(index, value)
         setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
 
     def remove(self, ind):
+        self._raise_if_immutable()
         copied = self[:]
         copied.remove(ind)
         setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
 
+    def copy(self):
+        copied = super(_ListStruct, self).copy()
+        return deepcopy(copied) if self._is_immutable() else copied
+
+    def clear(self) -> None:
+        self._raise_if_immutable()
+        setattr(self._instance, getattr(self._field_definition, "_name", None), [])
+
     def pop(self, index: int = -1):
+        self._raise_if_immutable()
         copied = self[:]
         res = copied.pop(index)
         setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
@@ -416,7 +450,7 @@ class _ListStruct(list):
         super().__init__(state["the_values"])
 
 
-class _DictStruct(dict):
+class _DictStruct(dict, ImmutableMixin):
     """
     This is a useful wrapper for the content of dict in an Map field.
     It ensures that an update of the form:
@@ -432,24 +466,51 @@ class _DictStruct(dict):
         super().__init__(mydict)
 
     def __setitem__(self, key, value):
+        super()._raise_if_immutable()
         copied = self.copy()
         copied.__setitem__(key, value)
         if getattr(self, "_instance", None):
-            setattr(
-                self._instance, getattr(self._field_definition, "_name", None), copied
-            )
+            setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+
         super().__setitem__(key, value)
 
+    def __getitem__(self, item):
+        val = super().__getitem__(item)
+        return self._get_defensive_copy_if_needed(val)
+
+    def copy(self):
+        copied = super(_DictStruct, self).copy()
+        return deepcopy(copied) if self._is_immutable() else copied
+
+    def items(self):
+        return ((k, self._get_defensive_copy_if_needed(v)) for k, v in super(_DictStruct, self).items())
+
+    def values(self):
+        return (self._get_defensive_copy_if_needed(v) for v in super(_DictStruct, self).values())
+
     def __delitem__(self, key):
+        self._raise_if_immutable()
         copied = self.copy()
         del copied[key]
         setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
 
     def update(self, *args, **kwargs):
+        self._raise_if_immutable()
         copied = self.copy()
         res = copied.update(*args, **kwargs)
         setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
         return res
+
+    def pop(self, k):
+        self._raise_if_immutable()
+        copied = self.copy()
+        res = copied.pop(k)
+        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+        return res
+
+    def clear(self) -> None:
+        self._raise_if_immutable()
+        setattr(self._instance, getattr(self._field_definition, "_name", None), {})
 
     def __getstate__(self):
         return {
@@ -658,7 +719,6 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 res[getattr(temp_st, getattr(key_field, "_name"))] = getattr(
                     temp_st, getattr(value_field, "_name")
                 )
-            value = res
         super().__set__(instance, _DictStruct(self, instance, value))
 
 
@@ -700,7 +760,7 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
     _ty = list
 
     def __init__(
-        self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
+            self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
     ):
         """
         Constructor
@@ -740,7 +800,7 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
 
                 if not getattr(instance, "_skip_validation", False):
                     if len(self.items) > len(value) or (
-                        additional_properties_forbidden and len(self.items) > len(value)
+                            additional_properties_forbidden and len(self.items) > len(value)
                     ):
                         raise ValueError(
                             "{}: Got {}; Expected an array of length {}".format(
@@ -756,7 +816,7 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
                     setattr(item, "_name", self._name + "_{}".format(str(ind)))
                     item.__set__(temp_st, value[ind])
                     res.append(getattr(temp_st, getattr(item, "_name")))
-                res += value[len(self.items) :]
+                res += value[len(self.items):]
                 value = res
 
         super().__set__(instance, _ListStruct(self, instance, value))
@@ -863,7 +923,7 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
             setattr(item, "_name", self._name + "_{}".format(str(ind)))
             item.__set__(temp_st, value[ind])
             res.append(getattr(temp_st, getattr(item, "_name")))
-            res += value[len(items) :]
+            res += value[len(items):]
         value = tuple(res)
 
         super().__set__(instance, value)

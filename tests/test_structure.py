@@ -1,5 +1,7 @@
 import enum
 
+from pytest import raises
+
 from typedpy import Structure, DecimalNumber, PositiveInt, String, Enum
 
 
@@ -32,3 +34,29 @@ def test_optional_fields():
           seller=Trader(lei="12345678901234567888", alias="MSIM"),
           timestamp="01/30/20 05:35:35",
           )
+
+
+def test_optional_fields_required_overrides():
+    class Trade(Structure):
+        notional: DecimalNumber(maximum=10000, minimum=0)
+        quantity: PositiveInt(maximum=100000, multiplesOf=5)
+        symbol: String(pattern='[A-Z]+$', maxLength=6)
+        buyer: Trader
+        seller: Trader
+        venue: Enum[Venue]
+        comment: String
+        _optional = ["comment", "venue"]
+        _required = []
+    Trade()
+
+
+def test_optional_fields_required_overrides1():
+    class Trade(Structure):
+        venue: Enum[Venue]
+        comment: String
+        _optional = ["venue"]
+        _required = ["venue"]
+
+    with raises(TypeError) as excinfo:
+        Trade(comment="asdasd")
+    assert "missing a required argument: 'venue'" in str(excinfo.value)

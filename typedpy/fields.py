@@ -16,7 +16,9 @@ from typedpy.structures import (
     TypedField,
     ClassReference,
     StructMeta,
-    is_function_returning_field, IS_IMMUTABLE, ImmutableMixin,
+    is_function_returning_field,
+    IS_IMMUTABLE,
+    ImmutableMixin,
 )
 
 
@@ -111,13 +113,13 @@ class Number(Field):
     """
 
     def __init__(
-            self,
-            *args,
-            multiplesOf=None,
-            minimum=None,
-            maximum=None,
-            exclusiveMaximum=None,
-            **kwargs
+        self,
+        *args,
+        multiplesOf=None,
+        minimum=None,
+        maximum=None,
+        exclusiveMaximum=None,
+        **kwargs
     ):
         self.multiplesOf = multiplesOf
         self.minimum = minimum
@@ -138,10 +140,10 @@ class Number(Field):
         if not is_number(value):
             raise TypeError("{}Expected a number".format(err_prefix()))
         if (
-                isinstance(self.multiplesOf, float)
-                and int(value / self.multiplesOf) != value / self.multiplesOf
-                or isinstance(self.multiplesOf, int)
-                and value % self.multiplesOf
+            isinstance(self.multiplesOf, float)
+            and int(value / self.multiplesOf) != value / self.multiplesOf
+            or isinstance(self.multiplesOf, int)
+            and value % self.multiplesOf
         ):
             raise ValueError(
                 "{}Expected a a multiple of {}".format(err_prefix(), self.multiplesOf)
@@ -470,7 +472,9 @@ class _DictStruct(dict, ImmutableMixin):
         copied = self.copy()
         copied.__setitem__(key, value)
         if getattr(self, "_instance", None):
-            setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+            setattr(
+                self._instance, getattr(self._field_definition, "_name", None), copied
+            )
 
         super().__setitem__(key, value)
 
@@ -483,10 +487,16 @@ class _DictStruct(dict, ImmutableMixin):
         return deepcopy(copied) if self._is_immutable() else copied
 
     def items(self):
-        return ((k, self._get_defensive_copy_if_needed(v)) for k, v in super(_DictStruct, self).items())
+        return (
+            (k, self._get_defensive_copy_if_needed(v))
+            for k, v in super(_DictStruct, self).items()
+        )
 
     def values(self):
-        return (self._get_defensive_copy_if_needed(v) for v in super(_DictStruct, self).values())
+        return (
+            self._get_defensive_copy_if_needed(v)
+            for v in super(_DictStruct, self).values()
+        )
 
     def __delitem__(self, key):
         self._raise_if_immutable()
@@ -760,7 +770,7 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
     _ty = list
 
     def __init__(
-            self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
+        self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
     ):
         """
         Constructor
@@ -800,7 +810,7 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
 
                 if not getattr(instance, "_skip_validation", False):
                     if len(self.items) > len(value) or (
-                            additional_properties_forbidden and len(self.items) > len(value)
+                        additional_properties_forbidden and len(self.items) > len(value)
                     ):
                         raise ValueError(
                             "{}: Got {}; Expected an array of length {}".format(
@@ -816,7 +826,7 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
                     setattr(item, "_name", self._name + "_{}".format(str(ind)))
                     item.__set__(temp_st, value[ind])
                     res.append(getattr(temp_st, getattr(item, "_name")))
-                res += value[len(self.items):]
+                res += value[len(self.items) :]
                 value = res
 
         super().__set__(instance, _ListStruct(self, instance, value))
@@ -923,7 +933,7 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
             setattr(item, "_name", self._name + "_{}".format(str(ind)))
             item.__set__(temp_st, value[ind])
             res.append(getattr(temp_st, getattr(item, "_name")))
-            res += value[len(items):]
+            res += value[len(items) :]
         value = tuple(res)
 
         super().__set__(instance, value)
@@ -1336,4 +1346,4 @@ class ExceptionField(TypedField, SerializableField):
     _ty = Exception
 
     def serialize(self, value):
-        return str(value)
+        return "{}: {}".format(value.__class__.__name__, str(value))

@@ -3,7 +3,7 @@ import sys
 import pytest
 from pytest import raises
 
-from typedpy import Structure, Array, Number, String, Integer, Field
+from typedpy import Structure, Array, Number, String, Integer, Field, ImmutableStructure
 
 
 class Foo(Structure):
@@ -178,6 +178,7 @@ def test_extend_maintains_field_definition():
         e.b[0] = "xxx"
     assert "b_0: Got 'xxx'; Expected a number" in str(excinfo.value)
 
+
 def test_insert_err():
     e = Example(b=[1, 2, 3])
     with raises(TypeError) as excinfo:
@@ -287,3 +288,41 @@ def test_array_with_function_returning_field():
         s = String
 
     assert Foo(a=['xyz'], s='abc').a[0] == 'xyz'
+
+
+def test_copy():
+    class Foo(ImmutableStructure):
+        a = Array
+
+    foo = Foo(a=[1, 2, 3])
+    b = foo.a.copy()
+    b.append(4)
+    assert 4 not in foo.a
+
+
+def test_clear_error_if_immutable():
+    class Foo(ImmutableStructure):
+        a = Array
+
+    foo = Foo(a=[1, 2, 3])
+    with raises(ValueError):
+        foo.a.clear()
+
+
+def test_clear_for_array_with_minimal_size():
+    class Foo(Structure):
+        a = Array(minItems=3)
+
+    foo = Foo(a=[1, 2, 3])
+    with raises(ValueError)as excinfo:
+        foo.a.clear()
+    assert "a: Expected length of at least 3; Got []" in str(excinfo.value)
+
+
+def test_clear():
+    class Foo(Structure):
+        a = Array
+
+    foo = Foo(a=[1, 2, 3])
+    foo.a.clear()
+    assert len(foo.a) == 0

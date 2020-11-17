@@ -19,6 +19,7 @@ ADDITIONAL_PROPERTIES = "_additionalProperties"
 IS_IMMUTABLE = "_immutable"
 OPTIONAL_FIELDS = "_optional"
 
+
 class ImmutableMixin:
     _field_definition = None
     _instance = None
@@ -145,10 +146,15 @@ class Field:
             if instance is not None
             else owner.__dict__[self._name]
         )
-        is_immutable = (instance is not None and
-                        getattr(instance, IS_IMMUTABLE, False) or
-                        getattr(self, IS_IMMUTABLE, False))
-        needs_defensive_copy = not isinstance(res, (ImmutableMixin, int, float, str, bool, enum.Enum)) or res is None
+        is_immutable = (
+            instance is not None
+            and getattr(instance, IS_IMMUTABLE, False)
+            or getattr(self, IS_IMMUTABLE, False)
+        )
+        needs_defensive_copy = (
+            not isinstance(res, (ImmutableMixin, int, float, str, bool, enum.Enum))
+            or res is None
+        )
         return deepcopy(res) if (is_immutable and needs_defensive_copy) else res
 
     def __set__(self, instance, value):
@@ -220,7 +226,14 @@ def _get_all_fields_by_name(cls):
 def _instantiate_fields_if_needed(cls_dict: dict, defaults: dict):
     for key, val in cls_dict.items():
         if (
-            key not in {REQUIRED_FIELDS, ADDITIONAL_PROPERTIES, IS_IMMUTABLE, DEFAULTS, OPTIONAL_FIELDS}
+            key
+            not in {
+                REQUIRED_FIELDS,
+                ADDITIONAL_PROPERTIES,
+                IS_IMMUTABLE,
+                DEFAULTS,
+                OPTIONAL_FIELDS,
+            }
             and not isinstance(val, Field)
             and (
                 Field in getattr(val, "__mro__", []) or is_function_returning_field(val)
@@ -314,7 +327,7 @@ def convert_basic_types(v):
         Boolean,
         ImmutableSet,
         AnyOf,
-        Anything
+        Anything,
     )
 
     type_mapping = {
@@ -328,14 +341,16 @@ def convert_basic_types(v):
         bool: Boolean,
         frozenset: ImmutableSet,
         typing.Union: AnyOf,
-        typing.Any: Anything
+        typing.Any: Anything,
     }
     return type_mapping.get(v, None)
 
 
 def get_typing_lib_info(v):
     from .fields import AnyOf
-    class Foo: pass
+
+    class Foo:
+        pass
 
     py_version = sys.version_info[0:2]
     python_ver_atleast_than_37 = py_version >= (3, 6)
@@ -344,8 +359,13 @@ def get_typing_lib_info(v):
     generic_alias = getattr(typing, "_GenericAlias", Foo)
     special_generic_alias = getattr(typing, "_SpecialGenericAlias", Foo)
     origin = getattr(v, "__origin__", None)
-    is_typing_generic = (python_ver_atleast_than_37 and isinstance(v, (generic_alias, special_generic_alias))) or (
-         python_ver_atleast_39 and origin in {list, dict, tuple, set, frozenset, typing.Union})
+    is_typing_generic = (
+        python_ver_atleast_than_37
+        and isinstance(v, (generic_alias, special_generic_alias))
+    ) or (
+        python_ver_atleast_39
+        and origin in {list, dict, tuple, set, frozenset, typing.Union}
+    )
     if not is_typing_generic:
         return convert_basic_types(v)
     mapped_type = convert_basic_types(origin)
@@ -363,7 +383,7 @@ def get_typing_lib_info(v):
         if mapped_type == AnyOf:
             return mapped_type(fields=mapped_args)
         else:
-            mapped_args = mapped_args if len(mapped_args)>1 else mapped_args[0]
+            mapped_args = mapped_args if len(mapped_args) > 1 else mapped_args[0]
             return mapped_type(items=mapped_args)
     return mapped_type()
 
@@ -532,7 +552,9 @@ class Structure(metaclass=StructMeta):
         return str(self).__hash__()
 
     def __delitem__(self, key):
-        if isinstance(getattr(self, REQUIRED_FIELDS), list) and key in getattr(self, REQUIRED_FIELDS):
+        if isinstance(getattr(self, REQUIRED_FIELDS), list) and key in getattr(
+            self, REQUIRED_FIELDS
+        ):
             raise ValueError("{} is mandatory".format(key))
         del self.__dict__[key]
 

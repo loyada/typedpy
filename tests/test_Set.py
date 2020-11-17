@@ -156,3 +156,15 @@ def test_immutable_content():
     e = Example(frozen={1,2,3})
     assert 1 in e.frozen
 
+
+def test_immutableset_typerr():
+    class Foo(Structure):
+        s: ImmutableSet
+
+    with raises(TypeError):
+        Foo(s=[1,2,3])
+
+
+def test_str():
+    e = Example(h={1,2,3})
+    assert "h = {1,2,3}" in str(e)

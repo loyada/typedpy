@@ -1,6 +1,6 @@
 import sys
 from dataclasses import dataclass, FrozenInstanceError
-from typing import List, FrozenSet, Dict, Union, Iterable
+from typing import List, FrozenSet, Dict, Union, Iterable, T
 
 import pytest
 from pytest import raises
@@ -99,6 +99,14 @@ def test_all_fields_use_alternate_format_immutable():
     with raises(ValueError) as excinfo:
         e.mylist.append('y')
     assert "Structure is immutable" in str(excinfo.value)
+
+
+def test_invalid_default():
+    with raises(TypeError) as excinfo:
+        class Example(Structure):
+            i: int = "x"
+
+    assert "i: Invalid default value: 'x'; Reason: Expected <class 'int'>; Got 'x'" in str(excinfo.value)
 
 
 def test_default_values():
@@ -260,3 +268,20 @@ def test_valid_typing_and_dataclass():
     e = ExampleWithTyping(myset=frozenset({2, 3}), i=100, mylist=[[1, 2, 3]])
     with raises(FrozenInstanceError):
         e.mylist = frozenset()
+
+
+def test_invalid_type():
+    class Bar: pass
+
+    with raises(TypeError):
+        class Foo(Structure):
+            a: list[Bar]
+
+
+def test_generic_typevar_is_ignored():
+    class Foo(Structure):
+        a: List[T]
+
+    assert Foo(a=[1,2]).a[1] == 2
+    with raises(TypeError):
+        Foo(a=1)

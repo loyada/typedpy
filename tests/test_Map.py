@@ -1,6 +1,6 @@
 from pytest import raises
 
-from typedpy import Structure, Number, String, Map, Field, Integer, PositiveInt, Array, Set
+from typedpy import Structure, Number, String, Map, Field, Integer, PositiveInt, Array, Set, ImmutableStructure
 
 
 class Example(Structure):
@@ -246,3 +246,46 @@ def test_simple_map_invalid():
         Example(g={1,'a',2})
     assert "g: Expected <class 'dict'>" in str(excinfo.value)
 
+
+def test_clear_error_if_immutable():
+    class Foo(ImmutableStructure):
+        m = Map
+
+    with raises(ValueError):
+        Foo(m={1: 'x'}).m.clear()
+
+
+def test_clear_with_minimal_size_violation():
+    class Foo(Structure):
+        m = Map(minItems=1)
+
+    with raises(ValueError) as excinfo:
+        Foo(m={1: 'x'}).m.clear()
+    assert "m: Expected length of at least 1; Got {}" in str(excinfo.value)
+
+
+def test_clear():
+    class Foo(Structure):
+        m = Map
+
+    foo = Foo(m={1: 'x'})
+    foo.m.clear()
+    assert foo.m == {}
+
+
+def test_pop():
+    class Foo(Structure):
+        m = Map[Integer, String]
+
+    foo = Foo(m={1: 'x', 2: 'y'})
+    foo.m.pop(1)
+    assert foo.m == {2: 'y'}
+
+
+def test_pop_with_minitems_violation():
+    class Foo(Structure):
+        m = Map(minItems=2)
+
+    with raises(ValueError) as excinfo:
+        Foo(m={1: 'x', 2: 'y'}).m.pop(1)
+    assert "m: Expected length of at least 2" in str(excinfo.value)

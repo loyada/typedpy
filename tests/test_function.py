@@ -28,6 +28,11 @@ def test_proper_function():
     assert b.e(3,2) == 6
 
 
+def test_lambda():
+    b = B(e=lambda x,y: x*y, i=5)
+    assert b.e(3,2) == 6
+
+
 def test_builtin_function():
     assert B(e=open, i=5).e == open
 

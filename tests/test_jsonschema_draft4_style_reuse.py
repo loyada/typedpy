@@ -1,6 +1,6 @@
 from pytest import raises
 
-from typedpy import Structure, AllOf, AnyOf, OneOf, Integer, String, Positive, Number, NotField
+from typedpy import Structure, AllOf, AnyOf, OneOf, Integer, String, Positive, Number, NotField, Field, Array
 
 
 class Foo(Structure):
@@ -162,3 +162,26 @@ def test_embeded_structure_type_err():
 
 def test_embeded_structure_valid():
     assert Example(g=Foo(s="abc")).g.s == "abc"
+
+
+def test_with_function():
+    def func() -> Field:
+        return Integer(minimum=10)
+
+    class Foo(Structure):
+        any: Array[AnyOf[func, String]]
+
+    foo = Foo(any=[15, 'xyz'])
+    assert foo.any[0] == 15
+
+
+def test_with_function_err():
+    def func() -> Field:
+        return Integer(minimum=10)
+
+    class Foo(Structure):
+        any: Array[AnyOf[func, String]]
+
+    with raises(ValueError) as excinfo:
+        Foo(any=[5, 'xyz'])
+    assert "any_0: 5 Did not match any field option" in str(excinfo.value)

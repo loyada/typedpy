@@ -278,6 +278,7 @@ def test_invalid_type():
             a: list[Bar]
 
 
+@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_generic_typevar_is_ignored():
     class Foo(Structure):
         a: List[T]

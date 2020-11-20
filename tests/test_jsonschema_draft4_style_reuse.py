@@ -1,3 +1,6 @@
+import sys
+
+import pytest
 from pytest import raises
 
 from typedpy import Structure, AllOf, AnyOf, OneOf, Integer, String, Positive, Number, NotField, Field, Array
@@ -164,6 +167,7 @@ def test_embeded_structure_valid():
     assert Example(g=Foo(s="abc")).g.s == "abc"
 
 
+@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_with_function():
     def func() -> Field:
         return Integer(minimum=10)
@@ -175,6 +179,7 @@ def test_with_function():
     assert foo.any[0] == 15
 
 
+@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_with_function_err():
     def func() -> Field:
         return Integer(minimum=10)

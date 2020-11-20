@@ -44,10 +44,10 @@ Basic Structure definition:
     from typedpy import Structure, Integer, Array, Map, Number, String, PositiveFloat
 
     class Example(Structure):
-        name = String
-        val_by_alias = Map[String, Number]
-        num = Integer(maximum=30)
-        foo = Array[PositiveFloat]
+        name: String
+        val_by_alias: Map[String, Number]
+        num: Integer(maximum=30)
+        foo: Array[PositiveFloat]
 
 
 Basic Example:

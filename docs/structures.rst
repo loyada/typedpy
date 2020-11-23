@@ -26,7 +26,7 @@ A simple example:
 This structure validates itself, so that any attempt to create an invalid structure will raise an exception.
 
 **Recent updates - Version 2.0**
-While still supporting the old-style :class:`Structure` definition, while looks as follows:
+While still supporting the old-style :class:`Structure` definition, which looks as follows:
 
 .. code-block:: python
 
@@ -46,16 +46,18 @@ After version 2.0, you can also use dataclass-style definition. Look at the foll
         num: Integer(maximum=30) = 1
         foo: Array[PositiveFloat]
 
-    # all the types here will be automatically converted to their corresponding Typedpy equivalent
-    # This includes support for PEP 585 (even on Python 3.6!)
+
+    # all the types here will be automatically converted to their corresponding
+    # Typedpy equivalent This includes support for PEP 585 (even on Python 3.6!)
     class Example_New_Style_Mixed_With_Typing_Types(Structure):
         name: str
         counts_by_alias: Dict[str, Positive]
         id: Union[Integer(minimum=1000), String(pattern='[0-9]+$')] = 1
         foo: Array[PositiveFloat]
 
+
     class Example_With_AutoWrapping_Of_Any_Class(Structure):
-        # assume Point and Person below are arbitrary user classes (unrelated to Typedpy)
+        # assume Point and Person below are arbitrary, non-Typedpy, user classes
         points: list[Point]
         person: Field[Person]
 
@@ -64,15 +66,15 @@ After version 2.0, you can also use dataclass-style definition. Look at the foll
 | If you a recent version of Typepy, all of these are supported.
 | However, here are some guidelines:
 
-1. Before version 1.5 you have to use Array
-2. Version 2.0 allows to use list, typing.List. They are converted automatically to a Typedpy :class:`Array`,
-thus enjoying other features of Typepy automatically.
-3. After version 2.0 Typepy also supports implicit conversion of any class to a Typedpy field, thus you can use
-Field[list]. The disadvantage of this style is that Typedpy knows nothing about the field except its type, so serialization
-is only on a best effort basis, pickling and JSON schema mapping is unsupported for any Structure with implicit mapping.
-Typedpy offers API to explicitly create Typedpy Field types that correspond to non-Typedpy classes, and if you don't
+#. Before version 1.5 you have to use Array
+#. Version 2.0 allows to use list, typing.List. They are converted automatically to a Typedpy :class:`Array`, thus \
+enjoying other features of Typepy automatically.
+#. After version 2.0 Typepy also supports implicit conversion of any class to a Typedpy field, thus you can use \
+Field[list]. The disadvantage of this style is that Typedpy knows nothing about the field except its type, so serialization \
+is only on a best effort basis, pickling and JSON schema mapping is unsupported for any Structure with implicit mapping. \
+Typedpy offers API to explicitly create Typedpy Field types that correspond to non-Typedpy classes, and if you don't \
 mind the extra code, it is more flexible.
-4. Wherever you can, prefer to use the Typedpy classes. They provide the reachest API support and are the most
+#. Wherever you can, prefer to use the Typedpy classes. They provide the reachest API support and are the most \
 rigorously tested.
 
 * All fields are public, and fields names are not allowed to start with "_", since it implies non-public attributes.

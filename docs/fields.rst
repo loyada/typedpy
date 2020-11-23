@@ -51,7 +51,7 @@ Or PEP-585 style:
 The fields above will automatically be converted to their Typedpy counterparts.
 Superficially, it looks like a dataclass, but there are several differences:
 
-* The IDE does not analyze the Typedpy definition as it does to dataclasses, thus it does not display warnings if \
+* The IDE does not analyze the Typedpy definition as it does to dataclasses, thus it does not display warnings if
 the contractor is called with the wrong types. However, you can still annotate the Structure as @dataclass, which will \
 make the IDE inspect it and display warnings as with a "regular" dataclass.
 

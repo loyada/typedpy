@@ -51,20 +51,12 @@ Or PEP-585 style:
 The fields above will automatically be converted to their Typedpy counterparts.
 Superficially, it looks like a dataclass, but there are several differences:
 
-* The IDE does not analyze the Typedpy definition as it does to dataclasses, thus it does not display warnings if
-the contractor is called with the wrong types. However, you can still annotate the Structure as @dataclass, which will \
-make the IDE inspect it and display warnings as with a "regular" dataclass.
-
-* Most importantly: Typedpy also enforces the definition dynamically, and blocks any code that creates or updates an \
-instance so that it does not adhere to the definition.
-
-* With Typedpy we can define a Structure as immutable, which is much more powerful than dataclass "frozen" setting.
-
-* Typedpy offers flexible serialization/deserialization, as well as JSON Schema mapping.
-
-* Typedpy inheritance is cleaner than dataclasses.
-
-* Typedpy validates default values.
+#. The IDE does not analyze the Typedpy definition as it does to dataclasses, thus it does not display warnings if the constructor is called with the wrong types. However, you can still annotate the Structure as @dataclass, which will make the IDE inspect it and display warnings as with a "regular" dataclass.
+#. Most importantly: Typedpy also enforces the definition dynamically, and blocks any code that creates or updates an instance so that it does not adhere to the definition.
+#. With Typedpy we can define a Structure as immutable, which is much more powerful than dataclass "frozen" setting.
+#. Typedpy offers flexible serialization/deserialization, as well as JSON Schema mapping.
+#. Typedpy inheritance is cleaner than dataclasses.
+#. Typedpy validates default values.
 
 
 Implicit Wrapping of Arbitrary Classes As Field (version > 2.0)

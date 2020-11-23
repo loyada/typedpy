@@ -3,7 +3,6 @@ Definitions of various types of fields. Supports JSON draft4 types.
 """
 import enum
 import re
-from abc import ABC
 from collections import OrderedDict
 from copy import deepcopy
 from functools import reduce
@@ -16,9 +15,8 @@ from typedpy.structures import (
     TypedField,
     ClassReference,
     StructMeta,
-    is_function_returning_field,
-    IS_IMMUTABLE,
     ImmutableMixin,
+    _FieldMeta,
 )
 
 
@@ -535,19 +533,10 @@ class _DictStruct(dict, ImmutableMixin):
         super().__init__(state["mydict"])
 
 
-class _CollectionMeta(type):
+class _CollectionMeta(_FieldMeta):
     def __getitem__(cls, item):
         def validate_and_get_field(val):
-            if isinstance(val, Field):
-                return val
-            elif Field in getattr(val, "__mro__", {}):
-                return val()
-            elif Structure in getattr(val, "__mro__", {}):
-                return ClassReference(val)
-            elif is_function_returning_field(val):
-                return val()
-            else:
-                raise TypeError("Expected a Field class or instance")
+            return _FieldMeta.__getitem__(cls, val)
 
         if isinstance(item, tuple):
             items = [validate_and_get_field(it) for it in item]
@@ -555,26 +544,17 @@ class _CollectionMeta(type):
         return cls(items=validate_and_get_field(item))
 
 
-class _EnumMeta(type):
+class _EnumMeta(_FieldMeta):
     def __getitem__(cls, values):
         if isinstance(values, (type,)) and issubclass(values, (enum.Enum,)):
             return cls(values=values)
         return cls(values=list(values))
 
 
-class _JSONSchemaDraft4ReuseMeta(type):
+class _JSONSchemaDraft4ReuseMeta(_FieldMeta):
     def __getitem__(cls, item):
         def validate_and_get_field(val):
-            if isinstance(val, Field):
-                return val
-            elif Field in getattr(val, "__mro__", {}):
-                return val()
-            elif Structure in getattr(val, "__mro__", {}):
-                return ClassReference(val)
-            elif is_function_returning_field(val):
-                return val()
-            else:
-                raise TypeError("Expected a Field class or instance")
+            return _FieldMeta.__getitem__(cls, val)
 
         if isinstance(item, tuple):
             fields = [validate_and_get_field(it) for it in item]
@@ -1229,52 +1209,6 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         return _str_for_multioption_field(self)
 
 
-class ValidatedTypedField(TypedField):
-    def __set__(self, instance, value):
-        self._validate_func(value)  # pylint: disable=E1101
-        super().__set__(instance, value)
-
-
-def create_typed_field(classname, cls, validate_func=None):
-    """
-    Factory that generates a new class for a :class:`Field` as a wrapper of any class.
-    Example:
-    Given a class Foo, and a validation function for the value in Foo - validate_foo, the line
-
-    .. code-block:: python
-
-        ValidatedFooField = create_typed_field("FooField", Foo, validate_func=validate_foo)
-
-    Generates a new :class:`Field` class that validates the content using validate_foo, and can be
-    used just like any :class:`Field` type.
-
-    .. code-block:: python
-
-        class A(Structure):
-            foo = ValidatedFooField
-            bar = Integer
-
-        # asumming we have an instance of Foo, called my_foo:
-        A(bar=4, foo=my_foo)
-
-    Arguments:
-
-        classname(`str`):
-            the content must not match any of the fields in the lists
-    """
-
-    def validate_wrapper(cls, value):
-        if validate_func is None:
-            return
-        validate_func(value)
-
-    return type(
-        classname,
-        (ValidatedTypedField,),
-        {"_validate_func": validate_wrapper, "_ty": cls},
-    )
-
-
 class ImmutableSet(Set, ImmutableField):
     _ty = frozenset
 
@@ -1320,7 +1254,7 @@ class ImmutableFloat(ImmutableField, Float):
     pass
 
 
-class SerializableField(ABC):
+class SerializableField(Field):
     """
     An abstract class for a field that has custom serialization or deserialization.
     can override the method:

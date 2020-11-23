@@ -136,11 +136,18 @@ def test_not_single_valid():
     assert Example(f=Integer).f == Integer
 
 
-def test_simplified_definition_wrong_type_err():
+def test_simplified_definition_implicit_wrapper():
+    class Example(Structure):
+        a = AllOf[Number(minimum=10), float]
+    assert Example(a=10.5).a == 10.5
+
+
+def test_simplified_definition_implicit_wrapper_error():
+    class Example(Structure):
+        a = AllOf[Number(minimum=10), float]
     with raises(TypeError) as excinfo:
-        class Example(Structure):
-            a = AllOf[Integer, float]
-    assert "Expected a Field class or instance" in str(excinfo.value)
+        Example(a=20)
+    assert "a: Expected <class 'float'>; Got 20" in str(excinfo.value)
 
 
 def test_standard_definition_wrong_field_type_err():

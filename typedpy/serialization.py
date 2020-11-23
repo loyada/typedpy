@@ -201,9 +201,15 @@ def deserialize_single_field(
         value = field.deserialize(source_val)
     elif isinstance(field, Anything) or field is None:
         value = source_val
+    elif isinstance(field, TypedField) and isinstance(source_val, (list, dict)):
+        ty = getattr(field, "_ty")
+        if isinstance(source_val, list):
+            value = ty(*source_val)
+        elif isinstance(source_val, dict):
+            value = ty(**source_val)
     else:
         raise NotImplementedError(
-            "cannot deserialize field '{}' of type {} using value {}".format(
+            "cannot deserialize field '{}' of type {} using value {}. Are you using non-Typepy class?".format(
                 name, field.__class__.__name__, wrap_val(source_val)
             )
         )

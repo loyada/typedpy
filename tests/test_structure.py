@@ -1,8 +1,9 @@
 import enum
 
+import pytest
 from pytest import raises
 
-from typedpy import Structure, DecimalNumber, PositiveInt, String, Enum
+from typedpy import Structure, DecimalNumber, PositiveInt, String, Enum, Field, Integer, Map, Array
 
 
 class Venue(enum.Enum):
@@ -47,6 +48,7 @@ def test_optional_fields_required_overrides():
         comment: String
         _optional = ["comment", "venue"]
         _required = []
+
     Trade()
 
 
@@ -60,3 +62,86 @@ def test_optional_fields_required_overrides1():
     with raises(TypeError) as excinfo:
         Trade(comment="asdasd")
     assert "missing a required argument: 'venue'" in str(excinfo.value)
+
+
+@pytest.fixture(scope="session")
+def Point():
+    from math import sqrt
+
+    class PointClass:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+
+        def size(self):
+            return sqrt(self.x ** 2 + self.y ** 2)
+
+    return PointClass
+
+
+def test_field_of_class(Point):
+    class Foo(Structure):
+        i: int
+        point: Field[Point]
+
+    foo = Foo(i=5, point=Point(3, 4))
+    assert foo.point.size() == 5
+
+
+def test_field_of_class_typeerror(Point):
+    class Foo(Structure):
+        i: int
+        point: Field[Point]
+
+    with raises(TypeError) as excinfo:
+        Foo(i=5, point="xyz")
+    assert "point: Expected <class 'test_structure.Point.<locals>.PointClass'>; Got 'xyz'" in str(
+        excinfo.value)
+
+
+def test_field_of_class_in_map(Point):
+    class Foo(Structure):
+        i: int
+        point_by_int: Map[Integer, Field[Point]]
+
+    foo = Foo(i=5, point_by_int={1: Point(3, 4)})
+    assert foo.point_by_int[1].size() == 5
+
+
+def test_field_of_class_in_map_simpler_syntax(Point):
+    class Foo(Structure):
+        i: int
+        point_by_int: Map[Integer, Point]
+
+    foo = Foo(i=5, point_by_int={1: Point(3, 4)})
+    assert foo.point_by_int[1].size() == 5
+
+
+def test_field_of_class_in_map_typerror(Point):
+    class Foo(Structure):
+        i: int
+        point_by_int: Map[Integer, Field[Point]]
+
+    with raises(TypeError) as excinfo:
+        Foo(i=5, point_by_int={1: Point(3, 4), 2: 3})
+    assert "point_by_int_value: Expected <class 'test_structure.Point.<locals>.PointClass'>; Got 3" in str(
+        excinfo.value)
+
+
+def test_field_of_class_in_map__simpler_syntax_typerror(Point):
+    class Foo(Structure):
+        i: int
+        point_by_int: Map[Integer, Point]
+
+    with raises(TypeError) as excinfo:
+        Foo(i=5, point_by_int={1: Point(3, 4), 2: 3})
+    assert "point_by_int_value: Expected <class 'test_structure.Point.<locals>.PointClass'>; Got 3" in str(
+        excinfo.value)
+
+def test_simple_invalid_type():
+    with raises(TypeError) as excinfo:
+        class Foo(Structure):
+            i = Array["x"]
+
+    assert "Unsupported field type in definition: 'x'" in str(
+        excinfo.value)

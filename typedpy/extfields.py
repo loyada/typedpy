@@ -90,7 +90,7 @@ class TimeString(TypedField):
             raise ValueError("{}:  {}".format(self._name, ex.args[0]))
 
 
-class DateField(Field, SerializableField):
+class DateField(SerializableField):
     """
     A datetime.date field. Can accept either a date object, or a string
     that can be converted to a date, using the date_format in the constructor.
@@ -135,7 +135,7 @@ class DateField(Field, SerializableField):
             raise TypeError("{}: expected date, datetime, or str".format(self._name))
 
 
-class DateTime(Field, SerializableField):
+class DateTime(SerializableField):
     """
     A datetime.datetime field. Can accept either a datetime object, or a string
     that can be converted to a date, using the date_format in the constructor.

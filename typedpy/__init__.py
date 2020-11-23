@@ -8,6 +8,7 @@ from typedpy.structures import (
     TypedField,
     ClassReference,
     ImmutableStructure,
+    create_typed_field,
 )
 from typedpy.fields import (
     Number,
@@ -33,7 +34,6 @@ from typedpy.fields import (
     Tuple,
     StructureReference,
     ImmutableField,
-    create_typed_field,
     Anything,
     SerializableField,
     Function,

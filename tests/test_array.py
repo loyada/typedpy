@@ -281,13 +281,26 @@ def test_class_reference_success():
 
 @pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.6 or higher")
 def test_array_with_function_returning_field():
-    def MyField() -> Field:  return String()
+    def MyField() -> Field: return String()
 
     class Foo(Structure):
         a = Array[MyField]
         s = String
 
     assert Foo(a=['xyz'], s='abc').a[0] == 'xyz'
+
+
+@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.6 or higher")
+def test_array_with_function_returning_field_with_params():
+    def MyField(i) -> Field:
+        return String(minLength=1)
+
+    with raises(TypeError) as excinfo:
+        class Foo(Structure):
+            a = Array[MyField]
+            s = String
+
+    assert "Unsupported field type in definition" in str(excinfo.value)
 
 
 def test_copy():

@@ -60,7 +60,9 @@ def test_class_definition_err1():
     with raises(TypeError) as excinfo:
         class Foo(Structure):
             a = Array[int]
-    assert "Expected a Field class or instance" in str(excinfo.value)
+
+        Foo(a=[1,2,3,0.5])
+    assert "a_3: Expected <class 'int'>; Got 0.5" in str(excinfo.value)
 
 
 def test_class_definition_err2():
@@ -71,10 +73,15 @@ def test_class_definition_err2():
 
 
 def test_multiple_items_in_array_schema_definition_err():
+    class Foo(Structure):
+        a = Array[Integer, str]
+
+    foo =Foo(a=[1,"xyz"])
+    assert foo.a[1] == "xyz"
+    foo.a.append(2)
     with raises(TypeError) as excinfo:
-        class Foo(Structure):
-            a = Array[Integer, str]
-    assert "Expected a Field class or instance" in str(excinfo.value)
+        foo.a[1] = 4
+    assert "a_1: Expected <class 'str'>; Got 4" in str(excinfo.value)
 
 
 def test_multiple_items_in_array_schema_err():

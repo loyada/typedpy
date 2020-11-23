@@ -18,6 +18,12 @@ class Foo(Structure):
     m = Map
 
 
+class Point:
+    def __init__(self, x, y):
+        self._x = x
+        self._y = y
+
+
 class Example(Structure):
     i = Integer
     s = String
@@ -29,6 +35,7 @@ class Example(Structure):
     bar = Set
     enum_arr = Array[Enum[Values]]
     date = DateField(date_format="%y%m%d")
+    points = Array[Point]
     _required = []
 
 
@@ -58,7 +65,8 @@ def original_object():
         map2={'x': Foo(m={1: 1, 2: 2})},
         bar={2, 3, 2, 4},
         date='191204',
-        enum_arr=["ABC", "DEF", "ABC"])
+        enum_arr=["ABC", "DEF", "ABC"],
+    )
 
 
 @pytest.fixture()
@@ -82,6 +90,13 @@ def test_complex_pickle(original_object):
     assert unpickled == original_object
 
 
+def test_pickle_with_implicit_non_typedpy_wrappers_fails(original_object):
+    original_object.points = [Point(1, 1), Point(2, 2)]
+    with raises(TypeError) as ex:
+        pickle.dumps(original_object)
+    assert "pickling of implicit wrappers for non-Typedpy fields are unsupported" in str(ex.value)
+
+
 def test_complex_pickle_of_immutable(original_immutable_object):
     pickled = pickle.dumps(original_immutable_object)
     unpickled = pickle.loads(pickled)
@@ -95,7 +110,7 @@ def test_pickle_maintains_field_definition_validations(original_object):
     assert "arr_2: Got 5; Expected a string" in str(ex.value)
 
     with raises(ValueError) as ex:
-        unpickled.arr[0]="1234567890123"
+        unpickled.arr[0] = "1234567890123"
     assert "arr_0: Got '1234567890123'; Expected a maximum length of 10" in str(ex.value)
 
 

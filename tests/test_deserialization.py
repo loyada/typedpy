@@ -567,7 +567,7 @@ def test_map_without_types():
 
 
 def test_serializable_deserialize():
-    class MySerializable(Field, SerializableField):
+    class MySerializable(SerializableField):
         def __init__(self, *args, some_param="xxx", **kwargs):
             self._some_param = some_param
             super().__init__(*args, **kwargs)

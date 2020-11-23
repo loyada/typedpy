@@ -1,5 +1,7 @@
 import enum
 import pickle
+import sys
+from dataclasses import dataclass
 
 import pytest
 from pytest import raises
@@ -17,6 +19,12 @@ class SimpleStruct(Structure):
     name = String(pattern='[A-Za-z]+$', maxLength=8)
 
 
+class Point:
+    def __init__(self, x, y):
+        self._x = x
+        self._y = y
+
+
 class Example(Structure):
     i = Integer(maximum=10)
     s = String(maxLength=5)
@@ -25,6 +33,8 @@ class Example(Structure):
     simple_struct = SimpleStruct
     all = AllOf[Number, Integer]
     enum = Enum(values=[1, 2, 3])
+    points = Array[Point]
+    _optional = ["points"]
 
 
 @pytest.fixture()
@@ -41,7 +51,7 @@ def serialized_source():
             'name': 'danny'
         },
         'all': 5,
-        'enum': 3
+        'enum': 3,
     }
 
 
@@ -54,6 +64,13 @@ def test_successful_deserialization_with_many_types(serialized_source, example):
     example = deserialize_structure(Example, serialized_source)
     result = serialize(example)
     assert result == serialized_source
+
+
+def test_deserialization_with_non_typedpy_wrapper_can_be_inconsistent(serialized_source, example):
+    serialized_source['points'] = [{'x': 1, 'y': 2}]
+    example = deserialize_structure(Example, serialized_source)
+    result = serialize(example)
+    assert result['points'][0] != serialized_source['points'][0]
 
 
 def test_some_empty_fields():
@@ -373,7 +390,7 @@ def test_serialize_invalid_mapper_type():
         i = Integer
 
     with raises(TypeError) as excinfo:
-        serialize(Foo(i=1), mapper=[1,2])
+        serialize(Foo(i=1), mapper=[1, 2])
     assert 'Mapper must be a mapping' in str(excinfo.value)
 
 
@@ -505,9 +522,25 @@ def test_serialize_enum_field_directly():
         DEF = enum.auto()
         GHI = enum.auto()
 
-
     class Foo(Structure):
         arr = Array[Enum[Values]]
 
     foo = Foo(arr=[Values.ABC, Values.DEF])
     assert serialize(foo.arr[0]) == 'ABC'
+
+
+@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
+def test_serialization_with_implicit_wrappers_best_effort_can_work():
+    @dataclass
+    class SimplePoint:
+        x: int
+        y: int
+
+    class Foo(Structure):
+        points = Array[SimplePoint]
+
+    foo = Foo(points=[SimplePoint(1, 2), SimplePoint(2, 3)])
+    serialized = serialize(foo)
+    assert serialized['points'][0] == {"x": 1, "y": 2}
+    deserialized = deserialize_structure(Foo, serialized)
+    assert deserialized == foo

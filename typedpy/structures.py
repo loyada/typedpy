@@ -5,9 +5,10 @@ Structure, Field, StructureReference, ClassReference, TypedField
 import enum
 from copy import deepcopy
 from collections import OrderedDict
-from inspect import Signature, Parameter
+from inspect import Signature, Parameter, signature
 import sys
 import typing
+import hashlib
 
 from typing import get_type_hints, Iterable
 
@@ -114,7 +115,41 @@ def get_base_info(bases):
     return bases_params, bases_required
 
 
-class Field:
+class _FieldMeta(type):
+    _registry = {}
+
+    def __getitem__(cls, val):
+        if isinstance(val, Field):
+            return val
+        elif Field in getattr(val, "__mro__", {}):
+            return val()
+        elif Structure in getattr(val, "__mro__", {}):
+            return ClassReference(val)
+        elif is_function_returning_field(val):
+            return val()
+        else:
+
+            def get_state(value):
+                raise TypeError(
+                    "pickling of implicit wrappers for non-Typedpy fields are unsupported"
+                )
+
+            if not isinstance(val, type):
+                raise TypeError(
+                    "Unsupported field type in definition: {}".format(wrap_val(val))
+                )
+            the_class = val.__name__
+            if the_class in _FieldMeta._registry:
+                return _FieldMeta._registry[the_class]
+            short_hash = hashlib.sha256(the_class.encode("utf-8")).hexdigest()[:8]
+            new_name = "Field_{}_{}".format(the_class, short_hash)
+            class_as_field = create_typed_field(new_name, val)
+            class_as_field.__getstate__ = get_state
+            _FieldMeta._registry[the_class] = class_as_field
+            return class_as_field()
+
+
+class Field(metaclass=_FieldMeta):
     """
     Base class for a field(i.e. property) in a structure.
     Should not be used directly by developers.
@@ -201,6 +236,8 @@ def is_function_returning_field(field_definition_candidate):
     python_ver_higher_than_36 = sys.version_info[0:2] != (3, 6)
     if callable(field_definition_candidate) and python_ver_higher_than_36:
         try:
+            if len(signature(field_definition_candidate).parameters) > 0:
+                raise TypeError("function not allowed to accept any parameters")
             return_value = get_type_hints(field_definition_candidate).get(
                 "return", None
             )
@@ -235,6 +272,7 @@ def _instantiate_fields_if_needed(cls_dict: dict, defaults: dict):
                 OPTIONAL_FIELDS,
             }
             and not isinstance(val, Field)
+            and not key.startswith("__")
             and (
                 Field in getattr(val, "__mro__", []) or is_function_returning_field(val)
             )
@@ -646,7 +684,7 @@ class TypedField(Field):
         def err_prefix():
             return "{}: ".format(self._name) if self._name else ""
 
-        if not isinstance(value, (self._ty)) and value is not None:
+        if not isinstance(value, self._ty) and value is not None:
             raise TypeError(
                 "{}Expected {}; Got {}".format(err_prefix(), self._ty, wrap_val(value))
             )
@@ -655,6 +693,52 @@ class TypedField(Field):
         if not getattr(instance, "_skip_validation", False):
             self._validate(value)
         super().__set__(instance, value)
+
+
+class ValidatedTypedField(TypedField):
+    def __set__(self, instance, value):
+        self._validate_func(value)  # pylint: disable=E1101
+        super().__set__(instance, value)
+
+
+def create_typed_field(classname, cls, validate_func=None):
+    """
+    Factory that generates a new class for a :class:`Field` as a wrapper of any class.
+    Example:
+    Given a class Foo, and a validation function for the value in Foo - validate_foo, the line
+
+    .. code-block:: python
+
+        ValidatedFooField = create_typed_field("FooField", Foo, validate_func=validate_foo)
+
+    Generates a new :class:`Field` class that validates the content using validate_foo, and can be
+    used just like any :class:`Field` type.
+
+    .. code-block:: python
+
+        class A(Structure):
+            foo = ValidatedFooField
+            bar = Integer
+
+        # asumming we have an instance of Foo, called my_foo:
+        A(bar=4, foo=my_foo)
+
+    Arguments:
+
+        classname(`str`):
+            the content must not match any of the fields in the lists
+    """
+
+    def validate_wrapper(cls, value):
+        if validate_func is None:
+            return
+        validate_func(value)
+
+    return type(
+        classname,
+        (ValidatedTypedField,),
+        {"_validate_func": validate_wrapper, "_ty": cls},
+    )
 
 
 class ClassReference(TypedField):

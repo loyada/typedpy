@@ -27,7 +27,7 @@ However, if more restriction are required, they need to be passed to the constru
     name = Number(String(pattern='[A-Za-z]+$', maxLength=20)
 
 
-Support for types defined in the "typing" module, an PEP 585
+Support For The Types In The "Typing" Module, and PEP-585
 ============================================================
 Starting at version 2.0, Typedpy supports field definition using the "typing", making it look somewhat like a Dataclass:
 

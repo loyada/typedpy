@@ -19,11 +19,61 @@ A simple example:
 
     class Example(Structure):
         name: String
-        val_by_alias: Map[String(pattern=), Number]
-        num: Integer(maximum=30)
+        counts_by_alias: Map[String(pattern='[A-Za-z]+$'), Positive]
+        num: Integer(maximum=30) = 1
         foo: Array[PositiveFloat]
 
 This structure validates itself, so that any attempt to create an invalid structure will raise an exception.
+
+**Recent updates - Version 2.0**
+While still supporting the old-style :class:`Structure` definition, while looks as follows:
+
+.. code-block:: python
+
+    class Example(Structure):
+        name = String
+        counts_by_alias = Map[String(pattern='[A-Za-z]+$'), Positive]
+        num = Integer(maximum=30, default=1)
+        foo = Array[PositiveFloat]
+
+After version 2.0, you can also use dataclass-style definition. Look at the following examples:
+
+.. code-block:: python
+
+   class Example_New_Style(Structure):
+        name: String
+        counts_by_alias: Map[String(pattern='[A-Za-z]+$'), Positive]
+        num: Integer(maximum=30) = 1
+        foo: Array[PositiveFloat]
+
+    # all the types here will be automatically converted to their corresponding Typedpy equivalent
+    # This includes support for PEP 585 (even on Python 3.6!)
+    class Example_New_Style_Mixed_With_Typing_Types(Structure):
+        name: str
+        counts_by_alias: Dict[str, Positive]
+        id: Union[Integer(minimum=1000), String(pattern='[0-9]+$')] = 1
+        foo: Array[PositiveFloat]
+
+    class Example_With_AutoWrapping_Of_Any_Class(Structure):
+        # assume Point and Person below are arbitrary user classes (unrelated to Typedpy)
+        points: list[Point]
+        person: Field[Person]
+
+| If you look carefully, you might be confused as there are multiple ways to define similar things, for example an
+| array field can be defined as Array, typing.List, list, Field[list]. What is the right one to use?
+| If you a recent version of Typepy, all of these are supported.
+| However, here are some guidelines:
+
+1. Before version 1.5 you have to use Array
+2. Version 2.0 allows to use list, typing.List. They are converted automatically to a Typedpy :class:`Array`,
+thus enjoying other features of Typepy automatically.
+3. After version 2.0 Typepy also supports implicit conversion of any class to a Typedpy field, thus you can use
+Field[list]. The disadvantage of this style is that Typedpy knows nothing about the field except its type, so serialization
+is only on a best effort basis, pickling and JSON schema mapping is unsupported for any Structure with implicit mapping.
+Typedpy offers API to explicitly create Typedpy Field types that correspond to non-Typedpy classes, and if you don't
+mind the extra code, it is more flexible.
+4. Wherever you can, prefer to use the Typedpy classes. They provide the reachest API support and are the most
+rigorously tested.
 
 * All fields are public, and fields names are not allowed to start with "_", since it implies non-public attributes.
 
@@ -59,8 +109,31 @@ Both classes below are equivalent:
         _optional = ['my_list']
 
 
+
+Defaults
+========
+| Every field can come with a default value, which implicitly makes it an optional field.
+| Default values are validated like any other value in the definition of the field or class , which helps prevent
+| developer's mistakes early. An invalid default will raise exception. For example, the following code raises
+| a TypeError, with a clear error message:
+
+.. code-block:: python
+
+    class Example(Structure):
+        i: Array[Integer] = [1, 2, "x"]
+        s: String(default="xyz")
+
+| As can be seen above, there are two ways to define default values: as a parameter to field constructor or
+| with an equality.
+
+
 Immutability
 ============
+| Typepy support immutable structures. Such structures are protected from any update after instantiation. In most
+| cases trying to do so will raise an appropriate exception. There are cases that Typepy can't know that the developer
+| is trying to change the structure, but even then, Typepy blocks such attempts by using defensive copies.
+| Be aware immutable structures tend to be somewhat slower.
+
 .. autoclass:: ImmutableStructure
 
 

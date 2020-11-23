@@ -26,6 +26,67 @@ However, if more restriction are required, they need to be passed to the constru
 
     name = Number(String(pattern='[A-Za-z]+$', maxLength=20)
 
+
+Support for types defined in the "typing" module, an PEP 585
+============================================================
+Starting at version 2.0, Typedpy supports field definition using the "typing", making it look somewhat like a Dataclass:
+
+.. code-block:: python
+
+    class Example(Structure):
+        names: List[str]
+        id: int = 0
+        my_dict: Dict[str, Union[str, list]]
+
+Or PEP-585 style:
+
+.. code-block:: python
+
+    class Example(Structure):
+        names: list[str]
+        id: int = 0
+        my_dict: dict[str, Union[str, list]]
+        my_set: set[int]
+
+The fields above will automatically be converted to their Typedpy counterparts.
+Superficially, it looks like a dataclass, but there are several differences:
+1. The IDE does not analyze the Typedpy definition as it does to dataclasses, thus it does not display warnings if
+the contractor is called with the wrong types. However, you can still annotate the Structure as @dataclass, which will
+make the IDE inspect it and display warnings as with a "regular" dataclass.
+2. Most importantly: Typedpy also enforces the definition dynamically, and blocks any code that creates or updates an
+instance so that it does not adhere to the definition.
+3. With Typedpy we can define a Structure as immutable, which is much more powerful than dataclass "frozen" setting.
+4. Typedpy offers flexible serialization/deserialization, as well as JSON Schema mapping.
+5. Typedpy inheritance is cleaner than dataclasses.
+6. Typedpy validates default values.
+
+Implicit Wrapping of Arbitrary Classes As Field (version > 2.0)
+===============================================================
+| Supposed you defined your own class, and you want to use it as a field. There are ways to map it explicitly to a Field
+| class (see :ref:`extension-of-classes`). However, after version 2.0 Typepy can also do it implicitly.
+| For example:
+
+.. code-block:: python
+
+     class Point:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+
+        def distance(self):
+            return sqrt(self.x ** 2 + self.y ** 2)
+
+    class Foo(Structure):
+        point_by_int: Map[Integer, Point]
+        my_point: Field[Point]
+
+    foo = Foo(my_point = Point(0,0), point_by_int={1: Point(3, 4)})
+    assert foo.point_by_int[1].distance() == 5
+
+    # the following will raise a TypeError, since 3 is not a valid Point
+    foo.point_by_int[1] = 3
+
+
 Predefined Types
 ================
 
@@ -291,7 +352,7 @@ Extension and Utilities
 
 
 Defining a Field Independently
-===========================
+=============================
 Supposed you have a field definition you would like to reuse. It's important that you do *not* do it using an assignment, i.e.:
 
   .. code-block:: python

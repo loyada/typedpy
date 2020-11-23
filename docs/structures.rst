@@ -74,16 +74,16 @@ After version 2.0, you can also use dataclass-style definition. Look at the foll
 
 * Before version 1.5 you have to use Array
 
-* Version 2.0 allows to use list, typing.List. They are converted automatically to a Typedpy :class:`Array`, thus
+* Version 2.0 allows to use list, typing.List. They are converted automatically to a Typedpy :class:`Array`, thus \
 enjoying other features of Typepy automatically.
 
-* After version 2.0 Typepy also supports implicit conversion of any class to a Typedpy field, thus you can use
-Field[list]. The disadvantage of this style is that Typedpy knows nothing about the field except its type, so serialization
-is done only on a best effort basis, pickling and JSON schema mapping is unsupported for any Structure with implicit
-mapping. Typedpy offers API to explicitly create Typedpy Field types that correspond to non-Typedpy classes, and if
+* After version 2.0 Typepy also supports implicit conversion of any class to a Typedpy field, thus you can use \
+Field[list]. The disadvantage of this style is that Typedpy knows nothing about the field except its type, so serialization \
+is done only on a best effort basis, pickling and JSON schema mapping is unsupported for any Structure with implicit \
+mapping. Typedpy offers API to explicitly create Typedpy Field types that correspond to non-Typedpy classes, and if \
 you don't mind the extra code, it is more flexible.
 
-* Wherever you can, prefer to use the Typedpy classes. They provide the reachest API support and are the most
+* Wherever you can, prefer to use the Typedpy classes. They provide the reachest API support and are the most \
 rigorously tested.
 
 
@@ -343,5 +343,3 @@ Two examples:
     # the following line will throw a ValueError with the message: "Structure is immutable"
     e.mylist.append(3)
 
-Limitations: The automatic conversion of Python types to Typedpy Fields applies to the basic python types, i.e \
-bool, int, float, str, dict, set, tuple, list.

@@ -391,6 +391,6 @@ From version 0.51, if you use Python 3.7+, you can also use type hints to let Ty
         def TableName()-> Field: return String(minLength=3)
 
         class Foo(Structure):
-            foo_names = Names   # note we don't need to call NameS()
+            foo_names = Names   # note we don't need to call Names()
             table = TableName
 

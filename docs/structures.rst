@@ -36,6 +36,12 @@ While still supporting the old-style :class:`Structure` definition, which looks 
         num = Integer(maximum=30, default=1)
         foo = Array[PositiveFloat]
 
+
+* All fields are public, and fields names are not allowed to start with "_", since it implies non-public attributes.
+
+
+
+
 After version 2.0, you can also use dataclass-style definition. Look at the following examples:
 
 .. code-block:: python
@@ -63,21 +69,23 @@ After version 2.0, you can also use dataclass-style definition. Look at the foll
 
 | If you look carefully, you might be confused as there are multiple ways to define similar things, for example an
 | array field can be defined as Array, typing.List, list, Field[list]. What is the right one to use?
-| If you a recent version of Typepy, all of these are supported.
+| If you use a recent version of Typepy, all of these are supported.
 | However, here are some guidelines:
 
 #. Before version 1.5 you have to use Array
+
 #. Version 2.0 allows to use list, typing.List. They are converted automatically to a Typedpy :class:`Array`, thus \
 enjoying other features of Typepy automatically.
+
 #. After version 2.0 Typepy also supports implicit conversion of any class to a Typedpy field, thus you can use \
 Field[list]. The disadvantage of this style is that Typedpy knows nothing about the field except its type, so serialization \
-is only on a best effort basis, pickling and JSON schema mapping is unsupported for any Structure with implicit mapping. \
-Typedpy offers API to explicitly create Typedpy Field types that correspond to non-Typedpy classes, and if you don't \
-mind the extra code, it is more flexible.
+is done only on a best effort basis, pickling and JSON schema mapping is unsupported for any Structure with implicit \
+mapping. Typedpy offers API to explicitly create Typedpy Field types that correspond to non-Typedpy classes, and if \
+you don't mind the extra code, it is more flexible.
+
 #. Wherever you can, prefer to use the Typedpy classes. They provide the reachest API support and are the most \
 rigorously tested.
 
-* All fields are public, and fields names are not allowed to start with "_", since it implies non-public attributes.
 
 
 .. autoclass:: Structure

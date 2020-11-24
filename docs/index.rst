@@ -137,7 +137,8 @@ Contents:
    serialization
    tutorial
    json_schema
-
+   tutorial_basics
+   tutorial_dataclass_comparison
 
 
 

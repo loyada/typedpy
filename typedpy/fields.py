@@ -16,7 +16,8 @@ from typedpy.structures import (
     ClassReference,
     StructMeta,
     ImmutableMixin,
-    _FieldMeta, NoneField,
+    _FieldMeta,
+    NoneField,
 )
 
 
@@ -1118,9 +1119,7 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         if not matched:
             prefix = "{}: ".format(self._name) if self._name else ""
             raise ValueError(
-                "{}{} Did not match any field option".format(
-                    prefix, wrap_val(value)
-                )
+                "{}{} Did not match any field option".format(prefix, wrap_val(value))
             )
         super().__set__(instance, value)
 

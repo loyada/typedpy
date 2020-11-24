@@ -9,7 +9,7 @@ from typedpy.structures import (
     ClassReference,
     ImmutableStructure,
     create_typed_field,
-    NoneField
+    NoneField,
 )
 from typedpy.fields import (
     Number,

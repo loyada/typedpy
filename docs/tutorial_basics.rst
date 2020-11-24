@@ -7,8 +7,8 @@ Tutorial - Basics
 .. contents:: :local:
 
 
-Basic Use Cases
-===============
+Basic Use Case story
+=====================
 
 
 | Let's start with a scenario: You created a system that processes trades (we assume simple equity trades).
@@ -41,6 +41,7 @@ Basic Use Cases
             participant_seller: Trader
             timestamp: DateField
             venue: Enum[Venue]
+            id: String
 
 where:
 
@@ -72,7 +73,7 @@ where:
 
 
 Structure Validation
-====================
+--------------------
 | After a while, we are told that the total value of our trades (notional * quantity) must not exceed 1,000,000 of the denomination.
 | We also need to guarantee that the buyer is not the seller.
 | This is trickier, since it involves interactions between two fields. Fortunately, this is supported:
@@ -93,8 +94,8 @@ Structure Validation
 
 And that's it.
 
-Defaults
-========
+Optionals
+---------
 Next, we are asked to add an *optional* comments field to trade.
 This is done by updating the Trade structure as follows:
 
@@ -106,8 +107,88 @@ This is done by updating the Trade structure as follows:
         comments: str
         _optional = ['comments']
 
+or, alternatively:
+
+.. code-block:: python
+
+     from typing import Optional
+
+     class Trade(ImmutableStructure):
+        .... # no change
+        ....
+        comments: Optional[str]
 
 
+Default value
+-------------
+A business analyst asks you to change the default value for comments from None to "nothing to see here".
+You do it by change the declaration as follows:
+
+.. code-block:: python
+
+     class Trade(ImmutableStructure):
+        .... # no change
+        ....
+        comments: str = "Nothing to see here..."
+
+Note that once we declared an explicit default value to a field, it is already implicitly already optional,
+so there is no need to define it as such.
+
+Serialization
+-------------
+You create a web service that allows to query for a trade by its ID. You could write code to convert
+the Trade instance to a serializable dictionary. But Typepy offers a simpler way:
+
+.. code-block:: python
+
+   output = Serializer(trade).serialize()
+
+Next, you realize that that the client expects "buyer" instead of "participant_buyer", and "seller" instead
+of "participant_seller". Let's do it:
+
+.. code-block:: python
+
+   mapper = {'participant_buyer': 'buyer',
+             'participant_seller': 'seller'}
+   output = Serializer(trade, mapper=mapper).serialize()
+
+Deserialization
+---------------
+Next, you need to create an endpoint that allows to post trades. Instead of writing a lengthy validation
+you can just create the following code:
+
+.. code-block:: python
+
+    class BadRequestException(Exception): pass
+
+    try:
+        Deserializer(Trade).deserializer(request.json)
+    except Exception as e:
+        BadRequestException(e)
+
+Let's say that our web service uses Flask, then you may create an error handle:
+
+.. code-block:: python
+
+   def set_error_handlers(app: Flask):
+       @app.errorhandler(BadRequestException)
+       def invalid_request():
+           return f'invalid request: {e}', HTTPStatus.BAD_REQUEST
 
 
+This is nice, as it eliminates all the validation code, and the potential of impedance mismatch between
+it and the definition of what constitutes a valid Trade.
 
+Mapping to a JSON schema
+------------------------
+Another team builds a client of your service is Java. They are asking for a JSON or OpenAPI schema of your
+API. You can provide create one with the following code:
+
+.. code-block:: python
+
+    schema, definitions = structure_to_schema(Trade, definitions_schema, {})
+
+
+The **definitions** variable above is the schema of objects that are used in the main schema, and are referred to
+from the main schema (e.g. : "$ref": "#/definitions/Trader").
+The **schema** is the main schema for Trade.

@@ -65,7 +65,7 @@ where:
 
 | Now, we can pass trades around, and we are guaranteed that they are well formed and valid. There is no need to write
   boilerplate validation code in various functions again and again. Typedpy **will block any attempt to create or mutate
-  a structure so that there at no point we have an invalid instance**.
+  a structure so that at no point we might have an invalid instance**.
 |
 | Furthermore, since Trade is defined as immutable, we are guaranteed that no one tempered with them by accident. Again,
   Typedpy will block any such attempt.

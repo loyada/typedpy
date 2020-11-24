@@ -91,8 +91,32 @@ Defining a Field as Optional
 =============================
 Start by reading this: :ref:`optional-fields` .
 
+
 Not that typing.Optional is only support at the level of field definition. It is not supported in a nested definition.
 For example, to represent a field of list of integers-or-None, the following is **invalid**:
+
+Default Values Of Optional Fields
+---------------------------------
+| For an optional field, if no value is provided, then the assessor returns None by default. You can
+| provide a default settings, using the "default"  parameter (see below). If a default value is set
+| and no value is provided, then the assessor returns the default value.
+| Example:
+
+.. code-block:: python
+
+    class Person(Structure):
+        name = String(pattern='[A-Za-z]+$', maxLength=16, default='Arthur')
+        ssid = String(minLength=3, pattern='[A-Za-z]+$')
+        num: Integer = 5
+
+    def test_defaults():
+        person = Person(ssid="abc")
+        assert person.foo is None
+        assert person.name == 'Arthur'
+        assert person.num == 5
+
+.. _extension-of-classes:
+
 
 .. code-block:: python
 
@@ -303,28 +327,6 @@ If found, it will use them to serialize or deserialize.
 For more details, see :ref:`custom-serialization`
 
 
-Optional Field and Default Values
-=================================
-A structure can have fields that are optional. For an optional field, if no value is provided, then the assessor returns
-None by default.
-You can provide a default settings, using the "default"  parameter (see below). If a default value is set and no value is provided, then the assessor returns the default value.
-Example:
-
-.. code-block:: python
-
-    class Person(Structure):
-        _required = ['ssid']
-        name = String(pattern='[A-Za-z]+$', maxLength=16, default='Arthur')
-        ssid = String(minLength=3, pattern='[A-Za-z]+$')
-        num = Integer(default=5)
-
-    def test_defaults():
-        person = Person(ssid="abc")
-        assert person.foo is None
-        assert person.name == 'Arthur'
-        assert person.num == 5
-
-.. _extension-of-classes:
 
 Extension and Utilities
 =======================

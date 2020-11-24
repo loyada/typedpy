@@ -1,6 +1,6 @@
 from pytest import raises
 from typedpy import String, Number, Structure, ImmutableField, ImmutableStructure, Array, Map, Integer, ImmutableMap, \
-    Set
+    Set, ImmutableArray
 
 
 class ImmutableString(String, ImmutableField): pass
@@ -146,6 +146,19 @@ def test_assessors_blocks_direct_updates_to_array():
         m = Map
 
     e = Example(arr=[{'x': 1}], m={'x': [1, 2, 3]})
+    assert_updating_arr_fails(e)
+
+
+def test_assessors_blocks_direct_updates_to_array_variation():
+    class Example(Structure):
+        arr = ImmutableArray
+        m = Map
+
+    e = Example(arr=[{'x': 1}], m={'x': [1, 2, 3]})
+    assert_updating_arr_fails(e)
+
+
+def assert_updating_arr_fails(e):
     with raises(ValueError):
         e.arr[0] = 0
     with raises(ValueError):

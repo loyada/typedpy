@@ -93,8 +93,13 @@ Required Fields and Optional Fields
 | If **_required** property is stated, the **_optional** will be ignored.
 |
 | Every field that has a default value is, by definition, optional.
+|
+| A recent (version > 2.0.1) addition is the support of **typing.Optional** field. using Optional[MyFieldType] is
+| equivalent to defining it as one of fields in the **_optional** list.
+| Alternatively, you could use: AnyOf[MyFieldType, NoneField], which is the internal implementation of **Optional**
+| in Typedpy.
 
-Both classes below are equivalent:
+To demonstrate, the three classes below are equivalent, as far as fields optionality:
 
 .. code-block:: python
 
@@ -110,6 +115,15 @@ Both classes below are equivalent:
         my_list: Array[PositiveFloat]
         _optional = ['my_list']
 
+    from typing import Optional
+
+    class Example3(Structure):
+        name: String
+        val_by_alias: Map[String, Number]
+        my_list: Optional[Array[PositiveFloat]]
+
+The only difference between the first two and the third is that in the third you can actually
+assign **None** to my_list (i.e. instance.my_list = None), while in the others it is not allowed.
 
 
 Defaults

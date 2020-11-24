@@ -119,11 +119,19 @@ In Typedpy, if we instantiate an immutable structure, it behaves like you would 
 
     my_dict = {'a': [1,2,3]}
     f = Foo(a = my_dict)
+
+    # Direct updates, such as the following statements, will fail with an exception
     f.a['a'] = 2
-    # raises a ValueError: Structure is immutable
+    f.a.clear()
+    f.a.update({'b': 1})
 
     # changing a reference doesn't work. It uses defensive copies
     my_dict['a'].append(4)
+    assert 4 not in f.a['a']
+
+    # same for updates through iterations
+    for k, v in f.a.items():
+        v.append(4)
     assert 4 not in f.a['a']
 
     # Alternatively, we can define a single field as immutable:
@@ -181,7 +189,7 @@ Finally, let's examine generics-style types. The following dataclass code is val
 
     @dataclass(frozen=True)
     class FooDataClass:
-        a: List[int]   # Alternatively, we can use Typedpy classes: Array[Integer]
+        a: List[int]
 
     FooDataClass(a=[1, [], 'x', {}])
 

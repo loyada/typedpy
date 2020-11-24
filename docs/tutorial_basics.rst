@@ -95,7 +95,7 @@ And that's it.
 
 Defaults
 ========
-Next, we are asked to add an *optional* comments field to trade. By *default*, it should be an empty string.
+Next, we are asked to add an *optional* comments field to trade.
 This is done by updating the Trade structure as follows:
 
 .. code-block:: python
@@ -103,10 +103,8 @@ This is done by updating the Trade structure as follows:
      class Trade(ImmutableStructure):
         .... # no change
         ....
-        comments: str = ''
-
-
-Optional
+        comments: str
+        _optional = ['comments']
 
 
 

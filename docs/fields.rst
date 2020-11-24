@@ -98,6 +98,8 @@ Predefined Types
 
 .. autoclass:: ExceptionField
 
+.. autoclass:: NoneField
+
 Numerical
 ---------
 

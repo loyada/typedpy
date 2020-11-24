@@ -16,7 +16,7 @@ from typedpy.structures import (
     ClassReference,
     StructMeta,
     ImmutableMixin,
-    _FieldMeta,
+    _FieldMeta, NoneField,
 )
 
 
@@ -438,9 +438,10 @@ class _ListStruct(list, ImmutableMixin):
 
     def __deepcopy__(self, memo={}):
         vals = [deepcopy(v) for v in self[:]]
+        instance_id = id(self._instance)
         return _ListStruct(
             array=deepcopy(self._field_definition),
-            struct_instance=memo[id(self._instance)],
+            struct_instance=memo.get(instance_id, self._instance),
             mylist=vals,
         )
 
@@ -1098,6 +1099,10 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __init__(self, fields):
         super().__init__(fields=fields)
+        if fields:
+            for f in fields:
+                if isinstance(f, NoneField):
+                    self._is_optional = True
 
     def __set__(self, instance, value):
         matched = False
@@ -1111,9 +1116,10 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             except ValueError:
                 pass
         if not matched:
+            prefix = "{}: ".format(self._name) if self._name else ""
             raise ValueError(
-                "{}: {} Did not match any field option".format(
-                    self._name, wrap_val(value)
+                "{}{} Did not match any field option".format(
+                    prefix, wrap_val(value)
                 )
             )
         super().__set__(instance, value)

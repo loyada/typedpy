@@ -1,9 +1,10 @@
 import enum
+import typing
 
 import pytest
 from pytest import raises
 
-from typedpy import Structure, DecimalNumber, PositiveInt, String, Enum, Field, Integer, Map, Array
+from typedpy import Structure, DecimalNumber, PositiveInt, String, Enum, Field, Integer, Map, Array, AnyOf, NoneField
 
 
 class Venue(enum.Enum):
@@ -99,6 +100,48 @@ def test_field_of_class_typeerror(Point):
         excinfo.value)
 
 
+def test_using_arbitrary_class_in_anyof(Point):
+    class Foo(Structure):
+        i: int
+        point: AnyOf[Point, int]
+
+    assert Foo(i=1, point = 2).point == 2
+
+
+def test_using_arbitrary_class_in_union(Point):
+    class Foo(Structure):
+        i: int
+        point: typing.Union[Point, int]
+
+    assert Foo(i=1, point = 2).point == 2
+
+
+def test_optional(Point):
+    class Foo(Structure):
+        i: int
+        point: typing.Optional[Point]
+
+    assert Foo(i=1).point is None
+    assert Foo(i=1, point=None).point is None
+    foo = Foo(i=1, point=Point(3,4))
+    assert foo.point.size() == 5
+    foo.point = None
+    assert foo.point is None
+    foo.point = Point(3,4)
+    assert foo.point.size() == 5
+
+
+def test_optional_err(Point):
+    class Foo(Structure):
+        i: int
+        point: typing.Optional[Point]
+
+    with raises(ValueError) as excinfo:
+        Foo(i=1, point=3)
+    assert "point: 3 Did not match any field option" in str(
+            excinfo.value)
+
+
 def test_field_of_class_in_map(Point):
     class Foo(Structure):
         i: int
@@ -145,3 +188,21 @@ def test_simple_invalid_type():
 
     assert "Unsupported field type in definition: 'x'" in str(
         excinfo.value)
+
+
+def test_simple_nonefield_usage():
+    class Foo(Structure):
+        a = Array[AnyOf[Integer, NoneField]]
+
+    foo = Foo(a=[1,2,3, None, 4])
+    assert foo.a == [1,2,3, None, 4]
+
+
+def test_auto_none_conversion():
+    class Foo(Structure):
+        a = Array[AnyOf[Integer, None]]
+
+    foo = Foo(a=[1,2,3, None, 4])
+    assert foo.a == [1,2,3, None, 4]
+
+

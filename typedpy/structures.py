@@ -127,6 +127,8 @@ class _FieldMeta(type):
             return ClassReference(val)
         elif is_function_returning_field(val):
             return val()
+        elif val is None:
+            return NoneField()
         else:
 
             def get_state(value):
@@ -182,13 +184,13 @@ class Field(metaclass=_FieldMeta):
             else owner.__dict__[self._name]
         )
         is_immutable = (
-            instance is not None
-            and getattr(instance, IS_IMMUTABLE, False)
-            or getattr(self, IS_IMMUTABLE, False)
+                instance is not None
+                and getattr(instance, IS_IMMUTABLE, False)
+                or getattr(self, IS_IMMUTABLE, False)
         )
         needs_defensive_copy = (
-            not isinstance(res, (ImmutableMixin, int, float, str, bool, enum.Enum))
-            or res is None
+                not isinstance(res, (ImmutableMixin, int, float, str, bool, enum.Enum))
+                or res is None
         )
         return deepcopy(res) if (is_immutable and needs_defensive_copy) else res
 
@@ -196,13 +198,13 @@ class Field(metaclass=_FieldMeta):
         if getattr(self, IS_IMMUTABLE, False) and self._name in instance.__dict__:
             raise ValueError("{}: Field is immutable".format(self._name))
         if getattr(self, IS_IMMUTABLE, False) and not getattr(
-            self, "_custom_deep_copy_implementation", False
+                self, "_custom_deep_copy_implementation", False
         ):
             instance.__dict__[self._name] = deepcopy(value)
         else:
             instance.__dict__[self._name] = value
         if getattr(instance, "_instantiated", False) and not getattr(
-            instance, "_skip_validation", False
+                instance, "_skip_validation", False
         ):
             instance.__validate__()
 
@@ -263,33 +265,33 @@ def _get_all_fields_by_name(cls):
 def _instantiate_fields_if_needed(cls_dict: dict, defaults: dict):
     for key, val in cls_dict.items():
         if (
-            key
-            not in {
-                REQUIRED_FIELDS,
-                ADDITIONAL_PROPERTIES,
-                IS_IMMUTABLE,
-                DEFAULTS,
-                OPTIONAL_FIELDS,
-            }
-            and not isinstance(val, Field)
-            and not key.startswith("__")
-            and (
+                key
+                not in {
+            REQUIRED_FIELDS,
+            ADDITIONAL_PROPERTIES,
+            IS_IMMUTABLE,
+            DEFAULTS,
+            OPTIONAL_FIELDS,
+        }
+                and not isinstance(val, Field)
+                and not key.startswith("__")
+                and (
                 Field in getattr(val, "__mro__", []) or is_function_returning_field(val)
-            )
+        )
         ):
             new_val = val(default=defaults[key]) if key in defaults else val()
             cls_dict[key] = new_val
 
 
 def _apply_default_and_update_required_not_to_include_fields_with_defaults(
-    cls_dict: dict, defaults: dict, fields: list
+        cls_dict: dict, defaults: dict, fields: list
 ):
     required_fields = set(cls_dict.get(REQUIRED_FIELDS, []))
     optional_fields = set(cls_dict.get(OPTIONAL_FIELDS, []))
     required_fields_predefined = REQUIRED_FIELDS in cls_dict
     for field_name in fields:
         if field_name in defaults and not getattr(
-            cls_dict[field_name], "_default", None
+                cls_dict[field_name], "_default", None
         ):
             cls_dict[field_name]._try_default_value(defaults[field_name])
             cls_dict[field_name]._default = defaults[field_name]
@@ -394,17 +396,19 @@ def get_typing_lib_info(v):
     python_ver_atleast_than_37 = py_version >= (3, 6)
     python_ver_atleast_39 = py_version >= (3, 9)
 
+    if v == type(None):
+        return NoneField()
     generic_alias = getattr(typing, "_GenericAlias", Foo)
     special_generic_alias = getattr(typing, "_SpecialGenericAlias", Foo)
     origin = getattr(v, "__origin__", None)
-    is_typing_generic = (
-        python_ver_atleast_than_37
-        and isinstance(v, (generic_alias, special_generic_alias))
-    ) or (
-        python_ver_atleast_39
-        and origin in {list, dict, tuple, set, frozenset, typing.Union}
-    )
-    if not is_typing_generic:
+    typing_is_generic = (
+                                python_ver_atleast_than_37
+                                and isinstance(v, (generic_alias, special_generic_alias))
+                        ) or (
+                                python_ver_atleast_39
+                                and origin in {list, dict, tuple, set, frozenset, typing.Union}
+                        )
+    if not typing_is_generic:
         return convert_basic_types(v)
     mapped_type = convert_basic_types(origin)
     if mapped_type is None:
@@ -416,7 +420,15 @@ def get_typing_lib_info(v):
         get_typing_lib_info(a) for a in args_raw if not isinstance(a, typing.TypeVar)
     ]
     if not all(mapped_args):
-        raise TypeError("invalid type {}".format(v))
+        if mapped_type == AnyOf:
+            for i, arg in enumerate(mapped_args):
+                if arg is None:
+                    if isinstance(args_raw[i], type):
+                        mapped_args[i] = Field[args_raw[i]]
+                    else:
+                        raise TypeError("invalid type {}".format(v))
+        else:
+            raise TypeError("invalid type {}".format(v))
     if mapped_args:
         if mapped_type == AnyOf:
             return mapped_type(fields=mapped_args)
@@ -429,6 +441,7 @@ def get_typing_lib_info(v):
 def add_annotations_to_class_dict(cls_dict):
     annotations = cls_dict.get("__annotations__", {})
     defaults = {}
+    optional_fields = set(cls_dict.get(OPTIONAL_FIELDS, []))
     if isinstance(annotations, dict):
         for k, v in annotations.items():
             first_arg = getattr(v, "__args__", [0])[0]
@@ -440,13 +453,22 @@ def add_annotations_to_class_dict(cls_dict):
             else:
                 the_type = get_typing_lib_info(v)
                 if the_type:
+                    from .fields import AnyOf
+                    if isinstance(the_type, AnyOf) and getattr(the_type, "_is_optional", False):
+                        optional_fields.add(k)
                     if k in cls_dict:
+                        default = cls_dict[k]
                         try:
-                            the_type = the_type(default=cls_dict[k])
+                            if isinstance(the_type, Field):
+                                the_type._try_default_value(default)
+                            else:
+                                the_type = the_type(default=default)
                         except Exception as e:
                             raise e.__class__("{}: {}".format(k, str(e))) from e
                         defaults[k] = cls_dict[k]
                     cls_dict[k] = the_type
+    if optional_fields:
+        cls_dict[OPTIONAL_FIELDS] = optional_fields
     cls_dict[DEFAULTS] = defaults
 
 
@@ -560,7 +582,7 @@ class Structure(metaclass=StructMeta):
 
         name = self.__class__.__name__
         if name.startswith("StructureReference_") and self.__class__.__bases__ == (
-            Structure,
+                Structure,
         ):
             name = "Structure"
         props = []
@@ -591,7 +613,7 @@ class Structure(metaclass=StructMeta):
 
     def __delitem__(self, key):
         if isinstance(getattr(self, REQUIRED_FIELDS), list) and key in getattr(
-            self, REQUIRED_FIELDS
+                self, REQUIRED_FIELDS
         ):
             raise ValueError("{} is mandatory".format(key))
         del self.__dict__[key]
@@ -636,9 +658,9 @@ class Structure(metaclass=StructMeta):
         required = props.get(REQUIRED_FIELDS, field_names)
         additional_props = props.get(ADDITIONAL_PROPERTIES, True)
         if (
-            len(field_names) == 1
-            and required == field_names
-            and additional_props is False
+                len(field_names) == 1
+                and required == field_names
+                and additional_props is False
         ):
             return item in getattr(self, field_names[0], {})
 
@@ -695,6 +717,25 @@ class TypedField(Field):
         if not getattr(instance, "_skip_validation", False):
             self._validate(value)
         super().__set__(instance, value)
+
+
+class NoneField(TypedField):
+    """
+    A field that maps to a single allowable value: None.
+    This is useful to define optional fields or optional values such as:
+
+    .. code-block:: python
+
+       class Foo(Structure):
+           optional_1: typing.Optional[Array]     # NoneField is used implicitly
+           optional_2: AnyOf[Array, NoneField]
+           optional_3: AnyOf[Array, None]         # the conversion from None to NoneField is implicit
+
+           arr_maybe_int_1: Array[Integer, NoneField]
+           arr_maybe_int_2: Array[Integer, None]    # the conversion from None to NoneField is implicit
+
+    """
+    _ty = type(None)
 
 
 class ValidatedTypedField(TypedField):

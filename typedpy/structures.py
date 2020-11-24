@@ -662,10 +662,12 @@ class ImmutableStructure(Structure):
 
         b = B(y = 3, z = [1,2,3], m = {'a': 1, 'b': 2})
 
-        # each of the following lines will raise an exception:
+        # any of the following lines will raise an exception:
         b.y = 1
         b.z[1] += 1
         b.m['c'] = 4
+        b.z.clear()
+        b.m.pop('a')
 
     """
 

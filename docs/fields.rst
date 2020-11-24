@@ -87,6 +87,27 @@ Implicit Wrapping of Arbitrary Classes As Field (version > 2.0)
     foo.point_by_int[1] = 3
 
 
+Defining a Field as Optional
+=============================
+Start by reading this: :ref:`optional-fields` .
+
+Not that typing.Optional is only support at the level of field definition. It is not supported in a nested definition.
+For example, to represent a field of list of integers-or-None, the following is **invalid**:
+
+.. code-block:: python
+
+    class InvalidStructure(Structure):
+          s = Array[Optional[String]]
+
+
+Instead, you need to do the following:
+
+.. code-block:: python
+
+    class ValidStructure(Structure):
+          s = Array[AnyOf[String, None]]
+
+
 Predefined Types
 ================
 

@@ -731,8 +731,8 @@ class NoneField(TypedField):
            optional_2: AnyOf[Array, NoneField]
            optional_3: AnyOf[Array, None]         # the conversion from None to NoneField is implicit
 
-           arr_maybe_int_1: Array[Integer, NoneField]
-           arr_maybe_int_2: Array[Integer, None]    # the conversion from None to NoneField is implicit
+           arr_maybe_int_1: Array[AnyOf[Integer, NoneField]]
+           arr_maybe_int_2: Array[AnyOf[Integer, None]]    # the conversion from None to NoneField is implicit
 
     """
     _ty = type(None)

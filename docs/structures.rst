@@ -83,6 +83,9 @@ After version 2.0, you can also use dataclass-style definition. Look at the foll
 .. autoclass:: Structure
 
 
+
+.. _optional-fields:
+
 Required Fields and Optional Fields
 ===================================
 | By using the **_required** property in the class definition, we can define a list of fields that are required.

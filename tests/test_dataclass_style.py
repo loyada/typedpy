@@ -1,6 +1,10 @@
 import sys
-from dataclasses import dataclass, FrozenInstanceError
-from typing import List, FrozenSet, Dict, Union, Iterable, T
+
+python_ver_atleast_than_37 = sys.version_info[0:2] > (3, 6)
+if python_ver_atleast_than_37:
+    from dataclasses import dataclass, FrozenInstanceError
+    from typing import T
+from typing import List, FrozenSet, Dict, Union, Iterable
 
 import pytest
 from pytest import raises

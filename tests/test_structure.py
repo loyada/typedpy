@@ -1,4 +1,5 @@
 import enum
+import sys
 import typing
 
 import pytest

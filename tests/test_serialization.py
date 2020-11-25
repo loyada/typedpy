@@ -1,7 +1,9 @@
 import enum
 import pickle
 import sys
-from dataclasses import dataclass
+python_ver_atleast_than_37 = sys.version_info[0:2] > (3, 6)
+if python_ver_atleast_than_37:
+    from dataclasses import dataclass
 
 import pytest
 from pytest import raises

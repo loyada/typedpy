@@ -23,10 +23,18 @@ A simple example:
         num: Integer(maximum=30) = 1
         foo: Array[PositiveFloat]
 
-This structure validates itself, so that any attempt to create an invalid structure will raise an exception.
 
-**Recent updates - Version 2.0**
-While still supporting the old-style :class:`Structure` definition, which looks as follows:
+ The above format is support since **Version 1.35**.
+
+This structure validates itself, so that any attempt to create an invalid structure or mutate an instance to be invalid
+will raise an exception.
+
+This is a crucial aspect of Typedpy: For example, If you accept an instance of the Example
+class above, you are **guaranteed** that "num" property exists, it is an integer, and it does not exceed 30.
+If you code tries to update the instance in a way that will make num invalid according to the definition above, it will
+raise an exception.
+
+Old-style :class:`Structure` definition is still supported. It looks as follows:
 
 .. code-block:: python
 

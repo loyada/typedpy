@@ -125,12 +125,15 @@ In Typedpy, if we instantiate an immutable structure, it behaves like you would 
     assert 4 not in f.a['a']
 
     # Alternatively, we can define a single field as immutable:
-    class ImmutableMap(ImmutableField, Map): pass
-
     class Foo(Structure):
-        a: ImmutableMap
+        m: ImmutableMap[String, Array]
 
-    Foo(m={'a': 1}, i = 5).m['x'] = 5
+    foo = Foo(m={'a': [1]})
+
+    # And even a nested object inside it cannot be updated\
+    nested_list = foo.m['a']
+
+    nested_list.append(5)
     # ValueError: m: Field is immutable
 
 Let's examine inheritance. In the following code:

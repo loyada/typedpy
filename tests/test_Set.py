@@ -148,8 +148,8 @@ def test_simple_set_invalid():
 def test_immutable_no_update():
     e = Example(frozen={1,2,3})
     with raises(AttributeError) as excinfo:
-        e.frozen.add(4)
-    assert "'frozenset' object has no attribute 'add'" in str(excinfo.value)
+        e.frozen.clear()
+    assert "'frozenset' object has no attribute 'clear'" in str(excinfo.value)
 
 
 def test_immutable_content():

@@ -102,7 +102,7 @@ def test_all_fields_use_alternate_format_immutable():
     e = ExampleOfImmutable(i=1, mylist=['x'], map={'x': 'y'})
     with raises(ValueError) as excinfo:
         e.mylist.append('y')
-    assert "Structure is immutable" in str(excinfo.value)
+    assert "Field is immutable" in str(excinfo.value)
 
 
 def test_invalid_default():

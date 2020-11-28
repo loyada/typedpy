@@ -132,117 +132,8 @@ Instead, you need to do the following:
           s = Array[AnyOf[String, None]]
 
 
-Predefined Types
-================
-
-.. autoclass:: Field
-
-.. autoclass:: Anything
-
-.. autoclass:: Function
-
-.. autoclass:: ExceptionField
-
-.. autoclass:: NoneField
-
-Numerical
----------
-
-:mod:`typedpy` defines the following basic field types:
-
-.. autoclass:: Number
-
-.. autoclass:: Integer
-
-.. autoclass:: Float
-
-.. autoclass:: Positive
-
-.. autoclass:: PositiveFloat
-
-.. autoclass:: PositiveInt
-
-.. autoclass:: Boolean
-
-String, Enums etc.
-------------------
-
-.. autoclass:: String
-
-.. autoclass:: Enum
-
-.. autoclass:: EnumString
-
-.. autoclass:: Sized
-
-.. autoclass:: DateString
-
-.. autoclass:: TimeString
-
-.. autoclass:: DateField
-
-.. autoclass:: DateTime
-
-.. autoclass:: IPV4
-
-.. autoclass:: JSONString
-
-.. autoclass:: HostName
-
-.. autoclass:: DecimalNumber
-
-.. class:: EmailAddress
 
 
-Collections
------------
-
-.. autoclass:: Array
-
-.. autoclass:: Set
-
-.. autoclass:: Tuple
-
-.. autoclass:: Map
-
-
-* **Note** - The collections support embedded collections, such as :class:`Array` [ :class:`Tuple` [ :class:`Integer` , :class:`Integer` ]]
-
-**All collections support reference to another** :class:`Structure` . For example, this code is valid and will work the
-way you'd expect:
-
-.. code-block:: python
-
-    class Foo(Structure):
-          s = String
-
-    class Bar(Structure):
-          a = Set[Foo]
-          b = Map [Foo, Integer]
-
-
-
-Re-use
-======
-
-.. autoclass:: AllOf
-
-.. autoclass:: AnyOf
-
-.. autoclass:: OneOf
-
-.. autoclass:: NotField
-
-**All the field types under this category support reference to another** :class:`Structure` . For example, this code is valid and will work the
-way you'd expect:
-
-.. code-block:: python
-
-    class Foo(Structure):
-          s = String
-
-    class Bar(Structure):
-          a = Any[Foo, Integer]
 
 Inheritance and mixins
 ----------------------
@@ -301,8 +192,6 @@ Example:
 
 .. code-block:: python
 
-    class ImmutableString(String, ImmutableField): pass
-
     class A(Structure):
         x = Number
         y = ImmutableString
@@ -312,6 +201,22 @@ Example:
 
     # This will raise an ValueError exception, with the message  "y: Field is immutable"
     a.y += "xyz"
+
+
+The predefined immutable types even block updates of nested fields:
+
+.. code-block:: python
+
+    class A(Structure):
+        m: ImmutableArray[Map]
+
+    instance = A(m=[{'a': 1}, {'b': 2}])
+
+    # This will throw a ValueError, with the message: m_0: Field is immutable
+    instance.m[0]['a'] = 5
+
+Note that in the last example, trying to update a nested Map (i.e. a dictionary) inside an immutable Array was
+blocked.
 
 
 It is also possible to define an immutable Structure. See Under the **Structures** section.
@@ -421,4 +326,143 @@ definition.
         class Foo(Structure):
             foo_names = Names   # note we don't need to call Names()
             table = TableName
+
+
+Predefined Types
+================
+
+.. autoclass:: Field
+
+.. autoclass:: Anything
+
+.. autoclass:: Function
+
+.. autoclass:: ExceptionField
+
+.. autoclass:: NoneField
+
+.. autoclass:: Generator
+
+.. autoclass:: StructureReference
+
+Numerical
+---------
+
+:mod:`typedpy` defines the following basic field types:
+
+.. autoclass:: Number
+
+.. autoclass:: Integer
+
+.. autoclass:: Float
+
+.. autoclass:: Positive
+
+.. autoclass:: PositiveFloat
+
+.. autoclass:: PositiveInt
+
+.. autoclass:: Boolean
+
+String, Enums etc.
+------------------
+
+.. autoclass:: String
+
+.. autoclass:: Enum
+
+.. autoclass:: EnumString
+
+.. autoclass:: Sized
+
+.. autoclass:: DateString
+
+.. autoclass:: TimeString
+
+.. autoclass:: DateField
+
+.. autoclass:: DateTime
+
+.. autoclass:: IPV4
+
+.. autoclass:: JSONString
+
+.. autoclass:: HostName
+
+.. autoclass:: DecimalNumber
+
+
+EmailAddress - A String field that has the pattern of an email address.
+
+
+Collections
+-----------
+
+.. autoclass:: Array
+
+.. autoclass:: Set
+
+.. autoclass:: Tuple
+
+.. autoclass:: Map
+
+
+
+* **Note** - The collections support embedded collections, such as :class:`Array` [ :class:`Tuple` [ :class:`Integer` , :class:`Integer` ]]
+
+**All collections support reference to another** :class:`Structure` . For example, this code is valid and will work the
+way you'd expect:
+
+.. code-block:: python
+
+    class Foo(Structure):
+          s = String
+
+    class Bar(Structure):
+          a = Set[Foo]
+          b = Map [Foo, Integer]
+
+
+
+Re-use
+------
+
+.. autoclass:: AllOf
+
+.. autoclass:: AnyOf
+
+.. autoclass:: OneOf
+
+.. autoclass:: NotField
+
+**All the field types under this category support reference to another** :class:`Structure` . For example, this code is valid and will work the
+way you'd expect:
+
+.. code-block:: python
+
+    class Foo(Structure):
+          s = String
+
+    class Bar(Structure):
+          a = Any[Foo, Integer]
+
+
+
+Immutability
+------------
+
+.. autoclass:: ImmutableField
+
+.. autoclass:: ImmutableSet
+
+.. autoclass:: ImmutableMap
+
+.. autoclass:: ImmutableArray
+
+.. autoclass:: ImmutableInteger
+
+.. autoclass:: ImmutableFloat
+
+.. autoclass:: ImmutableNumber
+
 

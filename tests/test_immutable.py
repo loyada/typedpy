@@ -1,6 +1,7 @@
 from pytest import raises
 from typedpy import String, Number, Structure, ImmutableField, ImmutableStructure, Array, Map, Integer, ImmutableMap, \
-    Set, ImmutableArray
+    Set, ImmutableArray, ImmutableInteger, Tuple
+from typedpy.fields import Generator
 
 
 class ImmutableString(String, ImmutableField): pass
@@ -71,14 +72,14 @@ def test_immutable_structure_array_updates_err():
     b = B(z=[1, 2, 3])
     with raises(ValueError) as excinfo:
         b.z[1] = 1
-    assert "Structure is immutable" in str(excinfo.value)
+    assert "Field is immutable" in str(excinfo.value)
 
 
 def test_immutable_structure_map_updates_err():
     b = B(m={'a': 1, 'b': 2})
     with raises(ValueError) as excinfo:
         b.m['c'] = 1
-    assert "Structure is immutable" in str(excinfo.value)
+    assert "Field is immutable" in str(excinfo.value)
 
 
 def test_nested_object_reference_update():
@@ -250,3 +251,58 @@ def test_changing_map_field():
     with raises(ValueError) as excinfo:
         example.foo['c'] = 1
     assert "foo: Field is immutable" in str(excinfo.value)
+
+
+def test_immutable_field_unsupported_type():
+    class ImmutableGenerator(ImmutableField, Generator): pass
+
+    class Foo(Structure):
+        i: ImmutableInteger
+        g: ImmutableGenerator
+        _required = []
+
+    foo = Foo(i=5)
+    with raises(TypeError) as excinfo:
+        foo.g = (x for x in  [])
+    assert "g cannot be immutable, as its type does not support pickle" in str(excinfo.value)
+
+
+def test_immutable_field_blocks_assignment():
+
+    class Foo(Structure):
+        i: ImmutableInteger
+        _required = []
+
+    foo = Foo(i=5, )
+    with raises(ValueError) as excinfo:
+        foo.i = 7
+    assert "i: Field is immutable" in str(excinfo.value)
+
+
+def test_immutable_field_goes_to_nested_fields_and_blocks_Mutation():
+    class ImmutableTuple(ImmutableField, Tuple): pass
+
+    class Foo(Structure):
+        i: ImmutableInteger
+        g: ImmutableTuple[Array]
+        _required = []
+
+    foo = Foo(i=5, g = ([], []))
+    with raises(ValueError) as excinfo:
+        foo.i = 7
+    assert "i: Field is immutable" in str(excinfo.value)
+
+    with raises(ValueError) as excinfo:
+        foo.g[0].append(5)
+    assert "g_0: Field is immutable" in str(excinfo.value)
+
+
+def test_immutable_array_block_nested_updates():
+    class A(Structure):
+        m: ImmutableArray[Map]
+
+    instance = A(m=[{'a': 1}, {'b': 2}])
+    with raises(ValueError) as excinfo:
+        instance.m[0]['a'] = 5
+    assert "m_0: Field is immutable" in str(excinfo.value)
+

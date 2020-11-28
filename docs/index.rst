@@ -34,6 +34,20 @@ Features
 
 * Dataclass-like syntax
 
+Contents:
+=========
+.. toctree::
+   :maxdepth: 2
+
+   tutorial_basics
+   structures
+   fields
+   serialization
+   tutorial
+   json_schema
+   tutorial_dataclass_comparison
+
+
 
 Examples
 ----------
@@ -93,7 +107,7 @@ Basic Example:
     #ValueError: d: Got 99; Expected a maximum of 10
 
 
-Another example with Array, class reference, Enum, json-schema-style re-use:
+More advanced example with Array, class reference, Enum, json-schema-style re-use:
 
 .. code-block:: python
 
@@ -127,18 +141,7 @@ Another example with Array, class reference, Enum, json-schema-style re-use:
     TypeError: name: Got None; Expected a string
 
 
-Contents:
-=========
-.. toctree::
-   :maxdepth: 2
 
-   structures
-   fields
-   serialization
-   tutorial
-   json_schema
-   tutorial_basics
-   tutorial_dataclass_comparison
 
 
 

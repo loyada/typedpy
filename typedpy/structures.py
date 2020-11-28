@@ -34,13 +34,15 @@ class ImmutableMixin:
         return deepcopy(value) if self._is_immutable() else value
 
     def _is_immutable(self):
+        if getattr(self._field_definition, "_immutable", False):
+            return True
         instance = getattr(self, "_instance", None)
         return getattr(self._instance, IS_IMMUTABLE, False) if instance else False
 
     def _raise_if_immutable(self):
         if self._is_immutable():
-            name = self._field_definition, "_name", None
-            raise ValueError("{}: Structure is immutable".format(name))
+            name = getattr(self, "_name", None)
+            raise ValueError("{}: Field is immutable".format(name))
 
 
 def make_signature(names, required, additional_properties, bases_params_by_name):
@@ -205,7 +207,10 @@ class Field(metaclass=_FieldMeta):
         if getattr(self, IS_IMMUTABLE, False) and not getattr(
                 self, "_custom_deep_copy_implementation", False
         ):
-            instance.__dict__[self._name] = deepcopy(value)
+            try:
+                instance.__dict__[self._name] = deepcopy(value)
+            except TypeError:
+                raise TypeError("{} cannot be immutable, as its type does not support pickle.".format(self._name))
         else:
             instance.__dict__[self._name] = value
         if getattr(instance, "_instantiated", False) and not getattr(
@@ -236,6 +241,9 @@ class Field(metaclass=_FieldMeta):
 
         propst = ". Properties: {}".format(", ".join(props)) if props else ""
         return "<{}{}>".format(name, propst)
+
+    def _set_immutable(self, immutable: bool):
+        self._immutable = immutable
 
 
 # noinspection PyBroadException

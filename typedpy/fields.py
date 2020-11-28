@@ -91,6 +91,19 @@ class StructureReference(Field):
 
 
 class ImmutableField(Field):
+    """
+       A mixin that makes a field class immutable.
+       For Example:
+
+        .. code-block:: python
+
+            class MyFieldType(Field): .....
+
+            class MyImmutableFieldType(ImmutableField, MyFieldType): pass
+
+            # that's all you have to do to make MyImmutableFieldType immutable.
+
+    """
     _immutable = True
 
 
@@ -280,6 +293,13 @@ class Function(Field):
         super().__set__(instance, value)
 
 
+class Generator(TypedField):
+    """
+       A Python generator. Not serializable.
+    """
+    _ty = type(x for x in [])
+
+
 class Anything(Field):
     """
     A field that can contain anything (similar to "any" in Typescript).
@@ -367,9 +387,10 @@ class _ListStruct(list, ImmutableMixin):
                 return self.the_list[self.index - 1]
             raise StopIteration
 
-    def __init__(self, array: Field, struct_instance: Structure, mylist):
+    def __init__(self, array: Field, struct_instance: Structure, mylist, name: str):
         self._field_definition = array
         self._instance = struct_instance
+        self._name = name
         super().__init__(self._get_defensive_copy_if_needed(mylist))
 
     def __setitem__(self, key, value):
@@ -434,6 +455,7 @@ class _ListStruct(list, ImmutableMixin):
         return {
             "the_instance": self._instance,
             "the_array": self._field_definition,
+            "the_name": self._name,
             "the_values": self[:],
         }
 
@@ -444,9 +466,11 @@ class _ListStruct(list, ImmutableMixin):
             array=deepcopy(self._field_definition),
             struct_instance=memo.get(instance_id, self._instance),
             mylist=vals,
+            name=self._name
         )
 
     def __setstate__(self, state):
+        self._name = state["the_name"]
         self._field_definition = state["the_array"]
         self._instance = state["the_instance"]
         super().__init__(state["the_values"])
@@ -462,9 +486,10 @@ class _DictStruct(dict, ImmutableMixin):
     ...will not bypass the validation of the Map.
     """
 
-    def __init__(self, the_map, struct_instance, mydict):
+    def __init__(self, the_map, struct_instance, mydict, name):
         self._field_definition = the_map
         self._instance = struct_instance
+        self._name = name
         super().__init__(mydict)
 
     def __setitem__(self, key, value):
@@ -485,6 +510,16 @@ class _DictStruct(dict, ImmutableMixin):
     def copy(self):
         copied = super(_DictStruct, self).copy()
         return deepcopy(copied) if self._is_immutable() else copied
+
+    def __deepcopy__(self, memo={}):
+        new_dict = {deepcopy(k): deepcopy(v) for k, v in self.items()}
+        instance_id = id(self._instance)
+        return _DictStruct(
+            the_map = self._field_definition,
+            struct_instance=memo.get(instance_id, self._instance),
+            mydict=new_dict,
+            name=self._name
+        )
 
     def items(self):
         return (
@@ -527,11 +562,13 @@ class _DictStruct(dict, ImmutableMixin):
             "_instance": self._instance,
             "_map": self._field_definition,
             "mydict": self.copy(),
+            "_name": self._name
         }
 
     def __setstate__(self, state):
         self._field_definition = state["_map"]
         self._instance = state["_instance"]
+        self._name = state["_name"]
         super().__init__(state["mydict"])
 
 
@@ -564,6 +601,18 @@ class _JSONSchemaDraft4ReuseMeta(_FieldMeta):
         return cls([validate_and_get_field(item)])
 
 
+class ContainNestedFieldMixin(Field):
+    def _set_immutable(self, immutable: bool):
+        items = getattr(self, "items", None)
+        super()._set_immutable(immutable)
+        if isinstance(items, Field):
+            items._set_immutable(immutable)
+        elif isinstance(items, (list, tuple)):
+            for item in items:
+                if isinstance(item, Field):
+                    item._set_immutable(immutable)
+
+
 class SizedCollection:
     def __init__(self, *args, minItems=None, maxItems=None, **kwargs):
         self.minItems = minItems
@@ -585,7 +634,7 @@ class SizedCollection:
             )
 
 
-class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
+class Set(SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
     """
     A set collection. Accepts input of type `set`
 
@@ -595,8 +644,11 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
         maxItems(int): optional
             maximal size
         items(:class:`Field` or :class:`Structure`): optional
-            The type of the content, can be a predefined :class:`Structure` or
-            :class:`Field`
+            The type of the content, can be a predefined :class:`Structure`,
+            :class:`Field` or an arbitrary class. In case of an arbitrary
+            class, an implicit Field class will be created for it behind the
+            scenes. Always prefer an Explicit Typedpy  :class:`Structure` or
+            :class:`Field`  if you can.
 
     Examples:
 
@@ -625,6 +677,7 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 )
             )
         super().__init__(*args, **kwargs)
+        self._set_immutable(getattr(self, "_immutable", False))
 
     def __set__(self, instance, value):
         cls = self.__class__._ty
@@ -634,17 +687,17 @@ class Set(SizedCollection, TypedField, metaclass=_CollectionMeta):
             )
         self.validate_size(value, self._name)
         if self.items is not None:
-            temp_st = Structure()
             setattr(self.items, "_name", self._name)
             res = []
             for val in value:
+                temp_st = Structure()
                 self.items.__set__(temp_st, val)
                 res.append(getattr(temp_st, getattr(self.items, "_name")))
             value = cls(res)
         super().__set__(instance, value)
 
 
-class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
+class Map(SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
     """
     A map/dictionary collection. Accepts input of type `dict`
 
@@ -692,6 +745,7 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 )
         self._custom_deep_copy_implementation = True
         super().__init__(*args, **kwargs)
+        self._set_immutable(getattr(self, "_immutable", False))
 
     def __set__(self, instance, value):
         if not isinstance(value, dict):
@@ -699,22 +753,22 @@ class Map(SizedCollection, TypedField, metaclass=_CollectionMeta):
         self.validate_size(value, self._name)
 
         if self.items is not None:
-            temp_st = Structure()
             key_field, value_field = self.items[0], self.items[1]
             setattr(key_field, "_name", self._name + "_key")
             setattr(value_field, "_name", self._name + "_value")
             res = OrderedDict()
 
             for key, val in value.items():
+                temp_st = Structure()
                 key_field.__set__(temp_st, key)
                 value_field.__set__(temp_st, val)
                 res[getattr(temp_st, getattr(key_field, "_name"))] = getattr(
                     temp_st, getattr(value_field, "_name")
                 )
-        super().__set__(instance, _DictStruct(self, instance, value))
+        super().__set__(instance, _DictStruct(self, instance, value, self._name))
 
 
-class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
+class Array(SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
     """
     An Array field, similar to a list. Supports the properties in JSON schema draft 4.
     Expected input is of type `list`.
@@ -747,6 +801,9 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 # Let's say we defined a Structure "Person"
                 people = Array[Person]
 
+                # Assume Foo is an arbitrary (non-Typedpy) class
+                foos = Array[Foo]
+
     """
 
     _ty = list
@@ -773,16 +830,17 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
         else:
             self.items = _map_to_field(items)
         super().__init__(*args, **kwargs)
+        self._set_immutable(getattr(self, "_immutable", False))
 
     def __set__(self, instance, value):
         verify_type_and_uniqueness(list, value, self._name, self.uniqueItems)
         self.validate_size(value, self._name)
         if self.items is not None:
             if isinstance(self.items, Field):
-                temp_st = Structure()
                 setattr(self.items, "_name", self._name)
                 res = []
                 for i, val in enumerate(value):
+                    temp_st = Structure()
                     setattr(self.items, "_name", self._name + "_{}".format(str(i)))
                     self.items.__set__(temp_st, val)
                     res.append(getattr(temp_st, getattr(self.items, "_name")))
@@ -811,7 +869,7 @@ class Array(SizedCollection, TypedField, metaclass=_CollectionMeta):
                 res += value[len(self.items) :]
                 value = res
 
-        super().__set__(instance, _ListStruct(self, instance, value))
+        super().__set__(instance, _ListStruct(self, instance, value, self._name))
 
 
 def verify_type_and_uniqueness(the_type, value, name, has_unique_items):
@@ -833,7 +891,7 @@ def verify_type_and_uniqueness(the_type, value, name, has_unique_items):
             )
 
 
-class Tuple(TypedField, metaclass=_CollectionMeta):
+class Tuple(ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
     """
     A tuple field, supports unique items option.
        Expected input is of type `tuple`.
@@ -853,23 +911,26 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
 
     .. code-block:: python
 
-        // a is a tuple of exactly 2 strings that are different from each other.
+        # a is a tuple of exactly 2 strings that are different from each other.
         a = Tuple(uniqueItems=True, items = [String, String])
 
-        // b is a tuple of 3: string, string and a number up to 10.
+        # b is a tuple of 3: string, string and a number up to 10.
         b = Tuple(items = [String, String, Number(maximum=10)])
 
-        // c is a tuple of 3: integer, string, float.
+        # c is a tuple of 3: integer, string, float.
         c = Tuple[Integer, String, Float]
 
-        // The following define a tuple of any number of Integers
+        # The following define a tuple of any number of Integers
         d = Tuple[Integer]
 
-        // It can also contain other structures:
-        // Assume we have something like: class Foo(Structure): pass
-        // e is a tuple of any number of Integers or Foo instances
+        # It can also contain other structures:
+        # Assume we have something like: class Foo(Structure): pass
+        # e is a tuple of any number of Integers or Foo instances
         e = Tuple[AnyOf[Integer, Foo]]
 
+        # It can also have arbitrary class
+        class MyCustomClass: pass
+        Tuple[MyCustomClass]
     """
 
     _ty = tuple
@@ -898,6 +959,7 @@ class Tuple(TypedField, metaclass=_CollectionMeta):
         else:
             raise TypeError("Expected a list/tuple of Fields or a single Field")
         super().__init__(*args, **kwargs)
+        self._set_immutable(getattr(self, "_immutable", False))
 
     def __set__(self, instance, value):
         verify_type_and_uniqueness(tuple, value, self._name, self.uniqueItems)
@@ -1215,6 +1277,10 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
 
 class ImmutableSet(Set, ImmutableField):
+    """
+       An immutable  :class:`Set`. Internally implemented by a Python frozenset, so it does not have
+       any mutation methods. This makes it more developer-friendly.
+    """
     _ty = frozenset
 
     def __set__(self, instance, value):
@@ -1228,6 +1294,8 @@ class ImmutableSet(Set, ImmutableField):
             setattr(self.items, "_name", self._name)
             res = set()
             for val in value:
+                if getattr(self, "_immutable", False):
+                    temp_st = Structure()
                 self.items.__set__(temp_st, val)
                 res.add(getattr(temp_st, getattr(self.items, "_name")))
                 value = res
@@ -1236,26 +1304,44 @@ class ImmutableSet(Set, ImmutableField):
 
 
 class ImmutableMap(ImmutableField, Map):
+    """
+        An immutable version of :class:`Map`
+    """
     pass
 
 
 class ImmutableArray(ImmutableField, Array):
+    """
+        An immutable version of :class:`Array`
+    """
     pass
 
 
 class ImmutableString(ImmutableField, String):
+    """
+        An immutable version of :class:`String`
+    """
     pass
 
 
 class ImmutableNumber(ImmutableField, Number):
+    """
+        An immutable version of :class:`Number`
+    """
     pass
 
 
 class ImmutableInteger(ImmutableField, Integer):
+    """
+        An immutable version of :class:`Integer`
+    """
     pass
 
 
 class ImmutableFloat(ImmutableField, Float):
+    """
+        An immutable version of :class:`Float`
+    """
     pass
 
 

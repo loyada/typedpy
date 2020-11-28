@@ -31,8 +31,8 @@ will raise an exception.
 
 This is a crucial aspect of Typedpy: For example, If you accept an instance of the Example
 class above, you are **guaranteed** that "num" property exists, it is an integer, and it does not exceed 30.
-If you code tries to update the instance in a way that will make num invalid according to the definition above, it will
-raise an exception.
+If your code tries to update the instance in a way that will make num invalid according to the definition above, it will
+raise an exception with the appropriate message.
 
 Old-style :class:`Structure` definition is still supported. It looks as follows:
 

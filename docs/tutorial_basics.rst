@@ -1,6 +1,7 @@
-=================
-Tutorial - Basics
-=================
+==========================
+Tutorial - Getting Started
+==========================
+
 
 .. currentmodule:: typedpy
 
@@ -73,7 +74,7 @@ where:
 
 
 Structure Validation
---------------------
+====================
 | After a while, we are told that the total value of our trades (notional * quantity) must not exceed 1,000,000 of the denomination.
 | We also need to guarantee that the buyer is not the seller.
 | This is trickier, since it involves interactions between two fields. Fortunately, this is supported:
@@ -95,7 +96,7 @@ Structure Validation
 And that's it.
 
 Optionals
----------
+=========
 Next, we are asked to add an *optional* comments field to trade.
 This is done by updating the Trade structure as follows:
 
@@ -120,7 +121,7 @@ or, alternatively:
 
 
 Default value
--------------
+=============
 A business analyst asks you to change the default value for comments from None to "nothing to see here".
 You do it by change the declaration as follows:
 
@@ -135,7 +136,7 @@ Note that once we declared an explicit default value to a field, it is already i
 so there is no need to define it as such.
 
 Serialization
--------------
+=============
 You create a web service that allows to query for a trade by its ID. You could write code to convert
 the Trade instance to a serializable dictionary. But Typepy offers a simpler way:
 
@@ -180,7 +181,7 @@ This is nice, as it eliminates all the validation code, and the potential of imp
 it and the definition of what constitutes a valid Trade.
 
 Mapping to a JSON schema
-------------------------
+========================
 Another team builds a client of your service is Java. They are asking for a JSON or OpenAPI schema of your
 API. You can provide create one with the following code:
 

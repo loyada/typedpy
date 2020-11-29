@@ -200,7 +200,8 @@ class Integer(TypedField, Number):
 
 class DecimalNumber(Number):
     """
-    An extension of :class:`Number` for a Decimal. Accepts anything that can be converted to a Decimal
+    An extension of :class:`Number` for a Decimal. Accepts anything that can be converted to a Decimal.
+    It converts the value to a Decimal.
     """
 
     def __set__(self, instance, value):

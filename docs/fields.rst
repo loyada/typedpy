@@ -62,8 +62,9 @@ Superficially, it looks like a dataclass, but there are several differences:
 
 Implicit Wrapping of Arbitrary Classes As Field (version > 2.0)
 ===============================================================
-| Supposed you defined your own class, and you want to use it as a field. There are ways to map it explicitly to a Field
-| class (see :ref:`extension-of-classes`). However, after version 2.0 Typepy can also do it implicitly.
+| Supposed you defined your own class, and you want to use it as a field. There are ways to map it
+explicitly to a Field class (see :ref:`extension-of-classes`).
+| However, after version 2.0 Typepy can also do it implicitly.
 | For example:
 
 .. code-block:: python
@@ -135,7 +136,7 @@ Instead, you need to do the following:
 
 
 
-Inheritance and mixins
+Inheritance and Mixins
 ----------------------
 Inheritance works the way you would expect:
 
@@ -314,7 +315,7 @@ The example above is wrong. Instead, define a function that returns the field, a
 
 
 | From version 0.51, if you use Python 3.7+, you can also use type hints to let TypedPy know that this is a Field factory.
-| In this case, TypedPy will automatically inspect it, so you don't need to call the function explicitly in the class
+In this case, Typedpy will automatically inspect it, so you don't need to call the function explicitly in the class
 definition.
 | For example:
 
@@ -356,6 +357,8 @@ Numerical
 
 .. autoclass:: Float
 
+.. autoclass:: DecimalNumber
+
 .. autoclass:: Positive
 
 .. autoclass:: PositiveFloat
@@ -389,7 +392,6 @@ String, Enums etc.
 
 .. autoclass:: HostName
 
-.. autoclass:: DecimalNumber
 
 
 EmailAddress - A String field that has the pattern of an email address.

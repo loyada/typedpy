@@ -8,12 +8,12 @@ Tutorial - Getting Started
 .. contents:: :local:
 
 
-Basic Use Case story
+Basic Use-Case story
 =====================
 
 
 | Let's start with a scenario: You created a system that processes trades (we assume simple equity trades).
-| A trade has many parameters: price, quantity, Participants details, symbol, date and time, venue etc.
+A trade has many parameters: price, quantity, Participants details, symbol, date and time, venue etc.
 |
 | The trades are passed around by throughout the system. Often that will result in an unwieldy list of function parameters,
   or a dict with names of the fields and their value. This is an anti-pattern, since it relies on all the collaborators
@@ -26,10 +26,9 @@ Basic Use Case story
   functions might expect different date format.
 |
 | Ideally, the specification should be expressed declaratively, and the trade object will be guaranteed to
-  conform to the specs.
-| This means that the validation is self-contained. Also, you may want a guarantee that the trade was not changed in
-  any way.
-| This where Typedpy shines. We could define something like the following:
+  conform to the specs. In other words, we want the validation to be self-contained. Also, you may want a guarantee
+  that the trade was not changed in any way during its processing.
+| This is where Typedpy shines. We could define something like the following:
 
 .. code-block:: python
 

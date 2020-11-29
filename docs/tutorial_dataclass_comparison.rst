@@ -199,8 +199,8 @@ In typedpy, in contrast, we will get an appropriate exception:
     # TypeError: a_1: Expected <class 'int'>; Got []
 
 
-Hybrid?
--------
+What About a Hybrid?
+--------------------
 
 This section demonstrated how Typedpy can fulfill most of the functions of Dataclasses in a more developer-friendly way.
 A clear advantage of Dataclass over Typedpy is that in a straightforward initialization, the IDE (e.g. PyCharm) identifies \

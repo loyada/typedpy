@@ -24,8 +24,8 @@ Not Optimized for Speed
 Implicit Arbitrary Class Wrappers Are not Pickalable
 ----------------------------------------------------
 | Starting with version 2.1, Typedpy supports using arbitrary classes as field types, as described in :ref:`arbitrary-classes`.
-| However, if you use the implicit conversion feature in your structure, your data instance cannot be pickled. Typedpy will raise an appropriate exception
-if you try to do it, so you will be protected from silent failures.
+| However, if you use the implicit conversion feature in your structure, your data instance cannot be pickled.
+| Typedpy will raise an appropriate exception if you try to do it, so you will be protected from silent failures.
 
 
 Type Hints Usage Can be Confusing

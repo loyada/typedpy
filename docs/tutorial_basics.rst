@@ -25,8 +25,8 @@ float) and that no one updated the dictionary on purpose or by mistake.
 brittle and unmaintainable code.
 |
 | Furthermore, typically every function/component validates the content of the parameters. This can result in a a lot
-  of repetitive boilerplate code, or inconsistencies in the expectations from the values of the properties. For example, Different
-  functions might expect different date format.
+of repetitive boilerplate code, or inconsistencies in the expectations from the values of the properties. For example, Different
+functions might expect different date format.
 |
 | Ideally, the specification should be expressed declaratively, and the trade object will be guaranteed to
   conform to the specs. In other words, we want the validation to be self-contained. Also, you may want a guarantee

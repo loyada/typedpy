@@ -8,7 +8,7 @@ Limitations of Typedpy
 .. contents:: :local:
 
 
-Nothing is perfect, and Typedpy as several trade-offs and limitations:
+Nothing is perfect, and Typedpy has several trade-offs and limitations:
 
 Not Incorporated into IDE
 -------------------------

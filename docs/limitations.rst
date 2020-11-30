@@ -50,8 +50,8 @@ The following type hint for the return value is wrong:
     def  get_names_for_id(id: str, example: Example) -> Array[String]:
 
 
-| The correct return type should be list[str].  However, if we want to keep the type hints consistent with the
-Structure definition, we can define it as follows:
+| The correct return type should be list[str].  However, if we want to keep the type hints consistent
+| with the Structure definition, we can define it as follows:
 
 .. code-block:: python
 

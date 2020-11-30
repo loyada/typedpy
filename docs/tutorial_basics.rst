@@ -14,7 +14,7 @@ Basic Use-Case story
 
 | Let's start with a scenario: You created a system that processes trades (we assume simple equity trades).
 A trade has many parameters: price, quantity, Participants details, symbol, date and time, venue etc.
-|
+
 | The trades are passed around by throughout the system. Often that will result in an unwieldy list of function parameters,
 or a dict with names of the fields and their value. This is an anti-pattern, since it relies on all the collaborators
 somehow having precise knowledge about the implementation of the field names and values, as well as the hope that no invalid

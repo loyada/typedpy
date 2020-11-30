@@ -317,7 +317,7 @@ The example above is wrong. Instead, define a function that returns the field, a
             table = TableName()
 
 
-| From version 0.51, if you use Python 3.7+, you can also use type hints to let TypedPy know that this is a Field factory.
+| From version 0.51, if you use Python 3.7+, you can also use type hints to let Typedpy know that this is a Field factory.
 In this case, Typedpy will automatically inspect it, so you don't need to call the function explicitly in the class
 definition.
 | For example:

@@ -60,6 +60,9 @@ Superficially, it looks like a dataclass, but there are several differences:
 #. Typedpy validates default values.
 
 
+.. _arbitrary_classes:
+
+
 Implicit Wrapping of Arbitrary Classes As Field (version > 2.0)
 ===============================================================
 | Supposed you defined your own class, and you want to use it as a field. There are ways to map it

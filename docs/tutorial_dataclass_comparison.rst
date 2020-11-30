@@ -199,6 +199,8 @@ In typedpy, in contrast, we will get an appropriate exception:
     # TypeError: a_1: Expected <class 'int'>; Got []
 
 
+.. _hybrid:
+
 What About a Hybrid?
 --------------------
 

@@ -10,8 +10,8 @@ Limitations of Typedpy
 
 Nothing is perfect, and Typedpy as several trade-offs and limitations:
 
-Not Supported by IDE
---------------------
+Not Incorporated into IDE
+-------------------------
 | Typedpy is not supported by the IDE code analysis, so there are no warnings/errors that are specific to Typedpy in the IDE.
 Errors are found at run-time. There are workaround, like creating a hybrid Structure/dataclass, as explain in :ref:`hybrid` ,
 but it is still a limitation.

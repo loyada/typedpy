@@ -32,7 +32,7 @@ Type Hints Usage Can be Confusing
 ---------------------------------
 | Typedpy Field types should not be used in type hints instead of the Python types they refer to.
 | The reason is that the :class:`Field` class is not the same as the type of the content. For example, Array[String] is
-not the same as list[str], and :class:`String` is not the same as str.
+| not the same as list[str], and :class:`String` is not the same as str.
 
 To demonstrate, if we have the following structure:
 
@@ -50,8 +50,8 @@ The following type hint for the return value is wrong:
     def  get_names_for_id(id: str, example: Example) -> Array[String]:
 
 
-The correct return type should be list[str].  However, if we want to keep the type hints consistent with the
- Structure definition, we can define it as follows:
+| The correct return type should be list[str].  However, if we want to keep the type hints consistent with the
+| Structure definition, we can define it as follows:
 
 .. code-block:: python
 

@@ -28,10 +28,13 @@ Implicit Arbitrary Class Wrappers
 if you try to do it, so you will be protected from silent failures.
 
 
-Type Hints usa can be confusing
--------------------------------
-You can't use a Typedpy Field type in type hints, the way you would for a normal type. For example, if we have the
-following structure:
+Type Hints Usage Can be Confusing
+---------------------------------
+| Typedpy Field types should not be used in type hints instead of the Python types they refer to.
+| The reason is that the :class:`Field` class is not the same as the type of the content. For example, Array[String] is
+not the same as list[str], and :class:`String` is not the same as str.
+
+To demonstrate, if we have the following structure:
 
 .. code-block:: python
 
@@ -40,15 +43,15 @@ following structure:
         ...
 
 
-And we have a function get_names_for_id(id, example), the following type hint for the return value is wrong:
+The following type hint for the return value is wrong:
 
 .. code-block:: python
 
     def  get_names_for_id(id: str, example: Example) -> Array[String]:
-         ...
 
-The reason is that the field class is not the same as the type of the content. Specifically, Array[String] is not the
-same as list[str]. However, if you defined the class as follows:
+
+The correct return type should be list[str].  However, if we want to keep the type hints consistent with the
+ Structure definition, we can define it as follows:
 
 .. code-block:: python
 
@@ -56,7 +59,8 @@ same as list[str]. However, if you defined the class as follows:
         names_by_id: dict[str, list[str]]
         ...
 
-Typedpy automatically converts it to its own internal field types, and you can use type hints as usual:
+
+Typedpy automatically converts it to its own internal class:`Field` types, but you can use type hints as usual.
 
 .. code-block:: python
 

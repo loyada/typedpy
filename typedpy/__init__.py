@@ -45,6 +45,8 @@ from typedpy.fields import (
     ImmutableString,
     ImmutableInteger,
     ImmutableNumber,
+    ImmutableDeque,
+    Deque
 )
 
 from typedpy.json_schema_mapping import (

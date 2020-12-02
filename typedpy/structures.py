@@ -4,7 +4,7 @@ Structure, Field, StructureReference, ClassReference, TypedField
 """
 import enum
 from copy import deepcopy
-from collections import OrderedDict
+from collections import OrderedDict, deque
 from inspect import Signature, Parameter, signature
 import sys
 import typing
@@ -381,9 +381,11 @@ def convert_basic_types(v):
         ImmutableSet,
         AnyOf,
         Anything,
+        Deque
     )
 
     type_mapping = {
+        deque: Deque,
         int: Integer,
         str: String,
         float: Float,
@@ -414,7 +416,7 @@ def _type_is_generic(v):
                    and isinstance(v, (generic_alias, special_generic_alias))
            ) or (
                    python_ver_atleast_39
-                   and origin in {list, dict, tuple, set, frozenset, typing.Union}
+                   and origin in {list, dict, tuple, set, frozenset, deque, typing.Union}
            )
 
 

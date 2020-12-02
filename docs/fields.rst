@@ -411,6 +411,8 @@ Collections
 
 .. autoclass:: Map
 
+.. autoclass:: Deque
+
 
 
 * **Note** - The collections support embedded collections, such as :class:`Array` [ :class:`Tuple` [ :class:`Integer` , :class:`Integer` ]]
@@ -469,5 +471,8 @@ Immutability
 .. autoclass:: ImmutableFloat
 
 .. autoclass:: ImmutableNumber
+
+.. autoclass:: ImmutableDeque
+
 
 

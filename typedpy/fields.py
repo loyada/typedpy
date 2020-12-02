@@ -3,7 +3,7 @@ Definitions of various types of fields. Supports JSON draft4 types.
 """
 import enum
 import re
-from collections import OrderedDict
+from collections import OrderedDict, deque, Iterable
 from copy import deepcopy
 from functools import reduce
 from decimal import Decimal, InvalidOperation
@@ -19,6 +19,23 @@ from typedpy.structures import (
     _FieldMeta,
     NoneField,
 )
+
+
+class SerializableField(Field):
+    """
+    An abstract class for a field that has custom serialization or deserialization.
+    can override the method:
+      serialize(self, value),
+      deserialize(self, value)
+
+    These methods are not being used for pickling.
+    """
+
+    def serialize(self, value):
+        return value
+
+    def deserialize(self, value):
+        return value
 
 
 def _map_to_field(item):
@@ -369,14 +386,7 @@ class PositiveInt(Integer, Positive):
     pass
 
 
-class _ListStruct(list, ImmutableMixin):
-    """
-    This is a useful wrapper for the content of list in an Array field.
-    It ensures that an update of the form:
-     mystruct.my_array[i] = new_val
-    Will not bypass the validation of the Array.
-    """
-
+class _IteratorProxyMixin:
     class ListIteratorProxy:
         def __init__(self, the_list):
             self.the_list = the_list
@@ -387,6 +397,15 @@ class _ListStruct(list, ImmutableMixin):
                 self.index += 1
                 return self.the_list[self.index - 1]
             raise StopIteration
+
+
+class _ListStruct(list, ImmutableMixin, _IteratorProxyMixin):
+    """
+    This is a useful wrapper for the content of list in an Array field.
+    It ensures that an update of the form:
+     mystruct.my_array[i] = new_val
+    Will not bypass the validation of the Array.
+    """
 
     def __init__(self, array: Field, struct_instance: Structure, mylist, name: str):
         self._field_definition = array
@@ -406,7 +425,7 @@ class _ListStruct(list, ImmutableMixin):
 
     def __iter__(self):
         if self._is_immutable():
-            return _ListStruct.ListIteratorProxy(self)
+            return _IteratorProxyMixin.ListIteratorProxy(self)
         return super(_ListStruct, self).__iter__()
 
     def append(self, value):
@@ -475,6 +494,137 @@ class _ListStruct(list, ImmutableMixin):
         self._field_definition = state["the_array"]
         self._instance = state["the_instance"]
         super().__init__(state["the_values"])
+
+
+class _DequeStruct(deque, ImmutableMixin, _IteratorProxyMixin):
+    """
+    This is a useful wrapper for the content of list in an Deque field.
+    It ensures that an update of the form:
+     mystruct.my_array[i] = new_val
+    Will not bypass the validation of the Array.
+    """
+
+    def __init__(self, array: Field= None, struct_instance: Structure= None, mydeque=None, name: str=None):
+        self._field_definition = array
+        self._instance = struct_instance
+        self._name = name
+        super().__init__(self._get_defensive_copy_if_needed(mydeque))
+
+    def __setitem__(self, key, value):
+        self._raise_if_immutable()
+        copied = deque(self)
+        copied[key] = value
+        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+
+    def __getitem__(self, item):
+        val = super().__getitem__(item)
+        return self._get_defensive_copy_if_needed(val)
+
+    def __iter__(self):
+        if self._is_immutable():
+            return _ListStruct.ListIteratorProxy(self)
+        return super(_DequeStruct, self).__iter__()
+
+    def append(self, value):
+        self._raise_if_immutable()
+        copied = deque(self)
+        copied.append(value)
+        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+        super().append(value)
+
+    def appendleft(self, value):
+        self._raise_if_immutable()
+        copied = deque(self)
+        copied.appendleft(value)
+        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+        super().append(value)
+
+    def extend(self, iterable: Iterable):
+        self._raise_if_immutable()
+        copied = deque(self)
+        copied.extend(iterable)
+        if getattr(self, "_instance", None):
+            setattr(
+                self._instance, getattr(self._field_definition, "_name", None), copied
+            )
+
+    def extendleft(self, iterable: Iterable):
+        self._raise_if_immutable()
+        copied = deque(self)
+        copied.extendleft(iterable)
+        if getattr(self, "_instance", None):
+            setattr(
+                self._instance, getattr(self._field_definition, "_name", None), copied
+            )
+
+    def insert(self, index: int, value):
+        self._raise_if_immutable()
+        copied = deque(self)
+        copied.insert(index, value)
+        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+
+    def remove(self, ind):
+        self._raise_if_immutable()
+        copied = deque(self)
+        copied.remove(ind)
+        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+
+    def copy(self):
+        copied = deque(self)
+        return deepcopy(copied) if self._is_immutable() else copied
+
+    def clear(self) -> None:
+        self._raise_if_immutable()
+        setattr(self._instance, getattr(self._field_definition, "_name", None), deque())
+
+    def pop(self, *args, **kwargs):
+        self._raise_if_immutable()
+        copied = deque(self)
+        res = copied.pop()
+        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+        return res
+
+    def popleft(self):
+        self._raise_if_immutable()
+        copied = deque(self)
+        res = copied.popleft()
+        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+        return res
+
+    def rotate(self, n: int) -> None:
+        self._raise_if_immutable()
+        # no need to validate again
+        super(_DequeStruct, self).rotate(n)
+
+    def reverse(self) -> None:
+        self._raise_if_immutable()
+        # no need to validate again
+        super(_DequeStruct, self).reverse()
+
+    def __getstate__(self):
+        return {
+            "the_instance": self._instance,
+            "the_array": self._field_definition,
+            "the_name": self._name,
+            "the_values": self[:],
+        }
+
+    def __deepcopy__(self, memo={}):
+        vals = [deepcopy(v) for v in self.copy()]
+        instance_id = id(self._instance)
+        return _DequeStruct(
+            array=deepcopy(self._field_definition),
+            struct_instance=memo.get(instance_id, self._instance),
+            mydeque=vals,
+            name=self._name
+        )
+
+    def __setstate__(self, state):
+        self._name = state["the_name"]
+        self._field_definition = state["the_array"]
+        self._instance = state["the_instance"]
+        super().__init__(state["the_values"])
+
 
 
 class _DictStruct(dict, ImmutableMixin):
@@ -871,6 +1021,111 @@ class Array(SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_Col
                 value = res
 
         super().__set__(instance, _ListStruct(self, instance, value, self._name))
+
+
+class Deque(SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
+    """
+    An collections.deque field. Supports the properties in JSON schema draft 4.
+    Expected input is of type `collections.deque`.
+
+    Arguments:
+        minItems(int): optional
+            minimal size
+        maxItems(int): optional
+            maximal size
+        unqieItems(bool): optional
+            are elements required to be unique?
+        additionalItems(bool): optional
+            Relevant in case items parameter is a list of Fields. Is it allowed to have additional
+            elements beyond the ones defined in "items"?
+        items(a :class:`Field` or :class:`Structure`, or a list/tuple of :class:`Field` or :class:`Structure`): optional
+            Describes the fields of the elements.
+            If a items if a :class:`Field`, then it applies to all items.
+            If a items is a list, then every element in the content is expected to be
+            of the corresponding field in items.
+            Examples:
+
+            .. code-block:: python
+
+                names = Deque[String]
+                names = Deque[String(minLengh=3)]
+                names = Deque(minItems=5, items=String)
+                my_record = Deque(items=[String, Integer(minimum=5), String])
+                my_lists = Deque[Array[Integer]]
+                my_structs = Deque[StructureReference(a=Integer, b=Float)]
+                # Let's say we defined a Structure "Person"
+                people = Deque[Person]
+
+                # Assume Foo is an arbitrary (non-Typedpy) class
+                foos = Deque[Foo]
+
+    """
+
+    _ty = deque
+
+    def __init__(
+        self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
+    ):
+        """
+        Constructor
+        :param args: pass-through
+        :param items: either a single field, which will be enforced for all elements, or a list
+         of fields which enforce the elements with the correspondent index
+        :param uniqueItems: are elements required to be unique?
+        :param additionalItems: Relevant if "items" is a list. Is it allowed to have additional
+        elements beyond the ones defined in "items"?
+        :param kwargs: pass-through
+        """
+        self.uniqueItems = uniqueItems
+        self.additionalItems = additionalItems
+        if isinstance(items, list):
+            self.items = []
+            for item in items:
+                self.items.append(_map_to_field(item))
+        else:
+            self.items = _map_to_field(items)
+        super().__init__(*args, **kwargs)
+        self._set_immutable(getattr(self, "_immutable", False))
+
+    def __set__(self, instance, value):
+        verify_type_and_uniqueness(deque, value, self._name, self.uniqueItems)
+        self.validate_size(value, self._name)
+        if self.items is not None:
+            if isinstance(self.items, Field):
+                setattr(self.items, "_name", self._name)
+                res = deque()
+                for i, val in enumerate(value):
+                    temp_st = Structure()
+                    setattr(self.items, "_name", self._name + "_{}".format(str(i)))
+                    self.items.__set__(temp_st, val)
+                    res.append(getattr(temp_st, getattr(self.items, "_name")))
+                value = res
+            elif isinstance(self.items, list):
+                additional_properties_forbidden = self.additionalItems is False
+
+                if not getattr(instance, "_skip_validation", False):
+                    if len(self.items) > len(value) or (
+                        additional_properties_forbidden and len(self.items) > len(value)
+                    ):
+                        raise ValueError(
+                            "{}: Got {}; Expected an deque of length {}".format(
+                                self._name, value, len(self.items)
+                            )
+                        )
+                temp_st = Structure()
+                temp_st._skip_validation = getattr(instance, "_skip_validation", False)
+                res = deque()
+                for ind, item in enumerate(self.items):
+                    if ind >= len(value):
+                        continue
+                    setattr(item, "_name", self._name + "_{}".format(str(ind)))
+                    item.__set__(temp_st, value[ind])
+                    res.append(getattr(temp_st, getattr(item, "_name")))
+                for i in range(len(self.items), len(value)):
+                    res.append(value[i])
+                value = res
+
+        super().__set__(instance, _DequeStruct(self, instance, value, self._name))
 
 
 def verify_type_and_uniqueness(the_type, value, name, has_unique_items):
@@ -1318,6 +1573,13 @@ class ImmutableArray(ImmutableField, Array):
     pass
 
 
+class ImmutableDeque(ImmutableField, Deque):
+    """
+        An immutable version of :class:`Deque`
+    """
+    pass
+
+
 class ImmutableString(ImmutableField, String):
     """
         An immutable version of :class:`String`
@@ -1346,21 +1608,6 @@ class ImmutableFloat(ImmutableField, Float):
     pass
 
 
-class SerializableField(Field):
-    """
-    An abstract class for a field that has custom serialization or deserialization.
-    can override the method:
-      serialize(self, value),
-      deserialize(self, value)
-
-    These methods are not being used for pickling.
-    """
-
-    def serialize(self, value):
-        return value
-
-    def deserialize(self, value):
-        return value
 
 
 class ExceptionField(TypedField, SerializableField):

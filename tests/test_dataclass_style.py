@@ -1,4 +1,5 @@
 import sys
+from collections import deque
 
 python_ver_atleast_than_37 = sys.version_info[0:2] > (3, 6)
 if python_ver_atleast_than_37:
@@ -249,16 +250,21 @@ def test_typing_error_in_generic_pep585_err():
     class ExampleWithTyping(Structure):
         i: Integer
         a: list[int]
+        d: deque[int]
 
-    e = ExampleWithTyping(i=5, a=[1, 2, 3])
+    e = ExampleWithTyping(i=5, a=[1, 2, 3], d=deque([1,2]))
     assert e.a[0] == 1
     with raises(TypeError) as exc_info:
         e.a[2] = "x"
     assert "a_2: Expected <class 'int'>; Got 'x'" in str(exc_info.value)
 
     with raises(TypeError) as exc_info:
-        ExampleWithTyping(i=5, a=[1, 2, 3, "x"])
+        ExampleWithTyping(i=5, a=[1, 2, 3, "x"], d=deque())
     assert "a_3: Expected <class 'int'>; Got 'x'" in str(exc_info.value)
+
+    with raises(TypeError) as exc_info:
+        e.d.append("x")
+    assert "d_2: Expected <class 'int'>; Got 'x'" in str(exc_info.value)
 
 
 @pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
@@ -290,3 +296,5 @@ def test_generic_typevar_is_ignored():
     assert Foo(a=[1,2]).a[1] == 2
     with raises(TypeError):
         Foo(a=1)
+
+

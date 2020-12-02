@@ -1,13 +1,13 @@
 import enum
 import operator
-from collections import OrderedDict
+from collections import OrderedDict, deque
 
 from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
     Float, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything, serialize, NotField, \
-    SerializableField
+    SerializableField, Deque
 from typedpy.serialization import FunctionCall
 from typedpy.serialization_wrappers import Deserializer
 
@@ -588,6 +588,16 @@ def test_serializable_deserialize():
                                        {'mykey': 'my custom deserialization: abcde, 191205'}])
 
     assert serialize(deserialized) == {'d': [123, 123], 'i': 3}
+
+
+def test_deserialize_deque():
+    class Example(Structure):
+        d = Deque[Array]
+
+    original = {'d': [[1,2], [3,4]]}
+    deserialized = deserialize_structure(Example, original)
+    assert deserialized == Example(d = deque([[1,2], [3,4]]))
+    assert serialize(deserialized) == original
 
 
 def test_deserialization_map():

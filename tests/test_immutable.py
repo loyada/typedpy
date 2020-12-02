@@ -1,7 +1,9 @@
+from collections import deque
+
 from pytest import raises
 from typedpy import String, Number, Structure, ImmutableField, ImmutableStructure, Array, Map, Integer, ImmutableMap, \
     Set, ImmutableArray, ImmutableInteger, Tuple
-from typedpy.fields import Generator
+from typedpy.fields import Generator, Deque, ImmutableDeque
 
 
 class ImmutableString(String, ImmutableField): pass
@@ -172,6 +174,47 @@ def assert_updating_arr_fails(e):
         e.arr.append(1)
     with raises(ValueError):
         e.arr.extend([])
+
+
+def test_assessors_blocks_direct_updates_to_deque():
+    class Example(ImmutableStructure):
+        deq = Deque
+        m = Map
+
+    e = Example(deq=deque([{'x': 1}]), m={'x': [1, 2, 3]})
+    d: deque = e.deq
+    assert_updating_deque_fails(d)
+
+
+def test_assessors_blocks_direct_updates_to_deque_variation():
+    class Example(Structure):
+        deq = ImmutableDeque
+        m = Map
+
+    e = Example(deq=deque([{'x': 1}]), m={'x': [1, 2, 3]})
+    d: deque = e.deq
+    assert_updating_deque_fails(d)
+
+
+def assert_updating_deque_fails(d):
+    with raises(ValueError):
+        d[0] = 0
+    with raises(ValueError):
+        d.pop()
+    with raises(ValueError):
+        d.popleft()
+    with raises(ValueError):
+        d.remove({'x': 1})
+    with raises(ValueError):
+        d.clear()
+    with raises(ValueError):
+        d.append(1)
+    with raises(ValueError):
+        d.appendleft(1)
+    with raises(ValueError):
+        d.extend(deque())
+    with raises(ValueError):
+        d.extendleft(deque())
 
 
 def test_array_iterator_return_defensive_copies_for_immutables():

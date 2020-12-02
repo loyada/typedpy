@@ -4,7 +4,7 @@ import json
 from functools import reduce
 from typing import Dict
 
-from typedpy.fields import _ListStruct
+from typedpy.fields import _ListStruct, Deque
 from typedpy.structures import (
     TypedField,
     Structure,
@@ -77,6 +77,12 @@ def deserialize_list_like(
 def deserialize_array(array_field, value, name, *, keep_undefined=True, mapper):
     return deserialize_list_like(
         array_field, list, value, name, keep_undefined=keep_undefined, mapper=mapper
+    )
+
+
+def deserialize_deque(array_field, value, name, *, keep_undefined=True, mapper):
+    return deserialize_list_like(
+        array_field, collections.deque, value, name, keep_undefined=keep_undefined, mapper=mapper
     )
 
 
@@ -166,6 +172,10 @@ def deserialize_single_field(
         value = source_val
     elif isinstance(field, Array):
         value = deserialize_array(
+            field, source_val, name, keep_undefined=keep_undefined, mapper=mapper
+        )
+    elif isinstance(field, Deque):
+        value = deserialize_deque(
             field, source_val, name, keep_undefined=keep_undefined, mapper=mapper
         )
     elif isinstance(field, Tuple):

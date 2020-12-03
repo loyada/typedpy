@@ -514,5 +514,6 @@ The following types can be used as fields types and will be automatically conver
 
 * From the "typing" module: Union, Any, Optional, List, Dict, Set, FrozenSet, Deque
 
-| Note that you cannot use Typedpy field types as the nested type of types above. i.e.: s: list[Integer] is not valid.
-Instead, it should be one of the following: list[int], typing.List[int], Array[Integer].
+
+| Note that you cannot use Typedpy field types as the nested type of types above.
+| i.e.: s: list[Integer] is not valid. Instead, it should be one of the following: list[int], typing.List[int], Array[Integer].

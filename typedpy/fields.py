@@ -540,14 +540,16 @@ class _DequeStruct(deque, ImmutableMixin, _IteratorProxyMixin):
         self._raise_if_immutable()
         copied = deque(self)
         copied.append(value)
-        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+        if self._field_definition:  # Python 3.6
+            setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
         super().append(value)
 
     def appendleft(self, value):
         self._raise_if_immutable()
         copied = deque(self)
         copied.appendleft(value)
-        setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+        if self._field_definition:  # Python 3.6
+            setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
         super().append(value)
 
     def extend(self, iterable: Iterable):

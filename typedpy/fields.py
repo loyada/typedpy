@@ -111,18 +111,19 @@ class StructureReference(Field):
 
 class ImmutableField(Field):
     """
-       A mixin that makes a field class immutable.
-       For Example:
+    A mixin that makes a field class immutable.
+    For Example:
 
-        .. code-block:: python
+     .. code-block:: python
 
-            class MyFieldType(Field): .....
+         class MyFieldType(Field): .....
 
-            class MyImmutableFieldType(ImmutableField, MyFieldType): pass
+         class MyImmutableFieldType(ImmutableField, MyFieldType): pass
 
-            # that's all you have to do to make MyImmutableFieldType immutable.
+         # that's all you have to do to make MyImmutableFieldType immutable.
 
     """
+
     _immutable = True
 
 
@@ -315,8 +316,9 @@ class Function(Field):
 
 class Generator(TypedField):
     """
-       A Python generator. Not serializable.
+    A Python generator. Not serializable.
     """
+
     _ty = type(x for x in [])
 
 
@@ -488,7 +490,7 @@ class _ListStruct(list, ImmutableMixin, _IteratorProxyMixin):
             array=deepcopy(self._field_definition),
             struct_instance=memo.get(instance_id, self._instance),
             mylist=vals,
-            name=self._name
+            name=self._name,
         )
 
     def __setstate__(self, state):
@@ -506,11 +508,18 @@ class _DequeStruct(deque, ImmutableMixin, _IteratorProxyMixin):
     Will not bypass the validation of the Array.
     """
 
-    def __init__(self, array: Field= None, struct_instance: Structure= None, mydeque=None, name: str=None):
-        self._field_definition = array
+    def __init__(
+        self,
+        deq: Field = None,
+        struct_instance: Structure = None,
+        mydeque=None,
+        name: str = None,
+    ):
+        self._field_definition = deq
         self._instance = struct_instance
         self._name = name
-        super().__init__(self._get_defensive_copy_if_needed(mydeque))
+        if mydeque is not None:
+            super().__init__(self._get_defensive_copy_if_needed(mydeque))
 
     def __setitem__(self, key, value):
         self._raise_if_immutable()
@@ -606,27 +615,31 @@ class _DequeStruct(deque, ImmutableMixin, _IteratorProxyMixin):
     def __getstate__(self):
         return {
             "the_instance": self._instance,
-            "the_array": self._field_definition,
+            "field_def": self._field_definition,
             "the_name": self._name,
-            "the_values": self[:],
+            "the_values": deque(self),
         }
 
     def __deepcopy__(self, memo={}):
         vals = [deepcopy(v) for v in self.copy()]
         instance_id = id(self._instance)
         return _DequeStruct(
-            array=deepcopy(self._field_definition),
+            deq=deepcopy(self._field_definition),
             struct_instance=memo.get(instance_id, self._instance),
             mydeque=vals,
-            name=self._name
+            name=self._name,
         )
+
+    def __reduce__(self):
+        res = super().__reduce__()
+        return res[0], res[1], self.__getstate__(), res[3]
+
 
     def __setstate__(self, state):
         self._name = state["the_name"]
-        self._field_definition = state["the_array"]
+        self._field_definition = state["field_def"]
         self._instance = state["the_instance"]
         super().__init__(state["the_values"])
-
 
 
 class _DictStruct(dict, ImmutableMixin):
@@ -668,10 +681,10 @@ class _DictStruct(dict, ImmutableMixin):
         new_dict = {deepcopy(k): deepcopy(v) for k, v in self.items()}
         instance_id = id(self._instance)
         return _DictStruct(
-            the_map = self._field_definition,
+            the_map=self._field_definition,
             struct_instance=memo.get(instance_id, self._instance),
             mydict=new_dict,
-            name=self._name
+            name=self._name,
         )
 
     def items(self):
@@ -715,7 +728,7 @@ class _DictStruct(dict, ImmutableMixin):
             "_instance": self._instance,
             "_map": self._field_definition,
             "mydict": self.copy(),
-            "_name": self._name
+            "_name": self._name,
         }
 
     def __setstate__(self, state):
@@ -787,7 +800,9 @@ class SizedCollection:
             )
 
 
-class Set(SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
+class Set(
+    SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta
+):
     """
     A set collection. Accepts input of type `set`
 
@@ -850,7 +865,9 @@ class Set(SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_Colle
         super().__set__(instance, value)
 
 
-class Map(SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
+class Map(
+    SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta
+):
     """
     A map/dictionary collection. Accepts input of type `dict`
 
@@ -921,7 +938,9 @@ class Map(SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_Colle
         super().__set__(instance, _DictStruct(self, instance, value, self._name))
 
 
-class Array(SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
+class Array(
+    SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta
+):
     """
     An Array field, similar to a list. Supports the properties in JSON schema draft 4.
     Expected input is of type `list`.
@@ -1025,7 +1044,9 @@ class Array(SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_Col
         super().__set__(instance, _ListStruct(self, instance, value, self._name))
 
 
-class Deque(SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
+class Deque(
+    SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta
+):
     """
     An collections.deque field. Supports the properties in JSON schema draft 4.
     Expected input is of type `collections.deque`.
@@ -1536,9 +1557,10 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
 class ImmutableSet(Set, ImmutableField):
     """
-       An immutable  :class:`Set`. Internally implemented by a Python frozenset, so it does not have
-       any mutation methods. This makes it more developer-friendly.
+    An immutable  :class:`Set`. Internally implemented by a Python frozenset, so it does not have
+    any mutation methods. This makes it more developer-friendly.
     """
+
     _ty = frozenset
 
     def __set__(self, instance, value):
@@ -1563,53 +1585,58 @@ class ImmutableSet(Set, ImmutableField):
 
 class ImmutableMap(ImmutableField, Map):
     """
-        An immutable version of :class:`Map`
+    An immutable version of :class:`Map`
     """
+
     pass
 
 
 class ImmutableArray(ImmutableField, Array):
     """
-        An immutable version of :class:`Array`
+    An immutable version of :class:`Array`
     """
+
     pass
 
 
 class ImmutableDeque(ImmutableField, Deque):
     """
-        An immutable version of :class:`Deque`
+    An immutable version of :class:`Deque`
     """
+
     pass
 
 
 class ImmutableString(ImmutableField, String):
     """
-        An immutable version of :class:`String`
+    An immutable version of :class:`String`
     """
+
     pass
 
 
 class ImmutableNumber(ImmutableField, Number):
     """
-        An immutable version of :class:`Number`
+    An immutable version of :class:`Number`
     """
+
     pass
 
 
 class ImmutableInteger(ImmutableField, Integer):
     """
-        An immutable version of :class:`Integer`
+    An immutable version of :class:`Integer`
     """
+
     pass
 
 
 class ImmutableFloat(ImmutableField, Float):
     """
-        An immutable version of :class:`Float`
+    An immutable version of :class:`Float`
     """
+
     pass
-
-
 
 
 class ExceptionField(TypedField, SerializableField):

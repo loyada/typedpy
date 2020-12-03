@@ -4,7 +4,7 @@ import json
 from functools import reduce
 from typing import Dict
 
-from typedpy.fields import _ListStruct, Deque
+from typedpy.fields import _ListStruct, Deque, Generator
 from typedpy.structures import (
     TypedField,
     Structure,
@@ -82,7 +82,12 @@ def deserialize_array(array_field, value, name, *, keep_undefined=True, mapper):
 
 def deserialize_deque(array_field, value, name, *, keep_undefined=True, mapper):
     return deserialize_list_like(
-        array_field, collections.deque, value, name, keep_undefined=keep_undefined, mapper=mapper
+        array_field,
+        collections.deque,
+        value,
+        name,
+        keep_undefined=keep_undefined,
+        mapper=mapper,
     )
 
 
@@ -497,7 +502,8 @@ def serialize_internal(structure, mapper=None, compact=False):
     if mapper is None:
         mapper = {}
     field_by_name = _get_all_fields_by_name(structure.__class__)
-
+    if type(structure) == getattr(Generator, "_ty", None):
+        raise TypeError("Generator cannot be serialized")
     items = (
         structure.items()
         if isinstance(structure, dict)

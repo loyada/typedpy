@@ -5,7 +5,7 @@ import pytest
 from pytest import raises
 
 from typedpy import Structure, Deque, Number, String, Integer, Field, ImmutableStructure
-from typedpy.fields import _DequeStruct
+from typedpy.fields import _DequeStruct, ImmutableDeque
 
 
 class Foo(Structure):
@@ -24,6 +24,7 @@ class Example(Structure):
     f = Deque[Integer]
     g = Deque[Foo]
     h = Deque[Deque[Integer]]
+    i = ImmutableDeque[String]
 
 
 def test_wrong_type_for_deque_err():
@@ -74,10 +75,29 @@ def test_update_1():
     assert t.a[2] == 8
 
 
+def test_rotate():
+    example = Example(b=deque([1, 2, 3, 4, 5]))
+    example.b.rotate(1)
+    assert example.b.popleft() == 5
+
+
+def test_reverse():
+    example = Example(b=deque([1, 2, 3, 4, 5]))
+    example.b.reverse()
+    assert example.b.popleft() == 5
+    assert example.b.pop() == 1
+
+
 def test_update_append():
     t = Example(a=deque(['aa', 5, 2]))
     t.a.append(6)
     assert t.a == deque(['aa', 5, 2, 6])
+
+
+def test_update_appendleft():
+    t = Example(b=deque([1, 5, 2]))
+    t.b.appendleft(6)
+    assert t.b == deque([6, 1, 5, 2])
 
 
 def test_append_maintains_field_definition():
@@ -86,6 +106,9 @@ def test_append_maintains_field_definition():
     with raises(TypeError) as excinfo:
         t.a[0] = 0
     assert "a_0: Got 0; Expected a string" in str(excinfo.value)
+    with raises(ValueError) as excinfo:
+        t.a.appendleft(6)
+    assert "a: Got deque([6, 'aa', 5, 2, 6]); Expected unique items" in str(excinfo.value)
 
 
 def test_append_maintains_field_definition_validate_pop():
@@ -163,6 +186,10 @@ def test_extend_err():
         e.b.extend([5, 99])
     assert "b_4: Got 99; Expected a maximum of 10" in str(excinfo.value)
 
+    with raises(ValueError) as excinfo:
+        e.b.extendleft([5, 99])
+    assert "b_0: Got 99; Expected a maximum of 10" in str(excinfo.value)
+
 
 def test_extend_valid():
     from typedpy.fields import _ListStruct
@@ -170,6 +197,11 @@ def test_extend_valid():
     e = Example(b=deque([1, 2, 3]))
     e.b.extend([5, 9])
     assert list(e.b) == [1, 2, 3, 5, 9]
+    assert e.b.__class__ == _DequeStruct
+
+    e = Example(b=deque([1, 2, 3]))
+    e.b.extendleft([5, 9])
+    assert list(e.b) == [9, 5, 1, 2, 3]
     assert e.b.__class__ == _DequeStruct
 
 

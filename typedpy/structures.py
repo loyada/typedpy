@@ -191,13 +191,13 @@ class Field(metaclass=_FieldMeta):
             else owner.__dict__[self._name]
         )
         is_immutable = (
-                instance is not None
-                and getattr(instance, IS_IMMUTABLE, False)
-                or getattr(self, IS_IMMUTABLE, False)
+            instance is not None
+            and getattr(instance, IS_IMMUTABLE, False)
+            or getattr(self, IS_IMMUTABLE, False)
         )
         needs_defensive_copy = (
-                not isinstance(res, (ImmutableMixin, int, float, str, bool, enum.Enum))
-                or res is None
+            not isinstance(res, (ImmutableMixin, int, float, str, bool, enum.Enum))
+            or res is None
         )
         return deepcopy(res) if (is_immutable and needs_defensive_copy) else res
 
@@ -205,16 +205,20 @@ class Field(metaclass=_FieldMeta):
         if getattr(self, IS_IMMUTABLE, False) and self._name in instance.__dict__:
             raise ValueError("{}: Field is immutable".format(self._name))
         if getattr(self, IS_IMMUTABLE, False) and not getattr(
-                self, "_custom_deep_copy_implementation", False
+            self, "_custom_deep_copy_implementation", False
         ):
             try:
                 instance.__dict__[self._name] = deepcopy(value)
             except TypeError:
-                raise TypeError("{} cannot be immutable, as its type does not support pickle.".format(self._name))
+                raise TypeError(
+                    "{} cannot be immutable, as its type does not support pickle.".format(
+                        self._name
+                    )
+                )
         else:
             instance.__dict__[self._name] = value
         if getattr(instance, "_instantiated", False) and not getattr(
-                instance, "_skip_validation", False
+            instance, "_skip_validation", False
         ):
             instance.__validate__()
 
@@ -278,33 +282,33 @@ def _get_all_fields_by_name(cls):
 def _instantiate_fields_if_needed(cls_dict: dict, defaults: dict):
     for key, val in cls_dict.items():
         if (
-                key
-                not in {
-            REQUIRED_FIELDS,
-            ADDITIONAL_PROPERTIES,
-            IS_IMMUTABLE,
-            DEFAULTS,
-            OPTIONAL_FIELDS,
-        }
-                and not isinstance(val, Field)
-                and not key.startswith("__")
-                and (
+            key
+            not in {
+                REQUIRED_FIELDS,
+                ADDITIONAL_PROPERTIES,
+                IS_IMMUTABLE,
+                DEFAULTS,
+                OPTIONAL_FIELDS,
+            }
+            and not isinstance(val, Field)
+            and not key.startswith("__")
+            and (
                 Field in getattr(val, "__mro__", []) or is_function_returning_field(val)
-        )
+            )
         ):
             new_val = val(default=defaults[key]) if key in defaults else val()
             cls_dict[key] = new_val
 
 
 def _apply_default_and_update_required_not_to_include_fields_with_defaults(
-        cls_dict: dict, defaults: dict, fields: list
+    cls_dict: dict, defaults: dict, fields: list
 ):
     required_fields = set(cls_dict.get(REQUIRED_FIELDS, []))
     optional_fields = set(cls_dict.get(OPTIONAL_FIELDS, []))
     required_fields_predefined = REQUIRED_FIELDS in cls_dict
     for field_name in fields:
         if field_name in defaults and not getattr(
-                cls_dict[field_name], "_default", None
+            cls_dict[field_name], "_default", None
         ):
             cls_dict[field_name]._try_default_value(defaults[field_name])
             cls_dict[field_name]._default = defaults[field_name]
@@ -381,7 +385,7 @@ def convert_basic_types(v):
         ImmutableSet,
         AnyOf,
         Anything,
-        Deque
+        Deque,
     )
 
     type_mapping = {
@@ -402,22 +406,24 @@ def convert_basic_types(v):
 
 
 def _type_is_generic(v):
-    class Foo: pass
+    class Foo:
+        pass
 
     origin = getattr(v, "__origin__", None)
     typing_base = getattr(typing, "_TypingBase", Foo)
     generic_alias = getattr(typing, "_GenericAlias", Foo)
     special_generic_alias = getattr(typing, "_SpecialGenericAlias", Foo)
     return (
-                   python_ver_36
-                   and isinstance(v, typing_base)
-           ) or (
-                   python_ver_atleast_than_37
-                   and isinstance(v, (generic_alias, special_generic_alias))
-           ) or (
-                   python_ver_atleast_39
-                   and origin in {list, dict, tuple, set, frozenset, deque, typing.Union}
-           )
+        (python_ver_36 and isinstance(v, typing_base))
+        or (
+            python_ver_atleast_than_37
+            and isinstance(v, (generic_alias, special_generic_alias))
+        )
+        or (
+            python_ver_atleast_39
+            and origin in {list, dict, tuple, set, frozenset, deque, typing.Union}
+        )
+    )
 
 
 def get_typing_lib_info(v):
@@ -475,7 +481,7 @@ def add_annotations_to_class_dict(cls_dict):
                     from .fields import AnyOf
 
                     if isinstance(the_type, AnyOf) and getattr(
-                            the_type, "_is_optional", False
+                        the_type, "_is_optional", False
                     ):
                         optional_fields.add(k)
                     if k in cls_dict:
@@ -604,7 +610,7 @@ class Structure(metaclass=StructMeta):
 
         name = self.__class__.__name__
         if name.startswith("StructureReference_") and self.__class__.__bases__ == (
-                Structure,
+            Structure,
         ):
             name = "Structure"
         props = []
@@ -635,7 +641,7 @@ class Structure(metaclass=StructMeta):
 
     def __delitem__(self, key):
         if isinstance(getattr(self, REQUIRED_FIELDS), list) and key in getattr(
-                self, REQUIRED_FIELDS
+            self, REQUIRED_FIELDS
         ):
             raise ValueError("{} is mandatory".format(key))
         del self.__dict__[key]
@@ -680,9 +686,9 @@ class Structure(metaclass=StructMeta):
         required = props.get(REQUIRED_FIELDS, field_names)
         additional_props = props.get(ADDITIONAL_PROPERTIES, True)
         if (
-                len(field_names) == 1
-                and required == field_names
-                and additional_props is False
+            len(field_names) == 1
+            and required == field_names
+            and additional_props is False
         ):
             return item in getattr(self, field_names[0], {})
 

@@ -1,11 +1,12 @@
 import copy
+from collections import deque
 
 import pytest
 from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, Enum, \
-    Float, Map, AnyOf, Set, OneOf, Anything
+    Float, Map, AnyOf, Set, OneOf, Anything, Deque
 
 
 class SimpleStruct(Structure):
@@ -37,6 +38,7 @@ class Example(Structure):
     all = AllOf[Number, Integer]
     person_by_label = Map[String, Person]
     enum = Enum(values=[1, 2, 3])
+    deq = Deque[String]
     _required = []
 
 
@@ -60,7 +62,8 @@ def rich_object_example():
         simplestruct=SimpleStruct(name='danny'),
         all=5,
         enum=3,
-        not_part_of_class_definition=1
+        not_part_of_class_definition=1,
+        deq=deque(['xx', 'yy', 'zz'])
     )
 
 
@@ -127,7 +130,7 @@ def test_ne():
 
 def test_dir(rich_object_example):
     assert dir(rich_object_example) == ['all', 'any', 'anything', 'array', 'array_of_one_of', 'complex_allof',
-                                        'embedded', 'enum', 'i', 'not_part_of_class_definition', 'people',
+                                        'deq', 'embedded', 'enum', 'i', 'not_part_of_class_definition', 'people',
                                         'person_by_label', 's', 'set', 'simplestruct']
 
 

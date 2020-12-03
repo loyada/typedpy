@@ -215,6 +215,11 @@ def assert_updating_deque_fails(d):
         d.extend(deque())
     with raises(ValueError):
         d.extendleft(deque())
+    with raises(ValueError):
+        d.reverse()
+    with raises(ValueError):
+        d.rotate(1)
+
 
 
 def test_array_iterator_return_defensive_copies_for_immutables():

@@ -1,11 +1,12 @@
 import enum
 import pickle
+from collections import deque
 
 import pytest
 from pytest import raises
 
 from typedpy import Integer, String, Array, Map, Structure, Set, Enum, StructureReference, Anything, DateField, \
-    ImmutableStructure
+    ImmutableStructure, Deque
 
 
 class Values(enum.Enum):
@@ -36,6 +37,7 @@ class Example(Structure):
     enum_arr = Array[Enum[Values]]
     date = DateField(date_format="%y%m%d")
     points = Array[Point]
+    deq = Deque[Integer]
     _required = []
 
 
@@ -66,6 +68,7 @@ def original_object():
         bar={2, 3, 2, 4},
         date='191204',
         enum_arr=["ABC", "DEF", "ABC"],
+        deq= deque([1, 2, 3])
     )
 
 

@@ -1,12 +1,12 @@
 Name                                Stmts   Miss Branch BrPart  Cover   Missing
 -------------------------------------------------------------------------------
-typedpy\__init__.py                     6      0      0      0   100%
-typedpy\commons.py                      2      0      0      0   100%
-typedpy\extfields.py                   77      0     19      0   100%
-typedpy\fields.py                     595      3    206      2    99%   825, 1334, 1337, 272->exit, 824->825
-typedpy\json_schema_mapping.py        176      1     63      0    99%   347
-typedpy\serialization.py              223      0    140      0   100%
-typedpy\serialization_wrappers.py      37      0     20      2    96%   141->exit, 143->exit
-typedpy\structures.py                 333      5    160      7    98%   376, 381, 516, 538, 545, 375->376, 380->381, 394->412, 404->395, 515->516, 537->538, 544->545
+typedpy/__init__.py                     6      0      0      0   100%
+typedpy/commons.py                      2      0      0      0   100%
+typedpy/extfields.py                   77      0     19      0   100%
+typedpy/fields.py                     736     22    238      9    97%   37, 40, 304->exit, 320->exit, 539-542, 548->exit, 555-558, 594, 597-599, 602-604, 607, 625-628, 765->764, 1017->1018, 1018, 1108->1117, 1121->1122, 1122, 1423->exit, 1555->1557
+typedpy/json_schema_mapping.py        183      1     63      0    99%   347
+typedpy/serialization.py              233      1    148      2    99%   216->217, 217, 218->226
+typedpy/serialization_wrappers.py      37      0     20      2    96%   141->exit, 143->exit
+typedpy/structures.py                 403      5    196      7    98%   445->448, 448, 464->492, 474->465, 484->485, 485, 597->598, 598, 619->620, 620, 626->627, 627
 -------------------------------------------------------------------------------
-TOTAL                                1449      9    608     11    99%
+TOTAL                                1677     29    684     20    98%

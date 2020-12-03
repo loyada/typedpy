@@ -506,4 +506,13 @@ Immutability
 .. autoclass:: ImmutableDeque
 
 
+Other Types With Explicit Support (version > 1.35
+-------------------------------------------------
+The following types are converted automatically to Typedpy fields:
 
+* str, int, float, dict, list, set, tuple, bool, frozenset, deque
+
+* From the "typing" module: Union, Any, Optional, List, Dict, Set, FrozenSet, Deque
+
+| Note that you cannot use Typedpy field types as the nested type of types above. i.e.: s: list[Integer] is not valid.
+Instead, it should be one of the following: list[int], typing.List[int], Array[Integer].

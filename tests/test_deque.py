@@ -341,3 +341,13 @@ def test_clear():
     foo = Foo(a=deque([1, 2, 3]))
     foo.a.clear()
     assert len(foo.a) == 0
+
+
+def test_auto_mapping_of_deque():
+    class Foo(Structure):
+        d: deque[float]
+
+    with raises(TypeError)as excinfo:
+        Foo(d=deque([0.5,2]))
+    assert "d_1: Expected <class 'float'>; Got 2" in str(excinfo.value)
+

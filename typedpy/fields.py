@@ -3,7 +3,9 @@ Definitions of various types of fields. Supports JSON draft4 types.
 """
 import enum
 import re
-from collections import OrderedDict, deque, Iterable
+from collections import OrderedDict, deque
+from collections.abc import Iterable
+
 from copy import deepcopy
 from functools import reduce
 from decimal import Decimal, InvalidOperation

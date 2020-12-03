@@ -329,7 +329,7 @@ Is converted by Typedpy automatically to this:
         s1 = String
         m = Array(default=[1,2,3])
 
-This provides you with all the run-time checking and other typedpy functionality even if you use regular Python types.
+This provides you with all the run-time checking and other Typedpy functionality even if you use regular Python types.
 It also applies default values (see fields 'm', 'i' above).
 
 Two examples:

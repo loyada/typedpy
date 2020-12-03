@@ -182,6 +182,8 @@ Any Structure type can also be used as a field.
     #This is valid
     Example(a=Foo(st=""), b=[Foo(st="xyz")], c=2))
 
+
+
 .. _structure-inlining:
 
 Inlining a Structure as a Field
@@ -452,6 +454,20 @@ way you'd expect:
 
     class Bar(Structure):
           a = Any[Foo, Integer]
+
+
+And versions > 2.0 do not require Foo to be a structure, so the following code would also work:
+
+.. code-block:: python
+
+    @dataclass(unsafe_hash=True)
+    class Foo:
+          s: str
+          i: int
+
+    class Bar(Structure):
+          int_by_foo: Map[Foo, Integer]
+
 
 
 

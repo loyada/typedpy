@@ -343,6 +343,7 @@ def test_clear():
     assert len(foo.a) == 0
 
 
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.7 or higher")
 def test_auto_mapping_of_deque():
     class Foo(Structure):
         d: deque[float]

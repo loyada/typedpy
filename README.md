@@ -23,7 +23,7 @@
 
 * Supports JSON schema draft4 features, including mapping schema-to-code and code-to-schema
 
-* Serialization, deserialization between JSON-like dict and typedpy objects, including costumes mapping. Support for pickling.
+* Serialization, deserialization between JSON-like dict and typedpy objects, including custom mapping. Support for pickling.
 
 * Easily extensible. [Wrapper of any class as a Field](https://github.com/loyada/typedpy/tree/master/tests/test_typed_field_creator.py)
 

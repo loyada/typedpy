@@ -19,7 +19,8 @@ from typedpy.structures import (
     StructMeta,
     ImmutableMixin,
     _FieldMeta,
-    NoneField, ImmutableField,
+    NoneField,
+    ImmutableField,
 )
 
 
@@ -107,8 +108,6 @@ class StructureReference(Field):
 
         propst = ". Properties: {}".format(", ".join(props)) if props else ""
         return "<Structure{}>".format(propst)
-
-
 
 
 class Number(Field):
@@ -734,15 +733,15 @@ class _CollectionMeta(_FieldMeta):
 
         if isinstance(item, tuple):
             items = [validate_and_get_field(it) for it in item]
-            return cls(items=items)
-        return cls(items=validate_and_get_field(item))
+            return cls(items=items)  # pylint: disable=E1120, E1123
+        return cls(items=validate_and_get_field(item))  # pylint: disable=E1120, E1123
 
 
 class _EnumMeta(_FieldMeta):
     def __getitem__(cls, values):
         if isinstance(values, (type,)) and issubclass(values, (enum.Enum,)):
-            return cls(values=values)
-        return cls(values=list(values))
+            return cls(values=values)  # pylint: disable=E1120, E1123
+        return cls(values=list(values))  # pylint: disable=E1120, E1123
 
 
 class _JSONSchemaDraft4ReuseMeta(_FieldMeta):
@@ -752,8 +751,8 @@ class _JSONSchemaDraft4ReuseMeta(_FieldMeta):
 
         if isinstance(item, tuple):
             fields = [validate_and_get_field(it) for it in item]
-            return cls(fields)
-        return cls([validate_and_get_field(item)])
+            return cls(fields)  # pylint: disable=E1120, E1123
+        return cls([validate_and_get_field(item)])  # pylint: disable=E1120, E1123
 
 
 class ContainNestedFieldMixin(Field):

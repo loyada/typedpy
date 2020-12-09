@@ -122,23 +122,35 @@ def get_base_info(bases):
     return bases_params, bases_required
 
 
-
 def _check_for_final_violations(classes):
     def is_sub_class(c, base):
-        return issubclass(c, base) and c!=base
+        return issubclass(c, base) and c != base
 
     current_class, *inherited_class = classes
     for i, c in enumerate(inherited_class):
-        if 'FinalStructure' in globals() and isinstance(c, StructMeta):
-            if 'FinalStructure' in globals() and is_sub_class(c, FinalStructure):
-                raise TypeError("Tried to extend {}, which is a FinalStructure. This is forbidden".format(c.__name__))
-            if 'ImmutableStructure' in globals() and is_sub_class(c, ImmutableStructure):
-                raise TypeError("Tried to extend {}, which is an ImmutableStructure. This is forbidden".format(c.__name__))
+        if "FinalStructure" in globals() and isinstance(c, StructMeta):
+            if "FinalStructure" in globals() and is_sub_class(c, FinalStructure):
+                raise TypeError(
+                    "Tried to extend {}, which is a FinalStructure. This is forbidden".format(
+                        c.__name__
+                    )
+                )
+            if "ImmutableStructure" in globals() and is_sub_class(
+                c, ImmutableStructure
+            ):
+                raise TypeError(
+                    "Tried to extend {}, which is an ImmutableStructure. This is forbidden".format(
+                        c.__name__
+                    )
+                )
 
-        if '_FieldMeta' in globals() and isinstance(c, _FieldMeta):
-            if 'ImmutableField' in globals() and is_sub_class(c, ImmutableField):
-                raise TypeError("Tried to extend {}, which is an ImmutableField. This is forbidden".format(c.__name__))
-
+        if "_FieldMeta" in globals() and isinstance(c, _FieldMeta):
+            if "ImmutableField" in globals() and is_sub_class(c, ImmutableField):
+                raise TypeError(
+                    "Tried to extend {}, which is an ImmutableField. This is forbidden".format(
+                        c.__name__
+                    )
+                )
 
 
 class _FieldMeta(type):
@@ -722,7 +734,8 @@ class Structure(metaclass=StructMeta):
         )
 
 
-class FinalStructure(Structure): pass
+class FinalStructure(Structure):
+    pass
 
 
 class ImmutableStructure(Structure):
@@ -780,6 +793,7 @@ class TypedField(Field):
 class NoneField(TypedField):
     """
     A field that maps to a single allowable value: None.
+    By default, fields cannot be assigned None (i.e. "Null Safety"). NoneField allows to do so.
     This is useful to define optional fields or optional values such as:
 
     .. code-block:: python
@@ -854,7 +868,6 @@ class ClassReference(TypedField):
 
     def __str__(self):
         return "<ClassReference: {}>".format(self._ty.__name__)
-
 
 
 class ImmutableField(Field):

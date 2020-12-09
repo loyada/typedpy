@@ -326,14 +326,10 @@ def _check_for_final_violations(classes):
     final_ind = -1
 
     for i, c in enumerate(inherited_class):
-        if isinstance(c, StructMeta) and 'FinalStructure' in globals() and c==FinalStructure:
-            final_ind = i
-
-    if final_ind>=0:
-        candidates = inherited_class[:final_ind]
-        for c in candidates:
-            if issubclass(c, Structure):
-                raise TypeError ("FinalStructure must not be extended. Tried to extend {}".format(c.__name__))
+        if isinstance(c, StructMeta) and 'FinalStructure' in globals() \
+                and issubclass(c, FinalStructure) \
+                and c != FinalStructure:
+            raise TypeError("FinalStructure must not be extended. Tried to extend {}".format(c.__name__))
 
 
 class StructMeta(type):

@@ -218,3 +218,12 @@ def test_final_structure_violation():
         excinfo.value)
 
 
+def test_final_structure_no_violation():
+    class Foo(Structure):
+        s: str
+
+    class Bar(Foo, FinalStructure): pass
+
+
+
+

@@ -12,19 +12,17 @@ Welcome to Typedpy's documentation!
 Features
 --------
 
-* `Class`/`Field` definition
+* Full-featured object-oriented type system including inheritance, nested types, immutables, final classes etc.
 
 * Supports JSON schema draft4 features, including mapping schema-to-code and code-to-schema
 
-* Serialization, deserialization between JSON-like dict and class instance
+* Serialization, deserialization between JSON-like dict and class instance, including custom mapping.
 
 * Easily extensible. `Wrapper of any class as a Field <https://github.com/loyada/typedpy/tree/master/tests/test_typed_field_creator.py>`_
 
 * `Inheritance/mixins of field <https://github.com/loyada/typedpy/tree/master/tests/test_inheritance.py>`_
 
 * Embedded structures within structures/fields and fields within fields
-
-* Deserialization - JSON to Structure
 
 * Supports collections: `Map <https://github.com/loyada/typedpy/tree/master/tests/test_Map.py>`_, `Set <https://github.com/loyada/typedpy/tree/master/tests/test_Set.py>`_, `Array <https://github.com/loyada/typedpy/tree/master/tests/test_array.py>`_, `Tuple <https://github.com/loyada/typedpy/tree/master/tests/test_tuple.py>`_
 

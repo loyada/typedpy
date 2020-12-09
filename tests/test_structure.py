@@ -6,6 +6,7 @@ import pytest
 from pytest import raises
 
 from typedpy import Structure, DecimalNumber, PositiveInt, String, Enum, Field, Integer, Map, Array, AnyOf, NoneField
+from typedpy.structures import FinalStructure
 
 
 class Venue(enum.Enum):
@@ -205,5 +206,15 @@ def test_auto_none_conversion():
 
     foo = Foo(a=[1,2,3, None, 4])
     assert foo.a == [1,2,3, None, 4]
+
+
+def test_final_structure_violation():
+    class Foo(FinalStructure):
+        s: str
+
+    with raises(TypeError) as excinfo:
+        class Bar(Foo): pass
+    assert "FinalStructure must not be extended. Tried to extend Foo" in str(
+        excinfo.value)
 
 

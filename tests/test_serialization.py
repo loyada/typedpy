@@ -1,6 +1,7 @@
 import enum
 import pickle
 import sys
+
 python_ver_atleast_than_37 = sys.version_info[0:2] > (3, 6)
 if python_ver_atleast_than_37:
     from dataclasses import dataclass
@@ -546,3 +547,25 @@ def test_serialization_with_implicit_wrappers_best_effort_can_work():
     assert serialized['points'][0] == {"x": 1, "y": 2}
     deserialized = deserialize_structure(Foo, serialized)
     assert deserialized == foo
+
+
+def test_example_of_transformation():
+    class Foo(Structure):
+        f = Float
+        i = Integer
+
+    class Bar(Structure):
+        numbers = Array[Integer]
+        s = String
+
+    def transform_foo_to_bar(foo: Foo) -> Bar:
+        mapper = {
+            'i': FunctionCall(func=lambda f: [int(f)], args=['i']),
+            'f': FunctionCall(func=lambda x: str(x), args=['f'])
+        }
+        deserializer = Deserializer(Bar, {'numbers': 'i', 's': 'f'})
+        serializer = Serializer(source=foo, mapper=mapper)
+
+        return deserializer.deserialize(serializer.serialize(), keep_undefined=False)
+
+    assert transform_foo_to_bar(Foo(f=5.5, i=999)) == Bar(numbers=[999], s='5.5')

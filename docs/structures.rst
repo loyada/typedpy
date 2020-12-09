@@ -189,6 +189,26 @@ String output
 The string representation of structure instances shows exactly what are all the properties, even for hierarchical \
 structures and arbitrarily complex ones. This is useful for debugging.
 
+"Final" Structure
+=================
+Typedpy allows to define a :class:`Structure` class as a :class:`FinalStructure`. Such a class cannot be inherited.
+This is useful if you want to guarantee that all instances of the class adhere to a spec, and no one changed
+it by inheriting from it (for example, changed an immutable field to a mutable one.
+Here is an example of usage:
+
+
+.. code-block:: python
+
+    class Trade(FinalStructure):
+        instrument: ImmutableString
+        # other fields
+
+    # The following class definition will raise a TypeError with
+    # the message: "FinalStructure must not be extended. Tried to extend Trade"
+    class MyTrade(Trade):
+        instrument: str
+
+
 Other Magic Methods Support
 ===========================
 Typepy supports the following operations for structure instances:

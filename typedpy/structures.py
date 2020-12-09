@@ -321,6 +321,21 @@ def _apply_default_and_update_required_not_to_include_fields_with_defaults(
     cls_dict[REQUIRED_FIELDS] = list(required_fields)
 
 
+def _check_for_final_violations(classes):
+    current_class, *inherited_class = classes
+    final_ind = -1
+
+    for i, c in enumerate(inherited_class):
+        if isinstance(c, StructMeta) and 'FinalStructure' in globals() and c==FinalStructure:
+            final_ind = i
+
+    if final_ind>=0:
+        candidates = inherited_class[:final_ind]
+        for c in candidates:
+            if issubclass(c, Structure):
+                raise TypeError ("FinalStructure must not be extended. Tried to extend {}".format(c.__name__))
+
+
 class StructMeta(type):
     """
     Metaclass for Structure. Manipulates it to ensure the fields are set up correctly.
@@ -351,6 +366,7 @@ class StructMeta(type):
 
         cls_dict.pop(DEFAULTS, None)
         clsobj = super().__new__(cls, name, bases, dict(cls_dict))
+        _check_for_final_violations(clsobj.mro())
 
         clsobj._fields = fields
         default_required = (
@@ -695,6 +711,9 @@ class Structure(metaclass=StructMeta):
         raise TypeError(
             "{} does not support this operator".format(self.__class__.__name__)
         )
+
+
+class FinalStructure(Structure): pass
 
 
 class ImmutableStructure(Structure):

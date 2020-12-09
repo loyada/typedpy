@@ -541,7 +541,9 @@ class _DequeStruct(deque, ImmutableMixin, _IteratorProxyMixin):
         copied = deque(self)
         copied.append(value)
         if self._field_definition:  # Python 3.6
-            setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+            setattr(
+                self._instance, getattr(self._field_definition, "_name", None), copied
+            )
         super().append(value)
 
     def appendleft(self, value):
@@ -549,7 +551,9 @@ class _DequeStruct(deque, ImmutableMixin, _IteratorProxyMixin):
         copied = deque(self)
         copied.appendleft(value)
         if self._field_definition:  # Python 3.6
-            setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
+            setattr(
+                self._instance, getattr(self._field_definition, "_name", None), copied
+            )
         super().append(value)
 
     def extend(self, iterable: Iterable):
@@ -635,7 +639,6 @@ class _DequeStruct(deque, ImmutableMixin, _IteratorProxyMixin):
     def __reduce__(self):
         res = super().__reduce__()
         return res[0], res[1], self.__getstate__(), res[3]
-
 
     def __setstate__(self, state):
         self._name = state["the_name"]

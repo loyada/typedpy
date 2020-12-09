@@ -443,3 +443,34 @@ Functions
 .. autofunction:: serialize_field
 
 
+Transformations
+===============
+Serializer and deserializers can be used with mappers to transform one dictionary to another, or one
+Structure to another.
+
+Here is a contrived example:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        f = Float
+        i = Integer
+
+    class Bar(Structure):
+        numbers = Array[Integer]
+        s = String
+
+    def transform_foo_to_bar(foo: Foo) -> Bar:
+        mapper = {
+            'i': FunctionCall(func=lambda f: [int(f)], args=['i']),
+            'f': FunctionCall(func=lambda x: str(x), args=['f'])
+        }
+        deserializer = Deserializer(Bar, {'numbers': 'i', 's': 'f'})
+        serializer = Serializer(source=foo, mapper=mapper)
+
+        return deserializer.deserialize(serializer.serialize(), keep_undefined=False)
+
+    assert transform_foo_to_bar(Foo(f=5.5, i=999)) == Bar(numbers=[999], s='5.5')
+
+
+Be aware that this is not a performant approach. Avoid it if speed is a major concern.

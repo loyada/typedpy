@@ -10,6 +10,8 @@ from typedpy.structures import (
     ImmutableStructure,
     create_typed_field,
     NoneField,
+    FinalStructure,
+    ImmutableField,
 )
 from typedpy.fields import (
     Number,
@@ -34,7 +36,6 @@ from typedpy.fields import (
     Map,
     Tuple,
     StructureReference,
-    ImmutableField,
     Anything,
     SerializableField,
     Function,

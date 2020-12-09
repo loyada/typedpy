@@ -6,7 +6,7 @@ import pytest
 from pytest import raises
 
 from typedpy import Structure, DecimalNumber, PositiveInt, String, Enum, Field, Integer, Map, Array, AnyOf, NoneField
-from typedpy.structures import FinalStructure
+from typedpy.structures import FinalStructure, ImmutableStructure
 
 
 class Venue(enum.Enum):
@@ -214,7 +214,7 @@ def test_final_structure_violation():
 
     with raises(TypeError) as excinfo:
         class Bar(Foo): pass
-    assert "FinalStructure must not be extended. Tried to extend Foo" in str(
+    assert "Tried to extend Foo, which is a FinalStructure. This is forbidden" in str(
         excinfo.value)
 
 

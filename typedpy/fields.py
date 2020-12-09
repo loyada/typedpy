@@ -19,7 +19,7 @@ from typedpy.structures import (
     StructMeta,
     ImmutableMixin,
     _FieldMeta,
-    NoneField,
+    NoneField, ImmutableField,
 )
 
 
@@ -109,22 +109,6 @@ class StructureReference(Field):
         return "<Structure{}>".format(propst)
 
 
-class ImmutableField(Field):
-    """
-    A mixin that makes a field class immutable.
-    For Example:
-
-     .. code-block:: python
-
-         class MyFieldType(Field): .....
-
-         class MyImmutableFieldType(ImmutableField, MyFieldType): pass
-
-         # that's all you have to do to make MyImmutableFieldType immutable.
-
-    """
-
-    _immutable = True
 
 
 class Number(Field):

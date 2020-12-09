@@ -227,6 +227,8 @@ blocked.
 
 It is also possible to define an immutable Structure. See Under the **Structures** section.
 
+Immutable Field/Structure classes cannot be inherited, to avoid a developer accidentally making the subclass a mutable one .
+
 Custom Serialization or Deserialization of a Field
 ==================================================
 

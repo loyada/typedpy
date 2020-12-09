@@ -3,7 +3,7 @@ from collections import deque
 from pytest import raises
 from typedpy import String, Number, Structure, ImmutableField, ImmutableStructure, Array, Map, Integer, ImmutableMap, \
     Set, ImmutableArray, ImmutableInteger, Tuple
-from typedpy.fields import Generator, Deque, ImmutableDeque
+from typedpy.fields import Generator, Deque, ImmutableDeque, ImmutableSet
 
 
 class ImmutableString(String, ImmutableField): pass
@@ -353,4 +353,22 @@ def test_immutable_array_block_nested_updates():
     with raises(ValueError) as excinfo:
         instance.m[0]['a'] = 5
     assert "m_0: Field is immutable" in str(excinfo.value)
+
+
+def test_final_immutablestructure_violation():
+    class Foo(ImmutableStructure):
+        s: str
+
+    with raises(TypeError) as excinfo:
+        class Bar(Foo): pass
+    assert "Tried to extend Foo, which is an ImmutableStructure. This is forbidden" in str(
+        excinfo.value)
+
+
+def test_final_immutablefield_violation():
+
+    with raises(TypeError) as excinfo:
+        class Foo(ImmutableSet): pass
+    assert 'Tried to extend ImmutableSet, which is an ImmutableField. This is forbidden' in str(
+        excinfo.value)
 

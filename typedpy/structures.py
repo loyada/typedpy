@@ -122,8 +122,32 @@ def get_base_info(bases):
     return bases_params, bases_required
 
 
+
+def _check_for_final_violations(classes):
+    def is_sub_class(c, base):
+        return issubclass(c, base) and c!=base
+
+    current_class, *inherited_class = classes
+    for i, c in enumerate(inherited_class):
+        if 'FinalStructure' in globals() and isinstance(c, StructMeta):
+            if 'FinalStructure' in globals() and is_sub_class(c, FinalStructure):
+                raise TypeError("Tried to extend {}, which is a FinalStructure. This is forbidden".format(c.__name__))
+            if 'ImmutableStructure' in globals() and is_sub_class(c, ImmutableStructure):
+                raise TypeError("Tried to extend {}, which is an ImmutableStructure. This is forbidden".format(c.__name__))
+
+        if '_FieldMeta' in globals() and isinstance(c, _FieldMeta):
+            if 'ImmutableField' in globals() and is_sub_class(c, ImmutableField):
+                raise TypeError("Tried to extend {}, which is an ImmutableField. This is forbidden".format(c.__name__))
+
+
+
 class _FieldMeta(type):
     _registry = {}
+
+    def __new__(cls, name, bases, cls_dict):
+        clsobj = super().__new__(cls, name, bases, dict(cls_dict))
+        _check_for_final_violations(clsobj.mro())
+        return clsobj
 
     def __getitem__(cls, val):
         if isinstance(val, Field):
@@ -319,17 +343,6 @@ def _apply_default_and_update_required_not_to_include_fields_with_defaults(
             if field_name not in optional_fields:
                 required_fields.add(field_name)
     cls_dict[REQUIRED_FIELDS] = list(required_fields)
-
-
-def _check_for_final_violations(classes):
-    current_class, *inherited_class = classes
-    final_ind = -1
-
-    for i, c in enumerate(inherited_class):
-        if isinstance(c, StructMeta) and 'FinalStructure' in globals() \
-                and issubclass(c, FinalStructure) \
-                and c != FinalStructure:
-            raise TypeError("FinalStructure must not be extended. Tried to extend {}".format(c.__name__))
 
 
 class StructMeta(type):
@@ -734,6 +747,8 @@ class ImmutableStructure(Structure):
         b.z.clear()
         b.m.pop('a')
 
+    ImmutableStructure class (as the class B in the example above) are not allowed to be extended.
+    This is to ensure any instance of ImmutableStructure is indeed immutable.
     """
 
     _immutable = True
@@ -839,3 +854,25 @@ class ClassReference(TypedField):
 
     def __str__(self):
         return "<ClassReference: {}>".format(self._ty.__name__)
+
+
+
+class ImmutableField(Field):
+    """
+    A mixin that makes a field class immutable.
+    For Example:
+
+     .. code-block:: python
+
+         class MyFieldType(Field): .....
+
+         class MyImmutableFieldType(ImmutableField, MyFieldType): pass
+
+         # that's all you have to do to make MyImmutableFieldType immutable.
+
+    ImmutableField class (as the class MyImmutableFieldType in the example above) are
+    not allowed to be extended. This is to ensure any instance of
+    ImmutableField is indeed immutable.
+    """
+
+    _immutable = True

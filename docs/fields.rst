@@ -378,10 +378,11 @@ definition.
             table = TableName
 
 
-| From version 2.00, you can use **any** custom class directly as a field. Typedpy will automatically wrap it as a
-Typedpy Field. The caveat is that it is cannot be pickled and serialization is no a best-effort basis, since Typedpy
+| From version 2.00, you can use **any** custom class directly as a field. Typedpy will automatically wrap it as a Typedpy Field.
+| The caveat is that it is cannot be pickled and serialization is no a best-effort basis, since Typedpy
 does not know anything about the class.
-| For example:
+
+For example:
 
  .. code-block:: python
 

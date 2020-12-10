@@ -12,6 +12,7 @@ from typedpy.structures import (
     NoneField,
     FinalStructure,
     ImmutableField,
+    unique
 )
 from typedpy.fields import (
     Number,

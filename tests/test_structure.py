@@ -6,7 +6,7 @@ import pytest
 from pytest import raises
 
 from typedpy import Structure, DecimalNumber, PositiveInt, String, Enum, Field, Integer, Map, Array, AnyOf, NoneField
-from typedpy.structures import FinalStructure, ImmutableStructure
+from typedpy.structures import FinalStructure, ImmutableStructure, unique, MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
 
 
 class Venue(enum.Enum):
@@ -223,6 +223,34 @@ def test_final_structure_no_violation():
         s: str
 
     class Bar(Foo, FinalStructure): pass
+
+
+def test_unique_violation():
+    @unique
+    class Foo(Structure):
+        s: str
+        i: int
+
+    Foo(s="xxx", i=1)
+    Foo(s="xxx", i=2)
+    with raises(ValueError) as excinfo:
+        Foo(s="xxx", i=1)
+    assert "Instance copy in Foo, which is defined as unique. Instance is" \
+           " <Instance of Foo. Properties: i = 1, s = 'xxx'>" in str(
+        excinfo.value)
+
+
+def test_unique_violation_stop_checking__if_too_many_instances():
+    @unique
+    class Foo(Structure):
+        i: int
+
+    for i in range(MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS):
+        Foo(i=i)
+    Foo(i=1)
+    Foo(i=1)
+
+
 
 
 

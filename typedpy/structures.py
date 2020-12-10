@@ -4,7 +4,7 @@ Structure, Field, StructureReference, ClassReference, TypedField
 """
 import enum
 from copy import deepcopy
-from collections import OrderedDict, deque
+from collections import OrderedDict, deque, defaultdict
 from inspect import Signature, Parameter, signature
 import sys
 import typing
@@ -12,13 +12,15 @@ import hashlib
 
 from typing import get_type_hints, Iterable
 
-from typedpy.commons import wrap_val
+from typedpy.commons import wrap_val, _is_sunder, _is_dunder
 
 REQUIRED_FIELDS = "_required"
 DEFAULTS = "_defaults"
 ADDITIONAL_PROPERTIES = "_additionalProperties"
 IS_IMMUTABLE = "_immutable"
 OPTIONAL_FIELDS = "_optional"
+MUST_BE_UNIQUE = "_must_be_unique"
+MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS = 100000
 
 py_version = sys.version_info[0:2]
 python_ver_36 = py_version == (3, 6)
@@ -108,7 +110,7 @@ def get_base_info(bases):
     bases_required = []
     base_structures = [
         base for base in bases if issubclass(base, Structure) and base is not Structure
-    ]
+    ] if 'Structure' in globals() else []
     for base in base_structures:
         for k, param in getattr(base, "__signature__").parameters.items():
             if k not in bases_params:
@@ -136,7 +138,7 @@ def _check_for_final_violations(classes):
                     )
                 )
             if "ImmutableStructure" in globals() and is_sub_class(
-                c, ImmutableStructure
+                    c, ImmutableStructure
             ):
                 raise TypeError(
                     "Tried to extend {}, which is an ImmutableStructure. This is forbidden".format(
@@ -194,15 +196,72 @@ class _FieldMeta(type):
             return class_as_field()
 
 
-class Field(metaclass=_FieldMeta):
+class UniqueMixin:
+    def __manage_uniqueness__(self):
+        myclass = self.__class__
+        if getattr(myclass, MUST_BE_UNIQUE, False) and \
+                len(getattr(myclass, "_ALL_INSTANCES", set())) < MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS:
+            hash_of_instance = self.__hash__()
+            if hash_of_instance in getattr(myclass, "_ALL_INSTANCES", set()):
+                classname = self.__class__.__name__
+                raise ValueError("Instance copy in {}, which is defined as unique. Instance is {}".format(
+                    classname, self))
+            getattr(myclass, "_ALL_INSTANCES", set()).add(hash_of_instance)
+
+    def __manage_uniqueness_for_field__(self, instance, value):
+        field_name = getattr(self, "_name")
+        structure_class_name = instance.__class__.__name__
+        all_instances_by_struct_name = getattr(self, "_ALL_INSTANCES", defaultdict(set))
+        all_instances_for_current_struct = all_instances_by_struct_name[structure_class_name]
+        if getattr(self, MUST_BE_UNIQUE, False) and \
+                len(all_instances_for_current_struct) < MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS:
+            hash_of_instance = value.__hash__()
+            if hash_of_instance in all_instances_for_current_struct:
+                raise ValueError("Instance copy of field {} in {}, which is defined as unique. Instance is {}".format(
+                    field_name, structure_class_name, wrap_val(value)))
+            all_instances_for_current_struct.add(hash_of_instance)
+
+
+class Field(UniqueMixin, metaclass=_FieldMeta):
     """
     Base class for a field(i.e. property) in a structure.
     Should not be used directly by developers.
+    Arguments:
+        immutable: optional
+            Marks the field as immutable. Typically the developer does not need to use it,
+            as there is a high level API for making a field immutable
+
+        is_unique: optional
+            Marks a field as unique within this its Structure.
+            as there is a high level API for making a field immutable
+            .. code-block:: python
+
+                    class SSID(String): pass
+
+                    class Person(Structure):
+                            ssid: SSID(is_unique=True)
+                            name: String
+
+                    Person(ssid="1234", name="john")
+                    # the next line will raise an exception "Instance copy of field ssid in Person"
+                    Person(ssid="1234", name="jeff")
+
+            Alternatively, you can use the "@unique" decorator on the class definition of the Field.
+
+        default: optional
+            default value in case no value was assigned. Setting it makes
+            the field implicitly optional.
+            Default values are validated based on the field definition like any other value
+            assignment.
     """
 
-    def __init__(self, name=None, immutable=None, default=None):
+    def __init__(self, name=None, immutable=None, is_unique=None, default=None):
         self._name = name
         self._default = default
+        if is_unique in [True, False]:
+            setattr(self, MUST_BE_UNIQUE, is_unique)
+            if is_unique:
+                self._ALL_INSTANCES = defaultdict(set)
         if immutable is not None:
             self._immutable = immutable
         if default:
@@ -227,13 +286,13 @@ class Field(metaclass=_FieldMeta):
             else owner.__dict__[self._name]
         )
         is_immutable = (
-            instance is not None
-            and getattr(instance, IS_IMMUTABLE, False)
-            or getattr(self, IS_IMMUTABLE, False)
+                instance is not None
+                and getattr(instance, IS_IMMUTABLE, False)
+                or getattr(self, IS_IMMUTABLE, False)
         )
         needs_defensive_copy = (
-            not isinstance(res, (ImmutableMixin, int, float, str, bool, enum.Enum))
-            or res is None
+                not isinstance(res, (ImmutableMixin, int, float, str, bool, enum.Enum))
+                or res is None
         )
         return deepcopy(res) if (is_immutable and needs_defensive_copy) else res
 
@@ -241,7 +300,7 @@ class Field(metaclass=_FieldMeta):
         if getattr(self, IS_IMMUTABLE, False) and self._name in instance.__dict__:
             raise ValueError("{}: Field is immutable".format(self._name))
         if getattr(self, IS_IMMUTABLE, False) and not getattr(
-            self, "_custom_deep_copy_implementation", False
+                self, "_custom_deep_copy_implementation", False
         ):
             try:
                 instance.__dict__[self._name] = deepcopy(value)
@@ -252,9 +311,10 @@ class Field(metaclass=_FieldMeta):
                     )
                 )
         else:
+            self.__manage_uniqueness_for_field__(instance, value)
             instance.__dict__[self._name] = value
         if getattr(instance, "_instantiated", False) and not getattr(
-            instance, "_skip_validation", False
+                instance, "_skip_validation", False
         ):
             instance.__validate__()
 
@@ -318,33 +378,33 @@ def _get_all_fields_by_name(cls):
 def _instantiate_fields_if_needed(cls_dict: dict, defaults: dict):
     for key, val in cls_dict.items():
         if (
-            key
-            not in {
-                REQUIRED_FIELDS,
-                ADDITIONAL_PROPERTIES,
-                IS_IMMUTABLE,
-                DEFAULTS,
-                OPTIONAL_FIELDS,
-            }
-            and not isinstance(val, Field)
-            and not key.startswith("__")
-            and (
+                key
+                not in {
+            REQUIRED_FIELDS,
+            ADDITIONAL_PROPERTIES,
+            IS_IMMUTABLE,
+            DEFAULTS,
+            OPTIONAL_FIELDS,
+        }
+                and not isinstance(val, Field)
+                and not key.startswith("__")
+                and (
                 Field in getattr(val, "__mro__", []) or is_function_returning_field(val)
-            )
+        )
         ):
             new_val = val(default=defaults[key]) if key in defaults else val()
             cls_dict[key] = new_val
 
 
 def _apply_default_and_update_required_not_to_include_fields_with_defaults(
-    cls_dict: dict, defaults: dict, fields: list
+        cls_dict: dict, defaults: dict, fields: list
 ):
     required_fields = set(cls_dict.get(REQUIRED_FIELDS, []))
     optional_fields = set(cls_dict.get(OPTIONAL_FIELDS, []))
     required_fields_predefined = REQUIRED_FIELDS in cls_dict
     for field_name in fields:
         if field_name in defaults and not getattr(
-            cls_dict[field_name], "_default", None
+                cls_dict[field_name], "_default", None
         ):
             cls_dict[field_name]._try_default_value(defaults[field_name])
             cls_dict[field_name]._default = defaults[field_name]
@@ -451,15 +511,15 @@ def _type_is_generic(v):
     generic_alias = getattr(typing, "_GenericAlias", Foo)
     special_generic_alias = getattr(typing, "_SpecialGenericAlias", Foo)
     return (
-        (python_ver_36 and isinstance(v, typing_base))
-        or (
-            python_ver_atleast_than_37
-            and isinstance(v, (generic_alias, special_generic_alias))
-        )
-        or (
-            python_ver_atleast_39
-            and origin in {list, dict, tuple, set, frozenset, deque, typing.Union}
-        )
+            (python_ver_36 and isinstance(v, typing_base))
+            or (
+                    python_ver_atleast_than_37
+                    and isinstance(v, (generic_alias, special_generic_alias))
+            )
+            or (
+                    python_ver_atleast_39
+                    and origin in {list, dict, tuple, set, frozenset, deque, typing.Union}
+            )
     )
 
 
@@ -518,7 +578,7 @@ def add_annotations_to_class_dict(cls_dict):
                     from .fields import AnyOf
 
                     if isinstance(the_type, AnyOf) and getattr(
-                        the_type, "_is_optional", False
+                            the_type, "_is_optional", False
                     ):
                         optional_fields.add(k)
                     if k in cls_dict:
@@ -537,7 +597,7 @@ def add_annotations_to_class_dict(cls_dict):
     cls_dict[DEFAULTS] = defaults
 
 
-class Structure(metaclass=StructMeta):
+class Structure(UniqueMixin, metaclass=StructMeta):
     """
     The base class to support strictly defined structures. When creating a new instance of
     a Structure, fields must be provided by name.
@@ -607,6 +667,7 @@ class Structure(metaclass=StructMeta):
 
         self.__validate__()
         self._instantiated = True
+        self.__manage_uniqueness__()
 
     def __setattr__(self, key, value):
         if getattr(self, IS_IMMUTABLE, False):
@@ -614,6 +675,10 @@ class Structure(metaclass=StructMeta):
                 raise ValueError("Structure is immutable")
             value = deepcopy(value)
         super().__setattr__(key, value)
+
+        if getattr(self, "_instantiated", False) \
+                and not _is_dunder(key) and not _is_sunder(key):
+            self.__manage_uniqueness__()
 
     def __getstate__(self):
         fields_by_name = _get_all_fields_by_name(self.__class__)
@@ -647,7 +712,7 @@ class Structure(metaclass=StructMeta):
 
         name = self.__class__.__name__
         if name.startswith("StructureReference_") and self.__class__.__bases__ == (
-            Structure,
+                Structure,
         ):
             name = "Structure"
         props = []
@@ -678,7 +743,7 @@ class Structure(metaclass=StructMeta):
 
     def __delitem__(self, key):
         if isinstance(getattr(self, REQUIRED_FIELDS), list) and key in getattr(
-            self, REQUIRED_FIELDS
+                self, REQUIRED_FIELDS
         ):
             raise ValueError("{} is mandatory".format(key))
         del self.__dict__[key]
@@ -723,9 +788,9 @@ class Structure(metaclass=StructMeta):
         required = props.get(REQUIRED_FIELDS, field_names)
         additional_props = props.get(ADDITIONAL_PROPERTIES, True)
         if (
-            len(field_names) == 1
-            and required == field_names
-            and additional_props is False
+                len(field_names) == 1
+                and required == field_names
+                and additional_props is False
         ):
             return item in getattr(self, field_names[0], {})
 
@@ -736,6 +801,16 @@ class Structure(metaclass=StructMeta):
 
 class FinalStructure(Structure):
     pass
+
+
+def unique(cls):
+    if issubclass(cls, Structure):
+        setattr(cls, MUST_BE_UNIQUE, True)
+        cls._ALL_INSTANCES = set()
+    elif issubclass(cls, Field):
+        setattr(cls, MUST_BE_UNIQUE, True)
+        cls._ALL_INSTANCES = defaultdict(set)
+    return cls
 
 
 class ImmutableStructure(Structure):

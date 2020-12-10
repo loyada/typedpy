@@ -12,9 +12,30 @@ def test_unique_field_violation():
         name: String
 
     Person(ssid="1234", name="john")
-    Person(ssid="2345", name="Jeff")
+    person_1 = Person(ssid="1234", name="john")  # OK - structure is equal to previous one
+    Person(ssid="2345", name="Jeff")  # OK - value of ssid is different
     with raises(ValueError) as excinfo:
         Person(ssid="1234", name="Jack")
+    assert "Instance copy of field ssid in Person, which is defined as unique. Instance is '1234'" in str(excinfo.value)
+
+    with raises(ValueError) as excinfo:
+        person_1.name = "Joe"
+    assert "Instance copy of field ssid in Person, which is defined as unique. Instance is '1234'" in str(excinfo.value)
+
+
+def test_unique_field_violation_by_update():
+    @unique
+    class SSID(String): pass
+
+    class Person(Structure):
+        ssid: SSID
+        name: String
+
+    Person(ssid="1234", name="john")
+    person_1 = Person(ssid="1234", name="john")  # OK - structure is equal to previous one
+
+    with raises(ValueError) as excinfo:
+        person_1.name = "Joe"
     assert "Instance copy of field ssid in Person, which is defined as unique. Instance is '1234'" in str(excinfo.value)
 
 
@@ -43,6 +64,7 @@ def test_unique_field_using_parameter_violation():
         name: String
 
     Person(ssid="1234", name="john")
+    Person(ssid="1234", name="john") # OK - structure is equal to previous one
     Person(ssid="2345", name="Jeff")
     with raises(ValueError) as excinfo:
         Person(ssid="1234", name="Jack")

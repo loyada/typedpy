@@ -240,6 +240,21 @@ def test_unique_violation():
         excinfo.value)
 
 
+def test_unique_violation_by_update():
+    @unique
+    class Foo(Structure):
+        s: str
+        i: int
+
+    Foo(s="xxx", i=1)
+    foo = Foo(s="xxx", i=2)
+    with raises(ValueError) as excinfo:
+        foo.i = 1
+    assert "Instance copy in Foo, which is defined as unique. Instance is" \
+           " <Instance of Foo. Properties: i = 1, s = 'xxx'>" in str(
+        excinfo.value)
+
+
 def test_unique_violation_stop_checking__if_too_many_instances():
     @unique
     class Foo(Structure):

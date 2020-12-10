@@ -197,6 +197,9 @@ class _FieldMeta(type):
 
 
 class UniqueMixin:
+    def defined_as_unique(self):
+        return getattr(self, MUST_BE_UNIQUE, False)
+
     def __manage_uniqueness__(self):
         myclass = self.__class__
         if getattr(myclass, MUST_BE_UNIQUE, False) and \
@@ -209,17 +212,20 @@ class UniqueMixin:
             getattr(myclass, "_ALL_INSTANCES", set()).add(hash_of_instance)
 
     def __manage_uniqueness_for_field__(self, instance, value):
+        if not getattr(instance, "_instantiated", False):
+            return
         field_name = getattr(self, "_name")
         structure_class_name = instance.__class__.__name__
-        all_instances_by_struct_name = getattr(self, "_ALL_INSTANCES", defaultdict(set))
-        all_instances_for_current_struct = all_instances_by_struct_name[structure_class_name]
+        all_instances_by_struct_name = getattr(self, "_ALL_INSTANCES", defaultdict(dict))
+        instance_by_value_for_current_struct = all_instances_by_struct_name[structure_class_name]
         if getattr(self, MUST_BE_UNIQUE, False) and \
-                len(all_instances_for_current_struct) < MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS:
-            hash_of_instance = value.__hash__()
-            if hash_of_instance in all_instances_for_current_struct:
+                len(instance_by_value_for_current_struct) < MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS:
+            hash_of_field_val = value.__hash__()
+            if instance_by_value_for_current_struct.get(hash_of_field_val, instance) != instance:
                 raise ValueError("Instance copy of field {} in {}, which is defined as unique. Instance is {}".format(
                     field_name, structure_class_name, wrap_val(value)))
-            all_instances_for_current_struct.add(hash_of_instance)
+            if hash_of_field_val not in instance_by_value_for_current_struct:
+                instance_by_value_for_current_struct[hash_of_field_val] = instance
 
 
 class Field(UniqueMixin, metaclass=_FieldMeta):
@@ -261,7 +267,7 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
         if is_unique in [True, False]:
             setattr(self, MUST_BE_UNIQUE, is_unique)
             if is_unique:
-                self._ALL_INSTANCES = defaultdict(set)
+                self._ALL_INSTANCES = defaultdict(dict)
         if immutable is not None:
             self._immutable = immutable
         if default:
@@ -313,6 +319,7 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
         else:
             self.__manage_uniqueness_for_field__(instance, value)
             instance.__dict__[self._name] = value
+            instance.__manage__uniqueness_of_all_fields__()
         if getattr(instance, "_instantiated", False) and not getattr(
                 instance, "_skip_validation", False
         ):
@@ -668,6 +675,13 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         self.__validate__()
         self._instantiated = True
         self.__manage_uniqueness__()
+        self.__manage__uniqueness_of_all_fields__()
+
+    def __manage__uniqueness_of_all_fields__(self):
+        fields_by_name = _get_all_fields_by_name(self.__class__)
+        for name, field in fields_by_name.items():
+            if field.defined_as_unique():
+                field.__manage_uniqueness_for_field__(self, getattr(self, name, None))
 
     def __setattr__(self, key, value):
         if getattr(self, IS_IMMUTABLE, False):
@@ -809,7 +823,7 @@ def unique(cls):
         cls._ALL_INSTANCES = set()
     elif issubclass(cls, Field):
         setattr(cls, MUST_BE_UNIQUE, True)
-        cls._ALL_INSTANCES = defaultdict(set)
+        cls._ALL_INSTANCES = defaultdict(dict)
     return cls
 
 

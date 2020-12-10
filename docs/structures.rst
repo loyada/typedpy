@@ -240,6 +240,30 @@ Typepy supports the following operations for structure instances:
     assert not Example()
     assert Example(i=5)
 
+
+Uniqueness
+==========
+Typedpy allows you to ensure that all the instances of a certain :class:`Structure` are unique, by
+decorating it with "@unique". The uniqueness is ensured even if you updated an existing instance to match
+another instance.
+
+To illustrate:
+
+
+.. code-block:: python
+
+    @unique
+    class Foo(Structure):
+        s: str
+        i: int
+
+    Foo(s="xxx", i=1)
+    Foo(s="xxx", i=1)   # -> raises a ValueError: Instance copy in Foo, which is defined as unique....
+
+    Foo(s="xxx", i=2).i = 1   # raises the same ValueError as above
+
+Beyond a threshold of 100,000 different values, this is not enforced anymore, to avoid the overhead.
+
 Combining with "Regular" Classes
 ================================
 

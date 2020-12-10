@@ -229,6 +229,48 @@ It is also possible to define an immutable Structure. See Under the **Structures
 
 Immutable Field/Structure classes cannot be inherited, to avoid a developer accidentally making the subclass a mutable one .
 
+Uniqueness
+==========
+Typedpy allows you to ensure that all instances of a certain :class:`Structure` have unique values of a
+certain field (for example, a unique ID or a primary key).
+This is done either by decorating the :class:`Field` class defintion with @unique, or by setting
+the optional "is_unique" parameter when initializing a field.
+Consistent with Typedpy behavior, the uniqueness constraint will be maintained for dynamic updates as well.
+
+To illustrate:
+
+.. code-block:: python
+
+    @unique
+    class SSID(String): pass
+
+    class Person(Structure):
+        ssid: SSID
+        name: String
+
+    Person(ssid="1234", name="john")
+
+    Person(ssid="1234", name="john")  # OK, since it equal to the other instance with ssid "1234"
+
+    Person(ssid="1234", name="Jeff")  # raises a ValueError. Can't have a different person with the same ssid.
+
+    Person(ssid="1234", name="john").name = "Joe" # raise a similar ValueError
+
+Note that uniqueness of a field is enforced per :class:`Structure` class. Two structures of different types
+can have the same value of a unique field type.
+
+Alternatively, we can define a field as unique using an optional parameter:
+
+.. code-block:: python
+
+    class Person(Structure):
+        ssid: String(is_unique = True)
+        name: String
+
+It has the same effect as the decorator.
+
+Beyond a threshold of 100,000 different values, uniqueness is not enforced anymore, to avoid the overhead.
+
 Custom Serialization or Deserialization of a Field
 ==================================================
 

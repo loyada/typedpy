@@ -240,6 +240,7 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
         is_unique: optional
             Marks a field as unique within this its Structure.
             as there is a high level API for making a field immutable
+
             .. code-block:: python
 
                     class SSID(String): pass
@@ -253,6 +254,7 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
                     Person(ssid="1234", name="jeff")
 
             Alternatively, you can use the "@unique" decorator on the class definition of the Field.
+            Refer to "Uniqueness" section for more detail.
 
         default: optional
             default value in case no value was assigned. Setting it makes
@@ -659,6 +661,8 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 # this raises an exception:
                 Foo(id = 1, a = 2)
 
+    Decorating it with @unique ensures that no all instances of this structure will be unique. It
+    will raise an exception otherwise (see "Uniqueness" section).
     """
 
     _fields = []

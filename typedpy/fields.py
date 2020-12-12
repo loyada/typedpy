@@ -285,7 +285,8 @@ class Function(Field):
 
     def __set__(self, instance, value):
         def is_function(f):
-            return type(f) == type(lambda x: x) or type(f) == type(open)
+            return type(f) == type(lambda x: x) or type(f) == type(open) or \
+                   type(Field().__init__) == type(f)
 
         def err_prefix():
             return (

@@ -44,6 +44,14 @@ def test_method():
     assert B(e=Foo.bar, i=5).e == Foo.bar
 
 
+def test_bound_method():
+    class Foo:
+        def bar(self): pass
+
+    foo = Foo()
+    assert B(e=foo.bar, i=5).e == foo.bar
+
+
 # note: not all decorators are functions
 def test_decorator_which_is_a_function():
     from functools import lru_cache

@@ -280,7 +280,7 @@ class String(TypedField):
 
 class Function(Field):
     """
-    A function. Note that this can't be any callable (it can't be a class, for example), but a real function
+    A function or method. Note that this can't be any callable (it can't be a class, for example), but a real function
     """
 
     def __set__(self, instance, value):

@@ -261,9 +261,12 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
             the field implicitly optional.
             Default values are validated based on the field definition like any other value
             assignment.
+
+        ignore_none: optional
+            ignore assignment to None. Default is True
     """
 
-    def __init__(self, name=None, immutable=None, is_unique=None, default=None):
+    def __init__(self, name=None, immutable=None, is_unique=None, default=None, ignore_none=True):
         self._name = name
         self._default = default
         if is_unique in [True, False]:
@@ -274,6 +277,7 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
             self._immutable = immutable
         if default:
             self._try_default_value(default)
+        self._ignore_none = ignore_none
 
     def _try_default_value(self, default):
         try:
@@ -878,6 +882,8 @@ class TypedField(Field):
             )
 
     def __set__(self, instance, value):
+        if getattr(instance, "_ignore_none", False) and value is None:
+            return
         if not getattr(instance, "_skip_validation", False):
             self._validate(value)
         super().__set__(instance, value)

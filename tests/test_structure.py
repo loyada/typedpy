@@ -91,6 +91,25 @@ def test_field_of_class(Point):
     assert foo.point.size() == 5
 
 
+def test_ignore_none(Point):
+    class Foo(Structure):
+        i: int
+        point: Field[Point]
+
+    foo = Foo(i=5, point=None)
+    assert foo.i == 5
+
+
+def test_do_not_ignore_none(Point):
+    class Foo(Structure):
+        i=Integer(ignore_none=False)
+        point: Field[Point]
+
+    with raises(TypeError) as excinfo:
+         Foo(i=None, point=Point(3, 4))
+    assert "i: Got None; Expected a number" in str(excinfo.value)
+
+
 def test_field_of_class_typeerror(Point):
     class Foo(Structure):
         i: int

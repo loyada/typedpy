@@ -1,6 +1,7 @@
 import enum
 import sys
 import typing
+from datetime import datetime
 
 import pytest
 from pytest import raises
@@ -88,7 +89,6 @@ def test_field_of_class(Point):
         i: int
         point: Field[Point]
 
-
     foo = Foo(i=5, point=Point(3, 4))
     assert foo.point.size() == 5
 
@@ -96,23 +96,31 @@ def test_field_of_class(Point):
 def test_ignore_none(Point):
     class Foo(Structure):
         i: int
-        date = DateField
-        point: Field[Point]
+        date = typing.Optional[DateField]
         _ignore_none = True
 
-
-    foo = Foo(i=5, point=None, date=None)
-    assert foo.i == 5
+    assert Foo(i=5, date=None).i == 5
 
 
 def test_do_not_ignore_none(Point):
     class Foo(Structure):
-        i=Integer
+        i = Integer
         point: Field[Point]
         _ignore_none = False
 
     with raises(TypeError) as excinfo:
-         Foo(i=None, point=Point(3, 4))
+        Foo(i=None, point=Point(3, 4))
+    assert "i: Got None; Expected a number" in str(excinfo.value)
+
+
+def test_do_not_ignore_none_for_required_fields(Point):
+    class Foo(Structure):
+        i: int
+        date = typing.Optional[DateField]
+        _ignore_none = True
+
+    with raises(TypeError) as excinfo:
+        Foo(i=None)
     assert "i: Got None; Expected a number" in str(excinfo.value)
 
 
@@ -132,7 +140,7 @@ def test_using_arbitrary_class_in_anyof(Point):
         i: int
         point: AnyOf[Point, int]
 
-    assert Foo(i=1, point = 2).point == 2
+    assert Foo(i=1, point=2).point == 2
 
 
 def test_using_arbitrary_class_in_union(Point):
@@ -140,7 +148,7 @@ def test_using_arbitrary_class_in_union(Point):
         i: int
         point: typing.Union[Point, int]
 
-    assert Foo(i=1, point = 2).point == 2
+    assert Foo(i=1, point=2).point == 2
 
 
 def test_optional(Point):
@@ -150,11 +158,11 @@ def test_optional(Point):
 
     assert Foo(i=1).point is None
     assert Foo(i=1, point=None).point is None
-    foo = Foo(i=1, point=Point(3,4))
+    foo = Foo(i=1, point=Point(3, 4))
     assert foo.point.size() == 5
     foo.point = None
     assert foo.point is None
-    foo.point = Point(3,4)
+    foo.point = Point(3, 4)
     assert foo.point.size() == 5
 
 
@@ -166,7 +174,7 @@ def test_optional_err(Point):
     with raises(ValueError) as excinfo:
         Foo(i=1, point=3)
     assert "point: 3 Did not match any field option" in str(
-            excinfo.value)
+        excinfo.value)
 
 
 def test_field_of_class_in_map(Point):
@@ -208,6 +216,7 @@ def test_field_of_class_in_map__simpler_syntax_typerror(Point):
     assert "point_by_int_value: Expected <class 'test_structure.Point.<locals>.PointClass'>; Got 3" in str(
         excinfo.value)
 
+
 def test_simple_invalid_type():
     with raises(TypeError) as excinfo:
         class Foo(Structure):
@@ -221,16 +230,16 @@ def test_simple_nonefield_usage():
     class Foo(Structure):
         a = Array[AnyOf[Integer, NoneField]]
 
-    foo = Foo(a=[1,2,3, None, 4])
-    assert foo.a == [1,2,3, None, 4]
+    foo = Foo(a=[1, 2, 3, None, 4])
+    assert foo.a == [1, 2, 3, None, 4]
 
 
 def test_auto_none_conversion():
     class Foo(Structure):
         a = Array[AnyOf[Integer, None]]
 
-    foo = Foo(a=[1,2,3, None, 4])
-    assert foo.a == [1,2,3, None, 4]
+    foo = Foo(a=[1, 2, 3, None, 4])
+    assert foo.a == [1, 2, 3, None, 4]
 
 
 def test_final_structure_violation():
@@ -289,9 +298,3 @@ def test_unique_violation_stop_checking__if_too_many_instances():
         Foo(i=i)
     Foo(i=1)
     Foo(i=1)
-
-
-
-
-
-

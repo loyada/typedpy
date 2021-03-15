@@ -282,11 +282,16 @@ class Function(Field):
     """
     A function or method. Note that this can't be any callable (it can't be a class, for example), but a real function
     """
+
     _bound_method_type = type(Field().__init__)
 
     def __set__(self, instance, value):
         def is_function(f):
-            return type(f) in {type(lambda x: x), type(open), Function._bound_method_type}
+            return type(f) in {
+                type(lambda x: x),
+                type(open),
+                Function._bound_method_type,
+            }
 
         def err_prefix():
             return (

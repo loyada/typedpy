@@ -5,7 +5,8 @@ import typing
 import pytest
 from pytest import raises
 
-from typedpy import Structure, DecimalNumber, PositiveInt, String, Enum, Field, Integer, Map, Array, AnyOf, NoneField
+from typedpy import Structure, DecimalNumber, PositiveInt, String, Enum, Field, Integer, Map, Array, AnyOf, NoneField, \
+    DateField
 from typedpy.structures import FinalStructure, ImmutableStructure, unique, MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
 
 
@@ -87,6 +88,7 @@ def test_field_of_class(Point):
         i: int
         point: Field[Point]
 
+
     foo = Foo(i=5, point=Point(3, 4))
     assert foo.point.size() == 5
 
@@ -94,16 +96,20 @@ def test_field_of_class(Point):
 def test_ignore_none(Point):
     class Foo(Structure):
         i: int
+        date = DateField
         point: Field[Point]
+        _ignore_none = True
 
-    foo = Foo(i=5, point=None)
+
+    foo = Foo(i=5, point=None, date=None)
     assert foo.i == 5
 
 
 def test_do_not_ignore_none(Point):
     class Foo(Structure):
-        i=Integer(ignore_none=False)
+        i=Integer
         point: Field[Point]
+        _ignore_none = False
 
     with raises(TypeError) as excinfo:
          Foo(i=None, point=Point(3, 4))

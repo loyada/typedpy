@@ -208,6 +208,27 @@ Here is an example of usage:
         instrument: str
 
 
+Ignore None Values
+==================
+In some use cases, it is desirable to be able to get a None value for a field, without performing
+any validation (for example - mapping from a json or from a persistent model).
+This can be achieved by setting every field to be AnyOf[MyField, None], but this is very verbose.
+Alternatively, you can set the structure with the flag _ignore_none, as such:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        a = Integer
+        s = String(default = "x")
+        m = Map[String, String]
+        _ignore_none = True
+
+    foo = Foo(a=1, s = None, m = None)
+    assert foo.s == "x"
+    assert foo.m == None
+
+
+
 Other Magic Methods Support
 ===========================
 Typepy supports the following operations for structure instances:

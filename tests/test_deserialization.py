@@ -885,6 +885,38 @@ def test_deserialize_with_deep_mapper():
     assert deserialized == Example(number=1, bar=Bar(foo=Foo(a="string", i=20), array=[1, 2]))
 
 
+def test_deserialize_with_deep_mapper_camel_case():
+    class Foo(Structure):
+        a_b = String
+        i = Integer
+
+    class Bar(Structure):
+        foo_bar = Foo
+        array_nums = Array
+
+    class Example(Structure):
+        bar = Bar
+        number = Integer
+
+    mapper = {'bar._mapper': {'fooBar._mapper': {"i": FunctionCall(func=lambda x: x * 2)}}}
+    deserializer = Deserializer(target_class=Example, mapper=mapper,
+                                camel_case_convert=True)
+    deserialized = deserializer.deserialize(
+        {
+            "number": 1,
+            "bar":
+                {
+                    "fooBar": {
+                        "aB": "string",
+                        "i": 10
+                    },
+                    "arrayNums": [1, 2]
+                }
+        },
+        keep_undefined=False)
+    assert deserialized == Example(number=1, bar=Bar(foo_bar=Foo(a_b="string", i=20), array_nums=[1, 2]))
+
+
 def test_deserializer_no_mapper():
     class Foo(Structure):
         m = Map
@@ -943,3 +975,38 @@ def test_undefined_attributes_in_embedded_field_should_be_deserialized_correctly
     input_dict = {'a': 3, 'blah': {'x': 3, 'y': 4, 'z': 5}}
     bar = deserialize_structure(Foo, input_dict)
     assert bar.blah.z == 5
+
+
+def test_deserialize_with_ignore_nones():
+    class Foo(Structure):
+        a = String
+        m = Map[String, String]
+        c = Integer = 5
+        _required = ['a']
+        _ignore_none = True
+
+    input_dict = {'a': 'abc', 'm': None, 'c': None}
+    bar = deserialize_structure(Foo, input_dict)
+    assert bar.a == 'abc'
+    assert bar.c == 5
+
+
+def test_deserialize_with_ignore_nones_deep():
+    class Blah(Structure):
+        x = Integer(default=5)
+        y = Integer
+        _required = []
+        _ignore_none=True
+
+    class Foo(Structure):
+        a = Integer
+        blah = Blah
+
+    input_dict = {'a': 3, 'blah': {'x': None, 'y': None, 'z': 555}}
+    deserialized = deserialize_structure(Foo, input_dict)
+    assert deserialized.a == 3
+    assert deserialized.blah.x == 5
+    assert deserialized.blah.y is None
+    assert deserialized.blah.z == 555
+
+

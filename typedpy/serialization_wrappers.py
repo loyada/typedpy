@@ -1,5 +1,5 @@
 from typedpy import Structure
-from typedpy.fields import StructureClass, Map, String, OneOf
+from typedpy.fields import StructureClass, Map, String, OneOf, Boolean
 from typedpy.serialization import FunctionCall, deserialize_structure, serialize
 from typedpy.structures import _get_all_fields_by_name
 
@@ -49,11 +49,15 @@ class Deserializer(Structure):
                 }
                 Deserializer(target_class=Foo, mapper = mapper).deserializer(the_input_dict)
 
+        camel_case_convert(bool): Optional
+            If true, will convert any camelCase key that does not have explicit mapping to a snake_case attribute
+            name. Default is False.
 
     """
 
     target_class = StructureClass
     mapper = Map[String, OneOf[String, FunctionCall, Map]]
+    camel_case_convert = Boolean(default = False)
 
     _required = ["target_class"]
 
@@ -74,6 +78,7 @@ class Deserializer(Structure):
             input_data,
             mapper=self.mapper,
             keep_undefined=keep_undefined,
+            camel_case_convert=self.camel_case_convert
         )
 
 
@@ -155,5 +160,20 @@ class Serializer(Structure):
             for key in self.mapper:
                 verify_key_in_mapper(key, valid_keys, source_class)
 
-    def serialize(self, compact=True):
-        return serialize(self.source, mapper=self.mapper, compact=compact)
+    def serialize(self, compact=True,  camel_case_convert=False):
+        """
+
+         Arguments:
+               compact(boolean): optional
+                     whether to use a compact form for Structure that is a simple wrapper of a field.
+                     for example: if a Structure has only one field of an int, if compact is True
+                     it will serialize the structure as an int instead of a dictionary.
+                     Default is False.
+
+               camel_case_convert(dict): optional
+                     If True, convert any camel-case key that does not have a mapping in the mapper to a snake-case
+                     attribute.
+                     Default is False.
+        """
+        return serialize(self.source, mapper=self.mapper, compact=compact,
+                         camel_case_convert=camel_case_convert)

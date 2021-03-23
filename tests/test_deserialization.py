@@ -1010,7 +1010,7 @@ def test_deserialize_with_ignore_nones_deep():
     assert deserialized.blah.z == 555
 
 
-def test_convert_camel_case():
+def test_convert_camel_case1():
     class Foo(Structure):
         first_name: String
         last_name: String
@@ -1019,7 +1019,23 @@ def test_convert_camel_case():
 
     input_dict = {
             "firstName": "joe",
-            "lastName" : "smith",
+            "lastName": "smith",
+            "ageYears": 5
+    }
+    res = Deserializer(target_class=Foo, camel_case_convert=True).deserialize(input_dict)
+    assert res == Foo(first_name="joe", last_name="smith", age_years=5)
+
+
+def test_convert_camel_case2():
+    class Foo(Structure):
+        first_name: String
+        last_name: String
+        age_years: PositiveInt
+        _additionalProperties = False
+
+    input_dict = {
+            "first_name": "joe",
+            "last_name" : "smith",
             "ageYears": 5
     }
     res = Deserializer(target_class=Foo, camel_case_convert=True).deserialize(input_dict)

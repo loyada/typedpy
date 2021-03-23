@@ -10,7 +10,8 @@ from typedpy.structures import (
     Structure,
     _get_all_fields_by_name,
     ADDITIONAL_PROPERTIES,
-    REQUIRED_FIELDS, IGNORE_NONE_VALUES,
+    REQUIRED_FIELDS,
+    IGNORE_NONE_VALUES,
 )
 from typedpy.fields import (
     Field,
@@ -39,8 +40,14 @@ from typedpy.fields import (
 
 
 def deserialize_list_like(
-    field, content_type, value, name, *, keep_undefined=True, mapper=None,
-        camel_case_convert=False
+    field,
+    content_type,
+    value,
+    name,
+    *,
+    keep_undefined=True,
+    mapper=None,
+    camel_case_convert=False,
 ):
     if not isinstance(value, (list, tuple, set)):
         raise ValueError("{}: must be list, set, or tuple; got {}".format(name, value))
@@ -53,9 +60,13 @@ def deserialize_list_like(
             item_name = "{}_{}".format(name, i)
             try:
                 list_item = deserialize_single_field(
-                    items, v, item_name, keep_undefined=keep_undefined, mapper=mapper,
+                    items,
+                    v,
+                    item_name,
+                    keep_undefined=keep_undefined,
+                    mapper=mapper,
                     camel_case_convert=camel_case_convert,
-                    ignore_none=ignore_none
+                    ignore_none=ignore_none,
                 )
             except (ValueError, TypeError) as e:
                 prefix = (
@@ -68,9 +79,13 @@ def deserialize_list_like(
             try:
                 ignore_none = getattr(item, IGNORE_NONE_VALUES, False)
                 res = deserialize_single_field(
-                    item, value[i], name, keep_undefined=keep_undefined, mapper=mapper,
+                    item,
+                    value[i],
+                    name,
+                    keep_undefined=keep_undefined,
+                    mapper=mapper,
                     camel_case_convert=camel_case_convert,
-                    ignore_none=ignore_none
+                    ignore_none=ignore_none,
                 )
             except (ValueError, TypeError) as e:
                 raise ValueError("{}_{}: {}".format(name, i, str(e))) from e
@@ -81,14 +96,23 @@ def deserialize_list_like(
     return content_type(values)
 
 
-def deserialize_array(array_field, value, name, *, keep_undefined=True, mapper,camel_case_convert=False):
+def deserialize_array(
+    array_field, value, name, *, keep_undefined=True, mapper, camel_case_convert=False
+):
     return deserialize_list_like(
-        array_field, list, value, name, keep_undefined=keep_undefined, mapper=mapper,
-        camel_case_convert=camel_case_convert
+        array_field,
+        list,
+        value,
+        name,
+        keep_undefined=keep_undefined,
+        mapper=mapper,
+        camel_case_convert=camel_case_convert,
     )
 
 
-def deserialize_deque(array_field, value, name, *, keep_undefined=True, mapper, camel_case_convert=False):
+def deserialize_deque(
+    array_field, value, name, *, keep_undefined=True, mapper, camel_case_convert=False
+):
     return deserialize_list_like(
         array_field,
         collections.deque,
@@ -96,27 +120,46 @@ def deserialize_deque(array_field, value, name, *, keep_undefined=True, mapper, 
         name,
         keep_undefined=keep_undefined,
         mapper=mapper,
-        camel_case_convert=camel_case_convert
+        camel_case_convert=camel_case_convert,
     )
 
 
-def deserialize_tuple(tuple_field, value, name, *, keep_undefined=True, mapper, camel_case_convert=False):
+def deserialize_tuple(
+    tuple_field, value, name, *, keep_undefined=True, mapper, camel_case_convert=False
+):
     return deserialize_list_like(
-        tuple_field, tuple, value, name, keep_undefined=keep_undefined, mapper=mapper,
-        camel_case_convert=camel_case_convert
+        tuple_field,
+        tuple,
+        value,
+        name,
+        keep_undefined=keep_undefined,
+        mapper=mapper,
+        camel_case_convert=camel_case_convert,
     )
 
 
-def deserialize_set(set_field, value, name, *, keep_undefined=True, mapper, camel_case_convert=False):
+def deserialize_set(
+    set_field, value, name, *, keep_undefined=True, mapper, camel_case_convert=False
+):
     return deserialize_list_like(
-        set_field, set, value, name, keep_undefined=keep_undefined, mapper=mapper,
-        camel_case_convert=camel_case_convert
+        set_field,
+        set,
+        value,
+        name,
+        keep_undefined=keep_undefined,
+        mapper=mapper,
+        camel_case_convert=camel_case_convert,
     )
 
 
 def deserialize_multifield_wrapper(
-    field, source_val, name, *, keep_undefined=True, mapper=None,
-        camel_case_convert=False
+    field,
+    source_val,
+    name,
+    *,
+    keep_undefined=True,
+    mapper=None,
+    camel_case_convert=False,
 ):
     """
     Only primitive values are supported, otherwise deserialization is ambiguous,
@@ -135,7 +178,7 @@ def deserialize_multifield_wrapper(
                 keep_undefined=keep_undefined,
                 mapper=mapper,
                 camel_case_convert=camel_case_convert,
-                ignore_none=ignore_none
+                ignore_none=ignore_none,
             )
             if isinstance(field, AnyOf):
                 return deserialized
@@ -175,21 +218,29 @@ def deserialize_map(map_field, source_val, name, camel_case_convert=False):
     for key, val in source_val.items():
         ignore_none = getattr(value_field, IGNORE_NONE_VALUES, False)
 
-        res[deserialize_single_field(key_field, key, name,
-                                     camel_case_convert=camel_case_convert)] = deserialize_single_field(
-            value_field, val, name,
+        res[
+            deserialize_single_field(
+                key_field, key, name, camel_case_convert=camel_case_convert
+            )
+        ] = deserialize_single_field(
+            value_field,
+            val,
+            name,
             camel_case_convert=camel_case_convert,
-            ignore_none=ignore_none
+            ignore_none=ignore_none,
         )
     return res
 
 
 def deserialize_single_field(
-    field, source_val, name, *,
-        mapper=None,
-        keep_undefined=True,
-        camel_case_convert=False,
-        ignore_none=False,
+    field,
+    source_val,
+    name,
+    *,
+    mapper=None,
+    keep_undefined=True,
+    camel_case_convert=False,
+    ignore_none=False,
 ):
     if source_val is None and ignore_none:
         return source_val
@@ -204,28 +255,48 @@ def deserialize_single_field(
         value = source_val
     elif isinstance(field, Array):
         value = deserialize_array(
-            field, source_val, name, keep_undefined=keep_undefined, mapper=mapper,
-            camel_case_convert=camel_case_convert
+            field,
+            source_val,
+            name,
+            keep_undefined=keep_undefined,
+            mapper=mapper,
+            camel_case_convert=camel_case_convert,
         )
     elif isinstance(field, Deque):
         value = deserialize_deque(
-            field, source_val, name, keep_undefined=keep_undefined, mapper=mapper,
-            camel_case_convert=camel_case_convert
+            field,
+            source_val,
+            name,
+            keep_undefined=keep_undefined,
+            mapper=mapper,
+            camel_case_convert=camel_case_convert,
         )
     elif isinstance(field, Tuple):
         value = deserialize_tuple(
-            field, source_val, name, keep_undefined=keep_undefined, mapper=mapper,
-            camel_case_convert=camel_case_convert
+            field,
+            source_val,
+            name,
+            keep_undefined=keep_undefined,
+            mapper=mapper,
+            camel_case_convert=camel_case_convert,
         )
     elif isinstance(field, Set):
         value = deserialize_set(
-            field, source_val, name, keep_undefined=keep_undefined, mapper=mapper,
-            camel_case_convert=camel_case_convert
+            field,
+            source_val,
+            name,
+            keep_undefined=keep_undefined,
+            mapper=mapper,
+            camel_case_convert=camel_case_convert,
         )
     elif isinstance(field, MultiFieldWrapper):
         value = deserialize_multifield_wrapper(
-            field, source_val, name, keep_undefined=keep_undefined, mapper=mapper,
-            camel_case_convert=camel_case_convert
+            field,
+            source_val,
+            name,
+            keep_undefined=keep_undefined,
+            mapper=mapper,
+            camel_case_convert=camel_case_convert,
         )
     elif isinstance(field, ClassReference):
         value = deserialize_structure_internal(
@@ -234,7 +305,7 @@ def deserialize_single_field(
             name,
             keep_undefined=keep_undefined,
             mapper=mapper,
-            camel_case_convert=camel_case_convert
+            camel_case_convert=camel_case_convert,
         )
     elif isinstance(field, StructureReference):
         value = deserialize_structure_reference(
@@ -242,10 +313,12 @@ def deserialize_single_field(
             source_val,
             keep_undefined=keep_undefined,
             mapper=mapper,
-            camel_case_convert=camel_case_convert
+            camel_case_convert=camel_case_convert,
         )
     elif isinstance(field, Map):
-        value = deserialize_map(field, source_val, name, camel_case_convert=camel_case_convert)
+        value = deserialize_map(
+            field, source_val, name, camel_case_convert=camel_case_convert
+        )
     elif isinstance(field, SerializableField):
         value = field.deserialize(source_val)
     elif isinstance(field, Anything) or field is None:
@@ -265,7 +338,9 @@ def deserialize_single_field(
     return value
 
 
-def deserialize_structure_reference(cls, the_dict: dict, *, keep_undefined, mapper, camel_case_convert=False):
+def deserialize_structure_reference(
+    cls, the_dict: dict, *, keep_undefined, mapper, camel_case_convert=False
+):
     field_by_name = {k: v for k, v in cls.__dict__.items() if isinstance(v, Field)}
     kwargs = dict(
         [
@@ -275,21 +350,38 @@ def deserialize_structure_reference(cls, the_dict: dict, *, keep_undefined, mapp
         ]
     )
 
-    kwargs.update(construct_fields_map(field_by_name, keep_undefined, mapper, the_dict,
-                                       camel_case_convert=camel_case_convert))
+    kwargs.update(
+        construct_fields_map(
+            field_by_name,
+            keep_undefined,
+            mapper,
+            the_dict,
+            camel_case_convert=camel_case_convert,
+        )
+    )
     cls(**kwargs)
     return kwargs
 
 
-def construct_fields_map(field_by_name, keep_undefined, mapper, input_dict,
-                         camel_case_convert=False,
-                         ignore_none=False):
+def construct_fields_map(
+    field_by_name,
+    keep_undefined,
+    mapper,
+    input_dict,
+    camel_case_convert=False,
+    ignore_none=False,
+):
     result = {}
     for key, field in field_by_name.items():
-        converted_key = _convert_to_camel_case_if_required(key, camel_case_convert=camel_case_convert)
+        converted_key = _convert_to_camel_case_if_required(
+            key, camel_case_convert=camel_case_convert
+        )
         process = False
         processed_input = None
-        if converted_key in input_dict and key not in mapper:
+        if key in input_dict and key not in mapper:
+            processed_input = input_dict[key]
+            process = True
+        elif converted_key in input_dict and key not in mapper:
             processed_input = input_dict[converted_key]
             process = True
         elif key in mapper:
@@ -304,7 +396,7 @@ def construct_fields_map(field_by_name, keep_undefined, mapper, input_dict,
                 mapper=sub_mapper,
                 keep_undefined=keep_undefined,
                 camel_case_convert=camel_case_convert,
-                ignore_none=ignore_none
+                ignore_none=ignore_none,
             )
     return result
 
@@ -328,10 +420,13 @@ class FunctionCall(Structure):
 
 
 def deserialize_structure_internal(
-    cls, the_dict, name=None, *,
-        mapper=None,
-        keep_undefined=True,
-        camel_case_convert=False
+    cls,
+    the_dict,
+    name=None,
+    *,
+    mapper=None,
+    keep_undefined=True,
+    camel_case_convert=False,
 ):
     """
     Deserialize a dict to a Structure instance, Jackson style.
@@ -370,30 +465,48 @@ def deserialize_structure_internal(
         if len(fields) == 1 and required == fields and additional_props is False:
             field_name = fields[0]
             return cls(
-                deserialize_single_field(getattr(cls, field_name), the_dict, field_name, ignore_none=ignore_none)
+                deserialize_single_field(
+                    getattr(cls, field_name),
+                    the_dict,
+                    field_name,
+                    ignore_none=ignore_none,
+                )
             )
         raise TypeError(
             "{}: Expected a dictionary; Got {}".format(name, wrap_val(the_dict))
         )
 
+    converted_snake_case_if_required = {k: _convert_to_snake_case_if_required(
+                    k, camel_case_convert=camel_case_convert
+                ) for k in the_dict}
+
     kwargs = dict(
         [
-            (_convert_to_snake_case_if_required(k, camel_case_convert=camel_case_convert), v)
+            (
+                converted_snake_case_if_required[k],
+                v,
+            )
             for k, v in the_dict.items()
-            if k not in field_by_name and keep_undefined
+            if converted_snake_case_if_required[k] not in field_by_name and keep_undefined
         ]
     )
-    kwargs.update(construct_fields_map(field_by_name, keep_undefined, mapper, the_dict,
-                                       camel_case_convert=camel_case_convert,
-                                       ignore_none=ignore_none))
+    kwargs.update(
+        construct_fields_map(
+            field_by_name,
+            keep_undefined,
+            mapper,
+            the_dict,
+            camel_case_convert=camel_case_convert,
+            ignore_none=ignore_none,
+        )
+    )
 
     return cls(**kwargs)
 
 
-def deserialize_structure(cls, the_dict, *,
-                          mapper=None,
-                          keep_undefined=True,
-                          camel_case_convert=False):
+def deserialize_structure(
+    cls, the_dict, *, mapper=None, keep_undefined=True, camel_case_convert=False
+):
     """
     Deserialize a dict to a Structure instance, Jackson style.
     Note the top level must be a python dict - which implies that a JSON of
@@ -419,9 +532,11 @@ def deserialize_structure(cls, the_dict, *,
         an instance of the provided :class:`Structure` deserialized
     """
     return deserialize_structure_internal(
-        cls, the_dict, mapper=mapper,
+        cls,
+        the_dict,
+        mapper=mapper,
         keep_undefined=keep_undefined,
-        camel_case_convert=camel_case_convert
+        camel_case_convert=camel_case_convert,
     )
 
 
@@ -467,37 +582,62 @@ def serialize_val(field_definition, name, val, mapper=None, camel_case_convert=F
             ):
                 key_type, value_type = field_definition.items
                 return {
-                    serialize_val(key_type, name, k, camel_case_convert=camel_case_convert):
-                        serialize_val(value_type, name, v, camel_case_convert=camel_case_convert)
+                    serialize_val(
+                        key_type, name, k, camel_case_convert=camel_case_convert
+                    ): serialize_val(
+                        value_type, name, v, camel_case_convert=camel_case_convert
+                    )
                     for (k, v) in val.items()
                 }
             else:
                 return {
-                    serialize_val(Anything, name, k, camel_case_convert=camel_case_convert):
-                        serialize_val(Anything, name, v, camel_case_convert=camel_case_convert)
+                    serialize_val(
+                        Anything, name, k, camel_case_convert=camel_case_convert
+                    ): serialize_val(
+                        Anything, name, v, camel_case_convert=camel_case_convert
+                    )
                     for (k, v) in val.items()
                 }
         if isinstance(field_definition.items, list):
             return [
-                serialize_val(field_definition.items[ind], name, v, mapper=mapper,
-                              camel_case_convert=camel_case_convert)
+                serialize_val(
+                    field_definition.items[ind],
+                    name,
+                    v,
+                    mapper=mapper,
+                    camel_case_convert=camel_case_convert,
+                )
                 for ind, v in enumerate(val)
             ]
         elif isinstance(field_definition.items, Field):
             return [
-                serialize_val(field_definition.items, name, i, mapper=mapper,
-                              camel_case_convert=camel_case_convert)
+                serialize_val(
+                    field_definition.items,
+                    name,
+                    i,
+                    mapper=mapper,
+                    camel_case_convert=camel_case_convert,
+                )
                 for i in val
             ]
         else:
-            return [serialize_val(None, name, i, mapper=mapper, camel_case_convert=camel_case_convert)
-                    for i in val]
+            return [
+                serialize_val(
+                    None, name, i, mapper=mapper, camel_case_convert=camel_case_convert
+                )
+                for i in val
+            ]
     if isinstance(val, (list, set, tuple)):
-        return [serialize_val(None, name, i, camel_case_convert=camel_case_convert) for i in val]
+        return [
+            serialize_val(None, name, i, camel_case_convert=camel_case_convert)
+            for i in val
+        ]
     if isinstance(field_definition, Anything) and isinstance(val, Structure):
         return serialize(val, mapper=mapper, camel_case_convert=camel_case_convert)
     if isinstance(val, Structure) or isinstance(field_definition, Field):
-        return serialize_internal(val, mapper=mapper, camel_case_convert=camel_case_convert)
+        return serialize_internal(
+            val, mapper=mapper, camel_case_convert=camel_case_convert
+        )
 
     # nothing worked. Not a typedpy field. Last ditch effort.
     try:
@@ -535,8 +675,12 @@ def serialize_field(field_definition: Field, value, camel_case_convert=False):
     Returns:
         a serialized Python object that can be directly converted to JSON
     """
-    return serialize_val(field_definition, field_definition._name, value,
-                         camel_case_convert=camel_case_convert)
+    return serialize_val(
+        field_definition,
+        field_definition._name,
+        value,
+        camel_case_convert=camel_case_convert,
+    )
 
 
 def _get_mapped_value(mapper, key, items):
@@ -557,18 +701,19 @@ def _get_mapped_value(mapper, key, items):
 
 def _convert_to_camel_case_if_required(key, camel_case_convert):
     if camel_case_convert:
-        words = key.split('_')
-        return words[0] + ''.join(w.title() for w in words[1:])
+        words = key.split("_")
+        return words[0] + "".join(w.title() for w in words[1:])
     else:
         return key
+
 
 def _convert_to_snake_case_if_required(key, camel_case_convert):
     if camel_case_convert:
-        return ''.join(['_' + char.lower() if char.isupper()
-                        else char for char in key]).lstrip('_')
+        return "".join(
+            ["_" + char.lower() if char.isupper() else char for char in key]
+        ).lstrip("_")
     else:
         return key
-
 
 
 def serialize_internal(structure, mapper=None, compact=False, camel_case_convert=False):
@@ -593,8 +738,10 @@ def serialize_internal(structure, mapper=None, compact=False, camel_case_convert
     ):
         key = fields[0]
         result = serialize_val(
-            field_by_name.get(key, None), key, getattr(structure, key),
-            camel_case_convert=camel_case_convert
+            field_by_name.get(key, None),
+            key,
+            getattr(structure, key),
+            camel_case_convert=camel_case_convert,
         )
     else:
         result = {}
@@ -613,9 +760,11 @@ def serialize_internal(structure, mapper=None, compact=False, camel_case_convert
             )
             sub_mapper = mapper.get(f"{key}._mapper", {})
             result[mapped_key] = serialize_val(
-                the_field_definition, key, mapped_value or val,
+                the_field_definition,
+                key,
+                mapped_value or val,
                 mapper=sub_mapper,
-                camel_case_convert=camel_case_convert
+                camel_case_convert=camel_case_convert,
             )
     return result
 
@@ -656,12 +805,18 @@ def serialize(value, *, mapper: Dict = None, compact=False, camel_case_convert=F
             return value
         if isinstance(value, (_ListStruct, _DictStruct)):
             field_definition = value._field_definition
-            return serialize_val(field_definition, field_definition._name, value,
-                                 camel_case_convert=camel_case_convert)
+            return serialize_val(
+                field_definition,
+                field_definition._name,
+                value,
+                camel_case_convert=camel_case_convert,
+            )
         if isinstance(value, (enum.Enum,)):
             return value.name
         raise TypeError(
             "serialize: Not a Structure or Field that with an obvious serialization. Got: {}."
             " Maybe try serialize_field() instead?".format(value)
         )
-    return serialize_internal(value, mapper=mapper, compact=compact, camel_case_convert=camel_case_convert)
+    return serialize_internal(
+        value, mapper=mapper, compact=compact, camel_case_convert=camel_case_convert
+    )

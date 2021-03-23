@@ -7,7 +7,7 @@ from pytest import raises
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
     Float, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything, serialize, NotField, \
-    SerializableField, Deque
+    SerializableField, Deque, PositiveInt
 from typedpy.serialization import FunctionCall
 from typedpy.serialization_wrappers import Deserializer
 
@@ -1010,3 +1010,17 @@ def test_deserialize_with_ignore_nones_deep():
     assert deserialized.blah.z == 555
 
 
+def test_convert_camel_case():
+    class Foo(Structure):
+        first_name: String
+        last_name: String
+        age_years: PositiveInt
+        _additionalProperties = False
+
+    input_dict = {
+            "firstName": "joe",
+            "lastName" : "smith",
+            "ageYears": 5
+    }
+    res = Deserializer(target_class=Foo, camel_case_convert=True).deserialize(input_dict)
+    assert res == Foo(first_name="joe", last_name="smith", age_years=5)

@@ -11,7 +11,7 @@ from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, serialize, Set, AnyOf, DateField, Anything, Map, Function
+    Float, serialize, Set, AnyOf, DateField, Anything, Map, Function, PositiveInt
 from typedpy.extfields import DateTime
 from typedpy import serialize_field
 from typedpy.serialization import FunctionCall
@@ -603,3 +603,20 @@ def test_example_of_transformation():
         return deserializer.deserialize(serializer.serialize(), keep_undefined=False)
 
     assert transform_foo_to_bar(Foo(f=5.5, i=999)) == Bar(numbers=[999], s='5.5')
+
+
+def test_convert_camel_case():
+    class Foo(Structure):
+        first_name: String
+        last_name: String
+        age_years: PositiveInt
+        _additionalProperties = False
+
+    original = Foo(first_name="joe", last_name="smith", age_years=5)
+    res = Serializer(source=original).serialize(camel_case_convert=True)
+    assert res == {
+            "firstName": "joe",
+            "lastName" : "smith",
+            "ageYears": 5
+    }
+

@@ -378,7 +378,7 @@ def deserialize_structure_internal(
 
     kwargs = dict(
         [
-            (k, v)
+            (_convert_to_snake_case_if_required(k, camel_case_convert=camel_case_convert), v)
             for k, v in the_dict.items()
             if k not in field_by_name and keep_undefined
         ]

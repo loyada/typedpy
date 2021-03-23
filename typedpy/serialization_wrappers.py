@@ -160,7 +160,7 @@ class Serializer(Structure):
             for key in self.mapper:
                 verify_key_in_mapper(key, valid_keys, source_class)
 
-    def serialize(self, compact=True,  camel_case_convert=False):
+    def serialize(self, compact: bool = True, camel_case_convert: bool = False):
         """
 
          Arguments:

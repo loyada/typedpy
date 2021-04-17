@@ -2,6 +2,7 @@ import json
 from datetime import datetime, date
 import re
 
+from typedpy.commons import wrap_val
 from typedpy.structures import Field, TypedField
 from typedpy.fields import SerializableField, String
 
@@ -31,7 +32,7 @@ class IPV4(String):
         ):
             super().__set__(instance, value)
         else:
-            raise ValueError("{}: Got {}; wrong format for IP version 4".format(self._name, value))
+            raise ValueError("{}: Got {}; wrong format for IP version 4".format(self._name, wrap_val(value)))
 
 
 class HostName(String):
@@ -43,11 +44,11 @@ class HostName(String):
 
     def __set__(self, instance, value):
         if not HostName._host_name_re.match(value):
-            raise ValueError("{}: wrong format for hostname".format(self._name))
+            raise ValueError("{}: Got {}; wrong format for hostname".format(self._name, wrap_val(value)))
         components = value.split(".")
         for component in components:
             if len(component) > 63:
-                raise ValueError("{}: Got {}; wrong format for hostname".format(self._name, value))
+                raise ValueError("{}: Got {}; wrong format for hostname".format(self._name, wrap_val(value)))
         super().__set__(instance, value)
 
 
@@ -72,7 +73,7 @@ class DateString(TypedField):
         try:
             datetime.strptime(value, self._format)
         except ValueError as ex:
-            raise ValueError("{}: Got {}; {}".format(self._name, value, ex.args[0]))
+            raise ValueError("{}: Got {}; {}".format(self._name, wrap_val(value), ex.args[0]))
 
 
 class TimeString(TypedField):
@@ -87,7 +88,7 @@ class TimeString(TypedField):
         try:
             datetime.strptime(value, "%H:%M:%S")
         except ValueError as ex:
-            raise ValueError("{}: Got {}; {}".format(self._name, value, ex.args[0]))
+            raise ValueError("{}: Got {}; {}".format(self._name, wrap_val(value), ex.args[0]))
 
 
 class DateField(SerializableField):
@@ -125,14 +126,17 @@ class DateField(SerializableField):
 
     def __set__(self, instance, value):
         if isinstance(value, str):
-            as_date = datetime.strptime(value, self._date_format).date()
-            super().__set__(instance, as_date)
+            try:
+                as_date = datetime.strptime(value, self._date_format).date()
+                super().__set__(instance, as_date)
+            except ValueError as ex:
+                raise ValueError("{}: Got {}; {}".format(self._name, wrap_val(value), str(ex))) from ex
         elif isinstance(value, datetime):
             super().__set__(instance, value.date())
         elif isinstance(value, date):
             super().__set__(instance, value)
         else:
-            raise TypeError("{}: Got {}; Expected date, datetime, or str".format(self._name, value))
+            raise TypeError("{}: Got {}; Expected date, datetime, or str".format(self._name, wrap_val(value)))
 
 
 class DateTime(SerializableField):
@@ -169,9 +173,12 @@ class DateTime(SerializableField):
 
     def __set__(self, instance, value):
         if isinstance(value, str):
-            as_datetime = datetime.strptime(value, self._datetime_format)
-            super().__set__(instance, as_datetime)
+            try:
+                as_datetime = datetime.strptime(value, self._datetime_format)
+                super().__set__(instance, as_datetime)
+            except ValueError as ex:
+                raise ValueError("{}: Got {}; {}}".format(self._name, wrap_val(value), str(ex))) from ex
         elif isinstance(value, datetime):
             super().__set__(instance, value)
         else:
-            raise TypeError("{}: Got {}; Expected datetime or str".format(self._name, value))
+            raise TypeError("{}: Got {}; Expected datetime or str".format(self._name, wrap_val(value)))

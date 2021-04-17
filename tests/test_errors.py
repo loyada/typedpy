@@ -1,4 +1,4 @@
-from build.lib.typedpy.extfields import DateField
+from typedpy.extfields import DateField
 from typedpy import Structure, DecimalNumber, String, Array, standard_readable_error_for_typedpy_exception, Positive
 
 from pytest import raises
@@ -58,7 +58,7 @@ def test_error_6():
         Foo(a=1, b=100, c=1.1, arr=["a"], d="xyz")
     print(standard_readable_error_for_typedpy_exception(ex.value))
     assert standard_readable_error_for_typedpy_exception(ex.value) == \
-           ErrorInfo(field="d", problem="time data 'xyz' does not match format '%Y-%m-%d'", value="xyz")
+           ErrorInfo(field="d", problem="time data 'xyz' does not match format '%Y-%m-%d'", value="'xyz'")
 
 
 def test_error_7():

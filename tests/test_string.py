@@ -40,7 +40,7 @@ def test_date_err():
 
     with raises(ValueError) as excinfo:
         Example(d='2017-99-99')
-    assert "d: Got 2017-99-99; time data '2017-99-99' does not match format '%Y-%m-%d'" in str(excinfo.value)
+    assert 'd: Got \'2017-99-99\'; time data \'2017-99-99\' does not match format \'%Y-%m-%d\'' in str(excinfo.value)
 
 
 def test_date_valid():
@@ -89,7 +89,7 @@ def test_time_err():
 
     with raises(ValueError) as excinfo:
         Example(t='20:1015')
-    assert "t: Got 20:1015; time data '20:1015' does not match format '%H:%M:%S'" in str(excinfo.value)
+    assert "t: Got '20:1015'; time data '20:1015' does not match format '%H:%M:%S'" in str(excinfo.value)
 
 
 def test_time_valid():
@@ -122,7 +122,7 @@ def test_hostname_err():
 
     with raises(ValueError) as excinfo:
         Example(host='aaa bbb')
-    assert "host: wrong format for hostname" in str(excinfo.value)
+    assert "host: Got 'aaa bbb'; wrong format for hostname" in str(excinfo.value)
 
 
 def test_hostname_err2():
@@ -131,8 +131,8 @@ def test_hostname_err2():
 
     with raises(ValueError) as excinfo:
         Example(host='aaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.asc')
-    assert 'host: Got aaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' \
-           'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.asc; wrong format for hostname'in str(excinfo.value)
+    assert "host: Got 'aaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" \
+           "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.asc'; wrong format for hostname" in str(excinfo.value)
 
 
 def test_hostname_valid():
@@ -148,7 +148,7 @@ def test_ipv4_err():
 
     with raises(ValueError) as excinfo:
         Example(ip='2312.2222.223233')
-    assert 'ip: Got 2312.2222.223233; wrong format for IP version 4' in str(excinfo.value)
+    assert "ip: Got '2312.2222.223233'; wrong format for IP version 4" in str(excinfo.value)
 
 
 def test_ipv4_valid():

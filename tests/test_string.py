@@ -139,7 +139,7 @@ def test_hostname_valid():
     class Example(Structure):
         host = HostName
 
-    Example(host='com.ddd.dasdasdsadasdasda').host == 'com.ddd.dasdasdsadasdasda'
+    assert Example(host='com.ddd.dasdasdsadasdasda').host == 'com.ddd.dasdasdsadasdasda'
 
 
 def test_ipv4_err():
@@ -155,7 +155,7 @@ def test_ipv4_valid():
     class Example(Structure):
         ip = IPV4
 
-    Example(ip='212.22.33.192').ip.split('.') == ['212', '22', '33', '192']
+    assert Example(ip='212.22.33.192').ip.split('.') == ['212', '22', '33', '192']
 
 
 def test_JSONString_err():

@@ -27,9 +27,9 @@ def _transform_class_to_readable(problem: str):
     return problem
 
 
-_pattern_for_typepy_validation_1 = re.compile("^([a-zA-Z0-9_]+): Got (.*); (.*)$")
-_pattern_for_typepy_validation_2 = re.compile("^([a-zA-Z0-9_]+):\s(.*); Got (.*)$")
-_pattern_for_typepy_validation_3 = re.compile("^([a-zA-Z0-9_]+):\s(.*)$")
+_pattern_for_typepy_validation_1 = re.compile(r"^([a-zA-Z0-9_]+): Got (.*); (.*)$")
+_pattern_for_typepy_validation_2 = re.compile(r"^([a-zA-Z0-9_]+):\s(.*); Got (.*)$")
+_pattern_for_typepy_validation_3 = re.compile(r"^([a-zA-Z0-9_]+):\s(.*)$")
 
 
 def standard_readable_error_for_typedpy_exception(e: Exception):

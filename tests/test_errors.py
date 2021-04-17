@@ -1,7 +1,8 @@
-from tests.test_decimal import PositiveDecimal
-from typedpy import Structure, DecimalNumber, String, Array, standard_readable_error_for_typedpy_exception
+from typedpy import Structure, DecimalNumber, String, Array, standard_readable_error_for_typedpy_exception, Positive
 
 from pytest import raises
+
+class PositiveDecimal(DecimalNumber, Positive): pass
 
 class Foo(Structure):
     a = DecimalNumber

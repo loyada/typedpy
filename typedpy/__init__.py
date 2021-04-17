@@ -78,5 +78,5 @@ from typedpy.extfields import (
     EmailAddress,
 )
 
-from typedpy.errors import standard_readable_error_for_typedpy_exception
+from typedpy.errors import standard_readable_error_for_typedpy_exception, ErrorInfo
 

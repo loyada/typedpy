@@ -17,7 +17,6 @@ display_type_by_type = {
     "list": "an array"
 }
 
-
 _expected_class_pattern = re.compile("^Expected\s<class '(.*)'>$")
 
 
@@ -37,19 +36,19 @@ def standard_readable_error_for_typedpy_exception(e: Exception):
     err_message = str(e)
     match = _pattern_for_typepy_validation_1.match(err_message)
     if match:
-        return dict(value=match.group(2),
-                    problem=_transform_class_to_readable(match.group(3)),
-                    field=match.group(1))
+        return ErrorInfo(value=match.group(2),
+                         problem=_transform_class_to_readable(match.group(3)),
+                         field=match.group(1))
 
-    match = _pattern_for_typepy_validation_2.match( err_message)
+    match = _pattern_for_typepy_validation_2.match(err_message)
     if match:
-        return dict(value=match.group(3),
-                    problem=_transform_class_to_readable(match.group(2)),
-                    field= match.group(1))
+        return ErrorInfo(value=match.group(3),
+                         problem=_transform_class_to_readable(match.group(2)),
+                         field=match.group(1))
 
-    match = _pattern_for_typepy_validation_3.match( err_message)
+    match = _pattern_for_typepy_validation_3.match(err_message)
     if match:
         field = match.group(1)
         problem = _transform_class_to_readable(match.group(2))
-        return dict(problem=problem, field=field)
-    return dict(problem=err_message)
+        return ErrorInfo(problem=problem, field=field)
+    return ErrorInfo(problem=err_message)

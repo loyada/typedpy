@@ -91,10 +91,13 @@ def test_field_declaration_bad_usage():
     assert "last_name_bar" in str(ex.value)
 
     # this can cause a lot of weirdness....
-    foo = Foo(i=1, first_name_foo="jack", last_name_foo="smith")
-    assert foo.first_name_foo == foo.last_name_foo
+
+    bar = Bar(i=1, first_name_bar="jack", last_name_bar="smith")
+    assert bar.first_name_bar == bar.last_name_bar
     # and even:
-    assert foo.last_name_bar == foo.first_name_foo
+    with raises(KeyError) as ex:
+        Foo(i=1, first_name_foo="Tom", last_name_foo="Jones")
+    assert "last_name_bar" in str(ex.value)
     # so watch out!
 
 

@@ -262,6 +262,31 @@ Typepy supports the following operations for structure instances:
     assert Example(i=5)
 
 
+Cloning
+=======
+Beyond support to the standard Python copy.copy, and copy.deepcopy, Typedpy allows to shallow clone an element
+with some overrides. This is especially useful for immutable structures, the only way to generate an instance with
+a different value, is to create a new instance.
+
+Here is an example of how it works:
+
+.. code-block:: python
+
+    class Foo(ImmutableStructure):
+        i = Integer
+        s = String
+        f = Float
+        _additionalProperties = False
+
+    first = Foo(i=5, s="xyz", f = 0.5)
+    second = first.shallow_clone_with_overrides(i = 6)
+    assert second == Foo(i=5, s="xyz", i =6)
+
+
+As the name suggests, it performs a shallow copy.
+
+
+
 Uniqueness
 ==========
 Typedpy allows you to ensure that all the instances of a certain :class:`Structure` are unique, by

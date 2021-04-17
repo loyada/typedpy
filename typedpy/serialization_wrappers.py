@@ -78,7 +78,7 @@ class Deserializer(Structure):
             input_data,
             mapper=self.mapper,
             keep_undefined=keep_undefined,
-            camel_case_convert=self.camel_case_convert
+            camel_case_convert=self.camel_case_convert,
         )
 
 
@@ -163,17 +163,21 @@ class Serializer(Structure):
     def serialize(self, compact: bool = True, camel_case_convert: bool = False):
         """
 
-         Arguments:
-               compact(boolean): optional
-                     whether to use a compact form for Structure that is a simple wrapper of a field.
-                     for example: if a Structure has only one field of an int, if compact is True
-                     it will serialize the structure as an int instead of a dictionary.
-                     Default is False.
+        Arguments:
+              compact(boolean): optional
+                    whether to use a compact form for Structure that is a simple wrapper of a field.
+                    for example: if a Structure has only one field of an int, if compact is True
+                    it will serialize the structure as an int instead of a dictionary.
+                    Default is False.
 
-               camel_case_convert(dict): optional
-                     If True, convert any camel-case key that does not have a mapping in the mapper to a snake-case
-                     attribute.
-                     Default is False.
+              camel_case_convert(dict): optional
+                    If True, convert any camel-case key that does not have a mapping in the mapper to a snake-case
+                    attribute.
+                    Default is False.
         """
-        return serialize(self.source, mapper=self.mapper, compact=compact,
-                         camel_case_convert=camel_case_convert)
+        return serialize(
+            self.source,
+            mapper=self.mapper,
+            compact=compact,
+            camel_case_convert=camel_case_convert,
+        )

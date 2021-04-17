@@ -77,3 +77,6 @@ from typedpy.extfields import (
     JSONString,
     EmailAddress,
 )
+
+from typedpy.errors import standard_readable_error_for_typedpy_exception
+

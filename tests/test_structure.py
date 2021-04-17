@@ -1,14 +1,12 @@
 import enum
-import sys
 import typing
-from datetime import datetime
 
 import pytest
 from pytest import raises
 
 from typedpy import Structure, DecimalNumber, PositiveInt, String, Enum, Field, Integer, Map, Array, AnyOf, NoneField, \
-    DateField
-from typedpy.structures import FinalStructure, ImmutableStructure, unique, MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
+    DateField, DateTime
+from typedpy.structures import FinalStructure, unique, MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
 
 
 class Venue(enum.Enum):
@@ -57,6 +55,24 @@ def test_optional_fields_required_overrides():
     Trade()
 
 
+def test_field_by_name_fins_annotated_fields():
+    class Trade(Structure):
+        notional: DecimalNumber(maximum=10000, minimum=0)
+        quantity: PositiveInt(maximum=100000, multiplesOf=5)
+        symbol: String(pattern='[A-Z]+$', maxLength=6)
+        buyer: Trader
+        my_list: list[str]
+        seller: typing.Optional[Trader]
+        venue: Enum[Venue]
+        comment: String
+        _optional = ["comment", "venue"]
+        _required = []
+
+    field_names = Trade.get_all_fields_by_name().keys()
+    for f in {"notional", "quantity", "seller", "symbol", "buyer", "my_list"}:
+        assert f in field_names
+
+
 def test_optional_fields_required_overrides1():
     class Trade(Structure):
         venue: Enum[Venue]
@@ -95,11 +111,16 @@ def test_field_of_class(Point):
 
 def test_ignore_none(Point):
     class Foo(Structure):
-        i: int
-        date = typing.Optional[DateField]
+        i: list[int]
+        maybe_date: typing.Optional[DateField]
         _ignore_none = True
 
-    assert Foo(i=5, date=None).i == 5
+    assert Foo(i=[5], maybe_date=None).i == [5]
+    assert Foo(i=[1]).maybe_date is None
+    assert Foo(i=[1], maybe_date=None).i[0] == 1
+    assert Foo(i=[5], maybe_date="2020-01-31").i[0] == 5
+    with raises(ValueError):
+        assert Foo(i=[5], maybe_date="2020-01-31a")
 
 
 def test_do_not_ignore_none(Point):
@@ -298,3 +319,26 @@ def test_unique_violation_stop_checking__if_too_many_instances():
         Foo(i=i)
     Foo(i=1)
     Foo(i=1)
+
+
+def test_copy_with_overrides():
+    class Trade(Structure):
+        notional: DecimalNumber(maximum=10000, minimum=0)
+        quantity: PositiveInt(maximum=100000, multiplesOf=5)
+        symbol: String(pattern='[A-Z]+$', maxLength=6)
+        timestamp = DateTime
+        buyer: Trader
+        seller: Trader
+        venue: Enum[Venue]
+        comment: String
+        _optional = ["comment", "venue"]
+
+    trade_1 = Trade(notional=1000, quantity=150, symbol="APPL",
+                    buyer=Trader(lei="12345678901234567890", alias="GSET"),
+                    seller=Trader(lei="12345678901234567888", alias="MSIM"),
+                    timestamp="01/30/20 05:35:35",
+                    )
+    trade_2 = trade_1.shallow_clone_with_overrides(notional=500)
+    assert trade_2.notional == 500
+    trade_2.notional = 1000
+    assert trade_2 == trade_1

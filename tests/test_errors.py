@@ -1,3 +1,4 @@
+from build.lib.typedpy.extfields import DateField
 from typedpy import Structure, DecimalNumber, String, Array, standard_readable_error_for_typedpy_exception, Positive
 
 from pytest import raises
@@ -11,7 +12,9 @@ class Foo(Structure):
     a = DecimalNumber
     b = DecimalNumber(maximum=100, multiplesOf=5)
     c = PositiveDecimal
+    d = DateField
     arr = Array(items=String, minItems=1)
+    _optional = ["d"]
     _additionalProperties = False
 
 
@@ -52,6 +55,22 @@ def test_error_5():
 
 def test_error_6():
     with raises(Exception) as ex:
+        Foo(a=1, b=100, c=1.1, arr=["a"], d="xyz")
+    print(standard_readable_error_for_typedpy_exception(ex.value))
+    assert standard_readable_error_for_typedpy_exception(ex.value) == \
+           ErrorInfo(field="d", problem="time data 'xyz' does not match format '%Y-%m-%d'", value="xyz")
+
+
+def test_error_7():
+    with raises(Exception) as ex:
         Foo(a=1, b=100, c=1.1, arr=["a"], e=5)
     assert standard_readable_error_for_typedpy_exception(ex.value) == \
            ErrorInfo(problem="got an unexpected keyword argument 'e'")
+
+
+def test_real_world_usage():
+    try:
+        Foo(a=1, b=10, c=1.1, arr=['abc', 1])
+    except Exception as ex:
+        assert standard_readable_error_for_typedpy_exception(ex) == \
+           ErrorInfo(field='arr_1', problem='Expected a string', value='1')

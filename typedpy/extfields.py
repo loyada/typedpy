@@ -31,7 +31,7 @@ class IPV4(String):
         ):
             super().__set__(instance, value)
         else:
-            raise ValueError("{}: wrong format for IP version 4".format(self._name))
+            raise ValueError("{}: Got {}; wrong format for IP version 4".format(self._name, value))
 
 
 class HostName(String):
@@ -47,7 +47,7 @@ class HostName(String):
         components = value.split(".")
         for component in components:
             if len(component) > 63:
-                raise ValueError("{}: wrong format for hostname".format(self._name))
+                raise ValueError("{}: Got {}; wrong format for hostname".format(self._name, value))
         super().__set__(instance, value)
 
 
@@ -72,7 +72,7 @@ class DateString(TypedField):
         try:
             datetime.strptime(value, self._format)
         except ValueError as ex:
-            raise ValueError("{}: {}".format(self._name, ex.args[0]))
+            raise ValueError("{}: Got {}; {}".format(self._name, value, ex.args[0]))
 
 
 class TimeString(TypedField):
@@ -87,7 +87,7 @@ class TimeString(TypedField):
         try:
             datetime.strptime(value, "%H:%M:%S")
         except ValueError as ex:
-            raise ValueError("{}:  {}".format(self._name, ex.args[0]))
+            raise ValueError("{}: Got {}; {}".format(self._name, value, ex.args[0]))
 
 
 class DateField(SerializableField):
@@ -132,7 +132,7 @@ class DateField(SerializableField):
         elif isinstance(value, date):
             super().__set__(instance, value)
         else:
-            raise TypeError("{}: expected date, datetime, or str".format(self._name))
+            raise TypeError("{}: Got {}; Expected date, datetime, or str".format(self._name, value))
 
 
 class DateTime(SerializableField):
@@ -174,4 +174,4 @@ class DateTime(SerializableField):
         elif isinstance(value, datetime):
             super().__set__(instance, value)
         else:
-            raise TypeError("{}: expected datetime or str".format(self._name))
+            raise TypeError("{}: Got {}; Expected datetime or str".format(self._name, value))

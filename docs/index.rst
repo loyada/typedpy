@@ -43,6 +43,7 @@ Contents:
    serialization
    tutorial
    json_schema
+   errors
    tutorial_dataclass_comparison
    limitations
 

@@ -1,4 +1,5 @@
 import enum
+import sys
 import typing
 
 import pytest
@@ -55,6 +56,7 @@ def test_optional_fields_required_overrides():
     Trade()
 
 
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_field_by_name_fins_annotated_fields():
     class Trade(Structure):
         notional: DecimalNumber(maximum=10000, minimum=0)
@@ -109,6 +111,7 @@ def test_field_of_class(Point):
     assert foo.point.size() == 5
 
 
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_ignore_none(Point):
     class Foo(Structure):
         i: list[int]

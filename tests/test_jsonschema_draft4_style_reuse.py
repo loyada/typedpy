@@ -51,7 +51,7 @@ def test_notfield_str():
 def test_allof_misses_one_err1():
     with raises(ValueError) as excinfo:
         Example(a=-5)
-    assert "a: Must be positive" in str(excinfo.value)
+    assert "a: Got -5; Expected a positive number" in str(excinfo.value)
 
 
 def test_allof_misses_one_err2():

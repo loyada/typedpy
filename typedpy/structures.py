@@ -3,7 +3,7 @@ The Skeleton classes to support strictly defined structures:
 Structure, Field, StructureReference, ClassReference, TypedField
 """
 import enum
-import uuid
+import json
 from copy import deepcopy
 from collections import OrderedDict, deque, defaultdict
 from inspect import Signature, Parameter, signature
@@ -700,6 +700,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     """
 
     _fields = []
+    _fail_fast = True
 
     def __init__(self, *args, **kwargs):
         bound = getattr(self, "__signature__").bind(*args, **kwargs)
@@ -707,8 +708,20 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             for name, val in bound.arguments["kwargs"].items():
                 setattr(self, name, val)
             del bound.arguments["kwargs"]
-        for name, val in bound.arguments.items():
-            setattr(self, name, val)
+
+        if Structure.failing_fast():
+            for name, val in bound.arguments.items():
+                setattr(self, name, val)
+        else:
+            errors = []
+            for name, val in bound.arguments.items():
+                try:
+                    setattr(self, name, val)
+                except (TypeError, ValueError) as ex:
+                    errors.append(ex)
+            if errors:
+                messages = json.dumps([str(e) for e in errors])
+                raise errors[0].__class__(messages) from errors[0]
 
         self.__validate__()
         self._instantiated = True
@@ -867,6 +880,14 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         field_value_by_name = dict([(f, getattr(self, f)) for f in fields_names if getattr(self, f) is not None])
         kw_args = {**field_value_by_name, **kw}
         return self.__class__(**kw_args)
+
+    @staticmethod
+    def set_fail_fast(fast_fail: bool):
+        Structure._fail_fast = fast_fail
+
+    @staticmethod
+    def failing_fast():
+        return Structure._fail_fast
 
 
 class FinalStructure(Structure):

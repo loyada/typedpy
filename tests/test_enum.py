@@ -15,7 +15,7 @@ class B(Structure):
 def test_not_positive_err():
     with raises(ValueError) as excinfo:
         B(e=-5)
-    assert "e: Must be positive" in str(excinfo.value)
+    assert "e: Got -5; Expected a positive number" in str(excinfo.value)
 
 
 def test_not_valid_value_err():

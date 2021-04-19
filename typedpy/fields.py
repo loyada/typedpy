@@ -359,7 +359,7 @@ class Positive(Number):
 
     def __set__(self, instance, value):
         if value <= 0:
-            raise ValueError("{}: Must be positive".format(self._name))
+            raise ValueError("{}: Got {}; Expected a positive number".format(self._name, value))
         super().__set__(instance, value)
 
 

@@ -54,7 +54,7 @@ def test_not_multiple():
 def test_positivedecimal_err():
     with raises(ValueError) as excinfo:
         Foo(c=Decimal(-5))
-    assert "c: Must be positive" in str(excinfo.value)
+    assert "c: Got -5; Expected a positive number" in str(excinfo.value)
 
 
 def test_positivedecimal_valid():

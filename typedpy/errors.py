@@ -1,6 +1,8 @@
 import re
+import json
 
-from typedpy import ImmutableStructure, String
+import typedpy
+from typedpy import ImmutableStructure, String, Structure
 
 
 class ErrorInfo(ImmutableStructure):
@@ -34,6 +36,16 @@ _pattern_for_typepy_validation_3 = re.compile(r"^([a-zA-Z0-9_]+):\s(.*)$")
 
 def standard_readable_error_for_typedpy_exception(e: Exception):
     err_message = str(e)
+    if Structure.failing_fast():
+        return _standard_readable_error_for_typedpy_exception_internal(err_message)
+    else:
+        errs = json.loads(err_message)
+        return [_standard_readable_error_for_typedpy_exception_internal(e) for e in errs]
+
+
+
+def _standard_readable_error_for_typedpy_exception_internal(err_message: str):
+
     match = _pattern_for_typepy_validation_1.match(err_message)
     if match:
         return ErrorInfo(value=match.group(2),

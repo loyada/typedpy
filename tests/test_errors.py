@@ -1,7 +1,7 @@
 from typedpy.extfields import DateField
 from typedpy import Structure, DecimalNumber, String, Array, standard_readable_error_for_typedpy_exception, Positive
 
-from pytest import raises
+from pytest import raises, fixture
 
 from typedpy.errors import ErrorInfo
 
@@ -74,3 +74,21 @@ def test_real_world_usage():
     except Exception as ex:
         assert standard_readable_error_for_typedpy_exception(ex) == \
            ErrorInfo(field='arr_1', problem='Expected a string', value='1')
+
+
+@fixture(name="all_errors")
+def fixture_all_errors():
+    Structure.set_fail_fast(False)
+    yield
+    Structure.set_fail_fast(True)
+
+
+def test_multiple_errors_not_fail_fast(all_errors):
+    with raises(Exception) as ex:
+        Foo(a=1, b=1000, c=-5, arr=[1])
+    errs = standard_readable_error_for_typedpy_exception(ex.value)
+    assert ErrorInfo(field='b', problem='Expected a maximum of 100', value='1000') in errs
+    assert ErrorInfo(field='arr_0', problem='Expected a string', value='1') in errs
+    assert ErrorInfo(field='c', problem='Expected a positive number', value='-5') in errs
+
+

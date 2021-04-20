@@ -21,7 +21,7 @@ def test_not_positive_err():
 def test_not_valid_value_err():
     with raises(ValueError) as excinfo:
         B(e=10)
-    assert "e: Must be one of [23, -5, 12, 5]" in str(excinfo.value)
+    assert "e: Got 10; Expected be one of [23, -5, 12, 5]" in str(excinfo.value)
 
 
 def test_valid_value():
@@ -40,7 +40,7 @@ def test_within_erray_err():
 
     with raises(ValueError) as excinfo:
         A(arr=[23, 5, 3, 5])
-    assert "arr_2: Must be one of [23, -5, 12, 5]" in str(excinfo.value)
+    assert "arr_2: Got 3; Expected be one of [23, -5, 12, 5]" in str(excinfo.value)
 
 
 class Values(enum.Enum):
@@ -63,7 +63,7 @@ def test_enum_using_enum_error():
 
     with raises(ValueError) as excinfo:
         Example(arr=['ABC', Values.DEF, 3])
-    assert "arr_2: Must be a value of <enum 'Values'>" in str(excinfo.value)
+    assert "arr_2: Got 3; Expected a value of <enum 'Values'>" in str(excinfo.value)
 
 
 def test_enum_using_enum_values_should_be_the_enum_values():

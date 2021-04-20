@@ -1301,11 +1301,11 @@ class Enum(Field, metaclass=_EnumMeta):
             enum_names = {v.name for v in self._enum_class}
             if value not in enum_names and not isinstance(value, (self._enum_class,)):
                 raise ValueError(
-                    "{}: Must be a value of {}".format(self._name, self._enum_class)
+                    "{}: Got {}; Expected a value of {}".format(self._name, value, self._enum_class)
                 )
 
         elif value not in self.values:
-            raise ValueError("{}: Must be one of {}".format(self._name, self.values))
+            raise ValueError("{}: Got {}; Expected be one of {}".format(self._name, value, self.values))
 
     def __set__(self, instance, value):
         self._validate(value)
@@ -1351,7 +1351,7 @@ class Sized(Field):
 
     def __set__(self, instance, value):
         if len(value) > self.maxlen:
-            raise ValueError("{}: Too long".format(self._name))
+            raise ValueError("{}: Got {}; Expected a length up to {}".format(self._name, value, self.maxlen))
         super().__set__(instance, value)
 
 

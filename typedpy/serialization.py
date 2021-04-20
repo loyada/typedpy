@@ -50,7 +50,7 @@ def deserialize_list_like(
     camel_case_convert=False,
 ):
     if not isinstance(value, (list, tuple, set)):
-        raise ValueError("{}: must be list, set, or tuple; got {}".format(name, value))
+        raise ValueError("{}: Got {}; Expected a list, set, or tuple".format(name, value))
 
     values = []
     items = field.items
@@ -167,6 +167,7 @@ def deserialize_multifield_wrapper(
     """
     deserialized = source_val
     found_previous_match = False
+    failures = 0
     for field_option in field.get_fields():
         try:
             ignore_none = getattr(field_option, IGNORE_NONE_VALUES, False)
@@ -184,31 +185,38 @@ def deserialize_multifield_wrapper(
                 return deserialized
             elif isinstance(field, NotField):
                 raise ValueError(
-                    "could not deserialize {}: value {} matches field {}, but must not match it".format(
+                    "{}: Got {}; Matches field {}, but must not match it".format(
                         name, wrap_val(source_val), field
                     )
                 )
             elif isinstance(field, OneOf) and found_previous_match:
                 raise ValueError(
-                    "could not deserialize {}: value {} matches more than one match".format(
+                    "{}: Got {}; Matches more than one match".format(
                         name, wrap_val(source_val)
                     )
                 )
             found_previous_match = True
         except Exception as e:
+            failures += 1
             if isinstance(field, AllOf):
                 raise ValueError(
-                    "could not deserialize {}: value {} did not match {}. reason: {}".format(
+                    "{}: Got {}; Does not match {}. reason: {}".format(
                         name, wrap_val(source_val), field_option, str(e)
                     )
                 ) from e
+    if failures == len(field.get_fields()) and not isinstance(field, NotField):
+        raise ValueError(
+            "{}: Got {}; Does not match any field option".format(
+                name, wrap_val(source_val)
+            )
+        )
     return deserialized
 
 
 def deserialize_map(map_field, source_val, name, camel_case_convert=False):
     if not isinstance(source_val, dict):
         raise TypeError(
-            "{}: expected a dict. Got {}".format(name, wrap_val(source_val))
+            "{}: Got {}; Expected a dictionary".format(name, wrap_val(source_val))
         )
     if map_field.items:
         key_field, value_field = map_field.items
@@ -308,13 +316,16 @@ def deserialize_single_field(
             camel_case_convert=camel_case_convert,
         )
     elif isinstance(field, StructureReference):
-        value = deserialize_structure_reference(
-            getattr(field, "_newclass"),
-            source_val,
-            keep_undefined=keep_undefined,
-            mapper=mapper,
-            camel_case_convert=camel_case_convert,
-        )
+        try:
+            value = deserialize_structure_reference(
+                getattr(field, "_newclass"),
+                source_val,
+                keep_undefined=keep_undefined,
+                mapper=mapper,
+                camel_case_convert=camel_case_convert,
+            )
+        except Exception as e:
+            raise ValueError("{}: Got {}; {}".format(name,  wrap_val(source_val), str(e))) from e
     elif isinstance(field, Map):
         value = deserialize_map(
             field, source_val, name, camel_case_convert=camel_case_convert
@@ -331,8 +342,8 @@ def deserialize_single_field(
             value = ty(**source_val)
     else:
         raise NotImplementedError(
-            "cannot deserialize field '{}' of type {} using value {}. Are you using non-Typepy class?".format(
-                name, field.__class__.__name__, wrap_val(source_val)
+            "{}: Got {}; Cannot deserialize value of type {}. Are you using non-Typepy class?".format(
+                name, wrap_val(source_val), field.__class__.__name__
             )
         )
     return value
@@ -372,6 +383,7 @@ def construct_fields_map(
     ignore_none=False,
 ):
     result = {}
+    errors = []
     for key, field in field_by_name.items():
         converted_key = _convert_to_camel_case_if_required(
             key, camel_case_convert=camel_case_convert
@@ -389,15 +401,33 @@ def construct_fields_map(
             process = True
         if process:
             sub_mapper = mapper.get(f"{converted_key}._mapper", {})
-            result[key] = deserialize_single_field(
-                field,
-                processed_input,
-                key,
-                mapper=sub_mapper,
-                keep_undefined=keep_undefined,
-                camel_case_convert=camel_case_convert,
-                ignore_none=ignore_none,
-            )
+            if Structure.failing_fast():
+                result[key] = deserialize_single_field(
+                    field,
+                    processed_input,
+                    key,
+                    mapper=sub_mapper,
+                    keep_undefined=keep_undefined,
+                    camel_case_convert=camel_case_convert,
+                    ignore_none=ignore_none,
+                )
+            else:
+                try:
+                    result[key] = deserialize_single_field(
+                        field,
+                        processed_input,
+                        key,
+                        mapper=sub_mapper,
+                        keep_undefined=keep_undefined,
+                        camel_case_convert=camel_case_convert,
+                        ignore_none=ignore_none,
+                    )
+                except (TypeError, ValueError) as ex:
+                    errors.append(ex)
+    if errors:
+        messages = json.dumps([str(e) for e in errors])
+        raise errors[0].__class__(messages) from errors[0]
+
     return result
 
 
@@ -598,10 +628,12 @@ def serialize_val(field_definition, name, val, mapper=None, camel_case_convert=F
                     )
                     for (k, v) in val.items()
                 }
-        if isinstance(field_definition.items, list):
+
+        items = getattr(field_definition, "items", None)
+        if isinstance(items, list):
             return [
                 serialize_val(
-                    field_definition.items[ind],
+                    items[ind],
                     name,
                     v,
                     mapper=mapper,
@@ -609,10 +641,10 @@ def serialize_val(field_definition, name, val, mapper=None, camel_case_convert=F
                 )
                 for ind, v in enumerate(val)
             ]
-        elif isinstance(field_definition.items, Field):
+        elif isinstance(items, Field):
             return [
                 serialize_val(
-                    field_definition.items,
+                    items,
                     name,
                     i,
                     mapper=mapper,

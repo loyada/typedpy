@@ -164,7 +164,7 @@ def test_anyof_field_failure():
     }
     with raises(ValueError) as excinfo:
         deserialize_structure(Example, data)
-    assert "any: [{'name': 'john', 'ssid': '123'}, {'name': 'paul'}] Did not match any field option" in str(
+    assert "any: Got [{'name': 'john', 'ssid': '123'}, {'name': 'paul'}]; Does not match any field option" in str(
         excinfo.value)
 
 
@@ -210,7 +210,7 @@ def test_oneof_field_failure2():
     data = {'a': 1, 'b': [1, []]}
     with raises(ValueError) as excinfo:
         deserialize_structure(Foo, data)
-    assert "b_1: Got []; Did not match any field option" in str(
+    assert "b_1: Got []; Does not match any field option" in str(
         excinfo.value)
 
 
@@ -257,7 +257,7 @@ def test_unsupported_field_err():
 
     with raises(NotImplementedError) as excinfo:
         deserialize_structure(UnsupportedStruct, {'unsupported': 1})
-    assert "cannot deserialize field 'unsupported'" in str(excinfo.value)
+    assert "unsupported: Got 1; Cannot deserialize value of type UnsupportedField" in str(excinfo.value)
 
 
 def test_allof_wrong_value_err():
@@ -266,7 +266,7 @@ def test_allof_wrong_value_err():
 
     with raises(ValueError) as excinfo:
         deserialize_structure(Foo, {'bar': 1})
-    assert "could not deserialize bar: value 1 did not match <Array>. reason: bar: must be list, set, or tuple; got 1" in str(
+    assert "bar: Got 1; Does not match <Array>. reason: bar: Got 1; Expected a list, set, or tuple" in str(
         excinfo.value)
 
 
@@ -288,7 +288,7 @@ def test_invalid_type_err():
     }
     with raises(ValueError) as excinfo:
         deserialize_structure(Example, data)
-    assert "could not deserialize all: value '' did not match <Number>. reason: all: Got ''; Expected a number" in str(
+    assert "all: Got ''; Does not match <Number>. reason: all: Got ''; Expected a number" in str(
         excinfo.value)
 
 
@@ -328,7 +328,7 @@ def test_invalid_type_for_array_err():
     }
     with raises(ValueError) as excinfo:
         deserialize_structure(Example, data)
-    assert "array: must be list, set, or tuple" in str(excinfo.value)
+    assert "array: Got 10; Expected a list, set, or tuple" in str(excinfo.value)
 
 
 def test_array_has_simple_item_in_definition():
@@ -389,7 +389,7 @@ def test_map_deserialization_type_err():
     }
     with raises(TypeError) as excinfo:
         deserialize_structure(Foo, data)
-    assert 'map: expected a dict' in str(excinfo.value)
+    assert 'map: Got 5; Expected a dictionary' in str(excinfo.value)
 
 
 def test_multifield_with_diffrerent_types():
@@ -407,7 +407,7 @@ def test_multifield_with_diffrerent_types_no_match():
 
     with raises(ValueError) as excinfo:
         deserialize_structure(Foo, {'any': [1, 2, 3]})
-    assert 'any: [1, 2, 3] Did not match any field option' in str(excinfo.value)
+    assert 'any: Got [1, 2, 3]; Does not match any field option' in str(excinfo.value)
 
 
 def test_unsupported_type_err():
@@ -424,7 +424,7 @@ def test_unsupported_type_err():
 
     with raises(NotImplementedError) as excinfo:
         deserialize_structure(Foo, source)
-    assert "cannot deserialize field 'bar' of type WrappedBar" in str(excinfo.value)
+    assert "bar: Got 'abc'; Cannot deserialize value of type WrappedBar." in str(excinfo.value)
 
 
 def test_single_int_deserialization():
@@ -538,7 +538,7 @@ def test_deserialize_set_err1():
     serialized = {'a': 3, 't': 4}
     with raises(ValueError) as excinfo:
         deserialize_structure(Foo, serialized)
-    assert "t: must be list, set, or tuple" in str(excinfo.value)
+    assert "t: Got 4; Expected a list, set, or tuple" in str(excinfo.value)
 
 
 def test_deserialize_set_err2():
@@ -718,6 +718,7 @@ def test_mapper_error1():
                               keep_undefined=False)
     assert "s: Got {'first': 'Joe', 'last': 'smith'}; Expected a string" in str(excinfo.value)
 
+
 def test_mapper_error1():
     class Foo(Structure):
         m = Map
@@ -759,7 +760,7 @@ def test_bad_path_in_mapper():
                               },
                               mapper=mapper,
                               keep_undefined=False)
-    assert "m: expected a dict. Got None" in str(excinfo.value)
+    assert "m: Got None; Expected a dictionary" in str(excinfo.value)
 
 
 def test_invalid_mapper_value():

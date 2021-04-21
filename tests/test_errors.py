@@ -162,7 +162,7 @@ def test_successful_deserialization_with_many_types(all_errors):
         ErrorInfo(field='any', problem='Does not match any field option',
                   value="[{'name': 'john', 'ssid': '123'}, 'xxx']"),
         ErrorInfo(field='embedded', problem="missing a required argument: 'a2'", value="{'a1': 8}"),
-        ErrorInfo(field='enum', problem='Expected be one of [1, 2, 3]', value='4'),
+        ErrorInfo(field='enum', problem='Expected one of 1, 2, 3', value='4'),
         ErrorInfo(field='people_0',
                   problem=[
                       ErrorInfo(field='ssid', problem='Expected a minimum length of 3', value="'13'")

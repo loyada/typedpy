@@ -1300,12 +1300,18 @@ class Enum(Field, metaclass=_EnumMeta):
         if self._is_enum:
             enum_names = {v.name for v in self._enum_class}
             if value not in enum_names and not isinstance(value, (self._enum_class,)):
+                enum_values = [r.name for r in self._enum_class]
+                if len(enum_values) < 11:
+                    raise ValueError(
+                        "{}: Got {}; Expected one of: {}".format(self._name, value, ", ".join(enum_values))
+                    )
                 raise ValueError(
                     "{}: Got {}; Expected a value of {}".format(self._name, value, self._enum_class)
                 )
 
         elif value not in self.values:
-            raise ValueError("{}: Got {}; Expected be one of {}".format(self._name, value, self.values))
+            raise ValueError("{}: Got {}; Expected one of {}".format(
+                self._name, value, ', '.join([str(v) for v in self.values])))
 
     def __set__(self, instance, value):
         self._validate(value)

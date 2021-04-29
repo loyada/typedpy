@@ -11,7 +11,7 @@ from typedpy.structures import (
     _get_all_fields_by_name,
     ADDITIONAL_PROPERTIES,
     REQUIRED_FIELDS,
-    IGNORE_NONE_VALUES,
+    IGNORE_NONE_VALUES, NoneField,
 )
 from typedpy.fields import (
     Field,
@@ -168,6 +168,7 @@ def deserialize_multifield_wrapper(
     deserialized = source_val
     found_previous_match = False
     failures = 0
+    err_messages = []
     for field_option in field.get_fields():
         try:
             ignore_none = getattr(field_option, IGNORE_NONE_VALUES, False)
@@ -198,6 +199,9 @@ def deserialize_multifield_wrapper(
             found_previous_match = True
         except Exception as e:
             failures += 1
+            err_messages.append("({}) Does not match {}. reason: {}".format(
+                len(err_messages) + 1,
+                field_option, str(e)))
             if isinstance(field, AllOf):
                 raise ValueError(
                     "{}: Got {}; Does not match {}. reason: {}".format(
@@ -206,8 +210,9 @@ def deserialize_multifield_wrapper(
                 ) from e
     if failures == len(field.get_fields()) and not isinstance(field, NotField):
         raise ValueError(
-            "{}: Got {}; Does not match any field option".format(
-                name, wrap_val(source_val)
+            "{}: Got {}; Does not match any field option: {}".format(
+                name, wrap_val(source_val),
+                ". ".join(err_messages)
             )
         )
     return deserialized
@@ -250,7 +255,7 @@ def deserialize_single_field(
     camel_case_convert=False,
     ignore_none=False,
 ):
-    if source_val is None and ignore_none:
+    if source_val is None and (ignore_none or isinstance(field, NoneField)):
         return source_val
     if isinstance(field, (Number, String, Enum, Boolean)):
         field._validate(source_val)
@@ -340,6 +345,8 @@ def deserialize_single_field(
             value = ty(*source_val)
         elif isinstance(source_val, dict):
             value = ty(**source_val)
+    elif isinstance(field, NoneField):
+        raise ValueError("{}: Got {}; Expected None".format(name,  wrap_val(source_val)))
     else:
         raise NotImplementedError(
             "{}: Got {}; Cannot deserialize value of type {}. Are you using non-Typepy class?".format(

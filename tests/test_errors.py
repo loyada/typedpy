@@ -132,7 +132,7 @@ class Example(Structure):
 """
 
 
-def test_successful_deserialization_with_many_types(all_errors):
+def test_unsuccessful_deserialization_with_many_types(all_errors):
     data = {
         'anything': {'a', 'b', 'c'},
         'i': 50,  # Error: > 10
@@ -159,7 +159,11 @@ def test_successful_deserialization_with_many_types(all_errors):
     expected_errors = [
         ErrorInfo(field='i', problem='Expected a maximum of 10', value='50'),
         ErrorInfo(field='s', problem='Expected a string', value='[]'),
-        ErrorInfo(field='any', problem='Does not match any field option',
+        ErrorInfo(field='any', problem="Does not match any field option:"
+                  " (1) Does not match <Array. Properties: items = <ClassReference: Person>>. reason: any_1: Expected "
+                  "a dictionary; Got 'xxx'. (2) Does not match <ClassReference: Person>."
+                                       " reason: any: Expected a dictionary; Got"
+                                       " [{'name': 'john', 'ssid': '123'}, 'xxx']",
                   value="[{'name': 'john', 'ssid': '123'}, 'xxx']"),
         ErrorInfo(field='embedded', problem="missing a required argument: 'a2'", value="{'a1': 8}"),
         ErrorInfo(field='enum', problem='Expected one of 1, 2, 3', value='4'),

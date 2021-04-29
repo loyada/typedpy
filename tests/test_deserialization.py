@@ -997,7 +997,7 @@ def test_deserialize_with_ignore_nones_deep():
         x = Integer(default=5)
         y = Integer
         _required = []
-        _ignore_none=True
+        _ignore_none = True
 
     class Foo(Structure):
         a = Integer
@@ -1041,3 +1041,17 @@ def test_convert_camel_case2():
     }
     res = Deserializer(target_class=Foo, camel_case_convert=True).deserialize(input_dict)
     assert res == Foo(first_name="joe", last_name="smith", age_years=5)
+
+
+def test_ignore_node_should_not_work_on_required_fields():
+    class Foo(Structure):
+        a = Integer
+        s = String
+        i = Integer
+        _required = ["s"]
+        _ignore_none = True
+
+    with raises(TypeError) as excinfo:
+        Deserializer(target_class=Foo).deserialize({"s": None, "a": None, "i": 1})
+    assert "s: Got None; Expected a string" in str(excinfo.value)
+    assert Deserializer(target_class=Foo).deserialize({"s": "x", "a": None, "i": 1}).a is None

@@ -122,15 +122,15 @@ class DateField(SerializableField):
         return value.strftime(self._date_format)
 
     def deserialize(self, value):
-        return datetime.strptime(value, self._date_format).date()
+        try:
+            return datetime.strptime(value, self._date_format).date()
+        except ValueError as ex:
+            raise ValueError("{}: Got {}; {}".format(self._name, wrap_val(value), str(ex))) from ex
 
     def __set__(self, instance, value):
         if isinstance(value, str):
-            try:
-                as_date = datetime.strptime(value, self._date_format).date()
-                super().__set__(instance, as_date)
-            except ValueError as ex:
-                raise ValueError("{}: Got {}; {}".format(self._name, wrap_val(value), str(ex))) from ex
+            as_date = self.deserialize(value)
+            super().__set__(instance, as_date)
         elif isinstance(value, datetime):
             super().__set__(instance, value.date())
         elif isinstance(value, date):
@@ -169,15 +169,15 @@ class DateTime(SerializableField):
         return value.strftime(self._datetime_format)
 
     def deserialize(self, value):
-        return datetime.strptime(value, self._datetime_format)
+        try:
+            return datetime.strptime(value, self._datetime_format)
+        except ValueError as ex:
+            raise ValueError("{}: Got {}; {}}".format(self._name, wrap_val(value), str(ex))) from ex
 
     def __set__(self, instance, value):
         if isinstance(value, str):
-            try:
-                as_datetime = datetime.strptime(value, self._datetime_format)
-                super().__set__(instance, as_datetime)
-            except ValueError as ex:
-                raise ValueError("{}: Got {}; {}}".format(self._name, wrap_val(value), str(ex))) from ex
+            as_datetime = self.deserialize(value)
+            super().__set__(instance, as_datetime)
         elif isinstance(value, datetime):
             super().__set__(instance, value)
         else:

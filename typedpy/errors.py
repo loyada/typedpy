@@ -34,7 +34,7 @@ _pattern_for_typepy_validation_2 = re.compile(r"^([a-zA-Z0-9_]+):\s(.*); Got (.*
 _pattern_for_typepy_validation_3 = re.compile(r"^([a-zA-Z0-9_]+):\s(.*)$")
 
 
-def standard_readable_error_for_typedpy_exception(e: Exception):
+def standard_readable_error_for_typedpy_exception(e: Exception, top_level=True):
     err_message = str(e)
     if Structure.failing_fast():
         return _standard_readable_error_for_typedpy_exception_internal(err_message)
@@ -42,7 +42,9 @@ def standard_readable_error_for_typedpy_exception(e: Exception):
         try:
             errs = json.loads(err_message)
             return [_standard_readable_error_for_typedpy_exception_internal(e) for e in errs]
-        except JSONDecodeError:
+        except JSONDecodeError as e:
+            if not top_level:
+                raise e
             return [_standard_readable_error_for_typedpy_exception_internal(err_message)]
 
 
@@ -50,7 +52,9 @@ def _standard_readable_error_for_typedpy_exception_internal(err_message: str):
     def try_expand(problem_str):
         if not Structure.failing_fast():
             try:
-                return standard_readable_error_for_typedpy_exception(Exception(problem_str))
+                return standard_readable_error_for_typedpy_exception(
+                    Exception(problem_str),
+                    top_level=False)
             except Exception:
                 pass
         return problem_str

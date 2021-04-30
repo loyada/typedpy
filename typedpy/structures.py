@@ -491,6 +491,7 @@ class StructMeta(type):
             list(set(bases_required + fields)) if bases_params else fields
         )
         required = cls_dict.get(REQUIRED_FIELDS, default_required)
+        setattr(clsobj, REQUIRED_FIELDS, list(set(bases_required + required)))
         additional_props = cls_dict.get(ADDITIONAL_PROPERTIES, True)
         sig = make_signature(clsobj._fields, required, additional_props, bases_params)
         setattr(clsobj, "__signature__", sig)

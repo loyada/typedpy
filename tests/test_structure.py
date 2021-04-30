@@ -345,3 +345,16 @@ def test_copy_with_overrides():
     assert trade_2.notional == 500
     trade_2.notional = 1000
     assert trade_2 == trade_1
+
+
+def test_defect_required_should_propagate_with_ignore_none():
+    class Foo(Structure):
+        a = Integer
+
+    class Bar(Foo):
+        s = String
+        _ignore_none = True
+
+    with raises(TypeError) as excinfo:
+        Bar(s="x", a=None)
+    assert "a: Got None; Expected a number" in str(excinfo.value)

@@ -1,5 +1,6 @@
 import re
 import json
+from json import JSONDecodeError
 
 from typedpy import ImmutableStructure, String, Structure, AnyOf, Array
 
@@ -38,8 +39,11 @@ def standard_readable_error_for_typedpy_exception(e: Exception):
     if Structure.failing_fast():
         return _standard_readable_error_for_typedpy_exception_internal(err_message)
     else:
-        errs = json.loads(err_message)
-        return [_standard_readable_error_for_typedpy_exception_internal(e) for e in errs]
+        try:
+            errs = json.loads(err_message)
+            return [_standard_readable_error_for_typedpy_exception_internal(e) for e in errs]
+        except JSONDecodeError:
+            return [_standard_readable_error_for_typedpy_exception_internal(err_message)]
 
 
 def _standard_readable_error_for_typedpy_exception_internal(err_message: str):

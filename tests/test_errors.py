@@ -174,3 +174,13 @@ def test_unsuccessful_deserialization_with_many_types(all_errors):
     ]
     for e in expected_errors:
         assert e in errs
+
+
+def test_missed_required(all_errors):
+    class Foo(Structure):
+        r: str
+
+    with raises(Exception) as ex:
+        deserialize_structure(Foo, {})
+    errs = standard_readable_error_for_typedpy_exception(ex.value)
+    assert errs[0].problem.startswith("missing a required argument: 'r'")

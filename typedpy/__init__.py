@@ -79,4 +79,3 @@ from typedpy.extfields import (
 )
 
 from typedpy.errors import standard_readable_error_for_typedpy_exception, ErrorInfo
-

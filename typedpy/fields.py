@@ -70,7 +70,8 @@ class StructureReference(Field):
         )
 
 
-    Important: Since Typedpy dynamically creates an internal class for it, this field cannot be pickled!
+    Important: Since Typedpy dynamically creates an internal class for it, this
+    field cannot be pickled!
     """
 
     counter = 0
@@ -83,7 +84,7 @@ class StructureReference(Field):
         super().__init__(kwargs)
 
     def __set__(self, instance, value):
-        if not (isinstance(value, (dict, Structure))):
+        if not isinstance(value, (dict, Structure)):
             raise TypeError(
                 "{}: Expected a dictionary or Structure; got {}".format(
                     self._name, value
@@ -203,7 +204,8 @@ class Integer(TypedField, Number):
 
 class DecimalNumber(Number, SerializableField):
     """
-    An extension of :class:`Number` for a Decimal. Accepts anything that can be converted to a Decimal.
+    An extension of :class:`Number` for a Decimal. Accepts anything that can be
+     converted to a Decimal.
     It converts the value to a Decimal.
     """
 
@@ -219,8 +221,6 @@ class DecimalNumber(Number, SerializableField):
 
     def serialize(self, value):
         return float(value)
-
-
 
 
 class StructureClass(TypedField):
@@ -285,7 +285,8 @@ class String(TypedField):
 
 class Function(Field):
     """
-    A function or method. Note that this can't be any callable (it can't be a class, for example), but a real function
+    A function or method. Note that this can't be any callable (it can't be a class,
+     for example), but a real function
     """
 
     _bound_method_type = type(Field().__init__)
@@ -364,7 +365,9 @@ class Positive(Number):
 
     def __set__(self, instance, value):
         if value <= 0:
-            raise ValueError("{}: Got {}; Expected a positive number".format(self._name, value))
+            raise ValueError(
+                "{}: Got {}; Expected a positive number".format(self._name, value)
+            )
         super().__set__(instance, value)
 
 
@@ -1308,15 +1311,22 @@ class Enum(Field, metaclass=_EnumMeta):
                 enum_values = [r.name for r in self._enum_class]
                 if len(enum_values) < 11:
                     raise ValueError(
-                        "{}: Got {}; Expected one of: {}".format(self._name, value, ", ".join(enum_values))
+                        "{}: Got {}; Expected one of: {}".format(
+                            self._name, value, ", ".join(enum_values)
+                        )
                     )
                 raise ValueError(
-                    "{}: Got {}; Expected a value of {}".format(self._name, value, self._enum_class)
+                    "{}: Got {}; Expected a value of {}".format(
+                        self._name, value, self._enum_class
+                    )
                 )
 
         elif value not in self.values:
-            raise ValueError("{}: Got {}; Expected one of {}".format(
-                self._name, value, ', '.join([str(v) for v in self.values])))
+            raise ValueError(
+                "{}: Got {}; Expected one of {}".format(
+                    self._name, value, ", ".join([str(v) for v in self.values])
+                )
+            )
 
     def __set__(self, instance, value):
         self._validate(value)
@@ -1362,7 +1372,11 @@ class Sized(Field):
 
     def __set__(self, instance, value):
         if len(value) > self.maxlen:
-            raise ValueError("{}: Got {}; Expected a length up to {}".format(self._name, value, self.maxlen))
+            raise ValueError(
+                "{}: Got {}; Expected a length up to {}".format(
+                    self._name, value, self.maxlen
+                )
+            )
         super().__set__(instance, value)
 
 
@@ -1636,7 +1650,7 @@ class ImmutableInteger(ImmutableField, Integer):
     pass
 
 
-class ImmutableFloat(ImmutableField, Float):
+class ImmutableFloat(ImmutableField, Float): # pylint: disable=
     """
     An immutable version of :class:`Float`
     """

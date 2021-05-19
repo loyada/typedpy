@@ -16,10 +16,10 @@ display_type_by_type = {
     "int": "an integer number",
     "str": "a text value",
     "float": "a decimal number",
-    "list": "an array"
+    "list": "an array",
 }
 
-_expected_class_pattern = re.compile("^Expected\s<class '(.*)'>$")
+_expected_class_pattern = re.compile(r"^Expected\s<class '(.*)'>$")
 
 
 def _transform_class_to_readable(problem: str):
@@ -41,11 +41,15 @@ def standard_readable_error_for_typedpy_exception(e: Exception, top_level=True):
     else:
         try:
             errs = json.loads(err_message)
-            return [_standard_readable_error_for_typedpy_exception_internal(e) for e in errs]
+            return [
+                _standard_readable_error_for_typedpy_exception_internal(e) for e in errs
+            ]
         except JSONDecodeError as e:
             if not top_level:
                 raise e
-            return [_standard_readable_error_for_typedpy_exception_internal(err_message)]
+            return [
+                _standard_readable_error_for_typedpy_exception_internal(err_message)
+            ]
 
 
 def _standard_readable_error_for_typedpy_exception_internal(err_message: str):
@@ -53,8 +57,8 @@ def _standard_readable_error_for_typedpy_exception_internal(err_message: str):
         if not Structure.failing_fast():
             try:
                 return standard_readable_error_for_typedpy_exception(
-                    Exception(problem_str),
-                    top_level=False)
+                    Exception(problem_str), top_level=False
+                )
             except Exception:
                 pass
         return problem_str
@@ -62,16 +66,16 @@ def _standard_readable_error_for_typedpy_exception_internal(err_message: str):
     match = _pattern_for_typepy_validation_1.match(err_message)
     if match:
         problem = _transform_class_to_readable(match.group(3))
-        return ErrorInfo(value=match.group(2),
-                         problem=try_expand(problem),
-                         field=match.group(1))
+        return ErrorInfo(
+            value=match.group(2), problem=try_expand(problem), field=match.group(1)
+        )
 
     match = _pattern_for_typepy_validation_2.match(err_message)
     if match:
         problem = _transform_class_to_readable(match.group(2))
-        return ErrorInfo(value=match.group(3),
-                         problem=try_expand(problem),
-                         field=match.group(1))
+        return ErrorInfo(
+            value=match.group(3), problem=try_expand(problem), field=match.group(1)
+        )
 
     match = _pattern_for_typepy_validation_3.match(err_message)
     if match:

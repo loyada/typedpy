@@ -1,3 +1,7 @@
+"""
+Additional types of fields: datefield, datetime, timestring, DateString,
+Hostname, etc.
+"""
 import json
 from datetime import datetime, date
 import re
@@ -32,7 +36,11 @@ class IPV4(String):
         ):
             super().__set__(instance, value)
         else:
-            raise ValueError("{}: Got {}; wrong format for IP version 4".format(self._name, wrap_val(value)))
+            raise ValueError(
+                "{}: Got {}; wrong format for IP version 4".format(
+                    self._name, wrap_val(value)
+                )
+            )
 
 
 class HostName(String):
@@ -44,11 +52,19 @@ class HostName(String):
 
     def __set__(self, instance, value):
         if not HostName._host_name_re.match(value):
-            raise ValueError("{}: Got {}; wrong format for hostname".format(self._name, wrap_val(value)))
+            raise ValueError(
+                "{}: Got {}; wrong format for hostname".format(
+                    self._name, wrap_val(value)
+                )
+            )
         components = value.split(".")
         for component in components:
             if len(component) > 63:
-                raise ValueError("{}: Got {}; wrong format for hostname".format(self._name, wrap_val(value)))
+                raise ValueError(
+                    "{}: Got {}; wrong format for hostname".format(
+                        self._name, wrap_val(value)
+                    )
+                )
         super().__set__(instance, value)
 
 
@@ -73,7 +89,9 @@ class DateString(TypedField):
         try:
             datetime.strptime(value, self._format)
         except ValueError as ex:
-            raise ValueError("{}: Got {}; {}".format(self._name, wrap_val(value), ex.args[0]))
+            raise ValueError(
+                "{}: Got {}; {}".format(self._name, wrap_val(value), ex.args[0])
+            )
 
 
 class TimeString(TypedField):
@@ -88,7 +106,9 @@ class TimeString(TypedField):
         try:
             datetime.strptime(value, "%H:%M:%S")
         except ValueError as ex:
-            raise ValueError("{}: Got {}; {}".format(self._name, wrap_val(value), ex.args[0]))
+            raise ValueError(
+                "{}: Got {}; {}".format(self._name, wrap_val(value), ex.args[0])
+            )
 
 
 class DateField(SerializableField):
@@ -125,7 +145,9 @@ class DateField(SerializableField):
         try:
             return datetime.strptime(value, self._date_format).date()
         except ValueError as ex:
-            raise ValueError("{}: Got {}; {}".format(self._name, wrap_val(value), str(ex))) from ex
+            raise ValueError(
+                "{}: Got {}; {}".format(self._name, wrap_val(value), str(ex))
+            ) from ex
 
     def __set__(self, instance, value):
         if isinstance(value, str):
@@ -136,7 +158,11 @@ class DateField(SerializableField):
         elif isinstance(value, date):
             super().__set__(instance, value)
         else:
-            raise TypeError("{}: Got {}; Expected date, datetime, or str".format(self._name, wrap_val(value)))
+            raise TypeError(
+                "{}: Got {}; Expected date, datetime, or str".format(
+                    self._name, wrap_val(value)
+                )
+            )
 
 
 class DateTime(SerializableField):
@@ -172,7 +198,9 @@ class DateTime(SerializableField):
         try:
             return datetime.strptime(value, self._datetime_format)
         except ValueError as ex:
-            raise ValueError("{}: Got {}; {}".format(self._name, wrap_val(value), str(ex))) from ex
+            raise ValueError(
+                "{}: Got {}; {}".format(self._name, wrap_val(value), str(ex))
+            ) from ex
 
     def __set__(self, instance, value):
         if isinstance(value, str):
@@ -181,4 +209,8 @@ class DateTime(SerializableField):
         elif isinstance(value, datetime):
             super().__set__(instance, value)
         else:
-            raise TypeError("{}: Got {}; Expected datetime or str".format(self._name, wrap_val(value)))
+            raise TypeError(
+                "{}: Got {}; Expected datetime or str".format(
+                    self._name, wrap_val(value)
+                )
+            )

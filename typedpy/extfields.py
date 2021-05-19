@@ -3,7 +3,7 @@ from datetime import datetime, date
 import re
 
 from typedpy.commons import wrap_val
-from typedpy.structures import Field, TypedField
+from typedpy.structures import TypedField
 from typedpy.fields import SerializableField, String
 
 EmailAddress = String(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]+$)")
@@ -172,7 +172,7 @@ class DateTime(SerializableField):
         try:
             return datetime.strptime(value, self._datetime_format)
         except ValueError as ex:
-            raise ValueError("{}: Got {}; {}}".format(self._name, wrap_val(value), str(ex))) from ex
+            raise ValueError("{}: Got {}; {}".format(self._name, wrap_val(value), str(ex))) from ex
 
     def __set__(self, instance, value):
         if isinstance(value, str):

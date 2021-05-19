@@ -201,7 +201,7 @@ class Integer(TypedField, Number):
         Number._validate_static(self, value)
 
 
-class DecimalNumber(Number):
+class DecimalNumber(Number, SerializableField):
     """
     An extension of :class:`Number` for a Decimal. Accepts anything that can be converted to a Decimal.
     It converts the value to a Decimal.
@@ -216,6 +216,11 @@ class DecimalNumber(Number):
             raise ValueError("{}: {}".format(self._name, ex.args[0]))
 
         super().__set__(instance, value)
+
+    def serialize(self, value):
+        return float(value)
+
+
 
 
 class StructureClass(TypedField):

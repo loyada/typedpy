@@ -1,6 +1,7 @@
 import enum
 import pickle
 import sys
+from decimal import Decimal
 
 python_ver_atleast_than_37 = sys.version_info[0:2] > (3, 6)
 if python_ver_atleast_than_37:
@@ -11,7 +12,7 @@ from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, serialize, Set, AnyOf, DateField, Anything, Map, Function, PositiveInt
+    Float, serialize, Set, AnyOf, DateField, Anything, Map, Function, PositiveInt, DecimalNumber
 from typedpy.extfields import DateTime
 from typedpy import serialize_field
 from typedpy.serialization import FunctionCall
@@ -620,3 +621,14 @@ def test_convert_camel_case():
             "ageYears": 5
     }
 
+
+def test_serialization_decimal():
+    def quantize(d):
+        return d.quantize(Decimal('1.00000'))
+
+    class Foo(Structure):
+        a = DecimalNumber
+        s = String
+    foo = Foo(a=Decimal('1.11'), s="x")
+    result = Serializer(source=foo).serialize()
+    assert quantize(Decimal(result['a'])) == quantize(Decimal(1.11))

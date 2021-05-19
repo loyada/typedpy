@@ -358,3 +358,32 @@ def test_defect_required_should_propagate_with_ignore_none():
     with raises(TypeError) as excinfo:
         Bar(s="x", a=None)
     assert "a: Got None; Expected a number" in str(excinfo.value)
+
+
+def test_defect_multiple_inheritance_with_optional_1():
+    class Foo1(Structure):
+        a = Integer(default=1)
+
+    class Foo2(Structure):
+        b = Integer
+
+    class Bar1(Foo1, Foo2): pass
+    class Bar2(Foo2, Foo1): pass
+
+    Bar1(b=1)
+    Bar2(b=1)
+
+
+def test_defect_multiple_inheritance_with_optional_2():
+    class Foo1(Structure):
+        a = Integer
+        _optional = ['a']
+
+    class Foo2(Structure):
+        b = Integer
+
+    class Bar1(Foo1, Foo2): pass
+    class Bar2(Foo2, Foo1): pass
+
+    Bar1(b=1)
+    Bar2(b=1)

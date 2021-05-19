@@ -10,6 +10,7 @@ from inspect import Signature, Parameter, signature
 import sys
 import typing
 import hashlib
+import inspect
 
 from typing import get_type_hints, Iterable
 
@@ -49,7 +50,7 @@ class ImmutableMixin:
             raise ValueError("{}: Field is immutable".format(name))
 
 
-def make_signature(names, required, additional_properties, bases_params_by_name):
+def make_signature(names, required, additional_properties, bases_params_by_name, bases_required):
     """
     Make a signature that will be used for the constructor of the Structure
     :param names: names of the properties
@@ -71,7 +72,7 @@ def make_signature(names, required, additional_properties, bases_params_by_name)
         [
             (name, param)
             for (name, param) in bases_params_by_name.items()
-            if name in required
+            if (name in required or name in bases_required)
         ]
     )
     non_default_args = list(
@@ -89,7 +90,7 @@ def make_signature(names, required, additional_properties, bases_params_by_name)
         [
             (name, param)
             for (name, param) in bases_params_by_name.items()
-            if name not in required
+            if (name not in required and name not in bases_required)
         ]
     )
     default_args = list({**default_args_for_bases, **default_args_for_class}.values())
@@ -493,7 +494,8 @@ class StructMeta(type):
         required = cls_dict.get(REQUIRED_FIELDS, default_required)
         setattr(clsobj, REQUIRED_FIELDS, list(set(bases_required + required)))
         additional_props = cls_dict.get(ADDITIONAL_PROPERTIES, True)
-        sig = make_signature(clsobj._fields, required, additional_props, bases_params)
+        sig = make_signature(clsobj._fields, required, additional_props, bases_params,
+                             bases_required=bases_required)
         setattr(clsobj, "__signature__", sig)
         return clsobj
 

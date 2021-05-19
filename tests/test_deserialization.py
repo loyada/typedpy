@@ -1,13 +1,14 @@
 import enum
 import operator
 from collections import OrderedDict, deque
+from decimal import Decimal
 
 from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
     Float, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything, serialize, NotField, \
-    SerializableField, Deque, PositiveInt
+    SerializableField, Deque, PositiveInt, DecimalNumber
 from typedpy.serialization import FunctionCall
 from typedpy.serialization_wrappers import Deserializer
 
@@ -1055,3 +1056,15 @@ def test_ignore_node_should_not_work_on_required_fields():
         Deserializer(target_class=Foo).deserialize({"s": None, "a": None, "i": 1})
     assert "s: Got None; Expected a string" in str(excinfo.value)
     assert Deserializer(target_class=Foo).deserialize({"s": "x", "a": None, "i": 1}).a is None
+
+
+def test_deserialization_decimal():
+    def quantize(d):
+        return d.quantize(Decimal('1.00000'))
+
+    class Foo(Structure):
+        a = DecimalNumber
+        s = String
+
+    foo = Deserializer(target_class=Foo).deserialize({"s": "x", "a": 1.11})
+    assert quantize(foo.a) == quantize(Decimal('1.11'))

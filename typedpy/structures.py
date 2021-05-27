@@ -14,6 +14,7 @@ import hashlib
 from typing import get_type_hints, Iterable
 
 from typedpy.commons import wrap_val, _is_sunder, _is_dunder
+from typedpy.utility import type_is_generic
 
 REQUIRED_FIELDS = "_required"
 DEFAULTS = "_defaults"
@@ -24,10 +25,6 @@ MUST_BE_UNIQUE = "_must_be_unique"
 IGNORE_NONE_VALUES = "_ignore_none"
 MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS = 100000
 
-py_version = sys.version_info[0:2]
-python_ver_36 = py_version == (3, 6)
-python_ver_atleast_than_37 = py_version > (3, 6)
-python_ver_atleast_39 = py_version >= (3, 9)
 
 
 class ImmutableMixin:
@@ -552,25 +549,6 @@ def convert_basic_types(v):
     return type_mapping.get(v, None)
 
 
-def _type_is_generic(v):
-    class Foo:
-        pass
-
-    origin = getattr(v, "__origin__", None)
-    typing_base = getattr(typing, "_TypingBase", Foo)
-    generic_alias = getattr(typing, "_GenericAlias", Foo)
-    special_generic_alias = getattr(typing, "_SpecialGenericAlias", Foo)
-    return (
-        (python_ver_36 and isinstance(v, typing_base))
-        or (
-            python_ver_atleast_than_37
-            and isinstance(v, (generic_alias, special_generic_alias))
-        )
-        or (
-            python_ver_atleast_39
-            and origin in {list, dict, tuple, set, frozenset, deque, typing.Union}
-        )
-    )
 
 
 def get_typing_lib_info(v):
@@ -579,7 +557,7 @@ def get_typing_lib_info(v):
     if v == type(None):
         return NoneField()
 
-    if not _type_is_generic(v):
+    if not type_is_generic(v):
         return convert_basic_types(v)
     origin = getattr(v, "__origin__", None)
     mapped_type = convert_basic_types(origin)
@@ -618,7 +596,7 @@ def add_annotations_to_class_dict(cls_dict):
         for k, v in annotations.items():
             first_arg = getattr(v, "__args__", [0])[0]
             mros = getattr(first_arg, "__mro__", getattr(v, "__mro__", []))
-            if not _type_is_generic(v) and (
+            if not type_is_generic(v) and (
                 isinstance(v, (Field, Structure)) or Field in mros or Structure in mros
             ):
                 if k in cls_dict:
@@ -875,21 +853,37 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     def get_all_fields_by_name(cls):
         return _get_all_fields_by_name(cls)
 
-    def __contains__(self, item):
+    def _is_wrapper(self):
         field_by_name = _get_all_fields_by_name(self.__class__)
         field_names = list(field_by_name.keys())
         props = self.__class__.__dict__
         required = props.get(REQUIRED_FIELDS, field_names)
         additional_props = props.get(ADDITIONAL_PROPERTIES, True)
-        if (
-            len(field_names) == 1
-            and required == field_names
-            and additional_props is False
-        ):
+        return (
+                len(field_names) == 1
+                and required == field_names
+                and additional_props is False
+        )
+
+    def __contains__(self, item):
+        if self._is_wrapper():
+            field_by_name = _get_all_fields_by_name(self.__class__)
+            field_names = list(field_by_name.keys())
             return item in getattr(self, field_names[0], {})
 
         raise TypeError(
             "{} does not support this operator".format(self.__class__.__name__)
+        )
+
+    def __iter__(self):
+        field_by_name = _get_all_fields_by_name(self.__class__)
+        field_names = list(field_by_name.keys())
+        val = getattr(self, field_names[0], {})
+
+        if self._is_wrapper() and hasattr(val, '__iter__'):
+            return iter(val)
+        raise TypeError(
+            "{} is not a wrapper of an iterable".format(self.__class__.__name__)
         )
 
     def shallow_clone_with_overrides(self, **kw):

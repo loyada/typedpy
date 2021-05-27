@@ -75,6 +75,28 @@ def test_field_by_name_fins_annotated_fields():
         assert f in field_names
 
 
+def test_iterating_over_wrapped_structure():
+    class Foo(Structure):
+        wrapped: list[str]
+        _additionalProperties = False
+
+    foo = Foo(wrapped=["x", "y", "z"])
+    assert list(foo) == foo.wrapped
+
+
+def test_iterating_over_wrapped_structure_err():
+    class Foo(Structure):
+        wrapped: int
+        _additionalProperties = False
+
+    foo = Foo(wrapped=4)
+    with raises(TypeError) as excinfo:
+        assert list(foo) == foo.wrapped
+    assert "Foo is not a wrapper of an iterable" in str(excinfo.value)
+
+
+
+
 def test_optional_fields_required_overrides1():
     class Trade(Structure):
         venue: Enum[Venue]

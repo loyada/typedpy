@@ -814,6 +814,9 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 props.append("{} = {}".format(k, strv))
         return "<Instance of {}. Properties: {}>".format(name, ", ".join(props))
 
+    def __repr__(self):
+        return self.__str__()
+
     def __eq__(self, other):
         if self.__class__ != other.__class__:
             return False

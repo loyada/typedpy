@@ -11,7 +11,8 @@ from typedpy.structures import (
     _get_all_fields_by_name,
     ADDITIONAL_PROPERTIES,
     REQUIRED_FIELDS,
-    IGNORE_NONE_VALUES, NoneField,
+    IGNORE_NONE_VALUES,
+    NoneField,
 )
 from typedpy.fields import (
     Field,
@@ -50,7 +51,9 @@ def deserialize_list_like(
     camel_case_convert=False,
 ):
     if not isinstance(value, (list, tuple, set)):
-        raise ValueError("{}: Got {}; Expected a list, set, or tuple".format(name, value))
+        raise ValueError(
+            "{}: Got {}; Expected a list, set, or tuple".format(name, value)
+        )
 
     values = []
     items = field.items
@@ -199,9 +202,11 @@ def deserialize_multifield_wrapper(
             found_previous_match = True
         except Exception as e:
             failures += 1
-            err_messages.append("({}) Does not match {}. reason: {}".format(
-                len(err_messages) + 1,
-                field_option, str(e)))
+            err_messages.append(
+                "({}) Does not match {}. reason: {}".format(
+                    len(err_messages) + 1, field_option, str(e)
+                )
+            )
             if isinstance(field, AllOf):
                 raise ValueError(
                     "{}: Got {}; Does not match {}. reason: {}".format(
@@ -211,8 +216,7 @@ def deserialize_multifield_wrapper(
     if failures == len(field.get_fields()) and not isinstance(field, NotField):
         raise ValueError(
             "{}: Got {}; Does not match any field option: {}".format(
-                name, wrap_val(source_val),
-                ". ".join(err_messages)
+                name, wrap_val(source_val), ". ".join(err_messages)
             )
         )
     return deserialized
@@ -330,7 +334,9 @@ def deserialize_single_field(
                 camel_case_convert=camel_case_convert,
             )
         except Exception as e:
-            raise ValueError("{}: Got {}; {}".format(name,  wrap_val(source_val), str(e))) from e
+            raise ValueError(
+                "{}: Got {}; {}".format(name, wrap_val(source_val), str(e))
+            ) from e
     elif isinstance(field, Map):
         value = deserialize_map(
             field, source_val, name, camel_case_convert=camel_case_convert
@@ -346,7 +352,7 @@ def deserialize_single_field(
         elif isinstance(source_val, dict):
             value = ty(**source_val)
     elif isinstance(field, NoneField):
-        raise ValueError("{}: Got {}; Expected None".format(name,  wrap_val(source_val)))
+        raise ValueError("{}: Got {}; Expected None".format(name, wrap_val(source_val)))
     else:
         raise NotImplementedError(
             "{}: Got {}; Cannot deserialize value of type {}. Are you using non-Typepy class?".format(
@@ -513,9 +519,10 @@ def deserialize_structure_internal(
             "{}: Expected a dictionary; Got {}".format(name, wrap_val(the_dict))
         )
 
-    converted_snake_case_if_required = {k: _convert_to_snake_case_if_required(
-                    k, camel_case_convert=camel_case_convert
-                ) for k in the_dict}
+    converted_snake_case_if_required = {
+        k: _convert_to_snake_case_if_required(k, camel_case_convert=camel_case_convert)
+        for k in the_dict
+    }
 
     kwargs = dict(
         [
@@ -524,7 +531,8 @@ def deserialize_structure_internal(
                 v,
             )
             for k, v in the_dict.items()
-            if converted_snake_case_if_required[k] not in field_by_name and keep_undefined
+            if converted_snake_case_if_required[k] not in field_by_name
+            and keep_undefined
         ]
     )
     kwargs.update(

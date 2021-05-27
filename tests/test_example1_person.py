@@ -117,6 +117,14 @@ def test_del_non_mandatory():
     assert 'name' not in p.__dict__
 
 
+def test_repr():
+    p1 = Person(name="aaa", ssid="abc", num=10, foo={'a': 'aaa', 'b': {'c': 10, 'd': 1}})
+    p2 = Person(name="aaa", ssid="abc", num=10, foo={'a': 'aaa', 'b': {'c': 99, 'd': 1}})
+    with pytest.raises(AssertionError) as excinfo:
+        assert p1 == p2
+    assert 'Instance of Person. Properties: foo = <Instance of Structure. Properties:' in str(excinfo.value)
+
+
 def test_defaults():
     p = Person(ssid="abc")
     assert p.foo is None

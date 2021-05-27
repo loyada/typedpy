@@ -57,7 +57,7 @@ class Deserializer(Structure):
 
     target_class = StructureClass
     mapper = Map[String, OneOf[String, FunctionCall, Map]]
-    camel_case_convert = Boolean(default = False)
+    camel_case_convert = Boolean(default=False)
 
     _required = ["target_class"]
 

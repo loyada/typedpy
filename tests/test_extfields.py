@@ -22,3 +22,8 @@ def test_datefield_wrong_type():
 def test_date_wrong_type():
     with raises(TypeError):
         Example(the_time=12122020)
+
+
+def test_datatime():
+    e = Example(the_time= datetime.now())
+    print(e.the_time)

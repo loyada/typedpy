@@ -75,6 +75,7 @@ def test_field_by_name_fins_annotated_fields():
         assert f in field_names
 
 
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_iterating_over_wrapped_structure():
     class Foo(Structure):
         wrapped: list[str]

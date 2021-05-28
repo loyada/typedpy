@@ -4,7 +4,14 @@ from collections import deque
 from .commons import python_ver_36, python_ver_atleast_39, python_ver_atleast_than_37
 
 
+
 def type_is_generic(v):
+    """
+    Return whether or not the given type is a "standard generic",
+    such as list[int], List[int], dict[int, str]
+    :param v: the type
+    :return: True if it is a generic, False otherwise
+    """
     class Foo:
         pass
 
@@ -26,6 +33,12 @@ def type_is_generic(v):
 
 
 def get_list_type(the_type):
+    """
+    If the_type is a generic list type (e.g. list[int]), returns a Tuple
+    of (list, <the internal type>). otherwise throws a TypeError
+    :param the_type: a type that is supposed to be a "generic list", such as list[str]
+    :return: a tuple of (list, <the internal type>)
+    """
     if type_is_generic(the_type):
         origin = getattr(the_type, "__origin__", None)
         if origin == list:

@@ -15,6 +15,7 @@ def test_get_list_type_valid_err():
     with raises(TypeError):
         get_list_type(int)
 
+
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_is_generic_yes():
     assert type_is_generic(dict[int, int])

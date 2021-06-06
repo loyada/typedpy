@@ -7,7 +7,7 @@ from pytest import raises
 
 from typedpy import Structure, DecimalNumber, PositiveInt, String, Enum, Field, Integer, Map, Array, AnyOf, NoneField, \
     DateField, DateTime
-from typedpy.structures import FinalStructure, unique, MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
+from typedpy.structures import FinalStructure, ImmutableStructure, unique, MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
 
 
 class Venue(enum.Enum):
@@ -85,6 +85,45 @@ def test_iterating_over_wrapped_structure():
     assert list(foo) == foo.wrapped
 
 
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_iterating_over_wrapped_structure_map():
+    class Foo(Structure):
+        wrapped: Map[str, int]
+        _additionalProperties = False
+
+    foo = Foo(wrapped={"x": 2, "y": 3, "z": 4})
+    assert list(foo) == ["x", "y", "z"]
+
+
+def test_cast():
+    class Foo(Structure):
+        a: int
+        b: int
+
+    class Bar(Foo, ImmutableStructure):
+        s: typing.Optional[str]
+
+    bar = Bar(a=1, b=2, s="xyz")
+    foo: Foo = bar.cast_to(Foo)
+    assert foo == Foo(a=1, b=2)
+    assert foo.cast_to(Bar) == Bar(a=1, b=2)
+
+
+def test_cast_invalid():
+    class Foo(Structure):
+        a: int
+        b: int
+
+    class Bar(Foo, ImmutableStructure):
+        s: str
+
+    foo = Foo(a=1, b=2)
+    with raises(TypeError):
+        foo.cast_to(Bar)
+    with raises(TypeError):
+        foo.cast_to(DateTime)
+
+
 def test_iterating_over_wrapped_structure_err():
     class Foo(Structure):
         wrapped: int
@@ -94,8 +133,6 @@ def test_iterating_over_wrapped_structure_err():
     with raises(TypeError) as excinfo:
         assert list(foo) == foo.wrapped
     assert "Foo is not a wrapper of an iterable" in str(excinfo.value)
-
-
 
 
 def test_optional_fields_required_overrides1():
@@ -391,6 +428,7 @@ def test_defect_multiple_inheritance_with_optional_1():
         b = Integer
 
     class Bar1(Foo1, Foo2): pass
+
     class Bar2(Foo2, Foo1): pass
 
     Bar1(b=1)
@@ -406,6 +444,7 @@ def test_defect_multiple_inheritance_with_optional_2():
         b = Integer
 
     class Bar1(Foo1, Foo2): pass
+
     class Bar2(Foo2, Foo1): pass
 
     Bar1(b=1)

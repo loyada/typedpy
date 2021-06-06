@@ -233,7 +233,7 @@ Other Magic Methods Support
 ===========================
 Typepy supports the following operations for structure instances:
 
-* If your Structure is a wrapper for a collection, you can ask if an item is in it:
+* If your Structure is a wrapper for a collection, you can ask if an item is in it, or iterate directly over it:
 
 .. code-block:: python
 
@@ -241,9 +241,10 @@ Typepy supports the following operations for structure instances:
         s = Map[String, Anything]
         _additionalProperties = False
 
-    f = Foo(s={'xxx': 123, 'yyy': 234, 'zzz': 'zzz'})
-    assert 'xxx' in f
-    assert 123 not in f
+    foo = Foo(s={'xxx': 123, 'yyy': 234, 'zzz': 'zzz'})
+    assert 'xxx' in foo
+    assert 123 not in foo
+    assert [x[0] for x in foo] == ["x", "y", "z"]
 
 
 * Hash functions
@@ -260,6 +261,13 @@ Typepy supports the following operations for structure instances:
 
     assert not Example()
     assert Example(i=5)
+
+
+* cast_to - create a copy (shallow for a regular Structure, deep for ImmutableStructure) of the structure, casted
+  to a given class, that must be a subclass of Structure and a subclass/superclass of the current structure.
+  This is different from the standard "cast" of Python since it actually creates a shallow copy of that type.
+  When you cast to a superclass, be aware that only the fields defined in the superclass will be populated.
+
 
 
 Cloning

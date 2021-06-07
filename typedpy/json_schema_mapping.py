@@ -275,7 +275,7 @@ def write_code_from_schema(schema, definitions_schema, filename, class_name):
         fout.write("\n")
 
 
-class Mapper(object):
+class Mapper:
     def __init__(self, value):
         self.value = value
 
@@ -324,7 +324,7 @@ class NumberMapper(Mapper):
             "maximum": value.maximum,
             "exclusiveMaximum": value.exclusiveMaximum,
         }
-        return dict([(k, v) for k, v in params.items() if v is not None])
+        return {k: v for k, v in params.items() if v is not None}
 
 
 class IntegerMapper(NumberMapper):
@@ -371,16 +371,16 @@ class StringMapper(Mapper):
             "maxLength": value.maxLength,
             "pattern": value.pattern,
         }
-        return dict([(k, v) for k, v in params.items() if v is not None])
+        return {k: v for k, v in params.items() if v is not None}
 
 
 class DateStringMapper(Mapper):
-    def to_schema(self, definitions):
+    def to_schema(self, definitions):  # pylint: disable=no-self-use
         params = {
             "type": "string",
             "pattern": r"^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$",
         }
-        return dict([(k, v) for k, v in params.items() if v is not None])
+        return {k: v for k, v in params.items() if v is not None}
 
 
 class ArrayMapper(Mapper):
@@ -420,7 +420,7 @@ class ArrayMapper(Mapper):
                 "minItems": value.minItems,
                 "items": convert_to_schema(value.items, definitions),
             }
-        return dict([(k, v) for k, v in params.items() if v is not None])
+        return {k: v for k, v in params.items() if v is not None}
 
 
 class EnumMapper(Mapper):
@@ -433,10 +433,10 @@ class EnumMapper(Mapper):
 
     def to_schema(self, definitions):
         params = {"enum": self.value.values}
-        return dict([(k, v) for k, v in params.items() if v is not None])
+        return {k: v for k, v in params.items() if v is not None}
 
 
-class MultiFieldMapper(object):
+class MultiFieldMapper:
     @staticmethod
     def get_paramlist_from_schema(schema, definitions):
         items = list(schema.values())[0]

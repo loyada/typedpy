@@ -44,9 +44,9 @@ def standard_readable_error_for_typedpy_exception(e: Exception, top_level=True):
             return [
                 _standard_readable_error_for_typedpy_exception_internal(e) for e in errs
             ]
-        except JSONDecodeError as e:
+        except JSONDecodeError as ex:
             if not top_level:
-                raise e
+                raise ex
             return [
                 _standard_readable_error_for_typedpy_exception_internal(err_message)
             ]

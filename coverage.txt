@@ -1,12 +1,14 @@
-Name                                Stmts   Miss Branch BrPart  Cover   Missing
--------------------------------------------------------------------------------
-typedpy/__init__.py                     6      0      0      0   100%
-typedpy/commons.py                      2      0      0      0   100%
-typedpy/extfields.py                   77      0     19      0   100%
-typedpy/fields.py                     740      4    240      9    99%   37, 40, 305->exit, 322->exit, 566->exit, 778->777, 1036->1037, 1037, 1129->1138, 1142->1143, 1143, 1444->exit, 1577->1579
-typedpy/json_schema_mapping.py        183      1     63      0    99%   347
-typedpy/serialization.py              235      1    150      2    99%   221->222, 222, 223->231
-typedpy/serialization_wrappers.py      37      0     20      2    96%   141->exit, 143->exit
-typedpy/structures.py                 404      5    196      7    98%   451->454, 454, 470->498, 480->471, 490->491, 491, 603->604, 604, 625->626, 626, 632->633, 633
--------------------------------------------------------------------------------
-TOTAL                                1684     11    688     20    99%
+Name                                Stmts   Miss Branch BrPart  Cover
+---------------------------------------------------------------------
+typedpy/__init__.py                     8      0      0      0   100%
+typedpy/commons.py                     11      0      0      0   100%
+typedpy/errors.py                      52      0     16      0   100%
+typedpy/extfields.py                   84      2     19      0    98%
+typedpy/fields.py                     744      5    250     12    98%
+typedpy/json_schema_mapping.py        183      1     63      0    99%
+typedpy/serialization.py              277      2    174      2    99%
+typedpy/serialization_wrappers.py      38      0     20      2    97%
+typedpy/structures.py                 512      5    254     10    98%
+typedpy/utility.py                     19      0      6      2    92%
+---------------------------------------------------------------------
+TOTAL                                1928     15    802     28    98%

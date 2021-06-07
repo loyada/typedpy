@@ -4,7 +4,6 @@ from collections import deque
 from .commons import python_ver_36, python_ver_atleast_39, python_ver_atleast_than_37
 
 
-
 def type_is_generic(v):
     """
     Return whether or not the given type is a "standard generic",
@@ -12,6 +11,7 @@ def type_is_generic(v):
     :param v: the type
     :return: True if it is a generic, False otherwise
     """
+
     class Foo:
         pass
 

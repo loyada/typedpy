@@ -91,7 +91,7 @@ class DateString(TypedField):
         except ValueError as ex:
             raise ValueError(
                 "{}: Got {}; {}".format(self._name, wrap_val(value), ex.args[0])
-            )
+            ) from ex
 
 
 class TimeString(TypedField):
@@ -108,7 +108,7 @@ class TimeString(TypedField):
         except ValueError as ex:
             raise ValueError(
                 "{}: Got {}; {}".format(self._name, wrap_val(value), ex.args[0])
-            )
+            ) from ex
 
 
 class DateField(SerializableField):

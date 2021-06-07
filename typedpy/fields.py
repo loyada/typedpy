@@ -34,10 +34,10 @@ class SerializableField(Field):
     These methods are not being used for pickling.
     """
 
-    def serialize(self, value):
+    def serialize(self, value):  # pylint: disable=no-self-use
         return value
 
-    def deserialize(self, value):
+    def deserialize(self, value):  # pylint: disable=no-self-use
         return value
 
 
@@ -143,7 +143,6 @@ class Number(Field):
         self.exclusiveMaximum = exclusiveMaximum
         super().__init__(*args, **kwargs)
 
-    @staticmethod
     def _validate_static(self, value):
         def is_number(val):
             return isinstance(val, (float, int, Decimal))
@@ -175,11 +174,10 @@ class Number(Field):
                         err_prefix(), self.maximum
                     )
                 )
-            else:
-                if self.maximum < value:
-                    raise ValueError(
-                        "{}Expected a maximum of {}".format(err_prefix(), self.maximum)
-                    )
+            if self.maximum < value:
+                raise ValueError(
+                    "{}Expected a maximum of {}".format(err_prefix(), self.maximum)
+                )
 
     def _validate(self, value):
         Number._validate_static(self, value)
@@ -213,9 +211,9 @@ class DecimalNumber(Number, SerializableField):
         try:
             value = Decimal(value)
         except TypeError as ex:
-            raise TypeError("{}: {}".format(self._name, ex.args[0]))
+            raise TypeError("{}: {}".format(self._name, ex.args[0])) from ex
         except InvalidOperation as ex:
-            raise ValueError("{}: {}".format(self._name, ex.args[0]))
+            raise ValueError("{}: {}".format(self._name, ex.args[0])) from ex
 
         super().__set__(instance, value)
 
@@ -254,7 +252,6 @@ class String(TypedField):
     def _validate(self, value):
         String._validate_static(self, value)
 
-    @staticmethod
     def _validate_static(self, value):
         def err_prefix():
             return (
@@ -608,12 +605,12 @@ class _DequeStruct(deque, ImmutableMixin, _IteratorProxyMixin):
     def rotate(self, n: int) -> None:
         self._raise_if_immutable()
         # no need to validate again
-        super(_DequeStruct, self).rotate(n)
+        super().rotate(n)
 
     def reverse(self) -> None:
         self._raise_if_immutable()
         # no need to validate again
-        super(_DequeStruct, self).reverse()
+        super().reverse()
 
     def __getstate__(self):
         return {
@@ -690,16 +687,10 @@ class _DictStruct(dict, ImmutableMixin):
         )
 
     def items(self):
-        return (
-            (k, self._get_defensive_copy_if_needed(v))
-            for k, v in super(_DictStruct, self).items()
-        )
+        return ((k, self._get_defensive_copy_if_needed(v)) for k, v in super().items())
 
     def values(self):
-        return (
-            self._get_defensive_copy_if_needed(v)
-            for v in super(_DictStruct, self).values()
-        )
+        return (self._get_defensive_copy_if_needed(v) for v in super().values())
 
     def __delitem__(self, key):
         self._raise_if_immutable()
@@ -1650,7 +1641,7 @@ class ImmutableInteger(ImmutableField, Integer):
     pass
 
 
-class ImmutableFloat(ImmutableField, Float): # pylint: disable=
+class ImmutableFloat(ImmutableField, Float):  # pylint: disable=
     """
     An immutable version of :class:`Float`
     """

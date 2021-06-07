@@ -39,6 +39,8 @@ from typedpy.fields import (
     _DictStruct,
 )
 
+# pylint: disable=too-many-locals, too-many-arguments, too-many-branches
+
 
 def deserialize_list_like(
     field,
@@ -249,7 +251,7 @@ def deserialize_map(map_field, source_val, name, camel_case_convert=False):
     return res
 
 
-def deserialize_single_field(
+def deserialize_single_field(  # pylint: disable=too-many-branches
     field,
     source_val,
     name,
@@ -366,13 +368,9 @@ def deserialize_structure_reference(
     cls, the_dict: dict, *, keep_undefined, mapper, camel_case_convert=False
 ):
     field_by_name = {k: v for k, v in cls.__dict__.items() if isinstance(v, Field)}
-    kwargs = dict(
-        [
-            (k, v)
-            for k, v in the_dict.items()
-            if k not in field_by_name and keep_undefined
-        ]
-    )
+    kwargs = {
+        k: v for k, v in the_dict.items() if k not in field_by_name and keep_undefined
+    }
 
     kwargs.update(
         construct_fields_map(
@@ -524,17 +522,12 @@ def deserialize_structure_internal(
         for k in the_dict
     }
 
-    kwargs = dict(
-        [
-            (
-                converted_snake_case_if_required[k],
-                v,
-            )
-            for k, v in the_dict.items()
-            if converted_snake_case_if_required[k] not in field_by_name
-            and keep_undefined
-        ]
-    )
+    kwargs = {
+        converted_snake_case_if_required[k]: v
+        for k, v in the_dict.items()
+        if converted_snake_case_if_required[k] not in field_by_name and keep_undefined
+    }
+
     kwargs.update(
         construct_fields_map(
             field_by_name,
@@ -610,6 +603,7 @@ def get_processed_input(key, mapper, the_dict):
     return processed_input
 
 
+# pylint: disable=too-many-return-statements
 def serialize_val(field_definition, name, val, mapper=None, camel_case_convert=False):
     if isinstance(field_definition, SerializableField) and isinstance(
         field_definition, Field
@@ -767,7 +761,7 @@ def serialize_internal(structure, mapper=None, compact=False, camel_case_convert
     if mapper is None:
         mapper = {}
     field_by_name = _get_all_fields_by_name(structure.__class__)
-    if type(structure) == getattr(Generator, "_ty", None):
+    if isinstance(structure, getattr(Generator, "_ty", None)):
         raise TypeError("Generator cannot be serialized")
     items = (
         structure.items()
@@ -830,8 +824,8 @@ def serialize(value, *, mapper: Dict = None, compact=False, camel_case_convert=F
         mapper(dict): optional
              a dictionary where the key is the name of the attribute in the structure, and the value is name of the
              key to map its value to, or a :class:`FunctionCall` where the function is the transformation, and
-             the args are a list of attributes that are arguments to the function. if args is empty it function transform
-             the current attribute.
+             the args are a list of attributes that are arguments to the function. if args is empty it
+             function transform the current attribute.
         compact(bool):
              whether to use a compact form for Structure that is a simple wrapper of a field.
              for example: if a Structure has only one field of an int, if compact is True

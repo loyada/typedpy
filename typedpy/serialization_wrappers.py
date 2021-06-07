@@ -84,9 +84,10 @@ class Deserializer(Structure):
 
 class Serializer(Structure):
     """
-           A high level API for a serializer: from an instance of :class:`Structure`, to something that can be sent as a Json
-           (usually a dict). The advantage of this over the lower level function is that it is more explicit and
-           self-validating. In other words, it prevents the user from creating an invalid mapper.
+           A high level API for a serializer: from an instance of :class:`Structure`, to something
+           that can be sent as a Json(usually a dict). The advantage of this over the lower level
+           function is that it is more explicit andself-validating.
+           In other words, it prevents the user from creating an invalid mapper.
 
            Arguments:
                source(:class:`Structure`):
@@ -108,8 +109,8 @@ class Serializer(Structure):
                    using dot notation, for example: "aaa.bbb", or a :class:`FunctionCall`. In the latter case,
                    the function is the used to preprocess the input prior to deserialization/validation. \
                    The args attribute in the function call is optional. If non provided, the input to the function is
-                   the attribute with the same key. Otherwise it is the names of the attributes  in the input that are injected
-                   to the provided function. \
+                   the attribute with the same key. Otherwise it is the names of the attributes  in the input
+                    that are injected to the provided function. \
                    See working examples in the tests link above. \
                    This class will ensure that the mapper is a valid one for its target_class.
                    Example:
@@ -125,7 +126,10 @@ class Serializer(Structure):
                             'output_floats': FunctionCall(func=lambda f: [int(f)], args=['i']),
                             'output_int': FunctionCall(func=lambda x: str(x), args=['f'])
                         }
-                        assert Serializer(source=foo, mapper=mapper).serialize() == {'output_floats': [999], 'output_int': '5.5'}
+                        assert Serializer(source=foo, mapper=mapper).serialize() == {
+                             'output_floats': [999],
+                             'output_int': '5.5'
+                        }
 
 
     """

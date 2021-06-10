@@ -343,6 +343,15 @@ def test_final_structure_no_violation():
     class Bar(Foo, FinalStructure): pass
 
 
+def test_as_bool():
+    class Foo(Structure):
+        s: typing.Optional[str]
+        i: typing.Optional[int]
+
+    assert not(Foo())
+    assert Foo(i=5)
+
+
 def test_unique_violation():
     @unique
     class Foo(Structure):

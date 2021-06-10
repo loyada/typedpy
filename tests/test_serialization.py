@@ -1,3 +1,4 @@
+import datetime
 import enum
 import pickle
 import sys
@@ -632,3 +633,19 @@ def test_serialization_decimal():
     foo = Foo(a=Decimal('1.11'), s="x")
     result = Serializer(source=foo).serialize()
     assert quantize(Decimal(result['a'])) == quantize(Decimal(1.11))
+
+
+def test_serialize_field_with_inheritance():
+    class Foo(Structure):
+        s: str
+        i: int
+        d: DateTime
+        _required = []
+
+    class Bar(Foo):
+        a = Array[str]
+        _required = []
+    now = datetime.datetime.now()
+    bar = Bar(a=["x"], d=now, s="xyz")
+    assert serialize_field(Bar.s, bar.s) == "xyz"
+    assert serialize_field(Bar.d, bar.d) == now.strftime("%m/%d/%y %H:%M:%S")

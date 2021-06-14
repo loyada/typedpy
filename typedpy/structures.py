@@ -13,8 +13,8 @@ import hashlib
 
 from typing import get_type_hints, Iterable
 
-from typedpy.commons import wrap_val, _is_sunder, _is_dunder
-from typedpy.utility import type_is_generic
+from .commons import wrap_val, _is_sunder, _is_dunder
+from .utility import type_is_generic
 
 REQUIRED_FIELDS = "_required"
 DEFAULTS = "_defaults"
@@ -25,13 +25,13 @@ MUST_BE_UNIQUE = "_must_be_unique"
 IGNORE_NONE_VALUES = "_ignore_none"
 MAPPER = "_serialization_mapper"
 SPECIAL_ATTRIBUTES = {
-            REQUIRED_FIELDS,
-            ADDITIONAL_PROPERTIES,
-            IS_IMMUTABLE,
-            DEFAULTS,
-            OPTIONAL_FIELDS,
-            MAPPER,
-            IGNORE_NONE_VALUES,
+    REQUIRED_FIELDS,
+    ADDITIONAL_PROPERTIES,
+    IS_IMMUTABLE,
+    DEFAULTS,
+    OPTIONAL_FIELDS,
+    MAPPER,
+    IGNORE_NONE_VALUES,
 }
 
 MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS = 100000
@@ -63,7 +63,7 @@ class ImmutableMixin:
 
 
 def make_signature(
-        names, required, additional_properties, bases_params_by_name, bases_required
+    names, required, additional_properties, bases_params_by_name, bases_required
 ):
     """
     Make a signature that will be used for the constructor of the Structure
@@ -161,7 +161,7 @@ def _check_for_final_violations(classes):
                     )
                 )
             if "ImmutableStructure" in globals() and is_sub_class(
-                    c, ImmutableStructure
+                c, ImmutableStructure
             ):
                 raise TypeError(
                     "Tried to extend {}, which is an ImmutableStructure. This is forbidden".format(
@@ -226,9 +226,9 @@ class UniqueMixin:
     def __manage_uniqueness__(self):
         myclass = self.__class__
         if (
-                getattr(myclass, MUST_BE_UNIQUE, False)
-                and len(getattr(myclass, "_ALL_INSTANCES", set()))
-                < MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
+            getattr(myclass, MUST_BE_UNIQUE, False)
+            and len(getattr(myclass, "_ALL_INSTANCES", set()))
+            < MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
         ):
             hash_of_instance = self.__hash__()
             if hash_of_instance in getattr(myclass, "_ALL_INSTANCES", set()):
@@ -252,14 +252,14 @@ class UniqueMixin:
             structure_class_name
         ]
         if (
-                getattr(self, MUST_BE_UNIQUE, False)
-                and len(instance_by_value_for_current_struct)
-                < MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
+            getattr(self, MUST_BE_UNIQUE, False)
+            and len(instance_by_value_for_current_struct)
+            < MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
         ):
             hash_of_field_val = value.__hash__()
             if (
-                    instance_by_value_for_current_struct.get(hash_of_field_val, instance)
-                    != instance
+                instance_by_value_for_current_struct.get(hash_of_field_val, instance)
+                != instance
             ):
                 raise ValueError(
                     "Instance copy of field {} in {}, which is defined as unique. "
@@ -343,13 +343,13 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
             else get_field_with_inheritance(self._name)
         )
         is_immutable = (
-                instance is not None
-                and getattr(instance, IS_IMMUTABLE, False)
-                or getattr(self, IS_IMMUTABLE, False)
+            instance is not None
+            and getattr(instance, IS_IMMUTABLE, False)
+            or getattr(self, IS_IMMUTABLE, False)
         )
         needs_defensive_copy = (
-                not isinstance(res, (ImmutableMixin, int, float, str, bool, enum.Enum))
-                or res is None
+            not isinstance(res, (ImmutableMixin, int, float, str, bool, enum.Enum))
+            or res is None
         )
         return deepcopy(res) if (is_immutable and needs_defensive_copy) else res
 
@@ -357,7 +357,7 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
         if getattr(self, IS_IMMUTABLE, False) and self._name in instance.__dict__:
             raise ValueError("{}: Field is immutable".format(self._name))
         if getattr(self, IS_IMMUTABLE, False) and not getattr(
-                self, "_custom_deep_copy_implementation", False
+            self, "_custom_deep_copy_implementation", False
         ):
             try:
                 instance.__dict__[self._name] = deepcopy(value)
@@ -372,7 +372,7 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
             instance.__dict__[self._name] = value
             instance.__manage__uniqueness_of_all_fields__()
         if getattr(instance, "_instantiated", False) and not getattr(
-                instance, "_skip_validation", False
+            instance, "_skip_validation", False
         ):
             instance.__validate__()
 
@@ -436,27 +436,26 @@ def _get_all_fields_by_name(cls):
 def _instantiate_fields_if_needed(cls_dict: dict, defaults: dict):
     for key, val in cls_dict.items():
         if (
-                key
-                not in SPECIAL_ATTRIBUTES
-                and not isinstance(val, Field)
-                and not key.startswith("__")
-                and (
+            key not in SPECIAL_ATTRIBUTES
+            and not isinstance(val, Field)
+            and not key.startswith("__")
+            and (
                 Field in getattr(val, "__mro__", []) or is_function_returning_field(val)
-        )
+            )
         ):
             new_val = val(default=defaults[key]) if key in defaults else val()
             cls_dict[key] = new_val
 
 
 def _apply_default_and_update_required_not_to_include_fields_with_defaults(
-        cls_dict: dict, defaults: dict, fields: list
+    cls_dict: dict, defaults: dict, fields: list
 ):
     required_fields = set(cls_dict.get(REQUIRED_FIELDS, []))
     optional_fields = set(cls_dict.get(OPTIONAL_FIELDS, []))
     required_fields_predefined = REQUIRED_FIELDS in cls_dict
     for field_name in fields:
         if field_name in defaults and not getattr(
-                cls_dict[field_name], "_default", None
+            cls_dict[field_name], "_default", None
         ):
             cls_dict[field_name]._try_default_value(defaults[field_name])
             cls_dict[field_name]._default = defaults[field_name]
@@ -607,7 +606,7 @@ def add_annotations_to_class_dict(cls_dict):
             first_arg = getattr(v, "__args__", [0])[0]
             mros = getattr(first_arg, "__mro__", getattr(v, "__mro__", []))
             if not type_is_generic(v) and (
-                    isinstance(v, (Field, Structure)) or Field in mros or Structure in mros
+                isinstance(v, (Field, Structure)) or Field in mros or Structure in mros
             ):
                 if k in cls_dict:
                     defaults[k] = cls_dict[k]
@@ -618,7 +617,7 @@ def add_annotations_to_class_dict(cls_dict):
                     from .fields import AnyOf
 
                     if isinstance(the_type, AnyOf) and getattr(
-                            the_type, "_is_optional", False
+                        the_type, "_is_optional", False
                     ):
                         optional_fields.add(k)
                     if k in cls_dict:
@@ -742,20 +741,20 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 raise ValueError("Structure is immutable")
             value = deepcopy(value)
         if all(
-                [
-                    getattr(self, IGNORE_NONE_VALUES, False),
-                    value is None,
-                    key not in getattr(self.__class__, REQUIRED_FIELDS, []),
-                ]
+            [
+                getattr(self, IGNORE_NONE_VALUES, False),
+                value is None,
+                key not in getattr(self.__class__, REQUIRED_FIELDS, []),
+            ]
         ):
             return
 
         super().__setattr__(key, value)
 
         if (
-                getattr(self, "_instantiated", False)
-                and not _is_dunder(key)
-                and not _is_sunder(key)
+            getattr(self, "_instantiated", False)
+            and not _is_dunder(key)
+            and not _is_sunder(key)
         ):
             self.__manage_uniqueness__()
 
@@ -791,7 +790,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
         name = self.__class__.__name__
         if name.startswith("StructureReference_") and self.__class__.__bases__ == (
-                Structure,
+            Structure,
         ):
             name = "Structure"
         props = []
@@ -825,7 +824,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
     def __delitem__(self, key):
         if isinstance(getattr(self, REQUIRED_FIELDS), list) and key in getattr(
-                self, REQUIRED_FIELDS
+            self, REQUIRED_FIELDS
         ):
             raise ValueError("{} is mandatory".format(key))
         del self.__dict__[key]
@@ -870,9 +869,9 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         required = props.get(REQUIRED_FIELDS, field_names)
         additional_props = props.get(ADDITIONAL_PROPERTIES, True)
         return (
-                len(field_names) == 1
-                and required == field_names
-                and additional_props is False
+            len(field_names) == 1
+            and required == field_names
+            and additional_props is False
         )
 
     def __contains__(self, item):
@@ -916,15 +915,15 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         :return: an instance of cls
         """
         if (
-                issubclass(cls, self.__class__)
-                or cls is self.__class__
-                or isinstance(self, cls)
+            issubclass(cls, self.__class__)
+            or cls is self.__class__
+            or isinstance(self, cls)
         ) and issubclass(cls, Structure):
             that = (
                 deepcopy(self)
                 if (
-                        issubclass(cls, ImmutableStructure)
-                        or issubclass(self.__class__, ImmutableStructure)
+                    issubclass(cls, ImmutableStructure)
+                    or issubclass(self.__class__, ImmutableStructure)
                 )
                 else self
             )

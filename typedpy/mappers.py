@@ -20,6 +20,6 @@ class mappers(Enum):
 
 def build_mapper(cls):
     mapper = getattr(cls, MAPPER, {})
-    if not mapper:
-        return {}
+    if isinstance(mapper, dict):
+        return mapper
     return _get_to_lowercase(cls)

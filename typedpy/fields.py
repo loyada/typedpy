@@ -10,8 +10,8 @@ from copy import deepcopy
 from functools import reduce
 from decimal import Decimal, InvalidOperation
 
-from typedpy.commons import wrap_val
-from typedpy.structures import (
+from .commons import wrap_val
+from .structures import (
     Field,
     Structure,
     TypedField,

@@ -676,6 +676,7 @@ def test_mapper_variation_3():
         m = Map
         s = String
         i = Integer
+        x = Integer
 
     mapper = {
         "m": "a.b",
@@ -687,12 +688,13 @@ def test_mapper_variation_3():
                                 {
                                     'a': {'b': {'x': 1, 'y': 2}},
                                     's': 'Joe',
-                                    'i': 3
+                                    'i': 3,
+                                    'x': 5
                                 },
                                 mapper=mapper,
                                 keep_undefined=False)
 
-    assert foo == Foo(i=6, m={'x': 1, 'y': 2}, s='the string is Joe')
+    assert foo == Foo(i=6, m={'x': 1, 'y': 2}, s='the string is Joe', x=5)
 
 
 def test_predefined_mapper_case_convert():

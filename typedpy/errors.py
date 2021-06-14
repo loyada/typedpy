@@ -2,7 +2,8 @@ import re
 import json
 from json import JSONDecodeError
 
-from typedpy import ImmutableStructure, String, Structure, AnyOf, Array
+from .structures import ImmutableStructure, Structure
+from .fields import String, AnyOf, Array
 
 
 class ErrorInfo(ImmutableStructure):

@@ -4,9 +4,8 @@ import json
 from functools import reduce
 from typing import Dict
 
-from typedpy import mappers
-from typedpy.fields import _ListStruct, Deque, Generator
-from typedpy.structures import (
+from .mappers import build_mapper
+from .structures import (
     TypedField,
     Structure,
     _get_all_fields_by_name,
@@ -15,7 +14,7 @@ from typedpy.structures import (
     IGNORE_NONE_VALUES,
     NoneField,
 )
-from typedpy.fields import (
+from .fields import (
     Field,
     Number,
     String,
@@ -38,6 +37,9 @@ from typedpy.fields import (
     wrap_val,
     Function,
     _DictStruct,
+    _ListStruct,
+    Deque,
+    Generator,
 )
 
 # pylint: disable=too-many-locals, too-many-arguments, too-many-branches
@@ -493,7 +495,7 @@ def deserialize_structure_internal(
         an instance of the provided :class:`Structure` deserialized
     """
     if mapper is None:
-        mapper = mappers.build_mapper(cls)
+        mapper = build_mapper(cls)
         if mapper:
             keep_undefined = False
     ignore_none = getattr(cls, IGNORE_NONE_VALUES, False)
@@ -841,7 +843,7 @@ def serialize(value, *, mapper: Dict = None, compact=False, camel_case_convert=F
         :param mapper: a dict with the new key, by the attribute name
     """
     if mapper is None:
-        mapper = mappers.build_mapper(value.__class__)
+        mapper = build_mapper(value.__class__)
     if not isinstance(mapper, (collections.abc.Mapping,)):
         raise TypeError("Mapper must be a mapping")
     if not isinstance(value, (Structure, StructureReference)):

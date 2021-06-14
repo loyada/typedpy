@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from typedpy.fields import (
+from .fields import (
     StructureReference,
     Integer,
     Number,
@@ -19,8 +19,8 @@ from typedpy.fields import (
     Set,
 )
 
-from typedpy.extfields import DateString
-from typedpy.structures import ADDITIONAL_PROPERTIES
+from .extfields import DateString
+from .structures import ADDITIONAL_PROPERTIES
 
 
 def as_str(val):

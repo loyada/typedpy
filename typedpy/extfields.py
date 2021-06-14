@@ -6,9 +6,9 @@ import json
 from datetime import datetime, date
 import re
 
-from typedpy.commons import wrap_val
-from typedpy.structures import TypedField
-from typedpy.fields import SerializableField, String
+from .commons import wrap_val
+from .structures import TypedField
+from .fields import SerializableField, String
 
 EmailAddress = String(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]+$)")
 

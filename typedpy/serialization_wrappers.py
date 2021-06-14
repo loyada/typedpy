@@ -1,7 +1,6 @@
-from typedpy import Structure
-from typedpy.fields import StructureClass, Map, String, OneOf, Boolean
-from typedpy.serialization import FunctionCall, deserialize_structure, serialize
-from typedpy.structures import _get_all_fields_by_name
+from .structures import Structure, _get_all_fields_by_name
+from .fields import StructureClass, Map, String, OneOf, Boolean
+from .serialization import FunctionCall, deserialize_structure, serialize
 
 
 class Deserializer(Structure):

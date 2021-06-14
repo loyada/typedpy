@@ -4,7 +4,7 @@ from typedpy import ClassReference, Structure
 from typedpy.structures import MAPPER
 
 
-def _get_to_lowercase(cls: type[Structure]):
+def _get_to_lowercase(cls):
     mapper = {}
     for k, f in cls.get_all_fields_by_name().items():
         if isinstance(f, ClassReference):

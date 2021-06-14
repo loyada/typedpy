@@ -7,7 +7,7 @@ from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything, serialize, NotField, \
+    Float, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything, mappers, serialize, NotField, \
     SerializableField, Deque, PositiveInt, DecimalNumber
 from typedpy.serialization import FunctionCall
 from typedpy.serialization_wrappers import Deserializer
@@ -595,9 +595,9 @@ def test_deserialize_deque():
     class Example(Structure):
         d = Deque[Array]
 
-    original = {'d': [[1,2], [3,4]]}
+    original = {'d': [[1, 2], [3, 4]]}
     deserialized = deserialize_structure(Example, original)
-    assert deserialized == Example(d = deque([[1,2], [3,4]]))
+    assert deserialized == Example(d=deque([[1, 2], [3, 4]]))
     assert serialize(deserialized) == original
 
 
@@ -693,6 +693,23 @@ def test_mapper_variation_3():
                                 keep_undefined=False)
 
     assert foo == Foo(i=6, m={'x': 1, 'y': 2}, s='the string is Joe')
+
+
+def test_predefined_mapper_case_convert():
+    class Bar(Structure):
+        i: int
+        f: float
+
+    class Foo(Structure):
+        abc: str
+        xxx_yyy: str
+        bar: Bar
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    foo = deserialize_structure(Foo, {'ABC': 'aaa', 'XXX_YYY': 'bbb', 'BAR': {'I': 1, 'F': 1.5}})
+    assert foo == Foo(abc='aaa', xxx_yyy='bbb', bar=Bar(i=1, f=1.5))
+    assert serialize(foo) == {'ABC': 'aaa', 'XXX_YYY': 'bbb', 'BAR': {'I': 1, 'F': 1.5}}
 
 
 def test_mapper_error1():
@@ -1020,9 +1037,9 @@ def test_convert_camel_case1():
         _additionalProperties = False
 
     input_dict = {
-            "firstName": "joe",
-            "lastName": "smith",
-            "ageYears": 5
+        "firstName": "joe",
+        "lastName": "smith",
+        "ageYears": 5
     }
     res = Deserializer(target_class=Foo, camel_case_convert=True).deserialize(input_dict)
     assert res == Foo(first_name="joe", last_name="smith", age_years=5)
@@ -1036,9 +1053,9 @@ def test_convert_camel_case2():
         _additionalProperties = False
 
     input_dict = {
-            "first_name": "joe",
-            "last_name" : "smith",
-            "ageYears": 5
+        "first_name": "joe",
+        "last_name": "smith",
+        "ageYears": 5
     }
     res = Deserializer(target_class=Foo, camel_case_convert=True).deserialize(input_dict)
     assert res == Foo(first_name="joe", last_name="smith", age_years=5)

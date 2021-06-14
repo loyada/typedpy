@@ -23,6 +23,17 @@ IS_IMMUTABLE = "_immutable"
 OPTIONAL_FIELDS = "_optional"
 MUST_BE_UNIQUE = "_must_be_unique"
 IGNORE_NONE_VALUES = "_ignore_none"
+MAPPER = "_serialization_mapper"
+SPECIAL_ATTRIBUTES = {
+            REQUIRED_FIELDS,
+            ADDITIONAL_PROPERTIES,
+            IS_IMMUTABLE,
+            DEFAULTS,
+            OPTIONAL_FIELDS,
+            MAPPER,
+            IGNORE_NONE_VALUES,
+}
+
 MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS = 100000
 
 T = typing.TypeVar("T")
@@ -426,14 +437,7 @@ def _instantiate_fields_if_needed(cls_dict: dict, defaults: dict):
     for key, val in cls_dict.items():
         if (
                 key
-                not in {
-            REQUIRED_FIELDS,
-            ADDITIONAL_PROPERTIES,
-            IS_IMMUTABLE,
-            DEFAULTS,
-            OPTIONAL_FIELDS,
-            IGNORE_NONE_VALUES,
-        }
+                not in SPECIAL_ATTRIBUTES
                 and not isinstance(val, Field)
                 and not key.startswith("__")
                 and (

@@ -328,7 +328,7 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
             keep_undefined=keep_undefined,
             mapper=mapper,
             camel_case_convert=camel_case_convert,
-        )
+        ) if not isinstance(source_val, Structure) else source_val
     elif isinstance(field, StructureReference):
         try:
             value = deserialize_structure_reference(
@@ -337,7 +337,7 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
                 keep_undefined=keep_undefined,
                 mapper=mapper,
                 camel_case_convert=camel_case_convert,
-            )
+            ) 
         except Exception as e:
             raise ValueError(
                 "{}: Got {}; {}".format(name, wrap_val(source_val), str(e))

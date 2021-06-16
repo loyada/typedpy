@@ -1,3 +1,4 @@
+from .commons import wrap_val
 from .structures import Structure, _get_all_fields_by_name
 from .fields import StructureClass, Map, String, OneOf, Boolean
 from .serialization import FunctionCall, deserialize_structure, serialize
@@ -184,3 +185,24 @@ class Serializer(Structure):
             compact=compact,
             camel_case_convert=camel_case_convert,
         )
+
+
+def deserializer_by_discriminator(class_by_discriminator_value):
+    """
+    create deserialized based on discriminator value in the input.
+
+    :param class_by_discriminator_value:
+    :return:
+    """
+    _desererializer_by_type = {
+        k: Deserializer(t) for (k, t) in class_by_discriminator_value.items()
+    }
+
+    def _get_content(discriminator, data):
+        try:
+            return _desererializer_by_type[discriminator].deserialize(data)
+        except KeyError as e:
+            raise ValueError("discriminator: got {}; Expected one of {}".format(
+                wrap_val(discriminator), list(_desererializer_by_type.keys()))) from e
+
+    return _get_content

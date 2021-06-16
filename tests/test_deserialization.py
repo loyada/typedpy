@@ -10,7 +10,7 @@ from typedpy import Structure, Array, Number, String, Integer, \
     Float, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything, mappers, serialize, NotField, \
     SerializableField, Deque, PositiveInt, DecimalNumber
 from typedpy.serialization import FunctionCall
-from typedpy.serialization_wrappers import Deserializer
+from typedpy.serialization_wrappers import Deserializer, deserializer_by_discriminator
 
 
 class SimpleStruct(Structure):
@@ -669,6 +669,97 @@ def test_mapper_variation_2():
                                 keep_undefined=False)
 
     assert foo == Foo(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')
+
+
+class Foo(Structure):
+    i: int
+
+
+class Foo1(Foo):
+    a: str
+
+
+class Foo2(Foo):
+    a: int
+
+
+class Bar(Structure):
+    t: str
+    f: Array[Integer]
+    foo: Foo
+
+    _serialization_mapper = {
+        "t": "type",
+        "foo": FunctionCall(func=deserializer_by_discriminator({
+            "1": Foo1,
+            "2": Foo2,
+        }),
+            args=["type", "x.foo"])
+    }
+
+
+def test_mapper_class_by_discriminator_1():
+    serialized = {
+        "type": "1",
+        "f": [1, 2, 3],
+        "x": {
+            "foo": {
+                "a": "xyz",
+                "i": 9
+            }
+        }
+    }
+    deserialized = Deserializer(Bar).deserialize(serialized, keep_undefined=False)
+    assert deserialized == Bar(t="1", f=[1, 2, 3], foo=Foo1(a="xyz", i=9))
+
+
+def test_mapper_class_by_discriminator_2():
+    serialized = {
+        "type": "2",
+        "f": [1, 2, 3],
+        "x": {
+            "foo": {
+                "a": 123,
+                "i": 9
+            }
+        }
+    }
+    deserialized = Deserializer(Bar).deserialize(serialized, keep_undefined=False)
+    assert deserialized == Bar(t="2", f=[1, 2, 3], foo=Foo2(a=123, i=9))
+
+
+def test_mapper_class_by_data_doesnt_match_discriminator():
+    serialized = {
+        "type": "1",
+        "f": [1, 2, 3],
+        "x": {
+            "foo": {
+                "a": 123,
+                "i": 9
+            }
+        }
+    }
+    with raises(TypeError) as excinfo:
+        Deserializer(Bar).deserialize(serialized, keep_undefined=False)
+    assert "a: Got 123; Expected a string" in str(
+        excinfo.value)
+
+
+def test_mapper_class_by_discriminator_invalid_discriminator():
+    serialized = {
+        "type": "3",
+        "f": [1, 2, 3],
+        "x": {
+            "foo": {
+                "a": 123,
+                "i": 9
+            }
+        }
+    }
+    with raises(ValueError) as excinfo:
+        Deserializer(Bar).deserialize(serialized, keep_undefined=False)
+    assert "discriminator: got '3'; Expected one of ['1', '2']" in str(
+        excinfo.value)
 
 
 def test_mapper_variation_3():

@@ -191,8 +191,10 @@ def deserializer_by_discriminator(class_by_discriminator_value):
     """
     create deserialized based on discriminator value in the input.
 
-    :param class_by_discriminator_value:
-    :return:
+    :param class_by_discriminator_value: a dictionary of the Structure class by the discriminator value
+    :return: A function that should be used in a mapper, for which the first argument is the key for
+             The discriminator field, and the second is the key for the data field that is deserialized based
+             on the provided class_by_discriminator_value.
     """
     _desererializer_by_type = {
         k: Deserializer(t) for (k, t) in class_by_discriminator_value.items()

@@ -474,3 +474,55 @@ Here is a contrived example:
 
 
 Be aware that this is not a performant approach. Avoid it if speed is a major concern.
+
+
+Deserialization Using a Discriminator Field
+===========================================
+Sometimes we want to determine to which Structure we deserialize, based on a discriminator field in the input.
+This is supported in Typedpy. Consider the following:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        i: int
+
+
+    class Foo1(Foo):
+        a: str
+
+
+    class Foo2(Foo):
+        a: int
+
+
+    class Bar(Structure):
+        t: str
+        f: Array[Integer]
+        foo: Foo
+
+        _serialization_mapper = {
+            "t": "type",
+            "foo": FunctionCall(func=deserializer_by_discriminator({
+                "1": Foo1,
+                "2": Foo2,
+            }),
+                args=["type", "x.foo"])
+        }
+
+     serialized = {
+            "type": "1",
+            "f": [1, 2, 3],
+            "x": {
+                "foo": {
+                    "a": "xyz",
+                    "i": 9
+                }
+            }
+        }
+        deserialized = Deserializer(Bar).deserialize(serialized, keep_undefined=False)
+        assert deserialized == Bar(t="1", f=[1, 2, 3], foo=Foo1(a="xyz", i=9))
+
+Here, we determine how to deserialize the content of serialized["x"]["foo"], based on the value of "type".
+The function factory "deserializer_by_discriminator" is included in Typedpy, and creates deserialization function.
+As can be seen in the example, the first parameter to it is the discriminator key, and the second is the key of
+the content to be serialized.

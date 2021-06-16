@@ -526,3 +526,5 @@ Here, we determine how to deserialize the content of serialized["x"]["foo"], bas
 The function factory "deserializer_by_discriminator" is included in Typedpy, and creates deserialization function.
 As can be seen in the example, the first parameter to it is the discriminator key, and the second is the key of
 the content to be serialized.
+
+* New in 2.4.5

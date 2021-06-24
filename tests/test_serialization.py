@@ -13,7 +13,7 @@ from pytest import raises
 
 from typedpy import Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, serialize, Set, AnyOf, DateField, Anything, Map, Function, PositiveInt, DecimalNumber
+    Float, mappers, serialize, Set, AnyOf, DateField, Anything, Map, Function, PositiveInt, DecimalNumber
 from typedpy.extfields import DateTime
 from typedpy import serialize_field
 from typedpy.serialization import FunctionCall
@@ -368,6 +368,41 @@ def test_serialize_with_deep_mapper_camel_case():
                       )
     mapper = {'bar._mapper': {'foo_bar._mapper': {"c_d": "cccc", "i_num": FunctionCall(func=lambda x: x * 2)}}}
     serialized = serialize(example, mapper=mapper, camel_case_convert=True)
+    assert serialized == \
+           {
+               "number": 1,
+               "bar":
+                   {
+                       "fooBar": {
+                           "a": "string",
+                           "iNum": 10,
+                           "cccc": 2
+                       },
+                       "arrayOne": [1, 2]
+                   }
+           }
+
+
+def test_serialize_with_deep_mapper_camel_case_setting():
+    class Foo(Structure):
+        a = String
+        i_num = Integer
+        c_d = Integer
+
+    class Bar(Structure):
+        foo_bar = Foo
+        array_one = Array
+
+    class Example(Structure):
+        bar = Bar
+        number = Integer
+        _serialization_mapper = mappers.TO_CAMELCASE
+
+    example = Example(number=1,
+                      bar=Bar(foo_bar=Foo(a="string", i_num=5, c_d=2), array_one=[1, 2])
+                      )
+    mapper = {'bar._mapper': {'foo_bar._mapper': {"c_d": "cccc", "i_num": FunctionCall(func=lambda x: x * 2)}}}
+    serialized = serialize(example, mapper=mapper)
     assert serialized == \
            {
                "number": 1,

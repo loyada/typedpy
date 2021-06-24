@@ -65,7 +65,11 @@ from typedpy.serialization import (
     FunctionCall,
 )
 
-from typedpy.serialization_wrappers import Serializer, Deserializer, deserializer_by_discriminator
+from typedpy.serialization_wrappers import (
+    Serializer,
+    Deserializer,
+    deserializer_by_discriminator,
+)
 
 from typedpy.extfields import (
     DateString,

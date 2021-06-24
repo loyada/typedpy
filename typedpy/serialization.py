@@ -4,8 +4,9 @@ import json
 from functools import reduce
 from typing import Dict
 
-from .mappers import build_mapper
+from .mappers import mappers, get_mapper, build_mapper
 from .structures import (
+    MAPPER,
     TypedField,
     Structure,
     _get_all_fields_by_name,
@@ -321,14 +322,18 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
             camel_case_convert=camel_case_convert,
         )
     elif isinstance(field, ClassReference):
-        value = deserialize_structure_internal(
-            getattr(field, "_ty"),
-            source_val,
-            name,
-            keep_undefined=keep_undefined,
-            mapper=mapper,
-            camel_case_convert=camel_case_convert,
-        ) if not isinstance(source_val, Structure) else source_val
+        value = (
+            deserialize_structure_internal(
+                getattr(field, "_ty"),
+                source_val,
+                name,
+                keep_undefined=keep_undefined,
+                mapper=mapper,
+                camel_case_convert=camel_case_convert,
+            )
+            if not isinstance(source_val, Structure)
+            else source_val
+        )
     elif isinstance(field, StructureReference):
         try:
             value = deserialize_structure_reference(
@@ -337,7 +342,7 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
                 keep_undefined=keep_undefined,
                 mapper=mapper,
                 camel_case_convert=camel_case_convert,
-            ) 
+            )
         except Exception as e:
             raise ValueError(
                 "{}: Got {}; {}".format(name, wrap_val(source_val), str(e))
@@ -494,6 +499,9 @@ def deserialize_structure_internal(
     Returns:
         an instance of the provided :class:`Structure` deserialized
     """
+
+    if getattr(cls, MAPPER, {}) == mappers.TO_CAMELCASE:
+        camel_case_convert = True
     if mapper is None:
         mapper = build_mapper(cls)
         if mapper:
@@ -842,8 +850,11 @@ def serialize(value, *, mapper: Dict = None, compact=False, camel_case_convert=F
         :param structure: an instance of :class:`Structure`
         :param mapper: a dict with the new key, by the attribute name
     """
+    if get_mapper(value) == mappers.TO_CAMELCASE:
+        camel_case_convert = True
     if mapper is None:
         mapper = build_mapper(value.__class__)
+
     if not isinstance(mapper, (collections.abc.Mapping,)):
         raise TypeError("Mapper must be a mapping")
     if not isinstance(value, (Structure, StructureReference)):
@@ -866,4 +877,3 @@ def serialize(value, *, mapper: Dict = None, compact=False, camel_case_convert=F
     return serialize_internal(
         value, mapper=mapper, compact=compact, camel_case_convert=camel_case_convert
     )
-

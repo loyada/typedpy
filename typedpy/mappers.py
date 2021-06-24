@@ -16,10 +16,15 @@ def _get_to_lowercase(cls):
 
 class mappers(Enum):
     TO_LOWERCASE = auto()
+    TO_CAMELCASE = auto()
+
+
+def get_mapper(val: Structure):
+    return getattr(val.__class__, MAPPER, {})
 
 
 def build_mapper(cls):
     mapper = getattr(cls, MAPPER, {})
-    if isinstance(mapper, dict):
+    if mapper != mappers.TO_LOWERCASE:
         return mapper
     return _get_to_lowercase(cls)

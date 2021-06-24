@@ -1029,6 +1029,38 @@ def test_deserialize_with_deep_mapper_camel_case():
     assert deserialized == Example(number=1, bar=Bar(foo_bar=Foo(a_b="string", i=20), array_nums=[1, 2]))
 
 
+def test_deserialize_with_deep_mapper_camel_case_setting():
+    class Foo(Structure):
+        a_b = String
+        i = Integer
+
+    class Bar(Structure):
+        foo_bar = Foo
+        array_nums = Array
+
+    class Example(Structure):
+        bar = Bar
+        number = Integer
+        _serialization_mapper = mappers.TO_CAMELCASE
+
+    mapper = {'bar._mapper': {'fooBar._mapper': {"i": FunctionCall(func=lambda x: x * 2)}}}
+    deserializer = Deserializer(target_class=Example, mapper=mapper)
+    deserialized = deserializer.deserialize(
+        {
+            "number": 1,
+            "bar":
+                {
+                    "fooBar": {
+                        "aB": "string",
+                        "i": 10
+                    },
+                    "arrayNums": [1, 2]
+                }
+        },
+        keep_undefined=False)
+    assert deserialized == Example(number=1, bar=Bar(foo_bar=Foo(a_b="string", i=20), array_nums=[1, 2]))
+
+
 def test_deserializer_no_mapper():
     class Foo(Structure):
         m = Map

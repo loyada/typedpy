@@ -204,7 +204,10 @@ def deserializer_by_discriminator(class_by_discriminator_value):
         try:
             return _desererializer_by_type[discriminator].deserialize(data)
         except KeyError as e:
-            raise ValueError("discriminator: got {}; Expected one of {}".format(
-                wrap_val(discriminator), list(_desererializer_by_type.keys()))) from e
+            raise ValueError(
+                "discriminator: got {}; Expected one of {}".format(
+                    wrap_val(discriminator), list(_desererializer_by_type.keys())
+                )
+            ) from e
 
     return _get_content

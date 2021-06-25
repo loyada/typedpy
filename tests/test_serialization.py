@@ -383,6 +383,22 @@ def test_serialize_with_deep_mapper_camel_case():
            }
 
 
+def test_serialize_with_camel_case_setting():
+    class Foo(Structure):
+        a = String
+        i_num = Integer
+        cba_def_xyz = Integer
+
+        _serialization_mapper = mappers.TO_CAMELCASE
+
+    foo = Foo(i_num=5, a="xyz", cba_def_xyz=4)
+    assert Serializer(foo).serialize() == {
+        "a": "xyz",
+        "iNum": 5,
+        "cbaDefXyz": 4
+    }
+
+
 def test_serialize_with_deep_mapper_camel_case_setting():
     class Foo(Structure):
         a = String

@@ -25,6 +25,6 @@ def get_mapper(val: Structure):
 
 def build_mapper(cls):
     mapper = getattr(cls, MAPPER, {})
-    if mapper != mappers.TO_LOWERCASE:
-        return mapper
-    return _get_to_lowercase(cls)
+    if mapper == mappers.TO_LOWERCASE:
+        return _get_to_lowercase(cls)
+    return {} if mapper == mappers.TO_CAMELCASE else mapper

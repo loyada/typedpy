@@ -46,3 +46,10 @@ def get_list_type(the_type):
             if len(args) == 1:
                 return list, args[0]
     raise TypeError("not a list of a single type")
+
+
+def maybe(func, default_val=None):
+    try:
+        return func()
+    except AttributeError:
+        return default_val

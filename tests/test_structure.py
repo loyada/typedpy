@@ -1,6 +1,7 @@
 import enum
 import sys
 import typing
+from dataclasses import dataclass
 
 import pytest
 from pytest import raises
@@ -458,3 +459,37 @@ def test_defect_multiple_inheritance_with_optional_2():
 
     Bar1(b=1)
     Bar2(b=1)
+
+
+def test_from_other_class():
+    class PersonModel:
+        def __init__(self, *, first_name, age):
+            self.first_name = first_name
+            self.age = age
+
+    class Person(Structure):
+        id = Integer
+        name = String
+        age = Integer
+
+    person_model = PersonModel(first_name="john", age=40)
+    person = Person.from_other_class(
+        person_model,
+        id=123,
+        name=person_model.first_name
+    )
+    assert person == Person(name="john", id=123, age=40)
+
+
+def test_to_other_class():
+    @dataclass
+    class PersonDataclass:
+        name: str
+        age: int
+
+    class Person(Structure):
+        id = Integer
+        name = String
+
+    person = Person(id=1, name="john").to_other_class(PersonDataclass, ignore_props=["id"], age=40)
+    assert person == PersonDataclass(name="john", age=40)

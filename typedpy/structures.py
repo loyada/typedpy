@@ -940,6 +940,101 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
         raise TypeError(f"cls must be subclass of {self.__class__.__name__}")
 
+    def to_other_class(
+            self, target_class, *, ignore_props: list[str] = None, **kw
+    ) -> T:
+        """
+        Shallow copy of the fields in the structure and instantiate an instance of the given target_class
+        Arguments:
+            target_class:
+                The target class of the new object to be instantiated from this structure.
+                This does not need to be a class:`Structure`.
+
+                Example:
+
+                .. code-block:: python
+                    class Person:
+                        def __init__(self ,* ,name, age):
+                            ...
+
+                    class Foo(Structure):
+                        id = Integer
+                        name = String
+
+                    person = Foo(id=1, name="john").to_other_class(Person, ignore_props=["id"], age=40)
+                    assert person.age == 40
+                    assert.person.name == "john"
+
+            ignore_props: optional
+                a list of field names to be ignored (not copied).
+
+            kw: optional
+                any overrides of attributes. For example: "age="40" in the code snippet above
+
+        Returns:
+            A new instance of the provided target_class with all the attributes of the current structure,
+            except the ones state in the ignore_props parameters, and also the attributes overrides given in
+            the keyword arguments.
+        """
+        ignore_props = ignore_props if ignore_props else []
+        args_from_structure = {
+            k: getattr(self, k, None)
+            for k in self.get_all_fields_by_name()
+            if k not in ignore_props
+        }
+        kwargs = {**args_from_structure, **kw}
+        return target_class(**kwargs)
+
+    @classmethod
+    def from_other_class(
+            cls, source_object, *, ignore_props: list[str] = None, **kw
+    ):
+        """
+        Return a new instance of the current :class:`Structure`, with the attributes of the source_object.
+        The optional parameters allow to ignore/override attributes.
+        For example:
+
+        .. code-block:: python
+                    class PersonModel:
+                        def __init__(self ,* ,first_name, age):
+                            ...
+
+                    class Person(Structure):
+                        id = Integer
+                        name = String
+                        age = Integer
+
+                    person_model = PersonModel(first_name="john", age=40)
+                    person = Person.from_other_class(
+                        person_model,
+                        id=123,
+                        name=person_model.first_name
+                    )
+                    assert person == Person(name="john", id=123, age=40)
+
+        Arguments:
+            target_class:
+                The source object to be copied from. Can be of any type.
+
+            ignore_props: optional
+                The field names to ignore (not copy)
+
+            kw: optional
+                explicit overrides/additional field mapping. In the snippet above we
+                set the "id" and "name" fields directly.
+
+        Returns:
+            The new instance of the current structure type, with the fields set.
+        """
+        ignore_props = ignore_props if ignore_props else []
+        args_from_model = {
+            k: getattr(source_object, k, None)
+            for k in cls.get_all_fields_by_name()
+            if k not in ignore_props
+        }
+        kwargs = {**args_from_model, **kw}
+        return cls(**kwargs)
+
     @staticmethod
     def set_fail_fast(fast_fail: bool):
         Structure._fail_fast = fast_fail

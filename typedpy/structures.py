@@ -941,7 +941,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         raise TypeError(f"cls must be subclass of {self.__class__.__name__}")
 
     def to_other_class(
-            self, target_class, *, ignore_props: list[str] = None, **kw
+            self, target_class, *, ignore_props=None, **kw
     ) -> T:
         """
         Shallow copy of the fields in the structure and instantiate an instance of the given target_class
@@ -965,7 +965,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                     assert person.age == 40
                     assert.person.name == "john"
 
-            ignore_props: optional
+            ignore_props(list[str]): optional
                 a list of field names to be ignored (not copied).
 
             kw: optional
@@ -975,6 +975,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             A new instance of the provided target_class with all the attributes of the current structure,
             except the ones state in the ignore_props parameters, and also the attributes overrides given in
             the keyword arguments.
+            :param ignore_props:
         """
         ignore_props = ignore_props if ignore_props else []
         args_from_structure = {
@@ -987,7 +988,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
     @classmethod
     def from_other_class(
-            cls, source_object, *, ignore_props: list[str] = None, **kw
+            cls, source_object, *, ignore_props=None, **kw
     ):
         """
         Return a new instance of the current :class:`Structure`, with the attributes of the source_object.
@@ -1013,10 +1014,10 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                     assert person == Person(name="john", id=123, age=40)
 
         Arguments:
-            target_class:
+            source_object:
                 The source object to be copied from. Can be of any type.
 
-            ignore_props: optional
+            ignore_props(list[str]): optional
                 The field names to ignore (not copy)
 
             kw: optional

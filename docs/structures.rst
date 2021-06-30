@@ -154,6 +154,17 @@ Defaults
 | with an equality.
 
 
+| In general, developers are strongly encouraged not to use mutable values as defaults, since it means the default
+| can be updated. Instead, you can use a factory function. For example:
+
+
+.. code-block:: python
+
+    def default_factory(): return [1,2,3]
+
+    class Example(Structure):
+        i: Array[Integer] = default_factory
+
 Immutability
 ============
 | Typepy supports immutable structures. Such structures are protected from any update after instantiation. In most

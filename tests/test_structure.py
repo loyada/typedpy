@@ -514,3 +514,12 @@ def test_invalid_defaults_are_caught():
         class Foo(Structure):
             a: Array(items=String, default=factory)
     assert "Invalid default value: [1, 2, 3];" in str(excinfo.value)
+
+
+def test_default_alternative_style():
+    def default_factory(): return [1, 2, 3]
+
+    class Example(Structure):
+        i: Array[Integer] = default_factory
+
+    assert Example() == Example(i=[1, 2, 3])

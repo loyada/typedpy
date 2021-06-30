@@ -459,7 +459,8 @@ def _apply_default_and_update_required_not_to_include_fields_with_defaults(
         if field_name in defaults and not getattr(
             cls_dict[field_name], "_default", None
         ):
-            cls_dict[field_name]._try_default_value(defaults[field_name])
+            default_value = defaults[field_name]() if callable(defaults[field_name]) else defaults[field_name]
+            cls_dict[field_name]._try_default_value(default_value)
             cls_dict[field_name]._default = defaults[field_name]
         if getattr(cls_dict[field_name], "_default", None) is not None:
             if field_name in required_fields:

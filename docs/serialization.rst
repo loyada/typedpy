@@ -528,3 +528,29 @@ As can be seen in the example, the first parameter to it is the discriminator ke
 the content to be serialized.
 
 * New in 2.4.5
+
+Predefined Mappers
+==================
+There are two predefined mappers:
+* TO_CAMELCASE - convert between python snake-case and the more common naming in JSON, of camel-case
+* TO_LOWERCASE - convert between field names in lower case, and the serialized representation in upper case (common in configuration)
+
+An example:
+
+.. code-block:: python
+
+    from typedpy import mappers
+
+    class Bar(Structure):
+        i: int
+        f: float
+
+    class Foo(Structure):
+        abc: str
+        xxx_yyy: str
+        bar: Bar
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    foo = deserialize_structure(Foo, {'ABC': 'aaa', 'XXX_YYY': 'bbb', 'BAR': {'I': 1, 'F': 1.5}})
+    assert foo == Foo(abc='aaa', xxx_yyy='bbb', bar=Bar(i=1, f=1.5))

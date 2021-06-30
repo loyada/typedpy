@@ -225,9 +225,14 @@ Thus, the following code is valid, and behaves the way you would hope:
 
 In the example above you get the best of both worlds - The dynamic validation of typedpy, and the initialization \
 validation of Dataclasses that is supported by the IDE.
+Since both dataclasses and Typedpy manipulate the code, there are some features that do not work in this hybrid approach.
+For example:
+
+* Dataclass-style defaults do not work. e.g.: if in the example above we had "m: dict = {}" that would not work.
+
 
 This section focused on how Typedpy performs the main functionality of Dataclass. But Typedpy has a rich feature set
-beyond that. These features will be covered in the following chapters.
+beyond that.
 
 
 

@@ -316,7 +316,8 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
         if immutable is not None:
             self._immutable = immutable
         if default:
-            self._try_default_value(default)
+            default_val = default() if callable(default) else default
+            self._try_default_value(default_val)
 
     def _try_default_value(self, default):
         try:
@@ -336,7 +337,8 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
             return field_by_name[name]
 
         if instance is not None and self._name not in instance.__dict__:
-            return self._default
+            default_value = self._default() if callable(self._default) else self._default
+            return default_value
         res = (
             instance.__dict__[self._name]
             if instance is not None
@@ -709,6 +711,14 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             for name, val in bound.arguments["kwargs"].items():
                 setattr(self, name, val)
             del bound.arguments["kwargs"]
+
+        field_by_name = self.get_all_fields_by_name()
+        defaults_fields = [key for key in field_by_name if getattr(field_by_name[key], "_default", None) is
+                           not None and key not in bound.arguments]
+        for field_name in defaults_fields:
+            default = getattr(field_by_name[field_name], "_default")
+            default_value = default() if callable(default) else default
+            setattr(self, field_name, default_value)
 
         if Structure.failing_fast():
             for name, val in bound.arguments.items():

@@ -349,7 +349,7 @@ def test_as_bool():
         s: typing.Optional[str]
         i: typing.Optional[int]
 
-    assert not(Foo())
+    assert not (Foo())
     assert Foo(i=5)
 
 
@@ -493,3 +493,24 @@ def test_to_other_class():
 
     person = Person(id=1, name="john").to_other_class(PersonDataclass, ignore_props=["id"], age=40)
     assert person == PersonDataclass(name="john", age=40)
+
+
+def test_defaults_are_connected_to_structure():
+
+    class Foo(Structure):
+        a: Array(items=String, default=list)
+
+    foo = Foo()
+    assert foo == Foo(a=[])
+    assert foo.a == []
+    foo.a.append("xyz")
+    assert foo.a == ["xyz"]
+
+
+def test_invalid_defaults_are_caught():
+    def factory(): return [1, 2, 3]
+
+    with raises(TypeError) as excinfo:
+        class Foo(Structure):
+            a: Array(items=String, default=factory)
+    assert "Invalid default value: [1, 2, 3];" in str(excinfo.value)

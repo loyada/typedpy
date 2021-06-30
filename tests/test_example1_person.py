@@ -7,7 +7,7 @@ class Person(Structure):
     _required = ['ssid']
     name = String(pattern='[A-Za-z]+$', maxLength=8, default='Arthur')
     ssid = String(minLength=3, pattern='[A-Za-z]+$')
-    num = Integer(maximum=30, minimum=10, multiplesOf="dd", exclusiveMaximum=False, default=0)
+    num = Integer(maximum=30, minimum=10, multiplesOf="dd", exclusiveMaximum=False, default=10)
     foo = StructureReference(a=String(), b=StructureReference(c=Number(minimum=10), d=Number(maximum=10)))
 
 
@@ -129,7 +129,7 @@ def test_defaults():
     p = Person(ssid="abc")
     assert p.foo is None
     assert p.name == 'Arthur'
-    assert p.num == 0
+    assert p.num == 10
 
 
 def test_invalid_defaults_raise_error1():

@@ -354,6 +354,22 @@ class Boolean(TypedField):
 
     _ty = bool
 
+    def __set__(self, instance, value):
+        mapping = {
+           "True": True,
+           "False": False
+        }
+        value = mapping[value] if value in mapping else value
+        super().__set__(instance, value)
+
+    def _validate(self, value):
+        def err_prefix():
+            return "{}: ".format(self._name) if self._name else ""
+
+        if value not in {"True", "False", True, False}:
+            raise TypeError(
+                "{}Expected {}; Got {}".format(err_prefix(), self._ty, wrap_val(value))
+            )
 
 class Positive(Number):
     """

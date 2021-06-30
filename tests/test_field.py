@@ -1,6 +1,6 @@
 from pytest import raises
 
-from typedpy import unique, String, Structure
+from typedpy import Boolean, unique, String, Structure
 
 
 def test_unique_field_violation():
@@ -69,4 +69,14 @@ def test_unique_field_using_parameter_violation():
     with raises(ValueError) as excinfo:
         Person(ssid="1234", name="Jack")
     assert "Instance copy of field ssid in Person, which is defined as unique. Instance is '1234'" in str(excinfo.value)
+
+
+def test_boolean_string_assignment():
+    class Foo(Structure):
+        a: Boolean
+
+    foo = Foo(a="False")
+    assert foo.a is False
+    foo.a = "True"
+    assert foo.a is True
 

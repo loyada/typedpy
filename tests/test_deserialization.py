@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from pytest import raises
 
-from typedpy import Structure, Array, Number, String, Integer, \
+from typedpy import Boolean, ImmutableStructure, Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
     Float, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything, mappers, serialize, NotField, \
     SerializableField, Deque, PositiveInt, DecimalNumber
@@ -1227,3 +1227,13 @@ def test_deserialization_decimal():
 
     foo = Deserializer(target_class=Foo).deserialize({"s": "x", "a": 1.11})
     assert quantize(foo.a) == quantize(Decimal('1.11'))
+
+
+def test_deserialize_boolean():
+    class Foo(ImmutableStructure):
+        a: Boolean
+        b: Boolean
+
+    foo = Deserializer(Foo).deserialize({"a": True, "b": "True"})
+    assert foo == Foo(a=True, b=True)
+    assert foo.b is True

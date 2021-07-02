@@ -504,7 +504,7 @@ def deserialize_structure_internal(
         camel_case_convert = True
     if mapper is None:
         mapper = build_mapper(cls)
-        if mapper:
+        if isinstance(getattr(cls, MAPPER, None), mappers):
             keep_undefined = False
     ignore_none = getattr(cls, IGNORE_NONE_VALUES, False)
     if not isinstance(mapper, (collections.abc.Mapping,)):

@@ -805,6 +805,16 @@ def test_predefined_mapper_case_convert():
     assert serialize(foo) == {'ABC': 'aaa', 'XXX_YYY': 'bbb', 'BAR': {'I': 1, 'F': 1.5}}
 
 
+def test_custom_mapper_keeps_undefined_attributes():
+    class Foo(Structure):
+        abc: str
+
+        _serialization_mapper = {"abc": "a"}
+
+    foo = deserialize_structure(Foo, {'a': 'x', 'b': 1})
+    assert foo == Foo(abc="x", a="x", b=1)
+
+
 def test_mapper_error1():
     class Foo(Structure):
         m = Map

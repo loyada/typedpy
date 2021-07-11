@@ -6,7 +6,7 @@ import enum
 import json
 from copy import deepcopy
 from collections import OrderedDict, deque, defaultdict
-from inspect import Signature, Parameter, signature
+from inspect import Signature, Parameter, signature, currentframe
 import sys
 import typing
 import hashlib
@@ -435,6 +435,17 @@ def _get_all_fields_by_name(cls):
     return all_fields_by_name
 
 
+def _get_all_values_of_attribute(cls, attr_name: str):
+    all_classes = reversed([c for c in cls.mro() if isinstance(c, StructMeta)])
+    all_values = []
+    for the_class in all_classes:
+        if issubclass(the_class, Structure):
+            attr = getattr(the_class, attr_name, None)
+            if attr is not None:
+                all_values.append(attr)
+    return all_values
+
+
 def _instantiate_fields_if_needed(cls_dict: dict, defaults: dict):
     for key, val in cls_dict.items():
         if (
@@ -482,7 +493,7 @@ class StructMeta(type):
 
     def __new__(cls, name, bases, cls_dict):
         bases_params, bases_required = get_base_info(bases)
-        add_annotations_to_class_dict(cls_dict)
+        add_annotations_to_class_dict(cls_dict, previous_frame=currentframe().f_back)
         defaults = cls_dict[DEFAULTS]
         _instantiate_fields_if_needed(cls_dict=cls_dict, defaults=defaults)
 
@@ -600,12 +611,14 @@ def get_typing_lib_info(v):
     return mapped_type()
 
 
-def add_annotations_to_class_dict(cls_dict):
+def add_annotations_to_class_dict(cls_dict, previous_frame):
     annotations = cls_dict.get("__annotations__", {})
     defaults = {}
     optional_fields = set(cls_dict.get(OPTIONAL_FIELDS, []))
     if isinstance(annotations, dict):
         for k, v in annotations.items():
+            if isinstance(v, str):
+                v = eval(v, sys.modules[cls_dict['__module__']].__dict__, previous_frame.f_locals)
             first_arg = getattr(v, "__args__", [0])[0]
             mros = getattr(first_arg, "__mro__", getattr(v, "__mro__", []))
             if not type_is_generic(v) and (
@@ -872,6 +885,10 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     @classmethod
     def get_all_fields_by_name(cls):
         return _get_all_fields_by_name(cls)
+
+    @classmethod
+    def get_aggregated_serialization_mapper(cls):
+        return _get_all_values_of_attribute(cls, MAPPER)
 
     def _is_wrapper(self):
         field_by_name = _get_all_fields_by_name(self.__class__)

@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import enum
 import sys
 import typing
 from dataclasses import dataclass
-
 import pytest
 from pytest import raises
 

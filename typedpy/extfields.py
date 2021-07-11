@@ -32,7 +32,7 @@ class IPV4(String):
 
     def __set__(self, instance, value):
         if IPV4._ipv4_re.match(value) and all(
-            0 <= int(component) <= 255 for component in value.split(".")
+                0 <= int(component) <= 255 for component in value.split(".")
         ):
             super().__set__(instance, value)
         else:
@@ -196,6 +196,8 @@ class DateTime(SerializableField):
 
     def deserialize(self, value):
         try:
+            if isinstance(value, int) and 2600000000 > value > 1600000000:
+                return datetime.fromtimestamp(value)
             return datetime.strptime(value, self._datetime_format)
         except ValueError as ex:
             raise ValueError(
@@ -203,11 +205,11 @@ class DateTime(SerializableField):
             ) from ex
 
     def __set__(self, instance, value):
-        if isinstance(value, str):
+        if isinstance(value, datetime):
+            super().__set__(instance, value)
+        elif isinstance(value, (str, int)):
             as_datetime = self.deserialize(value)
             super().__set__(instance, as_datetime)
-        elif isinstance(value, datetime):
-            super().__set__(instance, value)
         else:
             raise TypeError(
                 "{}: Got {}; Expected datetime or str".format(

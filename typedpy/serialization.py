@@ -771,8 +771,11 @@ def _convert_to_snake_case_if_required(key, camel_case_convert):
 
 
 def serialize_internal(structure, mapper=None, compact=False, camel_case_convert=False):
-    if mapper is None:
-        mapper = {}
+    cls = structure.__class__
+    if getattr(cls, MAPPER, {}) == mappers.TO_CAMELCASE:
+        camel_case_convert = True
+    if not mapper:
+        mapper = build_mapper(cls)
     field_by_name = _get_all_fields_by_name(structure.__class__)
     if isinstance(structure, getattr(Generator, "_ty", None)):
         raise TypeError("Generator cannot be serialized")

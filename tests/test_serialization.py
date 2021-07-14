@@ -384,18 +384,27 @@ def test_serialize_with_deep_mapper_camel_case():
 
 
 def test_serialize_with_camel_case_setting():
+    class Bar(Structure):
+        bar_bar = String
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
     class Foo(Structure):
         a = String
         i_num = Integer
         cba_def_xyz = Integer
+        bar = Bar
 
         _serialization_mapper = mappers.TO_CAMELCASE
 
-    foo = Foo(i_num=5, a="xyz", cba_def_xyz=4)
+    foo = Foo(i_num=5, a="xyz", cba_def_xyz=4, bar=Bar(bar_bar="abc"))
     assert Serializer(foo).serialize() == {
         "a": "xyz",
         "iNum": 5,
-        "cbaDefXyz": 4
+        "cbaDefXyz": 4,
+        "bar": {
+            "BAR_BAR": "abc"
+        }
     }
 
 
@@ -668,9 +677,9 @@ def test_convert_camel_case():
     original = Foo(first_name="joe", last_name="smith", age_years=5)
     res = Serializer(source=original).serialize(camel_case_convert=True)
     assert res == {
-            "firstName": "joe",
-            "lastName" : "smith",
-            "ageYears": 5
+        "firstName": "joe",
+        "lastName": "smith",
+        "ageYears": 5
     }
 
 
@@ -681,6 +690,7 @@ def test_serialization_decimal():
     class Foo(Structure):
         a = DecimalNumber
         s = String
+
     foo = Foo(a=Decimal('1.11'), s="x")
     result = Serializer(source=foo).serialize()
     assert quantize(Decimal(result['a'])) == quantize(Decimal(1.11))
@@ -696,7 +706,35 @@ def test_serialize_field_with_inheritance():
     class Bar(Foo):
         a = Array[str]
         _required = []
+
     now = datetime.datetime.now()
     bar = Bar(a=["x"], d=now, s="xyz")
     assert serialize_field(Bar.s, bar.s) == "xyz"
     assert serialize_field(Bar.d, bar.d) == now.strftime("%m/%d/%y %H:%M:%S")
+
+
+def test_serialize_mapper_to_lowercase():
+    class Bar(Structure):
+        field1 = String
+        field2 = String
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    class Foo(Structure):
+        abc = Integer
+        m = Map[String, Bar]
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    foo = Foo(abc=123, m={"my_key": Bar(field1="xxx", field2="yyy")})
+    serialized = Serializer(foo).serialize()
+    assert serialized == {
+        "ABC": 123,
+        "M": {
+            "my_key": {
+                "FIELD1": "xxx",
+                "FIELD2": "yyy"
+            }
+        }
+    }
+    assert Deserializer(Foo).deserialize(serialized) == foo

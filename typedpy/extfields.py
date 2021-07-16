@@ -196,7 +196,7 @@ class DateTime(SerializableField):
 
     def deserialize(self, value):
         try:
-            if isinstance(value, int) and 2600000000 > value > 1600000000:
+            if isinstance(value, int) and 2000000000 > value > 1000000000:
                 return datetime.fromtimestamp(value)
             return datetime.strptime(value, self._datetime_format)
         except ValueError as ex:

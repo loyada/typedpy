@@ -10,7 +10,7 @@ from typedpy import Boolean, ImmutableStructure, Structure, Array, Number, Strin
     Float, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything, mappers, serialize, NotField, \
     SerializableField, Deque, PositiveInt, DecimalNumber
 from typedpy.serialization import FunctionCall
-from typedpy.serialization_wrappers import Deserializer, deserializer_by_discriminator
+from typedpy.serialization_wrappers import Deserializer, Serializer, deserializer_by_discriminator
 
 
 class SimpleStruct(Structure):
@@ -881,7 +881,7 @@ def test_bad_path_in_mapper():
                               },
                               mapper=mapper,
                               keep_undefined=False)
-    assert "m: Got None; Expected a dictionary" in str(excinfo.value)
+    assert "s: Got {'first': 'Joe', 'last': 'smith'}; Expected a string" in str(excinfo.value)
 
 
 def test_invalid_mapper_value():
@@ -1247,3 +1247,18 @@ def test_deserialize_boolean():
     foo = Deserializer(Foo).deserialize({"a": True, "b": "True"})
     assert foo == Foo(a=True, b=True)
     assert foo.b is True
+
+
+def test_deserialize_optional_with_mapper():
+    class Foo(ImmutableStructure):
+        aaa = String
+        bbb = String
+
+        _optional = ["bbb"]
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    deserialized = Deserializer(Foo).deserialize({"AAA": "x"})
+
+    assert deserialized == Foo(aaa="x")
+    assert Serializer(deserialized).serialize() == {"AAA": "x"}

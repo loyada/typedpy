@@ -417,7 +417,8 @@ def construct_fields_map(
             process = True
         elif key in mapper:
             processed_input = get_processed_input(key, mapper, input_dict)
-            process = True
+            if processed_input is not None:
+                process = True
         if process:
             sub_mapper = mapper.get(f"{converted_key}._mapper", {})
             if Structure.failing_fast():

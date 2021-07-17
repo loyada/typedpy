@@ -554,3 +554,29 @@ An example:
 
     foo = deserialize_structure(Foo, {'ABC': 'aaa', 'XXX_YYY': 'bbb', 'BAR': {'I': 1, 'F': 1.5}})
     assert foo == Foo(abc='aaa', xxx_yyy='bbb', bar=Bar(i=1, f=1.5))
+
+
+
+Known Issues
+============
+As of now, _serialization_mapper is does aggregate through inheritance.
+To demonstrate, examine the following code:
+
+.. code-block:: python
+
+    from typedpy import mappers
+
+    class Foo(Structure):
+        abc: str
+
+        _serialization_mapper = {"abc": "cde"}
+
+    class Bar(Foo):
+        i: int
+        f: float
+
+        _serialization_mapper = {"i": "j"}
+
+
+In this case when you serialize an instance of Bar, the serialization mapper of Foo will be ignored.
+This is likely not the desired behavior.

@@ -52,8 +52,8 @@
 
 [Conda-Forge page is here](https://anaconda.org/conda-forge/typedpy)
 
-[travis]:https://travis-ci.org/loyada/typedpy
-[travis img]:https://travis-ci.org/loyada/typedpy.svg?branch=master
+[travis]:https://travis-ci.com/loyada/typedpy
+[travis img]:https://travis-ci.com/loyada/typedpy.svg?branch=master
 
 [docs img]:https://readthedocs.org/projects/typedpy/badge/?version=latest
 [docs]:https://typedpy.readthedocs.io/en/latest/?badge=latest

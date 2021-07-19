@@ -441,7 +441,9 @@ def _get_all_values_of_attribute(cls, attr_name: str):
     for the_class in all_classes:
         if issubclass(the_class, Structure):
             attr = getattr(the_class, attr_name, None)
-            if attr is not None:
+            if isinstance(attr, list):
+                all_values.extend(attr)
+            elif attr is not None:
                 all_values.append(attr)
     return all_values
 

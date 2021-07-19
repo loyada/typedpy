@@ -4,7 +4,7 @@ import json
 from functools import reduce
 from typing import Dict
 
-from .mappers import mappers, get_mapper, build_mapper
+from .mappers import aggregate_mappers, mappers, get_mapper
 from .structures import (
     MAPPER,
     TypedField,
@@ -17,7 +17,7 @@ from .structures import (
 )
 from .fields import (
     Field,
-    Number,
+    FunctionCall, Number,
     String,
     StructureReference,
     Array,
@@ -404,23 +404,20 @@ def construct_fields_map(
     result = {}
     errors = []
     for key, field in field_by_name.items():
-        converted_key = _convert_to_camel_case_if_required(
-            key, camel_case_convert=camel_case_convert
-        )
         process = False
         processed_input = None
         if key in input_dict and key not in mapper:
             processed_input = input_dict[key]
             process = True
-        elif converted_key in input_dict and key not in mapper:
-            processed_input = input_dict[converted_key]
+        elif key in input_dict and key not in mapper:
+            processed_input = input_dict[key]
             process = True
         elif key in mapper:
             processed_input = get_processed_input(key, mapper, input_dict)
             if processed_input is not None:
                 process = True
         if process:
-            sub_mapper = mapper.get(f"{converted_key}._mapper", {})
+            sub_mapper = mapper.get(f"{mapper[key]}._mapper", {})
             if Structure.failing_fast():
                 result[key] = deserialize_single_field(
                     field,
@@ -449,24 +446,6 @@ def construct_fields_map(
         raise errors[0].__class__(messages) from errors[0]
 
     return result
-
-
-class FunctionCall(Structure):
-    """
-    Structure that represents a function call for the purpose of serialization mappers: \
-    Includes the function to be called, and a list of keys of positional string arguments.
-    This is not a generic function call.
-
-    Arguments:
-        func(Function):
-            the function to be called. Note this must be a real function, not any callable.
-        args(Array[String]): optional
-            the keys of the arguments to be used as positional arguments for the function call
-    """
-
-    func = Function
-    args = Array[String]
-    _required = ["func"]
 
 
 def deserialize_structure_internal(
@@ -501,12 +480,8 @@ def deserialize_structure_internal(
         an instance of the provided :class:`Structure` deserialized
     """
 
-    if getattr(cls, MAPPER, {}) == mappers.TO_CAMELCASE:
-        camel_case_convert = True
     if mapper is None:
-        mapper = build_mapper(cls)
-        if isinstance(getattr(cls, MAPPER, None), mappers):
-            keep_undefined = False
+        mapper = aggregate_mappers(cls)
     ignore_none = getattr(cls, IGNORE_NONE_VALUES, False)
     if not isinstance(mapper, (collections.abc.Mapping,)):
         raise TypeError("Mapper must be a mapping")
@@ -531,18 +506,18 @@ def deserialize_structure_internal(
             "{}: Expected a dictionary; Got {}".format(name, wrap_val(the_dict))
         )
 
-    converted_snake_case_if_required = {
-        k: _convert_to_snake_case_if_required(k, camel_case_convert=camel_case_convert)
-        for k in the_dict
-    }
+   # converted_snake_case_if_required = {
+   #     k: _convert_to_snake_case_if_required(k, camel_case_convert=camel_case_convert)
+   #     for k in the_dict
+   # }
 
-    kwargs = {
-        converted_snake_case_if_required[k]: v
-        for k, v in the_dict.items()
-        if converted_snake_case_if_required[k] not in field_by_name and keep_undefined
-    }
+  #  kwargs = {
+   #     the_dict[k]: v
+ #       for k, v in the_dict.items()
+  #      if the_dict[k] not in field_by_name and keep_undefined
+  #  }
 
-    kwargs.update(
+    kwargs = (
         construct_fields_map(
             field_by_name,
             keep_undefined,
@@ -603,7 +578,7 @@ def get_processed_input(key, mapper, the_dict):
         args = (
             [_deep_get(the_dict, k) for k in key_mapper.args]
             if key_mapper.args
-            else [the_dict.get(key)]
+            else [the_dict.get(mapper[key])]
         )
         processed_input = key_mapper.func(*args)
     elif isinstance(key_mapper, (str,)):
@@ -776,7 +751,7 @@ def serialize_internal(structure, mapper=None, compact=False, camel_case_convert
     if getattr(cls, MAPPER, {}) == mappers.TO_CAMELCASE:
         camel_case_convert = True
     if not mapper:
-        mapper = build_mapper(cls)
+        mapper = mapper  #build_mapper(cls)
     field_by_name = _get_all_fields_by_name(structure.__class__)
     if isinstance(structure, getattr(Generator, "_ty", None)):
         raise TypeError("Generator cannot be serialized")

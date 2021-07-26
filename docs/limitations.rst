@@ -66,3 +66,8 @@ Typedpy automatically converts it to its own internal class:`Field` types, but y
 
     def  get_names_for_id(id: str, example: Example) -> list[str]:
          ...
+
+
+Serialization Mappers
+=======================
+Combining functions transformations cannot be followed by other functions and key mapping.

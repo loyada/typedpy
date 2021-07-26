@@ -154,6 +154,7 @@ Example of custom deserialization:
 
 
 
+
 Limitations and Guidance
 ------------------------
 * For Set, Tuple - deserialization expects an array, serialization converts to array (set and tuple are not part of JSON)
@@ -341,6 +342,79 @@ An example of a deep nested mapper:
                        "array": [1, 2]
                    }
            }
+
+
+Custom Mappers as Part of the Class Definitions
+================================================
+using "_serialization_mapper" and "_deserialization_mappers" allow to define custom mappers within the class definition.
+These will also aggregate through inheritance.
+In case the serialization and deserialization mappers are the same, just use "_serialization_mapper". If they differ, \
+for example: if you use a functional transformation in the serialization and need to apply the opposite function when \
+deserializing, use also "_deserialization_mapper".
+
+You can also apply multiple mappers serially, as the example below:
+
+For example:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        a: int
+        s: str
+
+        _serialization_mapper = [{"a": "b"}, mappers.TO_LOWERCASE]
+
+    original = {"B": 5, "S": "xyz"}
+    deserialized = Deserializer(Foo).deserialize(original, keep_undefined=False)
+    assert deserialized == Foo(a=5, s="xyz")
+    serialized = Serializer(deserialized).serialize()
+    assert serialized == original
+
+
+Another, more involved mapping:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        xyz: Array
+        i: int
+        _serialization_mapper = {"i": "j"}
+
+    class Bar(Foo):
+        a: Array
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    class Blah(Bar):
+        s: str
+        foo: Foo
+        _serialization_mapper = {}
+        _deserialization_mapper = {"S": FunctionCall(func=lambda x: x * 2)}
+
+    original = {
+        "S": "abc",
+        "FOO": {
+            "XYZ": [1, 2],
+            "J": 5
+        },
+        "A": [7, 6, 5, 4],
+        "XYZ": [1, 4],
+        "J": 9
+    }
+    deserialized = Deserializer(Blah).deserialize(original, keep_undefined=False)
+    assert deserialized == Blah(
+        s="abcabc",
+        foo=Foo(i=5, xyz=[1, 2]),
+        xyz=[1, 4],
+        i=9,
+        a=[7, 6, 5, 4]
+    )
+    serialized = Serializer(deserialized).serialize()
+
+    # Note, Typedpy will not magically reverse your custom mapping function, and
+    # is limited when combining function and key transformation,
+    # thus the "S" field below.
+    assert serialized == {**original, "S": "abcabc"}
 
 
 Strict Serialization and Deserialization API
@@ -557,26 +631,5 @@ An example:
 
 
 
-Known Issues
-============
-As of now, _serialization_mapper is does aggregate through inheritance.
-To demonstrate, examine the following code:
-
-.. code-block:: python
-
-    from typedpy import mappers
-
-    class Foo(Structure):
-        abc: str
-
-        _serialization_mapper = {"abc": "cde"}
-
-    class Bar(Foo):
-        i: int
-        f: float
-
-        _serialization_mapper = {"i": "j"}
 
 
-In this case when you serialize an instance of Bar, the serialization mapper of Foo will be ignored.
-This is likely not the desired behavior.

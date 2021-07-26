@@ -1,6 +1,6 @@
 import pytest
 
-from typedpy import Array, Deserializer, FunctionCall, Serializer, Structure, mappers
+from typedpy import Array, Deserializer, FunctionCall, Serializer, String, Structure, mappers
 from typedpy.mappers import aggregate_deserialization_mappers, aggregate_serialization_mappers
 
 
@@ -157,3 +157,15 @@ def test_chained_mappers():
     assert deserialized == Foo(a=5, s="xyz")
     serialized = Serializer(deserialized).serialize()
     assert serialized == original
+
+
+def test_mapper_with_opt():
+    class Foo(Structure):
+        first = String
+        second = String
+        opt = String
+        _optional = ["opt"]
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    foo: Foo = Deserializer(Foo).deserialize({"FIRST": "ff", "SECOND": "ss", "OPT": "oo"})
+    foo2: Foo = Deserializer(Foo).deserialize({"FIRST": "ff", "SECOND": "ss"})

@@ -403,7 +403,7 @@ def test_serialize_with_camel_case_setting():
         "iNum": 5,
         "cbaDefXyz": 4,
         "bar": {
-            "BAR_BAR": "abc"
+            "BARBar": "abc"
         }
     }
 
@@ -432,15 +432,19 @@ def test_serialize_with_deep_mapper_camel_case_setting():
            {
                "number": 1,
                "bar":
-                   {
-                       "fooBar": {
-                           "a": "string",
-                           "iNum": 10,
-                           "cccc": 2
-                       },
-                       "arrayOne": [1, 2]
-                   }
+                   {'array_one': [1, 2],
+                    'foo_bar': {'a': 'string', 'cccc': 2, 'i_num': 10}
+                    }
            }
+
+    serialized = serialize(example, mapper=mapper, camel_case_convert=True)
+    assert serialized == {
+        'bar': {
+            'arrayOne': [1, 2],
+            'fooBar': {'a': 'string', 'cccc': 2, 'iNum': 10}
+        },
+            'number': 1
+    }
 
 
 def test_serialize_with_mapper_with_functions():

@@ -23,14 +23,16 @@ IS_IMMUTABLE = "_immutable"
 OPTIONAL_FIELDS = "_optional"
 MUST_BE_UNIQUE = "_must_be_unique"
 IGNORE_NONE_VALUES = "_ignore_none"
-MAPPER = "_serialization_mapper"
+SERIALIZATION_MAPPER = "_serialization_mapper"
+DESERIALIZATION_MAPPER = "_deserialization_mapper"
 SPECIAL_ATTRIBUTES = {
     REQUIRED_FIELDS,
     ADDITIONAL_PROPERTIES,
     IS_IMMUTABLE,
     DEFAULTS,
     OPTIONAL_FIELDS,
-    MAPPER,
+    SERIALIZATION_MAPPER,
+    DESERIALIZATION_MAPPER,
     IGNORE_NONE_VALUES,
 }
 
@@ -890,7 +892,21 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
     @classmethod
     def get_aggregated_serialization_mapper(cls):
-        return _get_all_values_of_attribute(cls, MAPPER)
+        return _get_all_values_of_attribute(cls, SERIALIZATION_MAPPER)
+
+    @classmethod
+    def get_aggregated_deserialization_mapper(cls):
+        all_classes = reversed([c for c in cls.mro() if isinstance(c, StructMeta)])
+        all_values = []
+        for the_class in all_classes:
+            if issubclass(the_class, Structure):
+                attr = getattr(the_class, DESERIALIZATION_MAPPER, getattr(the_class, SERIALIZATION_MAPPER, None))
+                if isinstance(attr, list):
+                    all_values.extend(attr)
+                elif attr is not None:
+                    all_values.append(attr)
+        return all_values
+
 
     def _is_wrapper(self):
         field_by_name = _get_all_fields_by_name(self.__class__)

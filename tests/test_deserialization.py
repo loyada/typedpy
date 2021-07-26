@@ -793,6 +793,8 @@ def test_predefined_mapper_case_convert():
         i: int
         f: float
 
+        _serialization_mapper = mappers.TO_LOWERCASE
+
     class Foo(Structure):
         abc: str
         xxx_yyy: str
@@ -1020,7 +1022,7 @@ def test_deserialize_with_deep_mapper_camel_case():
         bar = Bar
         number = Integer
 
-    mapper = {'bar._mapper': {'fooBar._mapper': {"i": FunctionCall(func=lambda x: x * 2)}}}
+    mapper = {'bar._mapper': {'foo_bar._mapper': {"i": FunctionCall(func=lambda x: x * 2)}}}
     deserializer = Deserializer(target_class=Example, mapper=mapper,
                                 camel_case_convert=True)
     deserialized = deserializer.deserialize(
@@ -1060,10 +1062,14 @@ def test_deserialize_with_deep_mapper_camel_case_setting():
     class Foo(Structure):
         a_b = String
         i = Integer
+        _serialization_mapper = mappers.TO_CAMELCASE
+
 
     class Bar(Structure):
         foo_bar = Foo
         array_nums = Array
+        _serialization_mapper = mappers.TO_CAMELCASE
+
 
     class Example(Structure):
         bar = Bar
@@ -1213,7 +1219,7 @@ def test_convert_camel_case2():
     assert res == Foo(first_name="joe", last_name="smith", age_years=5)
 
 
-def test_ignore_node_should_not_work_on_required_fields():
+def test_ignore_none_should_not_work_on_required_fields():
     class Foo(Structure):
         a = Integer
         s = String
@@ -1223,7 +1229,7 @@ def test_ignore_node_should_not_work_on_required_fields():
 
     with raises(TypeError) as excinfo:
         Deserializer(target_class=Foo).deserialize({"s": None, "a": None, "i": 1})
-    assert "s: Got None; Expected a string" in str(excinfo.value)
+    assert "missing a required argument: 's'" in str(excinfo.value)
     assert Deserializer(target_class=Foo).deserialize({"s": "x", "a": None, "i": 1}).a is None
 
 

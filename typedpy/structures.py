@@ -524,6 +524,10 @@ class StructMeta(type):
         )
         required = cls_dict.get(REQUIRED_FIELDS, default_required)
         setattr(clsobj, REQUIRED_FIELDS, list(set(bases_required + required)))
+        optional_fields = cls_dict.get(OPTIONAL_FIELDS, [])
+        for f in optional_fields:
+            if f in required or f in bases_required:
+                raise ValueError("optional cannot override prior required in the class or in a base class")
         additional_props = cls_dict.get(ADDITIONAL_PROPERTIES, True)
         sig = make_signature(
             clsobj._fields,

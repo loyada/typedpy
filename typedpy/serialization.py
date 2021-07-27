@@ -408,13 +408,14 @@ def construct_fields_map(
         mapped_key = mapper.get(key, key)
         process = False
         processed_input = None
-        if key in input_dict and key not in mapper:
-            processed_input = input_dict[key]
-            process = True
-        elif key in mapper:
+        if key in mapper:
             processed_input = get_processed_input(key, mapper, input_dict)
             if processed_input is not None:
                 process = True
+        elif key in input_dict and key not in mapper:
+            processed_input = input_dict[key]
+            process = True
+
         if process:
             sub_mapper = mapper.get(f"{mapped_key}._mapper", mapper.get(f"{key}._mapper"))
             if Structure.failing_fast():
@@ -573,16 +574,21 @@ def _deep_get(dictionary, deep_key):
 
 
 def get_processed_input(key, mapper, the_dict):
+    def _try_deep_get(k):
+        v = _deep_get(the_dict, k)
+        return v if v is not None else k
+
     key_mapper = mapper[key]
     if isinstance(key_mapper, (FunctionCall,)):
         args = (
-            [(_deep_get(the_dict, k) or k) for k in key_mapper.args]
+            [_try_deep_get(k) for k in key_mapper.args]
             if key_mapper.args
             else [the_dict.get(key)]
         )
         processed_input = key_mapper.func(*args)
     elif isinstance(key_mapper, (str,)):
-        processed_input = _deep_get(the_dict, key_mapper) or the_dict.get(key)
+        val = _deep_get(the_dict, key_mapper)
+        processed_input = val if val is not None else the_dict.get(key)
     else:
         raise TypeError(
             "mapper value must be a key in the input or a FunctionCal. Got {}".format(

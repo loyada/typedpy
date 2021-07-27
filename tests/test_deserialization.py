@@ -2,6 +2,7 @@ import enum
 import operator
 from collections import OrderedDict, deque
 from decimal import Decimal
+from typing import Optional
 
 from pytest import raises
 
@@ -1268,3 +1269,13 @@ def test_deserialize_optional_with_mapper():
 
     assert deserialized == Foo(aaa="x")
     assert Serializer(deserialized).serialize() == {"AAA": "x"}
+
+
+def test_ignore_none_with_none():
+    class Foo(ImmutableStructure):
+        a: String
+        b: Optional[String]
+        _ignore_none = True
+
+    assert Deserializer(Foo).deserialize({"a": "x", "b": None}) == Foo(a="x")
+

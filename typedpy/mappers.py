@@ -27,8 +27,14 @@ def _set_base_mapper_no_op(cls, for_serialization):
                     val = aggregate_serialization_mappers(
                         i._ty) if for_serialization else aggregate_deserialization_mappers(i._ty)
                     values.update(val)
+                elif isinstance(i, StructureReference):
+                    val = aggregate_serialization_mappers(
+                        i._newclass) if for_serialization else aggregate_deserialization_mappers(
+                        i._newclass)
+                    values.update(val)
             if values:
                 mapper[f"{k}._mapper"] = values
+
         elif isinstance(f, StructureReference):
             val = aggregate_serialization_mappers(f._newclass) if for_serialization else aggregate_deserialization_mappers(
                 f._newclass)

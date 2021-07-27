@@ -138,15 +138,15 @@ def test_iterating_over_wrapped_structure_err():
 
 
 def test_optional_fields_required_overrides1():
-    class Trade(Structure):
-        venue: Enum[Venue]
-        comment: String
-        _optional = ["venue"]
-        _required = ["venue"]
+    with raises(ValueError) as excinfo:
 
-    with raises(TypeError) as excinfo:
-        Trade(comment="asdasd")
-    assert "missing a required argument: 'venue'" in str(excinfo.value)
+        class Trade(Structure):
+            venue: Enum[Venue]
+            comment: String
+            _optional = ["venue"]
+            _required = ["venue"]
+
+    assert "optional cannot override prior required in the class or in a base class" in str(excinfo.value)
 
 
 @pytest.fixture(scope="session")
@@ -524,3 +524,17 @@ def test_default_alternative_style():
         i: Array[Integer] = default_factory
 
     assert Example() == Example(i=[1, 2, 3])
+
+
+def test_inheritance_with_optional_field():
+    class Foo(Structure):
+        a: String
+        b: String
+
+    with raises(ValueError) as excinfo:
+        class Bar(Foo):
+            c: String
+
+            _optional = ["b"]
+
+    assert "optional cannot override prior required in the class or in a base class" in str(excinfo.value)

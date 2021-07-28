@@ -1,4 +1,4 @@
-from collections import Mapping
+from collections.abc import Mapping
 from enum import Enum, auto
 from functools import reduce
 

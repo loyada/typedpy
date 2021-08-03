@@ -32,7 +32,7 @@ class IPV4(String):
 
     def __set__(self, instance, value):
         if IPV4._ipv4_re.match(value) and all(
-                0 <= int(component) <= 255 for component in value.split(".")
+            0 <= int(component) <= 255 for component in value.split(".")
         ):
             super().__set__(instance, value)
         else:

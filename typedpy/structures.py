@@ -339,7 +339,9 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
             return field_by_name[name]
 
         if instance is not None and self._name not in instance.__dict__:
-            default_value = self._default() if callable(self._default) else self._default
+            default_value = (
+                self._default() if callable(self._default) else self._default
+            )
             return default_value
         res = (
             instance.__dict__[self._name]
@@ -474,7 +476,11 @@ def _apply_default_and_update_required_not_to_include_fields_with_defaults(
         if field_name in defaults and not getattr(
             cls_dict[field_name], "_default", None
         ):
-            default_value = defaults[field_name]() if callable(defaults[field_name]) else defaults[field_name]
+            default_value = (
+                defaults[field_name]()
+                if callable(defaults[field_name])
+                else defaults[field_name]
+            )
             cls_dict[field_name]._try_default_value(default_value)
             cls_dict[field_name]._default = defaults[field_name]
         if getattr(cls_dict[field_name], "_default", None) is not None:
@@ -527,7 +533,9 @@ class StructMeta(type):
         optional_fields = cls_dict.get(OPTIONAL_FIELDS, [])
         for f in optional_fields:
             if f in required or f in bases_required:
-                raise ValueError("optional cannot override prior required in the class or in a base class")
+                raise ValueError(
+                    "optional cannot override prior required in the class or in a base class"
+                )
         additional_props = cls_dict.get(ADDITIONAL_PROPERTIES, True)
         sig = make_signature(
             clsobj._fields,
@@ -626,7 +634,11 @@ def add_annotations_to_class_dict(cls_dict, previous_frame):
     if isinstance(annotations, dict):
         for k, v in annotations.items():
             if isinstance(v, str):
-                v = eval(v, sys.modules[cls_dict['__module__']].__dict__, previous_frame.f_locals)
+                v = eval(
+                    v,
+                    sys.modules[cls_dict["__module__"]].__dict__,
+                    previous_frame.f_locals,
+                )
             first_arg = getattr(v, "__args__", [0])[0]
             mros = getattr(first_arg, "__mro__", getattr(v, "__mro__", []))
             if not type_is_generic(v) and (
@@ -735,8 +747,12 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             del bound.arguments["kwargs"]
 
         field_by_name = self.get_all_fields_by_name()
-        defaults_fields = [key for key in field_by_name if getattr(field_by_name[key], "_default", None) is
-                           not None and key not in bound.arguments]
+        defaults_fields = [
+            key
+            for key in field_by_name
+            if getattr(field_by_name[key], "_default", None) is not None
+            and key not in bound.arguments
+        ]
         for field_name in defaults_fields:
             default = getattr(field_by_name[field_name], "_default")
             default_value = default() if callable(default) else default
@@ -868,7 +884,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
-        result._skip_validation = True
+        result._skip_validation = True  # pylint: disable=attribute-defined-outside-init
         for k, v in self.__dict__.items():
             setattr(result, k, deepcopy(v, memo))
         delattr(result, "_skip_validation")
@@ -904,13 +920,16 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         all_values = []
         for the_class in all_classes:
             if issubclass(the_class, Structure):
-                attr = getattr(the_class, DESERIALIZATION_MAPPER, getattr(the_class, SERIALIZATION_MAPPER, None))
+                attr = getattr(
+                    the_class,
+                    DESERIALIZATION_MAPPER,
+                    getattr(the_class, SERIALIZATION_MAPPER, None),
+                )
                 if isinstance(attr, list):
                     all_values.extend(attr)
                 elif attr is not None:
                     all_values.append(attr)
         return all_values
-
 
     def _is_wrapper(self):
         field_by_name = _get_all_fields_by_name(self.__class__)
@@ -990,9 +1009,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
         raise TypeError(f"cls must be subclass of {self.__class__.__name__}")
 
-    def to_other_class(
-            self, target_class, *, ignore_props=None, **kw
-    ) -> T:
+    def to_other_class(self, target_class, *, ignore_props=None, **kw) -> T:
         """
         Shallow copy of the fields in the structure and instantiate an instance of the given target_class
         Arguments:
@@ -1037,9 +1054,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         return target_class(**kwargs)
 
     @classmethod
-    def from_other_class(
-            cls, source_object, *, ignore_props=None, **kw
-    ):
+    def from_other_class(cls, source_object, *, ignore_props=None, **kw):
         """
         Return a new instance of the current :class:`Structure`, with the attributes of the source_object.
         The optional parameters allow to ignore/override attributes.

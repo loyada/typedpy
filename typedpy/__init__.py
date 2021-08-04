@@ -58,20 +58,20 @@ from typedpy.json_schema_mapping import (
     write_code_from_schema,
 )
 
-from typedpy.serialization import (
+from .serialization import (
     deserialize_structure,
     serialize,
     serialize_field,
     FunctionCall,
 )
 
-from typedpy.serialization_wrappers import (
+from .serialization_wrappers import (
     Serializer,
     Deserializer,
     deserializer_by_discriminator,
 )
 
-from typedpy.extfields import (
+from .extfields import (
     DateString,
     DateField,
     DateTime,
@@ -82,8 +82,10 @@ from typedpy.extfields import (
     EmailAddress,
 )
 
-from typedpy.errors import standard_readable_error_for_typedpy_exception, ErrorInfo
+from .errors import standard_readable_error_for_typedpy_exception, ErrorInfo
 
-from typedpy.utility import get_list_type, type_is_generic
+from .utility import get_list_type, type_is_generic
 
-from typedpy.mappers import mappers
+from .mappers import mappers, Deleted, Constant
+
+from .versioned_mapping import convert_dict, Versioned

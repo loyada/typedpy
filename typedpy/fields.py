@@ -355,10 +355,7 @@ class Boolean(TypedField):
     _ty = bool
 
     def __set__(self, instance, value):
-        mapping = {
-           "True": True,
-           "False": False
-        }
+        mapping = {"True": True, "False": False}
         value = mapping[value] if value in mapping else value
         super().__set__(instance, value)
 
@@ -370,6 +367,7 @@ class Boolean(TypedField):
             raise TypeError(
                 "{}Expected {}; Got {}".format(err_prefix(), self._ty, wrap_val(value))
             )
+
 
 class Positive(Number):
     """
@@ -1693,4 +1691,3 @@ class FunctionCall(Structure):
     func = Function
     args = Array[String]
     _required = ["func"]
-

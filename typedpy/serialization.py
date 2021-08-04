@@ -4,11 +4,11 @@ import json
 from functools import reduce
 from typing import Dict
 
+from .versioned_mapping import VERSION_MAPPING, Versioned, convert_dict
 from .mappers import (
     aggregate_deserialization_mappers,
     aggregate_serialization_mappers,
     mappers,
-    get_mapper,
 )
 from .structures import (
     TypedField,
@@ -488,6 +488,11 @@ def deserialize_structure_internal(
         an instance of the provided :class:`Structure` deserialized
     """
 
+    if issubclass(cls, Versioned) and isinstance(the_dict, dict) and getattr(cls, VERSION_MAPPING):
+        versions_mapping = getattr(cls, VERSION_MAPPING)
+        input_dict = convert_dict(the_dict, versions_mapping)
+    else:
+        input_dict = the_dict
     mapper = aggregate_deserialization_mappers(cls, mapper, camel_case_convert)
     if keep_undefined:
         for m in cls.get_aggregated_deserialization_mapper():
@@ -503,7 +508,7 @@ def deserialize_structure_internal(
         raise TypeError("Mapper must be a mapping")
     field_by_name = _get_all_fields_by_name(cls)
 
-    if not isinstance(the_dict, dict):
+    if not isinstance(input_dict, dict):
         props = cls.__dict__
         fields = list(field_by_name.keys())
         required = props.get(REQUIRED_FIELDS, fields)
@@ -513,17 +518,17 @@ def deserialize_structure_internal(
             return cls(
                 deserialize_single_field(
                     getattr(cls, field_name),
-                    the_dict,
+                    input_dict,
                     field_name,
                     ignore_none=ignore_none,
                 )
             )
         raise TypeError(
-            "{}: Expected a dictionary; Got {}".format(name, wrap_val(the_dict))
+            "{}: Expected a dictionary; Got {}".format(name, wrap_val(input_dict))
         )
 
     kwargs = {
-        k: v for k, v in the_dict.items() if k not in field_by_name and keep_undefined
+        k: v for k, v in input_dict.items() if k not in field_by_name and keep_undefined
     }
 
     kwargs.update(
@@ -531,7 +536,7 @@ def deserialize_structure_internal(
             field_by_name,
             keep_undefined,
             mapper,
-            the_dict,
+            input_dict,
             camel_case_convert=camel_case_convert,
             ignore_none=ignore_none,
         )

@@ -10,6 +10,11 @@ from .fields import Array, FunctionCall, Set, StructureReference
 
 
 class Constant:
+    """
+    Mark a value as constant in a versioned mapper.
+    This is useful if an attribute did not exist in a previous version
+    and you want to assign it to a default value in the more recent version.
+    """
     def __init__(self, val):
         self._val = val
 
@@ -18,6 +23,10 @@ class Constant:
 
 
 class Deleted:
+    """
+    Used to mark an attribute as "removed" in a versioned mapper.
+    This is unsupported (nor needed) in a "regular" serialization mapper.
+    """
     pass
 
 

@@ -746,7 +746,7 @@ Typedpy defines a special Structure that is effectively a marker for a versioned
 .. autoclass:: Versioned
 
 
-Here is an example of its usage:
+The example below clarifies how to use :class:`Versioned` together with deserializer.
 
 .. code-block:: python
 

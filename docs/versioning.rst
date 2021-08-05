@@ -8,8 +8,8 @@ Support for Versioning
 .. contents:: :local:
 
 
-The use-case for support for versioning Typedpy addresses is deserializing different versions of the dictionary representing \
-the structure to match the latest Structure definition.
+The use-case for support for versioning that Typedpy addresses is deserializing different versions of the dictionary representing \
+the structure, to match the latest Structure definition.
 
 For example, suppose you saved a JSON object that adheres to some strict schema, and occasionally that schema had to evolve \
 to include new fields, or update existing ones. When you read it again, you always want to map to the latest schema, which \

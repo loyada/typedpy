@@ -177,3 +177,8 @@ The example below clarifies how to use :class:`Versioned` together with deserial
         version=4
     )
 
+
+What About Serialization?
+-------------------------
+Serialization is typically not an issue, since you probably want to serialize an object \
+based on the latest (i.e current) version of the object definition.

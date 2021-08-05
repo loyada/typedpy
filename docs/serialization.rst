@@ -660,8 +660,8 @@ Low-Level API
 
 Example of usage:
 
-
 .. code-block:: python
+
     versions_mapping = [
             # Mapping from version 1 to 2
         {

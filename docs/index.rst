@@ -41,6 +41,7 @@ Contents:
    structures
    fields
    serialization
+   versioning
    tutorial
    json_schema
    errors

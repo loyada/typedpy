@@ -86,7 +86,7 @@ Example of usage:
     }
 
 *Explanation*: The function convert_dict will apply all the applicable mappings based on the version of the input. In
-this case, it needs to replay all the mapping, since the raw input is at version 1.
+this case, it needs to replay all of them, since the raw input is at version 1.
 
 To further illustrate, let's follow the steps.
 

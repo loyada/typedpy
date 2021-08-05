@@ -16,30 +16,29 @@ class Foo(Versioned, ImmutableStructure):
     j: Integer
     m: Map[String, String]
 
-
     _versions_mapping = [
-            {
-                "j": Constant(100),
-                "old_bar._mapper": {
-                    "a": FunctionCall(func=lambda x: [i * 2 for i in x], args=["a"]),
-                },
-                "old_m": Constant({"abc": "xyz"})
+        {
+            "j": Constant(100),
+            "old_bar._mapper": {
+                "a": FunctionCall(func=lambda x: [i * 2 for i in x], args=["a"]),
             },
+            "old_m": Constant({"abc": "xyz"})
+        },
 
-            {
-                "old_bar._mapper": {
-                    "s": "sss",
-                    "sss": Deleted
-                },
-                "bar": "old_bar",
-                "m": "old_m",
-                "old_m": Deleted,
-                "old_bar": Deleted,
+        {
+            "old_bar._mapper": {
+                "s": "sss",
+                "sss": Deleted
             },
+            "bar": "old_bar",
+            "m": "old_m",
+            "old_m": Deleted,
+            "old_bar": Deleted,
+        },
 
-            {
-                "i": FunctionCall(func=lambda x: x * 100, args=["i"])
-            }
+        {
+            "i": FunctionCall(func=lambda x: x * 100, args=["i"])
+        }
 
     ]
 
@@ -47,7 +46,7 @@ class Foo(Versioned, ImmutableStructure):
 in_version_1 = {
     "version": 1,
     "old_bar": {
-        "a": [5,8,2],
+        "a": [5, 8, 2],
         "sss": "john",
     },
     "i": 2,
@@ -66,7 +65,7 @@ in_version_2 = {
 }
 
 
-def test_version_conversion():
+def test_version_conversion_deserializer():
     assert Deserializer(Foo).deserialize(in_version_1) == Foo(
         bar=Bar(a=[10, 16, 4], s="john"),
         m={"abc": "xyz"},
@@ -82,4 +81,20 @@ def test_version_conversion():
         j=150,
         version=4
     )
+
+
+def test_version_conversion_without_deserializer():
+    expected_in_latest_version = {
+        "version": 4,
+        "bar": {
+            "a": [10, 16, 4],
+            "s": "john",
+        },
+        "i": 200,
+        "j": 100,
+        "m": {"abc": "xyz"},
+    }
+    assert convert_dict(in_version_1, Foo._versions_mapping) == expected_in_latest_version
+    assert convert_dict(expected_in_latest_version, Foo._versions_mapping) == expected_in_latest_version
+
 

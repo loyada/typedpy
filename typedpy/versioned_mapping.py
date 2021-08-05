@@ -9,10 +9,16 @@ VERSION_MAPPING = "_versions_mapping"
 
 
 class Versioned(Structure):
-    """Marks a structure as can be deserialized from multiple versions.
-       The version is expected to start with 1 and increase by 1 in every update.
-       It is expected to have a class attribute of "_versions_mapping", with an ordered list
-       of the mappings. The first mapping maps version 1 to 2, the second 2 to 3, etc.
+    """
+        Marks a structure as can be deserialized from multiple versions.
+        The version is expected to start with 1 and increase by 1 in every update.
+        It is expected to have a class attribute of "_versions_mapping", with an ordered list
+        of the mappings. The first mapping maps version 1 to 2, the second 2 to 3, etc.
+
+        Arguments:
+
+        _versions_mapping: optional
+            An array of mappers that outlines how to convert older versions to the latest version.
 
     """
 
@@ -50,5 +56,4 @@ def convert_dict(the_dict: dict, versions_mapping):
     for mapping in versions_mapping[(start_version-1):]:
         mapped_dict = _convert(mapped_dict, mapping)
         mapped_dict["version"] += 1
-        print(mapped_dict)
     return mapped_dict

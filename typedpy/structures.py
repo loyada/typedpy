@@ -76,11 +76,11 @@ def make_signature(
            in case of inheritance
     :return: the signature
     """
-
+    all_names = set(names) | set(bases_params_by_name.keys())
     non_default_args_for_class = OrderedDict(
         [
             (name, Parameter(name, Parameter.POSITIONAL_OR_KEYWORD))
-            for name in names
+            for name in all_names
             if name in required
         ]
     )
@@ -1165,7 +1165,7 @@ class TypedField(Field):
         def err_prefix():
             return "{}: ".format(self._name) if self._name else ""
 
-        if not isinstance(value, self._ty) and value is not None:
+        if not isinstance(value, self._ty):
             raise TypeError(
                 "{}Expected {}; Got {}".format(err_prefix(), self._ty, wrap_val(value))
             )

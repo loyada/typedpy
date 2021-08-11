@@ -196,7 +196,7 @@ def test_do_not_ignore_none(Point):
 
     with raises(TypeError) as excinfo:
         Foo(i=None, point=Point(3, 4))
-    assert "i: Got None; Expected a number" in str(excinfo.value)
+    assert ": Expected <class 'int'>; Got None" in str(excinfo.value)
 
 
 def test_do_not_ignore_none_for_required_fields(Point):
@@ -207,7 +207,7 @@ def test_do_not_ignore_none_for_required_fields(Point):
 
     with raises(TypeError) as excinfo:
         Foo(i=None)
-    assert "i: Got None; Expected a number" in str(excinfo.value)
+    assert ": Expected <class 'int'>; Got None" in str(excinfo.value)
 
 
 def test_field_of_class_typeerror(Point):
@@ -428,7 +428,7 @@ def test_defect_required_should_propagate_with_ignore_none():
 
     with raises(TypeError) as excinfo:
         Bar(s="x", a=None)
-    assert "a: Got None; Expected a number" in str(excinfo.value)
+    assert "a: Expected <class 'int'>; Got None" in str(excinfo.value)
 
 
 def test_defect_multiple_inheritance_with_optional_1():
@@ -538,3 +538,31 @@ def test_inheritance_with_optional_field():
             _optional = ["b"]
 
     assert "optional cannot override prior required in the class or in a base class" in str(excinfo.value)
+
+
+def test_classreference_cant_accept_none():
+    class Foo(Structure):
+        bar = String
+
+    class Bar(Structure):
+        bar = String
+        foo = Foo
+
+    with raises(TypeError) as excinfo:
+        Bar(bar="abc", foo=None)
+    assert "foo: Expected <Structure: Foo. Properties: bar = <String>>; Got None" in str(excinfo.value)
+
+
+def test_required_is_inherited_field():
+    class A(Structure):
+        x = Integer
+        y = Integer
+        _required = []
+
+    class B(A):
+        _required = ["x", "y"]
+
+    with raises(TypeError) as excinfo:
+        B(y=5)
+    assert "missing a required argument: 'x'" in str(excinfo.value)
+    assert B(x=1, y=2).x == 1

@@ -615,8 +615,6 @@ def test_serialization_of_classreference_should_work():
     input_dict = {'a': 3, 'bar1': {'x': 3, 'y': 4, 'z': 5}}
     foo = deserialize_structure(Foo, input_dict)
     assert Serializer(source=foo.bar1).serialize() == {'x': 3, 'y': 4, 'z': 5}
-    s = Serializer(source=foo.bar2)
-    assert s.serialize() == None
 
 
 def test_serialize_enum_field_directly():

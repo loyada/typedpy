@@ -77,7 +77,7 @@ def test_type_conversion_to_typedpy_validation_err_for_converted_type():
 
 def test_type_conversion_to_typedpy_validation_err_for_standard_field():
     with raises(ValueError) as excinfo:
-        MixedTypesExample(i=50, s="xyz", s1="asd", a="a", simple=SimpleStruct(name="John"))
+        MixedTypesExample(i=50, s="xyz", s1="asd", a={"a": 1}, simple=SimpleStruct(name="John"))
     assert "i: Got 50; Expected a maximum of 10" in str(excinfo.value)
 
 

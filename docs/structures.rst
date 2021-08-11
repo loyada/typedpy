@@ -136,6 +136,28 @@ To demonstrate, the three classes below are equivalent, as far as fields optiona
 The only difference between the first two and the third is that in the third you can actually
 assign **None** to my_list (i.e. instance.my_list = None), while in the others it is not allowed.
 
+_required fields also respects inherited fields. If you extend a Structure with an optional field x,
+and you include 'x' in the required fields, it would work as expected. It does not work the other way though.
+If in the base class the field is required, the subclass cannot make it optional, but if it is optional
+in the base class, the subclass can declare it as required (i.e. subclass can be stricter, but not more
+tolerant).
+For example, this is valid:
+
+.. code-block:: python
+
+   class Base(Structure):
+       x: int
+       y: int
+
+   class Sub(Base):
+       _required = ["x", "y"]
+
+    # Good:
+    Base()
+
+    # Fails (as expected) - missing x
+    Sub(y=5)
+
 
 Defaults
 ========

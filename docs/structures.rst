@@ -463,6 +463,7 @@ Is converted by Typedpy automatically to this:
 This provides you with all the run-time checking and other Typedpy functionality even if you use regular Python types.
 It also applies default values (see fields 'm', 'i' above).
 
+
 Two examples:
 
 .. code-block:: python
@@ -490,4 +491,28 @@ Two examples:
 
     # the following line will throw a ValueError with the message: "Structure is immutable"
     e.mylist.append(3)
+
+
+
+Limitations
+--------------
+If you use the '=' notation for fields (the second example under "alternative syntax"), and expect them to behave like
+regular Fields, you can only use TypedPy classes.
+In other words, the following definition does not define any valid Typedpy Fields:
+
+
+.. code-block:: python
+
+    class Example(Structure):
+        # all the field definitions below are broken !
+        st = str
+        map = dict[str, str]
+        i = Optional[int]
+
+In the example above, Example.st is simply the class str. The reason this is not automatically changed by Typedpy is to
+"play nicely" with other classes or functionality. If you want to use regular Python types, you have to use the ':' notation.
+
+
+
+
 

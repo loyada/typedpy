@@ -3,6 +3,7 @@ import enum
 import pickle
 import sys
 from decimal import Decimal
+from typing import Optional
 
 python_ver_atleast_than_37 = sys.version_info[0:2] > (3, 6)
 if python_ver_atleast_than_37:
@@ -758,3 +759,30 @@ def test_serialize_anyof():
     f2d = Deserializer(Container).deserialize(f)
     f2s = Serializer(f2d).serialize()
     assert f2s == f
+
+
+def test_serialize_optional_of_serializablefield():
+    class TestSerializable(SerializableField):
+        def serialize(self, value):
+            return value.rstrip()
+
+        def deserialize(self, value):
+            return value + "  "
+
+    class Container1(ImmutableStructure):
+        field1: String
+        field2: Optional[TestSerializable]
+
+    class Container2(ImmutableStructure):
+        field1: String
+        field2: TestSerializable
+
+    f = {"field1": "val1", "field2": "val2"}
+
+    f2d = Deserializer(Container2).deserialize(f)
+    f2s = Serializer(f2d).serialize()
+    assert f2s == f
+
+    f1d = Deserializer(Container1).deserialize(f)
+    f1s = Serializer(f1d).serialize()
+    assert f1s == f

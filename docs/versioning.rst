@@ -174,9 +174,10 @@ The example below clarifies how to use :class:`Versioned` together with deserial
         m={"abc": "xyz"},
         i=200,
         j=100,
-        version=4
     )
 
+
+Note that the version field is populated automatically when instantiating Foo, to be the latest.
 
 What About Serialization?
 -------------------------

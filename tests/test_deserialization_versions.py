@@ -148,3 +148,17 @@ def test_deserialize_versioned_mapper_defect():
     wrapped_v1: VersionedFoo = Deserializer(VersionedFoo).deserialize(v1)
 
     assert wrapped_v1.foo == wrapped_v2.foo
+
+def test_versioned_populates_version_automatically():
+    assert Foo(
+        bar=Bar(a=[10, 16, 6], s="john"),
+        m={"abc": "xcxcxcxcxcxc", "b": "bb"},
+        i=200,
+        j=150
+    ).version == 4
+
+def test_version_populated_automatically_when_no_mapping():
+    class Example(Versioned):
+        i: int
+
+    assert Example(i=5).version == 1

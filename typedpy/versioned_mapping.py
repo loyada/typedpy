@@ -22,7 +22,14 @@ class Versioned(Structure):
 
     """
 
-    version = PositiveInt
+    version: PositiveInt
+
+    def __init__(self, *args, **kwargs):
+        versions_mapping = getattr(self, VERSION_MAPPING, [])
+        default_version = len(versions_mapping) + 1
+        kwargs["version"] = default_version
+        super().__init__(*args, **kwargs)
+
 
 
 def _convert(mapped_dict: dict, mapping):

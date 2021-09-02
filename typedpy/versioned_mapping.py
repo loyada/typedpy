@@ -30,23 +30,25 @@ def _convert(mapped_dict: dict, mapping):
     for k, v in mapping.items():
         if isinstance(v, Constant):
             out_dict[k] = v()
-        if v == Deleted:
-            del out_dict[k]
         elif k.endswith("._mapper"):
-            field_name = k[:(len("._mapper")-1)]
+            field_name = k[:-len("._mapper")]
             content = mapped_dict[field_name]
             if isinstance(content, list):
                 out_dict[field_name] = [_convert(x, v) for x in content]
             else:
                 out_dict[field_name] = _convert(content, v)
 
-        elif isinstance(v, str):
-            out_dict[k] = out_dict[v]
-
         elif isinstance(v, FunctionCall):
             args = [out_dict[x] for x in v.args] if v.args else [out_dict[k]]
             out_dict[k] = v.func(*args)
 
+    for k, v in mapping.items():
+        if isinstance(v, str):
+            out_dict[k] = out_dict[v]
+
+    for k, v in mapping.items():
+        if v == Deleted:
+            del out_dict[k]
     return out_dict
 
 

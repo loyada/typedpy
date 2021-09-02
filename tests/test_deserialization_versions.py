@@ -98,3 +98,53 @@ def test_version_conversion_without_deserializer():
     assert convert_dict(expected_in_latest_version, Foo._versions_mapping) == expected_in_latest_version
 
 
+
+def test_deserialize_versioned_mapper_defect():
+    class FooBar(ImmutableStructure):
+        data = String
+
+    class Foo(ImmutableStructure):
+        data = String
+        bar = FooBar
+
+    class VersionedFoo(Versioned):
+        foo = Foo
+        _versions_mapping = [
+            {
+                "foo._mapper": {
+                    "data": "string_data",
+                    "string_data": Deleted,
+                    "bar": "foobar",
+                    "foobar": Deleted,
+                    "foobar._mapper": {
+                        "data": "string_data",
+                        "string_data": Deleted,
+
+                    }
+                }
+            }
+        ]
+
+    v1 = {
+        "version": 1,
+        "foo": {
+            "string_data": "Foo",
+            "foobar": {
+                "string_data": "FooBar"
+            }
+        }
+    }
+
+    v2 = {
+        "version": 2,
+        "foo": {
+            "data": "Foo",
+            "bar": {
+                "data": "FooBar"
+            }
+        }
+    }
+    wrapped_v2: VersionedFoo = Deserializer(VersionedFoo).deserialize(v2)
+    wrapped_v1: VersionedFoo = Deserializer(VersionedFoo).deserialize(v1)
+
+    assert wrapped_v1.foo == wrapped_v2.foo

@@ -68,7 +68,7 @@ class HostName(String):
         super().__set__(instance, value)
 
 
-class DateString(TypedField):
+class DateString(String):
     """
     A string field of the format '%Y-%m-%d' that can be converted to a date
 

@@ -11,7 +11,7 @@ if python_ver_atleast_than_37:
 import pytest
 from pytest import raises
 
-from typedpy import Structure, Array, Number, String, Integer, \
+from typedpy import ImmutableStructure, NoneField, SerializableField, Structure, Array, Number, String, Integer, \
     StructureReference, AllOf, deserialize_structure, Enum, \
     Float, mappers, serialize, Set, AnyOf, DateField, Anything, Map, Function, PositiveInt, DecimalNumber
 from typedpy.extfields import DateTime
@@ -740,3 +740,21 @@ def test_serialize_mapper_to_lowercase():
         }
     }
     assert Deserializer(Foo).deserialize(serialized) == foo
+
+
+def test_serialize_anyof():
+    class TestSerializable(SerializableField):
+        def serialize(self, value):
+            return value.rstrip()
+
+        def deserialize(self, value):
+            return value + "  "
+
+    class Container(ImmutableStructure):
+        field1: String
+        field2: AnyOf[NoneField, TestSerializable]
+
+    f = {"field1": "val1", "field2": "val2"}
+    f2d = Deserializer(Container).deserialize(f)
+    f2s = Serializer(f2d).serialize()
+    assert f2s == f

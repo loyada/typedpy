@@ -331,7 +331,7 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
     elif isinstance(field, ClassReference):
         value = (
             deserialize_structure_internal(
-                getattr(field, "_ty"),
+                getattr(field, "_ty", None),
                 source_val,
                 name,
                 keep_undefined=keep_undefined,
@@ -344,7 +344,7 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
     elif isinstance(field, StructureReference):
         try:
             value = deserialize_structure_reference(
-                getattr(field, "_newclass"),
+                getattr(field, "_newclass", None),
                 source_val,
                 keep_undefined=keep_undefined,
                 mapper=mapper,
@@ -500,12 +500,12 @@ def deserialize_structure_internal(
             if isinstance(m, mappers) or isinstance(mapper, mappers):
                 keep_undefined = False
         if (camel_case_convert or isinstance(mapper, mappers)) and not getattr(
-                cls, ADDITIONAL_PROPERTIES
+                cls, ADDITIONAL_PROPERTIES, False
         ):
             keep_undefined = False
 
     ignore_none = getattr(cls, IGNORE_NONE_VALUES, False)
-    if not isinstance(mapper, (collections.abc.Mapping,)):
+    if not isinstance(mapper, (collections.Mapping,)):
         raise TypeError("Mapper must be a mapping")
     field_by_name = _get_all_fields_by_name(cls)
 
@@ -518,7 +518,7 @@ def deserialize_structure_internal(
             field_name = fields[0]
             return cls(
                 deserialize_single_field(
-                    getattr(cls, field_name),
+                    getattr(cls, field_name, None),
                     input_dict,
                     field_name,
                     ignore_none=ignore_none,

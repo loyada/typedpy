@@ -1279,3 +1279,20 @@ def test_ignore_none_with_none():
 
     assert Deserializer(Foo).deserialize({"a": "x", "b": None}) == Foo(a="x")
 
+
+def test_deserialize_camel_case_additional_properties_defect():
+    from typedpy import ImmutableStructure, String, Deserializer
+
+    class PairOne(ImmutableStructure):
+        the_name: String
+        the_value: String
+        _additionalProperties = False
+
+    class PairTwo(ImmutableStructure):
+        the_name: String
+        the_value: String
+
+    data: dict = {"theName": "name", "theValue": "value"}
+
+    Deserializer(PairOne, camel_case_convert=True).deserialize(data)
+    Deserializer(PairTwo, camel_case_convert=True).deserialize(data)

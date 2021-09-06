@@ -60,6 +60,36 @@ Superficially, it looks like a dataclass, but there are several differences:
 #. Typedpy validates default values.
 
 
+Combining Python and Typedpy types in field definition
+======================================================
+Starting at version 2.6, Typedpy supports combining Typedpy and Python fields in definition arbitrarily.
+It allows to mix standard Python classes(such as PEP-585 and the "typing" library) and Typedpy arbitrarily.
+This means that all the following fields definitions are valid and work as though they were "pure Typedpy":
+
+
+.. code-block:: python
+
+    import typing
+    from typedpy import Array, Integer, String, Structure
+
+    class Foo(Structure):
+        a0: list[str]
+        a1: list[String]
+        a2: typing.List[String(minLength=5)]
+        a3: list[set[String]]
+        a4: typing.List[String]
+        a5: list[typing.Set[String]]
+        a6: typing.List[typing.Set[String]]
+        a7: Array[str]
+        a8: Array[dict[str, Integer]]
+        a9: Array[dict[String, int]]
+        a10: Array[dict[String(minLength=5), int]]
+        a11: typing.Optional[set[String]]
+
+The motivation is to further simplify using Typedpy.
+Anything that relies on PEP-585 only works on Python version >= 3.9.
+
+
 .. _arbitrary_classes:
 
 

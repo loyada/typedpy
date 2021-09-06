@@ -1,7 +1,7 @@
 import collections
 import enum
 import json
-from collections import Mapping
+from typing import Mapping
 from functools import reduce
 from typing import Dict
 

@@ -111,7 +111,7 @@ def test_invalid_default():
         class Example(Structure):
             i: int = "x"
 
-    assert "i: Invalid default value: 'x'; Reason: Expected <class 'int'>; Got 'x'" in str(excinfo.value)
+    assert "i: Invalid default value: 'x'; Reason: value: Expected <class 'int'>; Got 'x'" in str(excinfo.value)
 
 
 def test_default_values():

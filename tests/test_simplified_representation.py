@@ -81,7 +81,7 @@ def test_multiple_items_in_array_schema_definition_err():
     foo.a.append(2)
     with raises(TypeError) as excinfo:
         foo.a[1] = 4
-    assert "a_1: Expected <class 'str'>; Got 4" in str(excinfo.value)
+    assert "a_1: Got 4; Expected a string" in str(excinfo.value)
 
 
 def test_multiple_items_in_array_schema_err():

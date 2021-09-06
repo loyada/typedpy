@@ -3,7 +3,9 @@ The Skeleton classes to support strictly defined structures:
 Structure, Field, StructureReference, ClassReference, TypedField
 """
 import enum
+import inspect
 import json
+from builtins import issubclass
 from copy import deepcopy
 from collections import OrderedDict, deque, defaultdict
 from inspect import Signature, Parameter, signature, currentframe
@@ -200,25 +202,30 @@ class _FieldMeta(type):
         elif val is None:
             return NoneField()
         else:
+            try:
+                converted = convert_field_type_if_possible(val)
+                if converted is None:
+                    raise TypeError
+                return _FieldMeta.__getitem__(cls, converted)
+            except TypeError:
+                def get_state(value):
+                    raise TypeError(
+                        "pickling of implicit wrappers for non-Typedpy fields are unsupported"
+                    )
 
-            def get_state(value):
-                raise TypeError(
-                    "pickling of implicit wrappers for non-Typedpy fields are unsupported"
-                )
-
-            if not isinstance(val, type):
-                raise TypeError(
-                    "Unsupported field type in definition: {}".format(wrap_val(val))
-                )
-            the_class = val.__name__
-            if the_class in _FieldMeta._registry:
-                return _FieldMeta._registry[the_class]
-            short_hash = hashlib.sha256(the_class.encode("utf-8")).hexdigest()[:8]
-            new_name = "Field_{}_{}".format(the_class, short_hash)
-            class_as_field = create_typed_field(new_name, val)
-            class_as_field.__getstate__ = get_state
-            _FieldMeta._registry[the_class] = class_as_field
-            return class_as_field()
+                if not isinstance(val, type):
+                    raise TypeError(
+                        "Unsupported field type in definition: {}".format(wrap_val(val))
+                    )
+                the_class = val.__name__
+                if the_class in _FieldMeta._registry:
+                    return _FieldMeta._registry[the_class]
+                short_hash = hashlib.sha256(the_class.encode("utf-8")).hexdigest()[:8]
+                new_name = "Field_{}_{}".format(the_class, short_hash)
+                class_as_field = create_typed_field(new_name, val)
+                class_as_field.__getstate__ = get_state
+                _FieldMeta._registry[the_class] = class_as_field
+                return class_as_field()
 
 
 class UniqueMixin:
@@ -323,6 +330,7 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
 
     def _try_default_value(self, default):
         try:
+            self._name = self._name or "value"
             self.__set__(Structure(), default)
         except Exception as e:
             raise e.__class__(
@@ -595,7 +603,10 @@ def get_typing_lib_info(v):
 
     if v == type(None):
         return NoneField()
-
+    if isinstance(v, Field):
+        return v
+    if inspect.isclass(v) and issubclass(v, Field):
+        return v()
     if not type_is_generic(v):
         return convert_basic_types(v)
     origin = getattr(v, "__origin__", None)
@@ -658,11 +669,12 @@ def add_annotations_to_class_dict(cls_dict, previous_frame):
                         optional_fields.add(k)
                     if k in cls_dict:
                         default = cls_dict[k]
+                        default_value = default() if callable(default) else default
                         try:
                             if isinstance(the_type, Field):
-                                the_type._try_default_value(default)
+                                the_type._try_default_value(default_value)
                             else:
-                                the_type = the_type(default=default)
+                                the_type = the_type(default=default_value)
                         except Exception as e:
                             raise e.__class__("{}: {}".format(k, str(e))) from e
                         defaults[k] = cls_dict[k]
@@ -670,6 +682,18 @@ def add_annotations_to_class_dict(cls_dict, previous_frame):
     if optional_fields:
         cls_dict[OPTIONAL_FIELDS] = optional_fields
     cls_dict[DEFAULTS] = defaults
+
+
+def convert_field_type_if_possible(the_field):
+    first_arg = getattr(the_field, "__args__", [0])[0]
+    mros = getattr(first_arg, "__mro__", getattr(the_field, "__mro__", []))
+    if not type_is_generic(the_field) and (
+            isinstance(the_field, (Field, Structure)) or Field in mros or Structure in mros
+    ):
+        return the_field
+    else:
+        return get_typing_lib_info(the_field)
+
 
 
 class Structure(UniqueMixin, metaclass=StructMeta):

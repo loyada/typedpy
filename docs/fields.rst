@@ -62,7 +62,7 @@ Superficially, it looks like a dataclass, but there are several differences:
 
 Combining Python and Typedpy types in field definition
 ======================================================
-Starting at version 2.6, Typedpy supports combining Typedpy and Python fields in definition arbitrarily.
+Starting at version 2.6, Typedpy supports combining Typedpy and Python fields in definition better.
 It allows to mix standard Python classes(such as PEP-585 and the "typing" library) and Typedpy arbitrarily.
 This means that all the following fields definitions are valid and work as though they were "pure Typedpy":
 

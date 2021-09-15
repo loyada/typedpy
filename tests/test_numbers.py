@@ -1,7 +1,8 @@
 import sys
 
 from pytest import fixture, raises, mark
-from typedpy import Deserializer, Negative, NegativeFloat, NegativeInt, NonNegative, NonNegativeFloat, NonNegativeInt, \
+from typedpy import Array, Deserializer, Negative, NegativeFloat, NegativeInt, NonNegative, NonNegativeFloat, \
+    NonNegativeInt, \
     NonPositive, NonPositiveFloat, NonPositiveInt, \
     Positive, \
     PositiveFloat, \
@@ -12,24 +13,23 @@ from typedpy import Deserializer, Negative, NegativeFloat, NegativeInt, NonNegat
 class Foo(Structure):
     negative_int: NegativeInt
     negative_float: NegativeFloat
-    negative: list[Negative]
+    negative: Array[Negative]
 
     positive_int: PositiveInt
     positive_float: PositiveFloat
-    positive: list[Positive]
+    positive: Array[Positive]
 
     non_negative_int: NonNegativeInt
     non_negative_float: NonNegativeFloat
-    non_negative: list[NonNegative]
+    non_negative: Array[NonNegative]
 
     non_positive_int: NonPositiveInt
     non_positive_float: NonPositiveFloat
-    non_positive: list[NonPositive]
+    non_positive: Array[NonPositive]
 
     _required = []
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_valid():
     original = {
         "negative_int": -1,
@@ -60,7 +60,6 @@ def fixture_all_errors():
     Structure.set_fail_fast(True)
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_invalid_numbers(all_errors):
 
     original = {

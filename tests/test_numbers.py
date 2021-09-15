@@ -1,4 +1,6 @@
-from pytest import fixture, raises
+import sys
+
+from pytest import fixture, raises, mark
 from typedpy import Deserializer, Negative, NegativeFloat, NegativeInt, NonNegative, NonNegativeFloat, NonNegativeInt, \
     NonPositive, NonPositiveFloat, NonPositiveInt, \
     Positive, \
@@ -27,6 +29,7 @@ class Foo(Structure):
     _required = []
 
 
+@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_valid():
     original = {
         "negative_int": -1,
@@ -57,6 +60,7 @@ def fixture_all_errors():
     Structure.set_fail_fast(True)
 
 
+@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_invalid_numbers(all_errors):
 
     original = {

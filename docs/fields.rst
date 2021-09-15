@@ -460,6 +460,24 @@ Numerical
 
 .. autoclass:: PositiveInt
 
+.. autoclass:: Negative
+
+.. autoclass:: NegativeFloat
+
+.. autoclass:: NegativeInt
+
+.. autoclass:: NonPositive
+
+.. autoclass:: NonPositiveFloat
+
+.. autoclass:: NonPositiveInt
+
+.. autoclass:: NonNegative
+
+.. autoclass:: NonNegativeFloat
+
+.. autoclass:: NonNegativeInt
+
 .. autoclass:: Boolean
 
 String, Enums etc.

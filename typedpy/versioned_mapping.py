@@ -10,15 +10,15 @@ VERSION_MAPPING = "_versions_mapping"
 
 class Versioned(Structure):
     """
-        Marks a structure as can be deserialized from multiple versions.
-        The version is expected to start with 1 and increase by 1 in every update.
-        It is expected to have a class attribute of "_versions_mapping", with an ordered list
-        of the mappings. The first mapping maps version 1 to 2, the second 2 to 3, etc.
+    Marks a structure as can be deserialized from multiple versions.
+    The version is expected to start with 1 and increase by 1 in every update.
+    It is expected to have a class attribute of "_versions_mapping", with an ordered list
+    of the mappings. The first mapping maps version 1 to 2, the second 2 to 3, etc.
 
-        Arguments:
+    Arguments:
 
-        _versions_mapping: optional
-            An array of mappers that outlines how to convert older versions to the latest version.
+    _versions_mapping: optional
+        An array of mappers that outlines how to convert older versions to the latest version.
 
     """
 
@@ -31,14 +31,13 @@ class Versioned(Structure):
         super().__init__(*args, **kwargs)
 
 
-
 def _convert(mapped_dict: dict, mapping):
     out_dict = copy.deepcopy(mapped_dict)
     for k, v in mapping.items():
         if isinstance(v, Constant):
             out_dict[k] = v()
         elif k.endswith("._mapper"):
-            field_name = k[:-len("._mapper")]
+            field_name = k[: -len("._mapper")]
             content = mapped_dict[field_name]
             if isinstance(content, list):
                 out_dict[field_name] = [_convert(x, v) for x in content]
@@ -62,7 +61,7 @@ def _convert(mapped_dict: dict, mapping):
 def convert_dict(the_dict: dict, versions_mapping):
     start_version = the_dict.get("version", 1)
     mapped_dict = copy.deepcopy(the_dict)
-    for mapping in versions_mapping[(start_version-1):]:
+    for mapping in versions_mapping[(start_version - 1) :]:
         mapped_dict = _convert(mapped_dict, mapping)
         mapped_dict["version"] += 1
     return mapped_dict

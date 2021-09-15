@@ -208,6 +208,7 @@ class _FieldMeta(type):
                     raise TypeError
                 return _FieldMeta.__getitem__(cls, converted)
             except TypeError:
+
                 def get_state(value):
                     raise TypeError(
                         "pickling of implicit wrappers for non-Typedpy fields are unsupported"
@@ -645,6 +646,7 @@ def add_annotations_to_class_dict(cls_dict, previous_frame):
     if isinstance(annotations, dict):
         for k, v in annotations.items():
             if isinstance(v, str):
+                # The evil eval is to accommodate "from __future__ import annotations".
                 v = eval(
                     v,
                     sys.modules[cls_dict["__module__"]].__dict__,
@@ -688,12 +690,11 @@ def convert_field_type_if_possible(the_field):
     first_arg = getattr(the_field, "__args__", [0])[0]
     mros = getattr(first_arg, "__mro__", getattr(the_field, "__mro__", []))
     if not type_is_generic(the_field) and (
-            isinstance(the_field, (Field, Structure)) or Field in mros or Structure in mros
+        isinstance(the_field, (Field, Structure)) or Field in mros or Structure in mros
     ):
         return the_field
     else:
         return get_typing_lib_info(the_field)
-
 
 
 class Structure(UniqueMixin, metaclass=StructMeta):

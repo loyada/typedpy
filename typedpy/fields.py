@@ -382,6 +382,45 @@ class Positive(Number):
         super().__set__(instance, value)
 
 
+class NonPositive(Number):
+    """
+    An extension of :class:`Number`. Requires the number to be negative or 0
+    """
+
+    def __set__(self, instance, value):
+        if value > 0:
+            raise ValueError(
+                "{}: Got {}; Expected a negative number or 0".format(self._name, value)
+            )
+        super().__set__(instance, value)
+
+
+class Negative(Number):
+    """
+    An extension of :class:`Number`. Requires the number to be negative
+    """
+
+    def __set__(self, instance, value):
+        if value >= 0:
+            raise ValueError(
+                "{}: Got {}; Expected a negative number".format(self._name, value)
+            )
+        super().__set__(instance, value)
+
+
+class NonNegative(Number):
+    """
+    An extension of :class:`Number`. Requires the number to be positive or 0
+    """
+
+    def __set__(self, instance, value):
+        if value < 0:
+            raise ValueError(
+                "{}: Got {}; Expected a positive number or 0".format(self._name, value)
+            )
+        super().__set__(instance, value)
+
+
 class PositiveFloat(Float, Positive):
     """
     An combination of :class:`Float` and :class:`Positive`
@@ -393,6 +432,54 @@ class PositiveFloat(Float, Positive):
 class PositiveInt(Integer, Positive):
     """
     An combination of :class:`Integer` and :class:`Positive`
+    """
+
+    pass
+
+
+class NegativeFloat(Float, Negative):
+    """
+    An combination of :class:`Float` and :class:`Negative`
+    """
+
+    pass
+
+
+class NegativeInt(Integer, Negative):
+    """
+    An combination of :class:`Integer` and :class:`Negative`
+    """
+
+    pass
+
+
+class NonPositiveFloat(Float, NonPositive):
+    """
+    An combination of :class:`Float` and :class:`NonPositive`
+    """
+
+    pass
+
+
+class NonPositiveInt(Integer, NonPositive):
+    """
+    An combination of :class:`Integer` and :class:`NonPositive`
+    """
+
+    pass
+
+
+class NonNegativeFloat(Float, NonNegative):
+    """
+    An combination of :class:`Float` and :class:`NonNegative`
+    """
+
+    pass
+
+
+class NonNegativeInt(Integer, NonNegative):
+    """
+    An combination of :class:`Integer` and :class:`NonNegative`
     """
 
     pass

@@ -267,7 +267,7 @@ def write_code_from_schema(schema, definitions_schema, filename, class_name):
     """
     supporting_classes = schema_definitions_to_code(definitions_schema)
     structure_code = schema_to_struct_code(class_name, schema, definitions_schema)
-    with open(filename, "w") as fout:
+    with open(filename, "w", encoding="utf-8") as fout:
         fout.write("from typedpy import *\n\n")
         fout.write(supporting_classes)
         fout.write("\n\n# ********************\n\n")

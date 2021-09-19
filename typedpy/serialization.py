@@ -625,9 +625,9 @@ def serialize_multifield_wrapper(fields, name, val, mapper, camel_case_convert):
             if isinstance(field, TypedField) and not isinstance(val, field._ty):
                 raise TypeError
             return serialize_field(field, val, camel_case_convert)
-        except:
+        except:  # pylint: disable=bare-except
             pass
-    else:
+    else:  # pylint: disable=useless-else-on-loop
         raise ValueError(f"{name}: cannot serialize value: {val}")
 
 

@@ -155,8 +155,8 @@ def _check_for_final_violations(classes):
     def is_sub_class(c, base):
         return issubclass(c, base) and c != base
 
-    current_class, *inherited_class = classes
-    for i, c in enumerate(inherited_class):
+    _, *inherited_class = classes
+    for c in inherited_class:
         if "FinalStructure" in globals() and isinstance(c, StructMeta):
             if "FinalStructure" in globals() and is_sub_class(c, FinalStructure):
                 raise TypeError(
@@ -995,13 +995,11 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
     def shallow_clone_with_overrides(self, **kw):
         fields_names = self.get_all_fields_by_name().keys()
-        field_value_by_name = dict(
-            [
-                (f, getattr(self, f))
+        field_value_by_name = {
+                f: getattr(self, f)
                 for f in fields_names
                 if getattr(self, f) is not None
-            ]
-        )
+        }
         kw_args = {**field_value_by_name, **kw}
         return self.__class__(**kw_args)
 
@@ -1027,13 +1025,12 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             )
 
             fields_names = cls.get_all_fields_by_name().keys()
-            field_value_by_name = dict(
-                [
-                    (f, getattr(that, f))
+            field_value_by_name = {
+                    f: getattr(that, f)
                     for f in fields_names
                     if getattr(that, f, None) is not None
-                ]
-            )
+
+            }
             return cls(**field_value_by_name)
 
         raise TypeError(f"cls must be subclass of {self.__class__.__name__}")

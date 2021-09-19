@@ -162,3 +162,33 @@ def test_version_populated_automatically_when_no_mapping():
         i: int
 
     assert Example(i=5).version == 1
+
+
+def test_mapping_list_of_objects():
+    class Example(Versioned):
+        i: list[Bar]
+
+        _versions_mapping = [
+            {
+                "i._mapper": {
+                    "s": "sss",
+                    "sss": Deleted
+                }
+            }
+        ]
+
+    serialized = {
+        "i": [
+            {
+                "sss": "xyz",
+                "a": [1, 2, 3]
+            }
+        ]
+    }
+
+    assert Deserializer(Example).deserialize(serialized) == Example(
+        i=[
+            Bar(s="xyz", a=[1, 2, 3])
+        ]
+    )
+

@@ -1,3 +1,4 @@
+import copy
 import sys
 
 import pytest
@@ -339,3 +340,12 @@ def test_clear():
     foo = Foo(a=[1, 2, 3])
     foo.a.clear()
     assert len(foo.a) == 0
+
+
+def test_deep_copy_array():
+    class Foo(Structure):
+        a = Array[Integer, Integer, String]
+
+    foo = Foo(a=[1, 2, "x"])
+    assert copy.deepcopy(foo) == foo
+

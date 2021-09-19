@@ -608,6 +608,10 @@ def get_typing_lib_info(v):
         return v
     if inspect.isclass(v) and issubclass(v, Field):
         return v()
+
+    if isinstance(v, StructMeta) and not isinstance(v, Field):
+        return ClassReference(v)
+
     if not type_is_generic(v):
         return convert_basic_types(v)
     origin = getattr(v, "__origin__", None)

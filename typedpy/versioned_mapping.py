@@ -63,5 +63,5 @@ def convert_dict(the_dict: dict, versions_mapping):
     mapped_dict = copy.deepcopy(the_dict)
     for mapping in versions_mapping[(start_version - 1) :]:
         mapped_dict = _convert(mapped_dict, mapping)
-        mapped_dict["version"] += 1
+        mapped_dict["version"] = mapped_dict.get("version", 0) + 1
     return mapped_dict

@@ -280,3 +280,20 @@ def test_dict_to_map_invalid():
     with raises(ValueError) as excinfo:
         Deserializer(Foo).deserialize({"i": 5, "a": {"abc": ["xxx", "yyy", 2]}})
     assert "a_2: Expected a string" in str(excinfo.value)
+
+
+@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_list_of_class_reference():
+    class Bar(Structure):
+        a: int
+        b: int
+
+    class Foo(Structure):
+        a: list[Bar]
+        i: int
+
+    with raises(ValueError) as excinfo:
+        Deserializer(Foo).deserialize({"i": 5, "a": [{"a": "x", "b": 5}]})
+    assert "a_0: a: Expected <class 'int'>; Got 'x'" in str(excinfo.value)
+
+    assert Deserializer(Foo).deserialize({"i": 5, "a": [{"a": 1, "b": 5}]}) == Foo(a=[Bar(a=1, b=5)], i=5)

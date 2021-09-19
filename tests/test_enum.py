@@ -66,6 +66,29 @@ def test_enum_using_enum_error():
     assert "arr_2: Got 3; Expected one of: ABC, DEF, GHI" in str(excinfo.value)
 
 
+def test_enum_using_enum_with_many_calues_error():
+    class Many(enum.Enum):
+        A = 1
+        B = 2
+        C = 3
+        D = 4
+        E = 5
+        F = 6
+        G = 7
+        H = 8
+        I = 9
+        J = 10
+        K = 11
+        L = 12
+
+    class Example(Structure):
+        arr = Array[Enum[Many]]
+
+    with raises(ValueError) as excinfo:
+        Example(arr=['A', Many.E, 3])
+    assert "arr_2: Got 3; Expected a value of <enum 'Many'>" in str(excinfo.value)
+
+
 def test_enum_using_enum_values_should_be_the_enum_values():
     def EnumValues(): return Enum(values=Values)
 

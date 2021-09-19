@@ -786,3 +786,17 @@ def test_serialize_optional_of_serializablefield():
     f1d = Deserializer(Container1).deserialize(f)
     f1s = Serializer(f1d).serialize()
     assert f1s == f
+
+
+def test_trivial_serializable():
+    class Foo(SerializableField):
+        pass
+
+    class Bar(Structure):
+        foo: Foo
+
+    deserialized = Bar(foo=123)
+    serialized = {"foo": 123}
+    assert Deserializer(Bar).deserialize(serialized) == deserialized
+    assert Serializer(deserialized).serialize() == serialized
+

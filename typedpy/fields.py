@@ -3,6 +3,7 @@ Definitions of various types of fields. Supports JSON draft4 types.
 """
 import enum
 import re
+import typing
 from collections import OrderedDict, deque
 from collections.abc import Iterable
 
@@ -311,7 +312,7 @@ class Generator(TypedField):
     A Python generator. Not serializable.
     """
 
-    _ty = type(x for x in [])
+    _ty = typing.Generator
 
 
 class Anything(Field):
@@ -1556,6 +1557,8 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             for f in fields:
                 if isinstance(f, NoneField):
                     self._is_optional = True
+        else:
+            raise TypeError("AnyOf definition must include at least one field option")
 
     def __set__(self, instance, value):
         matched = False

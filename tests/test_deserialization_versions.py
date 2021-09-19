@@ -1,5 +1,6 @@
-import copy
+import sys
 
+from pytest import mark
 from typedpy import Array, Deserializer, FunctionCall, ImmutableStructure, Integer, Map, PositiveInt, String, Structure, \
     Versioned, convert_dict
 from typedpy.mappers import Constant, Deleted
@@ -164,6 +165,7 @@ def test_version_populated_automatically_when_no_mapping():
     assert Example(i=5).version == 1
 
 
+@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_mapping_list_of_objects():
     class Example(Versioned):
         i: list[Bar]

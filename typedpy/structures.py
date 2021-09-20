@@ -63,7 +63,7 @@ class ImmutableMixin:
     def _raise_if_immutable(self):
         if self._is_immutable():
             name = getattr(self, "_name", None)
-            raise ValueError("{}: Field is immutable".format(name))
+            raise ValueError(f"{name}: Field is immutable")
 
 
 def make_signature(
@@ -160,25 +160,19 @@ def _check_for_final_violations(classes):
         if "FinalStructure" in globals() and isinstance(c, StructMeta):
             if "FinalStructure" in globals() and is_sub_class(c, FinalStructure):
                 raise TypeError(
-                    "Tried to extend {}, which is a FinalStructure. This is forbidden".format(
-                        c.__name__
-                    )
+                    f"Tried to extend {c.__name__}, which is a FinalStructure. This is forbidden"
                 )
             if "ImmutableStructure" in globals() and is_sub_class(
                 c, ImmutableStructure
             ):
                 raise TypeError(
-                    "Tried to extend {}, which is an ImmutableStructure. This is forbidden".format(
-                        c.__name__
-                    )
+                    f"Tried to extend {c.__name__}, which is an ImmutableStructure. This is forbidden"
                 )
 
         if "_FieldMeta" in globals() and isinstance(c, _FieldMeta):
             if "ImmutableField" in globals() and is_sub_class(c, ImmutableField):
                 raise TypeError(
-                    "Tried to extend {}, which is an ImmutableField. This is forbidden".format(
-                        c.__name__
-                    )
+                    f"Tried to extend {c.__name__}, which is an ImmutableField. This is forbidden"
                 )
 
 
@@ -216,7 +210,7 @@ class _FieldMeta(type):
 
                 if not isinstance(val, type):
                     raise TypeError(
-                        "Unsupported field type in definition: {}".format(wrap_val(val))
+                        f"Unsupported field type in definition: {wrap_val(val)}"
                     )
                 the_class = val.__name__
                 if the_class in _FieldMeta._registry:
@@ -244,9 +238,7 @@ class UniqueMixin:
             if hash_of_instance in getattr(myclass, "_ALL_INSTANCES", set()):
                 classname = self.__class__.__name__
                 raise ValueError(
-                    "Instance copy in {}, which is defined as unique. Instance is {}".format(
-                        classname, self
-                    )
+                    f"Instance copy in {classname}, which is defined as unique. Instance is {self}"
                 )
             getattr(myclass, "_ALL_INSTANCES", set()).add(hash_of_instance)
 
@@ -272,10 +264,8 @@ class UniqueMixin:
                 != instance
             ):
                 raise ValueError(
-                    "Instance copy of field {} in {}, which is defined as unique. "
-                    "Instance is {}".format(
-                        field_name, structure_class_name, wrap_val(value)
-                    )
+                    f"Instance copy of field {field_name} in {structure_class_name}, which is defined as unique. "
+                    f"Instance is {wrap_val(value)}"
                 )
             if hash_of_field_val not in instance_by_value_for_current_struct:
                 instance_by_value_for_current_struct[hash_of_field_val] = instance
@@ -335,9 +325,7 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
             self.__set__(Structure(), default)
         except Exception as e:
             raise e.__class__(
-                "Invalid default value: {}; Reason: {}".format(
-                    wrap_val(default), str(e)
-                )
+                f"Invalid default value: {wrap_val(default)}; Reason: {str(e)}"
             ) from e
 
     def __get__(self, instance, owner):
@@ -378,9 +366,7 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
                 instance.__dict__[self._name] = deepcopy(value)
             except TypeError:
                 raise TypeError(
-                    "{} cannot be immutable, as its type does not support pickle.".format(
-                        self._name
-                    )
+                    f"{self._name} cannot be immutable, as its type does not support pickle."
                 )
         else:
             self.__manage_uniqueness_for_field__(instance, value)
@@ -412,8 +398,8 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
                 strv = "'{}'".format(val) if isinstance(val, str) else as_str(val)
                 props.append("{} = {}".format(k, strv))
 
-        propst = ". Properties: {}".format(", ".join(props)) if props else ""
-        return "<{}{}>".format(name, propst)
+        propst = f". Properties: {', '.join(props)}" if props else ""
+        return f"<{name}{propst}>"
 
     def _set_immutable(self, immutable: bool):
         self._immutable = immutable
@@ -522,7 +508,7 @@ class StructMeta(type):
         fields = [key for key, val in cls_dict.items() if isinstance(val, Field)]
         for field_name in fields:
             if field_name.startswith("_") or field_name == "kwargs":
-                raise ValueError("{}: invalid field name".format(field_name))
+                raise ValueError(f"{field_name}: invalid field name")
             setattr(cls_dict[field_name], "_name", field_name)
 
         _apply_default_and_update_required_not_to_include_fields_with_defaults(
@@ -561,9 +547,10 @@ class StructMeta(type):
         props = []
         for k, val in sorted(cls.__dict__.items()):
             if val is not None and not k.startswith("_"):
-                strv = "'{}'".format(val) if isinstance(val, str) else str(val)
-                props.append("{} = {}".format(k, strv))
-        return "<Structure: {}. Properties: {}>".format(name, ", ".join(props))
+                strv = f"'{val}'" if isinstance(val, str) else str(val)
+                props.append(f"{k} = {strv}")
+        props_list = ", ".join(props)
+        return f"<Structure: {name}. Properties: {props_list}>"
 
 
 def convert_basic_types(v):
@@ -617,7 +604,7 @@ def get_typing_lib_info(v):
     origin = getattr(v, "__origin__", None)
     mapped_type = convert_basic_types(origin)
     if mapped_type is None:
-        raise TypeError("{} type is not supported".format(v))
+        raise TypeError(f"{v} type is not supported")
     args_raw = getattr(v, "__args__", None)
     if not args_raw:
         return mapped_type()
@@ -631,9 +618,9 @@ def get_typing_lib_info(v):
                     if isinstance(args_raw[i], type):
                         mapped_args[i] = Field[args_raw[i]]
                     else:
-                        raise TypeError("invalid type {}".format(v))
+                        raise TypeError(f"invalid type {v}")
         else:
-            raise TypeError("invalid type {}".format(v))
+            raise TypeError(f"invalid type {v}")
     if mapped_args:
         if mapped_type == AnyOf:
             return mapped_type(fields=mapped_args)
@@ -682,7 +669,7 @@ def add_annotations_to_class_dict(cls_dict, previous_frame):
                             else:
                                 the_type = the_type(default=default_value)
                         except Exception as e:
-                            raise e.__class__("{}: {}".format(k, str(e))) from e
+                            raise e.__class__(f"{k}: {str(e)}") from e
                         defaults[k] = cls_dict[k]
                     cls_dict[k] = the_type
     if optional_fields:
@@ -856,13 +843,13 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
         def to_str(the_val):
             if isinstance(the_val, list):
-                return "[{}]".format(list_to_str(the_val))
+                return f"[{list_to_str(the_val)}]"
             if isinstance(the_val, tuple):
-                return "({})".format(list_to_str(the_val))
+                return f"({list_to_str(the_val)})"
             if isinstance(the_val, set):
-                return "{{{}}}".format(list_to_str(the_val))
+                return f"{{{list_to_str(the_val)}}}"
             if isinstance(the_val, dict):
-                return "{{{}}}".format(dict_to_str(the_val))
+                return f"{{{dict_to_str(the_val)}}}"
             return str(the_val)
 
         name = self.__class__.__name__
@@ -876,7 +863,8 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             if k not in internal_props:
                 strv = "'{}'".format(val) if isinstance(val, str) else to_str(val)
                 props.append("{} = {}".format(k, strv))
-        return "<Instance of {}. Properties: {}>".format(name, ", ".join(props))
+        props_list = ", ".join(props)
+        return f"<Instance of {name}. Properties: {props_list}>"
 
     def __repr__(self):
         return self.__str__()
@@ -989,16 +977,12 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
         if self._is_wrapper() and hasattr(val, "__iter__"):
             return iter(val)
-        raise TypeError(
-            "{} is not a wrapper of an iterable".format(self.__class__.__name__)
-        )
+        raise TypeError(f"{self.__class__.__name__} is not a wrapper of an iterable")
 
     def shallow_clone_with_overrides(self, **kw):
         fields_names = self.get_all_fields_by_name().keys()
         field_value_by_name = {
-                f: getattr(self, f)
-                for f in fields_names
-                if getattr(self, f) is not None
+            f: getattr(self, f) for f in fields_names if getattr(self, f) is not None
         }
         kw_args = {**field_value_by_name, **kw}
         return self.__class__(**kw_args)
@@ -1026,10 +1010,9 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
             fields_names = cls.get_all_fields_by_name().keys()
             field_value_by_name = {
-                    f: getattr(that, f)
-                    for f in fields_names
-                    if getattr(that, f, None) is not None
-
+                f: getattr(that, f)
+                for f in fields_names
+                if getattr(that, f, None) is not None
             }
             return cls(**field_value_by_name)
 
@@ -1192,9 +1175,7 @@ class TypedField(Field):
             return "{}: ".format(self._name) if self._name else ""
 
         if not isinstance(value, self._ty):
-            raise TypeError(
-                "{}Expected {}; Got {}".format(err_prefix(), self._ty, wrap_val(value))
-            )
+            raise TypeError(f"{err_prefix()}Expected {self._ty}; Got {wrap_val(value)}")
 
     def __set__(self, instance, value):
         if not getattr(instance, "_skip_validation", False):

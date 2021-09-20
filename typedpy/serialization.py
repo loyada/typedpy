@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from functools import reduce
 from typing import Dict
 
+from .commons import raise_errs_if_needed
 from .versioned_mapping import VERSION_MAPPING, Versioned, convert_dict
 from .mappers import (
     aggregate_deserialization_mappers,
@@ -42,7 +43,6 @@ from .fields import (
     SerializableField,
     SizedCollection,
     wrap_val,
-    Function,
     _DictStruct,
     _ListStruct,
     Deque,
@@ -83,9 +83,7 @@ def deserialize_list_like(
                     ignore_none=ignore_none,
                 )
             except (ValueError, TypeError) as e:
-                prefix = (
-                    "" if str(e).startswith(item_name) else "{}: ".format(item_name)
-                )
+                prefix = "" if str(e).startswith(item_name) else f"{item_name}: "
                 raise ValueError(f"{prefix}{str(e)}") from e
             values.append(list_item)
     elif isinstance(items, (list, tuple)):
@@ -102,7 +100,7 @@ def deserialize_list_like(
                     ignore_none=ignore_none,
                 )
             except (ValueError, TypeError) as e:
-                raise ValueError("{}_{}: {}".format(name, i, str(e))) from e
+                raise ValueError(f"{name}_{i}: {str(e)}") from e
             values.append(res)
         values += value[len(items) :]
     else:
@@ -200,44 +198,32 @@ def deserialize_multifield_wrapper(
                 return deserialized
             elif isinstance(field, NotField):
                 raise ValueError(
-                    "{}: Got {}; Matches field {}, but must not match it".format(
-                        name, wrap_val(source_val), field
-                    )
+                    f"{name}: Got {wrap_val(source_val)}; Matches field {field}, but must not match it"
                 )
             elif isinstance(field, OneOf) and found_previous_match:
                 raise ValueError(
-                    "{}: Got {}; Matches more than one match".format(
-                        name, wrap_val(source_val)
-                    )
+                    f"{name}: Got {wrap_val(source_val)}; Matches more than one match"
                 )
             found_previous_match = True
         except Exception as e:
             failures += 1
             err_messages.append(
-                "({}) Does not match {}. reason: {}".format(
-                    len(err_messages) + 1, field_option, str(e)
-                )
+                f"({len(err_messages) + 1}) Does not match {field_option}. reason: {str(e)}"
             )
             if isinstance(field, AllOf):
                 raise ValueError(
-                    "{}: Got {}; Does not match {}. reason: {}".format(
-                        name, wrap_val(source_val), field_option, str(e)
-                    )
+                    f"{name}: Got {wrap_val(source_val)}; Does not match {field_option}. reason: {str(e)}"
                 ) from e
     if failures == len(field.get_fields()) and not isinstance(field, NotField):
         raise ValueError(
-            "{}: Got {}; Does not match any field option: {}".format(
-                name, wrap_val(source_val), ". ".join(err_messages)
-            )
+            f"{name}: Got {wrap_val(source_val)}; Does not match any field option: {'. '.join(err_messages)}"
         )
     return deserialized
 
 
 def deserialize_map(map_field, source_val, name, camel_case_convert=False):
     if not isinstance(source_val, dict):
-        raise TypeError(
-            "{}: Got {}; Expected a dictionary".format(name, wrap_val(source_val))
-        )
+        raise TypeError(f"{name}: Got {wrap_val(source_val)}; Expected a dictionary")
     if map_field.items:
         key_field, value_field = map_field.items
     else:
@@ -349,9 +335,7 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
                 camel_case_convert=camel_case_convert,
             )
         except Exception as e:
-            raise ValueError(
-                "{}: Got {}; {}".format(name, wrap_val(source_val), str(e))
-            ) from e
+            raise ValueError(f"{name}: Got {wrap_val(source_val)}; {str(e)}") from e
     elif isinstance(field, Map):
         value = deserialize_map(
             field, source_val, name, camel_case_convert=camel_case_convert
@@ -447,10 +431,8 @@ def construct_fields_map(
                     )
                 except (TypeError, ValueError) as ex:
                     errors.append(ex)
-    if errors:
-        messages = json.dumps([str(e) for e in errors])
-        raise errors[0].__class__(messages) from errors[0]
 
+    raise_errs_if_needed(errors)
     return result
 
 
@@ -604,9 +586,7 @@ def get_processed_input(key, mapper, the_dict):
         processed_input = val if val is not None else the_dict.get(key)
     else:
         raise TypeError(
-            "mapper value must be a key in the input or a FunctionCal. Got {}".format(
-                wrap_val(key_mapper)
-            )
+            f"mapper value must be a key in the input or a FunctionCal. Got {wrap_val(key_mapper)}"
         )
     return processed_input
 
@@ -890,8 +870,8 @@ def serialize(value, *, mapper: Dict = None, compact=False, camel_case_convert=F
         if isinstance(value, (enum.Enum,)):
             return value.name
         raise TypeError(
-            "serialize: Not a Structure or Field that with an obvious serialization. Got: {}."
-            " Maybe try serialize_field() instead?".format(value)
+            f"serialize: Not a Structure or Field that with an obvious serialization. Got: {value}."
+            " Maybe try serialize_field() instead?"
         )
     return serialize_internal(
         value, mapper=mapper, compact=compact, camel_case_convert=camel_case_convert

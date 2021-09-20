@@ -1,8 +1,9 @@
+import json
 import sys
 
 
 def wrap_val(v):
-    return "'{}'".format(v) if isinstance(v, str) else v
+    return f"'{v}'" if isinstance(v, str) else v
 
 
 def _is_dunder(name):
@@ -18,6 +19,12 @@ def _is_dunder(name):
 def _is_sunder(name):
     """Returns True if a _sunder name, False otherwise."""
     return len(name) > 2 and name[0] == "_" and name[1:2] != "_"
+
+
+def raise_errs_if_needed(errors):
+    if errors:
+        messages = json.dumps([str(e) for e in errors])
+        raise errors[0].__class__(messages) from errors[0]
 
 
 py_version = sys.version_info[0:2]

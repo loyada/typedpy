@@ -4,7 +4,6 @@ Structure, Field, StructureReference, ClassReference, TypedField
 """
 import enum
 import inspect
-import json
 from builtins import issubclass
 from copy import deepcopy
 from collections import OrderedDict, deque, defaultdict
@@ -15,7 +14,7 @@ import hashlib
 
 from typing import get_type_hints, Iterable
 
-from .commons import wrap_val, _is_sunder, _is_dunder
+from .commons import raise_errs_if_needed, wrap_val, _is_sunder, _is_dunder
 from .utility import type_is_generic
 
 REQUIRED_FIELDS = "_required"
@@ -358,7 +357,7 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
 
     def __set__(self, instance, value):
         if getattr(self, IS_IMMUTABLE, False) and self._name in instance.__dict__:
-            raise ValueError("{}: Field is immutable".format(self._name))
+            raise ValueError(f"{self._name}: Field is immutable")
         if getattr(self, IS_IMMUTABLE, False) and not getattr(
             self, "_custom_deep_copy_implementation", False
         ):
@@ -388,15 +387,15 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
             :return: a string representation
             """
             if hasattr(the_val, "__iter__"):
-                return "[{}]".format(", ".join([str(v) for v in the_val]))
+                return f"[{', '.join([str(v) for v in the_val])}]"
             return str(the_val)
 
         name = self.__class__.__name__
         props = []
         for k, val in sorted(self.__dict__.items()):
             if val is not None and not k.startswith("_"):
-                strv = "'{}'".format(val) if isinstance(val, str) else as_str(val)
-                props.append("{} = {}".format(k, strv))
+                strv = f"'{val}'" if isinstance(val, str) else as_str(val)
+                props.append(f"{k} = {strv}")
 
         propst = f". Properties: {', '.join(props)}" if props else ""
         return f"<{name}{propst}>"
@@ -636,7 +635,7 @@ def add_annotations_to_class_dict(cls_dict, previous_frame):
     optional_fields = set(cls_dict.get(OPTIONAL_FIELDS, []))
     if isinstance(annotations, dict):
         for k, v in annotations.items():
-            if isinstance(v, str):
+            if isinstance(v, str) and len(v) < 50:
                 # The evil eval is to accommodate "from __future__ import annotations".
                 v = eval(
                     v,
@@ -765,8 +764,8 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         field_by_name = self.get_all_fields_by_name()
         defaults_fields = [
             key
-            for key in field_by_name
-            if getattr(field_by_name[key], "_default", None) is not None
+            for key, value in field_by_name.items()
+            if getattr(value, "_default", None) is not None
             and key not in bound.arguments
         ]
         for field_name in defaults_fields:
@@ -784,9 +783,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                     setattr(self, name, val)
                 except (TypeError, ValueError) as ex:
                     errors.append(ex)
-            if errors:
-                messages = json.dumps([str(e) for e in errors])
-                raise errors[0].__class__(messages) from errors[0]
+            raise_errs_if_needed(errors)
 
         self.__validate__()
         self._instantiated = True
@@ -836,9 +833,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             return ",".join(as_strings)
 
         def dict_to_str(values):
-            as_strings = [
-                "{} = {}".format(to_str(k), to_str(v)) for (k, v) in values.items()
-            ]
+            as_strings = [f"{to_str(k)} = {to_str(v)}" for (k, v) in values.items()]
             return ",".join(as_strings)
 
         def to_str(the_val):
@@ -862,7 +857,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         for k, val in sorted(self.__dict__.items()):
             if k not in internal_props:
                 strv = "'{}'".format(val) if isinstance(val, str) else to_str(val)
-                props.append("{} = {}".format(k, strv))
+                props.append(f"{k} = {strv}")
         props_list = ", ".join(props)
         return f"<Instance of {name}. Properties: {props_list}>"
 
@@ -891,7 +886,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         if isinstance(getattr(self, REQUIRED_FIELDS), list) and key in getattr(
             self, REQUIRED_FIELDS
         ):
-            raise ValueError("{} is mandatory".format(key))
+            raise ValueError(f"{key} is mandatory")
         del self.__dict__[key]
 
     def __validate__(self):
@@ -920,7 +915,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     def __bool__(self):
         internal_props = ["_instantiated"]
         return any(
-            [v is not None for k, v in self.__dict__.items() if k not in internal_props]
+            v is not None for k, v in self.__dict__.items() if k not in internal_props
         )
 
     @classmethod
@@ -966,9 +961,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             field_names = list(field_by_name.keys())
             return item in getattr(self, field_names[0], {})
 
-        raise TypeError(
-            "{} does not support this operator".format(self.__class__.__name__)
-        )
+        raise TypeError(f"{self.__class__.__name__} does not support this operator")
 
     def __iter__(self):
         field_by_name = _get_all_fields_by_name(self.__class__)
@@ -1172,7 +1165,7 @@ class TypedField(Field):
 
     def _validate(self, value):
         def err_prefix():
-            return "{}: ".format(self._name) if self._name else ""
+            return f"{self._name}: " if self._name else ""
 
         if not isinstance(value, self._ty):
             raise TypeError(f"{err_prefix()}Expected {self._ty}; Got {wrap_val(value)}")
@@ -1260,7 +1253,7 @@ class ClassReference(TypedField):
         super().__init__(cls)
 
     def __str__(self):
-        return "<ClassReference: {}>".format(self._ty.__name__)
+        return f"<ClassReference: {self._ty.__name__}>"
 
 
 class ImmutableField(Field):

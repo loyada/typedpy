@@ -67,9 +67,8 @@ class Deserializer(Structure):
             for key in self.mapper:
                 if key.split(".")[0] not in valid_keys:
                     raise ValueError(
-                        "Invalid key in mapper for class {}: {}. Keys must be one of the class fields.".format(
-                            self.target_class.__name__, key
-                        )
+                        f"Invalid key in mapper for class {self.target_class.__name__}: {key}. Keys must be one of "
+                        "the class fields. "
                     )
 
     def deserialize(self, input_data, keep_undefined=True):
@@ -143,9 +142,8 @@ class Serializer(Structure):
         def verify_key_in_mapper(key, valid_keys, source_class):
             if key.split(".")[0] not in valid_keys:
                 raise ValueError(
-                    "Invalid key in mapper for class {}: {}. Keys must be one of the class fields.".format(
-                        source_class.__name__, key
-                    )
+                    f"Invalid key in mapper for class {source_class.__name__}: {key}. Keys must be one of the class "
+                    "fields. "
                 )
             if isinstance(self.mapper[key], (FunctionCall,)):
                 args = self.mapper[key].args
@@ -153,9 +151,7 @@ class Serializer(Structure):
                     for arg in args:
                         if arg not in valid_keys:
                             raise ValueError(
-                                "Mapper[{}] has a function call with an invalid argument: {}".format(
-                                    key, arg
-                                )
+                                f"Mapper[{key}] has a function call with an invalid argument: {arg}"
                             )
 
         source_class = self.source.__class__
@@ -205,9 +201,7 @@ def deserializer_by_discriminator(class_by_discriminator_value):
             return _desererializer_by_type[discriminator].deserialize(data)
         except KeyError as e:
             raise ValueError(
-                "discriminator: got {}; Expected one of {}".format(
-                    wrap_val(discriminator), list(_desererializer_by_type.keys())
-                )
+                f"discriminator: got {wrap_val(discriminator)}; Expected one of {list(_desererializer_by_type.keys())}"
             ) from e
 
     return _get_content

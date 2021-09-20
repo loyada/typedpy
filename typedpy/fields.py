@@ -87,9 +87,7 @@ class StructureReference(Field):
     def __set__(self, instance, value):
         if not isinstance(value, (dict, Structure)):
             raise TypeError(
-                "{}: Expected a dictionary or Structure; got {}".format(
-                    self._name, value
-                )
+                f"{self._name}: Expected a dictionary or Structure; got {value}"
             )
         extracted_values = (
             {k: v for (k, v) in value.__dict__.items() if k != "_instantiated"}
@@ -100,16 +98,16 @@ class StructureReference(Field):
         super().__set__(instance, newval)
 
     def __serialize__(self, value):
-        raise TypeError("{}: StructuredReference Cannot be pickled".format(self._name))
+        raise TypeError(f"{self._name}: StructuredReference Cannot be pickled")
 
     def __str__(self):
         props = []
         for k, val in sorted(self._newclass.__dict__.items()):
             if val is not None and not k.startswith("_"):
-                props.append("{} = {}".format(k, str(val)))
+                props.append(f"{k} = {str(val)}")
 
-        propst = ". Properties: {}".format(", ".join(props)) if props else ""
-        return "<Structure{}>".format(propst)
+        propst = f". Properties: {', '.join(props)}" if props else ""
+        return f"<Structure{propst}>"
 
 
 class Number(Field):
@@ -136,7 +134,7 @@ class Number(Field):
         minimum=None,
         maximum=None,
         exclusiveMaximum=None,
-        **kwargs
+        **kwargs,
     ):
         self.multiplesOf = multiplesOf
         self.minimum = minimum
@@ -149,12 +147,10 @@ class Number(Field):
             return isinstance(val, (float, int, Decimal))
 
         def err_prefix():
-            return (
-                "{}: Got {}; ".format(self._name, wrap_val(value)) if self._name else ""
-            )
+            return f"{self._name}: Got {wrap_val(value)}; " if self._name else ""
 
         if not is_number(value):
-            raise TypeError("{}Expected a number".format(err_prefix()))
+            raise TypeError(f"{err_prefix()}Expected a number")
         if (
             isinstance(self.multiplesOf, float)
             and int(value / self.multiplesOf) != value / self.multiplesOf
@@ -162,23 +158,17 @@ class Number(Field):
             and value % self.multiplesOf
         ):
             raise ValueError(
-                "{}Expected a a multiple of {}".format(err_prefix(), self.multiplesOf)
+                f"{err_prefix()}Expected a a multiple of {self.multiplesOf}"
             )
         if (is_number(self.minimum)) and self.minimum > value:
-            raise ValueError(
-                "{}Expected a minimum of {}".format(err_prefix(), self.minimum)
-            )
+            raise ValueError(f"{err_prefix()}Expected a minimum of {self.minimum}")
         if is_number(self.maximum):
             if self.exclusiveMaximum and self.maximum == value:
                 raise ValueError(
-                    "{}Expected a maximum of less than {}".format(
-                        err_prefix(), self.maximum
-                    )
+                    f"{err_prefix()}Expected a maximum of less than {self.maximum}"
                 )
             if self.maximum < value:
-                raise ValueError(
-                    "{}Expected a maximum of {}".format(err_prefix(), self.maximum)
-                )
+                raise ValueError(f"{err_prefix()}Expected a maximum of {self.maximum}")
 
     def _validate(self, value):
         Number._validate_static(self, value)
@@ -212,9 +202,9 @@ class DecimalNumber(Number, SerializableField):
         try:
             value = Decimal(value)
         except TypeError as ex:
-            raise TypeError("{}: {}".format(self._name, ex.args[0])) from ex
+            raise TypeError(f"{self._name}: {ex.args[0]}") from ex
         except InvalidOperation as ex:
-            raise ValueError("{}: {}".format(self._name, ex.args[0])) from ex
+            raise ValueError(f"{self._name}: {ex.args[0]}") from ex
 
         super().__set__(instance, value)
 
@@ -255,25 +245,21 @@ class String(TypedField):
 
     def _validate_static(self, value):
         def err_prefix():
-            return (
-                "{}: Got {}; ".format(self._name, wrap_val(value)) if self._name else ""
-            )
+            return f"{self._name}: Got {wrap_val(value)}; " if self._name else ""
 
         if not isinstance(value, str):
-            raise TypeError("{}Expected a string".format(err_prefix()))
+            raise TypeError(f"{err_prefix()}Expected a string")
         if self.maxLength is not None and len(value) > self.maxLength:
             raise ValueError(
-                "{}Expected a maximum length of {}".format(err_prefix(), self.maxLength)
+                f"{err_prefix()}Expected a maximum length of {self.maxLength}"
             )
         if self.minLength is not None and len(value) < self.minLength:
             raise ValueError(
-                "{}Expected a minimum length of {}".format(err_prefix(), self.minLength)
+                f"{err_prefix()}Expected a minimum length of {self.minLength}"
             )
         if self.pattern is not None and not self._compiled_pattern.match(value):
             raise ValueError(
-                '{}Does not match regular expression: "{}"'.format(
-                    err_prefix(), self.pattern
-                )
+                f'{err_prefix()}Does not match regular expression: "{self.pattern}"'
             )
 
     def __set__(self, instance, value):
@@ -298,12 +284,10 @@ class Function(Field):
             }
 
         def err_prefix():
-            return (
-                "{}: Got {}; ".format(self._name, wrap_val(value)) if self._name else ""
-            )
+            return f"{self._name}: Got {wrap_val(value)}; " if self._name else ""
 
         if not is_function(value):
-            raise TypeError("{}Expected a function".format(err_prefix()))
+            raise TypeError(f"{err_prefix()}Expected a function")
         super().__set__(instance, value)
 
 
@@ -632,25 +616,25 @@ class _DequeStruct(deque, ImmutableMixin, _IteratorProxyMixin):
             return _ListStruct.ListIteratorProxy(self)
         return super(_DequeStruct, self).__iter__()
 
-    def append(self, value):
+    def append(self, x):
         self._raise_if_immutable()
         copied = deque(self)
-        copied.append(value)
+        copied.append(x)
         if self._field_definition:  # Python 3.6
             setattr(
                 self._instance, getattr(self._field_definition, "_name", None), copied
             )
-        super().append(value)
+        super().append(x)
 
-    def appendleft(self, value):
+    def appendleft(self, x):
         self._raise_if_immutable()
         copied = deque(self)
-        copied.appendleft(value)
+        copied.appendleft(x)
         if self._field_definition:  # Python 3.6
             setattr(
                 self._instance, getattr(self._field_definition, "_name", None), copied
             )
-        super().append(value)
+        super().append(x)
 
     def extend(self, iterable: Iterable):
         self._raise_if_immutable()
@@ -670,16 +654,16 @@ class _DequeStruct(deque, ImmutableMixin, _IteratorProxyMixin):
                 self._instance, getattr(self._field_definition, "_name", None), copied
             )
 
-    def insert(self, index: int, value):
+    def insert(self, x: int, i):
         self._raise_if_immutable()
         copied = deque(self)
-        copied.insert(index, value)
+        copied.insert(x, i)
         setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
 
-    def remove(self, ind):
+    def remove(self, value):
         self._raise_if_immutable()
         copied = deque(self)
-        copied.remove(ind)
+        copied.remove(value)
         setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
 
     def copy(self):
@@ -704,7 +688,7 @@ class _DequeStruct(deque, ImmutableMixin, _IteratorProxyMixin):
         setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
         return res
 
-    def rotate(self, n: int) -> None:
+    def rotate(self, n: int) -> None:  # pylint: disable=signature-differs
         self._raise_if_immutable()
         # no need to validate again
         super().rotate(n)

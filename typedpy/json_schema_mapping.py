@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from .commons import wrap_val
 from .fields import (
     StructureReference,
     Integer,
@@ -23,10 +24,6 @@ from .extfields import DateString
 from .structures import ADDITIONAL_PROPERTIES
 
 
-def as_str(val):
-    return "'{}'".format(val) if isinstance(val, str) else val
-
-
 def get_mapper(field_cls):
     field_type_to_mapper = {
         StructureReference: StructureReferenceMapper,
@@ -48,16 +45,14 @@ def get_mapper(field_cls):
     for cls in field_cls.__mro__:
         if issubclass(cls, Field) and cls in field_type_to_mapper:
             return field_type_to_mapper[cls]
-    raise NotImplementedError(
-        "schema mapping is not implemented for {}".format(field_cls)
-    )
+    raise NotImplementedError(f"schema mapping is not implemented for {field_cls}")
 
 
 def _map_class_reference(reference, definitions_schema):
     definition, _ = structure_to_schema(getattr(reference, "_ty"), definitions_schema)
     name = getattr(reference, "_ty").__name__
     definitions_schema[name] = definition
-    return {"$ref": "#/definitions/{}".format(name)}
+    return {"$ref": f"#/definitions/{name}"}
 
 
 def convert_to_schema(field, definitions_schema):
@@ -129,7 +124,7 @@ def convert_to_field_code(schema, definitions):
         return None
     if isinstance(schema, list):
         fields = [convert_to_field_code(s, definitions) for s in schema]
-        return "[{}]".format(", ".join(fields))
+        return f"[{', '.join(fields)}]"
     if "$ref" in schema:
         def_name = schema["$ref"][len("#/definitions/") :]
         return def_name
@@ -158,10 +153,8 @@ def convert_to_field_code(schema, definitions):
         mapper = get_mapper(cls)
     params_list = mapper.get_paramlist_from_schema(schema, definitions)
 
-    params_as_string = ", ".join(
-        ["{}={}".format(name, val) for (name, val) in params_list]
-    )
-    return "{}({})".format(cls.__name__, params_as_string)
+    params_as_string = ", ".join([f"{name}={val}" for (name, val) in params_list])
+    return f"{cls.__name__}({params_as_string})"
 
 
 def schema_to_struct_code(struct_name, schema, definitions_schema):
@@ -187,9 +180,9 @@ def schema_to_struct_code(struct_name, schema, definitions_schema):
         Note: In case schema is None, should return None.
         Deals with a schema that is a dict, as well as one that is a list
     """
-    body = ["class {}(Structure):".format(struct_name)]
+    body = [f"class {struct_name}(Structure):"]
     body += (
-        ['    """\n    {}\n    """\n'.format(schema.get("description"))]
+        [f'    """\n    {schema.get("description")}\n    """\n']
         if "description" in schema
         else []
     )
@@ -203,23 +196,15 @@ def schema_to_struct_code(struct_name, schema, definitions_schema):
         if schema.get("type", "object") == "object"
         else ["wrapped"]
     )
-    body += ["    _required = {}".format(required)] if required is not None else []
+    body += [f"    _required = {required}"] if required is not None else []
     the_type = schema.get("type", "object" if "properties" in schema else None)
 
     if the_type == "object":
         properties = schema.get("properties", {})
         for (name, sch) in properties.items():
-            body += [
-                "    {} = {}".format(
-                    name, convert_to_field_code(sch, definitions_schema)
-                )
-            ]
+            body += [f"    {name} = {convert_to_field_code(sch, definitions_schema)}"]
     else:
-        body += [
-            "    {} = {}".format(
-                "wrapped", convert_to_field_code(schema, definitions_schema)
-            )
-        ]
+        body += [f"    wrapped = {convert_to_field_code(schema, definitions_schema)}"]
 
     return "\n".join(body)
 
@@ -359,7 +344,7 @@ class StringMapper(Mapper):
         params = {
             "minLength": schema.get("minLength", None),
             "maxLength": schema.get("maxLength", None),
-            "pattern": as_str(schema.get("pattern", None)),
+            "pattern": wrap_val(schema.get("pattern", None)),
         }
         return list((k, v) for k, v in params.items() if v is not None)
 

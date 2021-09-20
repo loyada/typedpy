@@ -215,7 +215,7 @@ class _FieldMeta(type):
                 if the_class in _FieldMeta._registry:
                     return _FieldMeta._registry[the_class]
                 short_hash = hashlib.sha256(the_class.encode("utf-8")).hexdigest()[:8]
-                new_name = "Field_{}_{}".format(the_class, short_hash)
+                new_name = f"Field_{the_class}_{short_hash}"
                 class_as_field = create_typed_field(new_name, val)
                 class_as_field.__getstate__ = get_state
                 _FieldMeta._registry[the_class] = class_as_field
@@ -856,7 +856,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         internal_props = ["_instantiated"]
         for k, val in sorted(self.__dict__.items()):
             if k not in internal_props:
-                strv = "'{}'".format(val) if isinstance(val, str) else to_str(val)
+                strv = f"'{val}'" if isinstance(val, str) else to_str(val)
                 props.append(f"{k} = {strv}")
         props_list = ", ".join(props)
         return f"<Instance of {name}. Properties: {props_list}>"

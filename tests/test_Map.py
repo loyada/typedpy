@@ -51,7 +51,7 @@ def test_invalid_items_definitions_err3():
 def test_invalid_assignment_err():
     with raises(TypeError) as excinfo:
         Example(a=[])
-    assert "a: Expected <class 'dict'>" in str(excinfo.value)
+    assert "a: Expected a dict" in str(excinfo.value)
 
 
 def test_invalid_key_type_err1():
@@ -244,7 +244,7 @@ def test_simple_map_valid():
 def test_simple_map_invalid():
     with raises(TypeError) as excinfo:
         Example(g={1,'a',2})
-    assert "g: Expected <class 'dict'>" in str(excinfo.value)
+    assert "g: Expected a dict" in str(excinfo.value)
 
 
 def test_clear_error_if_immutable():

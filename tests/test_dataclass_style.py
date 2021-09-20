@@ -72,7 +72,7 @@ def test_type_conversion_to_typedpy_str_representation():
 def test_type_conversion_to_typedpy_validation_err_for_converted_type():
     with raises(TypeError) as excinfo:
         MixedTypesExample(i=5, s="xyz", s1="asd", simple=SimpleStruct(name="John"), a="a")
-    assert "a: Expected <class 'dict'>" in str(excinfo.value)
+    assert "a: Expected a dict" in str(excinfo.value)
 
 
 def test_type_conversion_to_typedpy_validation_err_for_standard_field():

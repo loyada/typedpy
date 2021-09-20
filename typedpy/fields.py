@@ -346,12 +346,10 @@ class Boolean(TypedField):
 
     def _validate(self, value):
         def err_prefix():
-            return "{}: ".format(self._name) if self._name else ""
+            return f"{self._name}: " if self._name else ""
 
         if value not in {"True", "False", True, False}:
-            raise TypeError(
-                "{}Expected {}; Got {}".format(err_prefix(), self._ty, wrap_val(value))
-            )
+            raise TypeError(f"{err_prefix()}Expected {self._ty}; Got {wrap_val(value)}")
 
 
 class Positive(Number):
@@ -361,9 +359,7 @@ class Positive(Number):
 
     def __set__(self, instance, value):
         if value <= 0:
-            raise ValueError(
-                "{}: Got {}; Expected a positive number".format(self._name, value)
-            )
+            raise ValueError(f"{self._name}: Got {value}; Expected a positive number")
         super().__set__(instance, value)
 
 
@@ -375,7 +371,7 @@ class NonPositive(Number):
     def __set__(self, instance, value):
         if value > 0:
             raise ValueError(
-                "{}: Got {}; Expected a negative number or 0".format(self._name, value)
+                f"{self._name}: Got {value}; Expected a negative number or 0"
             )
         super().__set__(instance, value)
 
@@ -387,9 +383,7 @@ class Negative(Number):
 
     def __set__(self, instance, value):
         if value >= 0:
-            raise ValueError(
-                "{}: Got {}; Expected a negative number".format(self._name, value)
-            )
+            raise ValueError(f"{self._name}: Got {value}; Expected a negative number")
         super().__set__(instance, value)
 
 
@@ -401,7 +395,7 @@ class NonNegative(Number):
     def __set__(self, instance, value):
         if value < 0:
             raise ValueError(
-                "{}: Got {}; Expected a positive number or 0".format(self._name, value)
+                f"{self._name}: Got {value}; Expected a positive number or 0"
             )
         super().__set__(instance, value)
 
@@ -867,15 +861,11 @@ class SizedCollection:
     def validate_size(self, items, name):
         if self.minItems is not None and len(items) < self.minItems:
             raise ValueError(
-                "{}: Expected length of at least {}; Got {}".format(
-                    name, self.minItems, items
-                )
+                f"{name}: Expected length of at least {self.minItems}; Got {items}"
             )
         if self.maxItems is not None and len(items) > self.maxItems:
             raise ValueError(
-                "{}: Expected length of at most {}; Got {}".format(
-                    name, self.maxItems, items
-                )
+                f"{name}: Expected length of at most {self.maxItems}; Got {items}"
             )
 
 
@@ -919,9 +909,7 @@ class Set(
             getattr(self.items, "_ty"), "__hash__"
         ):
             raise TypeError(
-                "Set element of type {} is not hashable".format(
-                    getattr(self.items, "_ty")
-                )
+                f"Set element of type {getattr(self.items, '_ty')} is not hashable"
             )
         super().__init__(*args, **kwargs)
         self._set_immutable(getattr(self, "_immutable", False))
@@ -929,9 +917,7 @@ class Set(
     def __set__(self, instance, value):
         cls = self.__class__._ty
         if not isinstance(value, cls):
-            raise TypeError(
-                "{}: Got {}; Expected {}".format(self._name, wrap_val(value), cls)
-            )
+            raise TypeError(f"{self._name}: Got {wrap_val(value)}; Expected {cls}")
         self.validate_size(value, self._name)
         if self.items is not None:
             setattr(self.items, "_name", self._name)
@@ -988,9 +974,8 @@ class Map(
                 getattr(key_field, "_ty"), "__hash__"
             ):
                 raise TypeError(
-                    "Key field of type {}, with underlying type of {} is not hashable".format(
-                        key_field, getattr(key_field, "_ty")
-                    )
+                    f"Key field of type {key_field}, with underlying type of {getattr(key_field, '_ty')} "
+                    "is not hashable"
                 )
         self._custom_deep_copy_implementation = True
         super().__init__(*args, **kwargs)
@@ -998,7 +983,7 @@ class Map(
 
     def __set__(self, instance, value):
         if not isinstance(value, dict):
-            raise TypeError("%s: Expected %s" % (self._name, dict))
+            raise TypeError(f"{self._name}: Expected a dict")
         self.validate_size(value, self._name)
 
         if self.items is not None:
@@ -1092,7 +1077,7 @@ class Array(
                 res = []
                 for i, val in enumerate(value):
                     temp_st = Structure()
-                    setattr(self.items, "_name", self._name + "_{}".format(str(i)))
+                    setattr(self.items, "_name", self._name + f"_{str(i)}")
                     self.items.__set__(temp_st, val)
                     res.append(getattr(temp_st, getattr(self.items, "_name")))
                 value = res
@@ -1104,9 +1089,7 @@ class Array(
                         additional_properties_forbidden and len(self.items) > len(value)
                     ):
                         raise ValueError(
-                            "{}: Got {}; Expected an array of length {}".format(
-                                self._name, value, len(self.items)
-                            )
+                            f"{self._name}: Got {value}; Expected an array of length {len(self.items)}"
                         )
                 temp_st = Structure()
                 temp_st._skip_validation = getattr(instance, "_skip_validation", False)
@@ -1114,7 +1097,7 @@ class Array(
                 for ind, item in enumerate(self.items):
                     if ind >= len(value):
                         continue
-                    setattr(item, "_name", self._name + "_{}".format(str(ind)))
+                    setattr(item, "_name", self._name + f"_{str(ind)}")
                     item.__set__(temp_st, value[ind])
                     res.append(getattr(temp_st, getattr(item, "_name")))
                 res += value[len(self.items) :]
@@ -1198,7 +1181,7 @@ class Deque(
                 res = deque()
                 for i, val in enumerate(value):
                     temp_st = Structure()
-                    setattr(self.items, "_name", self._name + "_{}".format(str(i)))
+                    setattr(self.items, "_name", self._name + f"_{str(i)}")
                     self.items.__set__(temp_st, val)
                     res.append(getattr(temp_st, getattr(self.items, "_name")))
                 value = res
@@ -1210,9 +1193,7 @@ class Deque(
                         additional_properties_forbidden and len(self.items) > len(value)
                     ):
                         raise ValueError(
-                            "{}: Got {}; Expected an deque of length {}".format(
-                                self._name, value, len(self.items)
-                            )
+                            f"{self._name}: Got {value}; Expected an deque of length {len(self.items)}"
                         )
                 temp_st = Structure()
                 temp_st._skip_validation = getattr(instance, "_skip_validation", False)
@@ -1220,7 +1201,7 @@ class Deque(
                 for ind, item in enumerate(self.items):
                     if ind >= len(value):
                         continue
-                    setattr(item, "_name", self._name + "_{}".format(str(ind)))
+                    setattr(item, "_name", self._name + f"_{str(ind)}")
                     item.__set__(temp_st, value[ind])
                     res.append(getattr(temp_st, getattr(item, "_name")))
                 for i in range(len(self.items), len(value)):
@@ -1232,9 +1213,7 @@ class Deque(
 
 def verify_type_and_uniqueness(the_type, value, name, has_unique_items):
     if not isinstance(value, the_type):
-        raise TypeError(
-            "{}: Got {}; Expected {}".format(name, wrap_val(value), str(the_type))
-        )
+        raise TypeError(f"{name}: Got {wrap_val(value)}; Expected {str(the_type)}")
     if has_unique_items:
         unique = reduce(
             lambda unique_vals, x: unique_vals.append(x) or unique_vals
@@ -1244,9 +1223,7 @@ def verify_type_and_uniqueness(the_type, value, name, has_unique_items):
             [],
         )
         if len(unique) < len(value):
-            raise ValueError(
-                "{}: Got {}; Expected unique items".format(name, wrap_val(value))
-            )
+            raise ValueError(f"{name}: Got {wrap_val(value)}; Expected unique items")
 
 
 class Tuple(ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
@@ -1323,16 +1300,14 @@ class Tuple(ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
         verify_type_and_uniqueness(tuple, value, self._name, self.uniqueItems)
         if len(self.items) != len(value) and len(self.items) > 1:
             raise ValueError(
-                "{}: Got {}; Expected a tuple of length {}".format(
-                    self._name, wrap_val(value), len(self.items)
-                )
+                f"{self._name}: Got {wrap_val(value)}; Expected a tuple of length {len(self.items)}"
             )
 
         temp_st = Structure()
         res = []
         items = self.items if len(self.items) > 1 else self.items * len(value)
         for ind, item in enumerate(items):
-            setattr(item, "_name", self._name + "_{}".format(str(ind)))
+            setattr(item, "_name", self._name + f"_{str(ind)}")
             item.__set__(temp_st, value[ind])
             res.append(getattr(temp_st, getattr(item, "_name")))
             res += value[len(items) :]
@@ -1388,21 +1363,15 @@ class Enum(Field, metaclass=_EnumMeta):
                 enum_values = [r.name for r in self._enum_class]
                 if len(enum_values) < 11:
                     raise ValueError(
-                        "{}: Got {}; Expected one of: {}".format(
-                            self._name, value, ", ".join(enum_values)
-                        )
+                        f"{self._name}: Got {value}; Expected one of: {', '.join(enum_values)}"
                     )
                 raise ValueError(
-                    "{}: Got {}; Expected a value of {}".format(
-                        self._name, value, self._enum_class
-                    )
+                    f"{self._name}: Got {value}; Expected a value of {self._enum_class}"
                 )
 
         elif value not in self.values:
             raise ValueError(
-                "{}: Got {}; Expected one of {}".format(
-                    self._name, value, ", ".join([str(v) for v in self.values])
-                )
+                f"{self._name}: Got {value}; Expected one of {', '.join([str(v) for v in self.values])}"
             )
 
     def __set__(self, instance, value):
@@ -1450,9 +1419,7 @@ class Sized(Field):
     def __set__(self, instance, value):
         if len(value) > self.maxlen:
             raise ValueError(
-                "{}: Got {}; Expected a length up to {}".format(
-                    self._name, value, self.maxlen
-                )
+                f"{self._name}: Got {wrap_val(value)}; Expected a length up to {self.maxlen}"
             )
         super().__set__(instance, value)
 
@@ -1465,10 +1432,10 @@ def _str_for_multioption_field(instance):
     name = instance.__class__.__name__
     if instance.get_fields():
         fields_st = ", ".join([str(field) for field in instance.get_fields()])
-        propst = " [{}]".format(fields_st)
+        propst = f" [{fields_st}]"
     else:
         propst = ""
-    return "<{}{}>".format(name, propst)
+    return f"<{name}{propst}>"
 
 
 class MultiFieldWrapper:
@@ -1556,9 +1523,9 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             except ValueError:
                 pass
         if not matched:
-            prefix = "{}: ".format(self._name) if self._name else ""
+            prefix = f"{self._name}: " if self._name else ""
             raise ValueError(
-                "{}{} Did not match any field option".format(prefix, wrap_val(value))
+                f"{prefix}{wrap_val(value)} Did not match any field option"
             )
         super().__set__(instance, value)
 
@@ -1598,13 +1565,11 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
                 pass
         if not matched:
             raise ValueError(
-                "{}: Got {}; Did not match any field option".format(self._name, value)
+                f"{self._name}: Got {value}; Did not match any field option"
             )
         if matched > 1:
             raise ValueError(
-                "{}: Got {}; Matched more than one field option".format(
-                    self._name, value
-                )
+                f"{self._name}: Got {value}; Matched more than one field option"
             )
         super().__set__(instance, value)
 
@@ -1643,9 +1608,7 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
                 pass
             else:
                 raise ValueError(
-                    "{}: Got {}; Expected not to match any field definition".format(
-                        self._name, wrap_val(value)
-                    )
+                    f"{self._name}: Got {wrap_val(value)}; Expected not to match any field definition"
                 )
         super().__set__(instance, value)
 
@@ -1663,9 +1626,7 @@ class ImmutableSet(Set, ImmutableField):
 
     def __set__(self, instance, value):
         if not isinstance(value, (set, frozenset)):
-            raise TypeError(
-                "{}: Got {}; Expected {}".format(self._name, wrap_val(value), set)
-            )
+            raise TypeError(f"{self._name}: Got {wrap_val(value)}; Expected {set}")
         self.validate_size(value, self._name)
         if self.items is not None:
             temp_st = Structure()
@@ -1746,7 +1707,7 @@ class ExceptionField(TypedField, SerializableField):
     _ty = Exception
 
     def serialize(self, value):
-        return "{}: {}".format(value.__class__.__name__, str(value))
+        return f"{value.__class__.__name__}: {str(value)}"
 
 
 class FunctionCall(Structure):

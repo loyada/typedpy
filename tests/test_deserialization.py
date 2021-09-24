@@ -7,10 +7,10 @@ from typing import Optional
 from pytest import raises
 
 from typedpy import Boolean, ImmutableStructure, Structure, Array, Number, String, Integer, \
-    StructureReference, AllOf, deserialize_structure, Enum, \
+    StructureReference, AllOf, TypedField, deserialize_structure, Enum, \
     Float, Map, create_typed_field, AnyOf, Set, Field, Tuple, OneOf, Anything, mappers, serialize, NotField, \
     SerializableField, Deque, PositiveInt, DecimalNumber
-from typedpy.serialization import FunctionCall
+from typedpy.serialization import FunctionCall, deserialize_single_field
 from typedpy.serialization_wrappers import Deserializer, Serializer, deserializer_by_discriminator
 
 
@@ -1065,12 +1065,10 @@ def test_deserialize_with_deep_mapper_camel_case_setting():
         i = Integer
         _serialization_mapper = mappers.TO_CAMELCASE
 
-
     class Bar(Structure):
         foo_bar = Foo
         array_nums = Array
         _serialization_mapper = mappers.TO_CAMELCASE
-
 
     class Example(Structure):
         bar = Bar
@@ -1296,3 +1294,44 @@ def test_deserialize_camel_case_additional_properties_defect():
 
     Deserializer(PairOne, camel_case_convert=True).deserialize(data)
     Deserializer(PairTwo, camel_case_convert=True).deserialize(data)
+
+
+def test_ingore_none_when_deserializing_a_field_directly():
+    class Foo(Structure):
+        a: int
+        b: int
+
+        _required = []
+        _ignore_none = True
+
+    foo = deserialize_single_field(Foo.a, None, "a", ignore_none=True)
+    assert foo is None
+
+
+def test_custom_str_field():
+    class MyStr(TypedField):
+        _ty = str
+
+    class Foo(Structure):
+        a: MyStr
+        b: int
+
+    foo = Deserializer(Foo).deserialize({"a": "xyz", "b": 5})
+    assert foo == Foo(a="xyz", b=5)
+
+
+def test_custom_field_that_accepts_multiple_values():
+    class Point:
+        def __init__(self, x, y, z):
+            self.x = x
+            self.y = y
+            self.z = z
+
+    class PointField(TypedField):
+        _ty = Point
+
+    class Foo(Structure):
+        p: PointField
+
+    foo = Deserializer(Foo).deserialize({"p": [1, 2, 3]})
+    assert foo.p.x == 1

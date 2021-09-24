@@ -488,8 +488,6 @@ def deserialize_structure_internal(
             keep_undefined = False
 
     ignore_none = getattr(cls, IGNORE_NONE_VALUES, False)
-    if not isinstance(mapper, Mapping):
-        raise TypeError("Mapper must be a mapping")
     field_by_name = _get_all_fields_by_name(cls)
 
     if not isinstance(input_dict, dict):
@@ -597,8 +595,6 @@ def serialize_multifield_wrapper(fields, name, val, mapper, camel_case_convert):
         try:
             if getattr(field, "_validate", None):
                 field._validate(val)
-            if isinstance(field, TypedField) and not isinstance(val, field._ty):
-                raise TypeError
             return serialize_field(field, val, camel_case_convert)
         except:  # pylint: disable=bare-except
             pass
@@ -760,15 +756,6 @@ def _convert_to_camel_case_if_required(key, camel_case_convert):
         return key
 
 
-def _convert_to_snake_case_if_required(key, camel_case_convert):
-    if camel_case_convert:
-        return "".join(
-            ["_" + char.lower() if char.isupper() else char for char in key]
-        ).lstrip("_")
-    else:
-        return key
-
-
 def serialize_internal(structure, mapper=None, compact=False, camel_case_convert=False):
     cls = structure.__class__
     field_by_name = _get_all_fields_by_name(cls)
@@ -777,8 +764,6 @@ def serialize_internal(structure, mapper=None, compact=False, camel_case_convert
             structure.__class__, mapper, camel_case_convert
         )
     mapper = {} if mapper is None else mapper
-    if not isinstance(mapper, Mapping):
-        raise TypeError("Mapper must be a mapping")
     if isinstance(structure, getattr(Generator, "_ty", None)):
         raise TypeError("Generator cannot be serialized")
     items = (

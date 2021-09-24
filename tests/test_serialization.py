@@ -800,3 +800,29 @@ def test_trivial_serializable():
     assert Deserializer(Bar).deserialize(serialized) == deserialized
     assert Serializer(deserialized).serialize() == serialized
 
+
+def test_serialize_multified_with_any():
+    class MyPoint:
+        def __init__(self,x,y):
+            self.x = x
+            self.y = y
+
+
+    class Foo(Structure):
+        a: Array[AnyOf[Integer, MyPoint]]
+
+    serialized = Serializer(Foo(a=[1, MyPoint(1,2)])).serialize()
+    assert serialized["a"] == [1, {'x': 1, 'y': 2}]
+
+
+def test_serialize_multified_with_any_unserializable():
+    class MyPoint1:
+        def __init__(self,x,y):
+            self.x = x
+            self.y = y
+
+    class Foo(Structure):
+        a: Array[AnyOf[Integer, MyPoint1]]
+
+    with raises(ValueError):
+        Serializer(Foo(a=[1, MyPoint1(datetime.datetime.now(), datetime.datetime.now())])).serialize()

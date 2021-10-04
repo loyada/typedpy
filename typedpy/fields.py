@@ -868,6 +868,12 @@ class SizedCollection:
                 f"{name}: Expected length of at most {self.maxItems}; Got {items}"
             )
 
+    # This is needed to hack the type check of typing.Optional, to allow the following syntax:
+    #   x: Optional[Array[Integer]]
+    def __call__(self, *args, **kwargs):
+        return self
+
+
 
 class Set(
     SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta

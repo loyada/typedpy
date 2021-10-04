@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pytest import raises
 
 from typedpy import Structure, Number, String, Integer, Set, AnyOf, Map, PositiveInt, ImmutableSet
@@ -168,3 +170,25 @@ def test_immutableset_typerr():
 def test_str():
     e = Example(h={1,2,3})
     assert "h = {1,2,3}" in str(e)
+
+
+def test_optional_of_set_of_type():
+    class Foo(Structure):
+        s: Optional[Set[String]]
+
+    assert "x" in Foo(s={"x", "y"}).s
+    assert Foo().s is None
+
+    with raises(ValueError):
+        Foo(s={1, 2})
+
+
+def test_optional_of_set():
+    class Foo(Structure):
+        s: Optional[Set]
+
+    assert "x" in Foo(s={"x", 1}).s
+    assert Foo().s is None
+
+    with raises(ValueError):
+        Foo(s=[1, 2])

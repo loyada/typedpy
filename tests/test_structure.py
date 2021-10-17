@@ -566,3 +566,25 @@ def test_required_is_inherited_field():
         B(y=5)
     assert "missing a required argument: 'x'" in str(excinfo.value)
     assert B(x=1, y=2).x == 1
+
+
+def test_dont_allow_assignment_to_non_typedpy_types():
+    Structure.set_block_non_typedpy_field_assignment()
+    with raises(TypeError) as excinfo:
+        class A(Structure):
+            a = list[str]
+    assert "a: assigned a non-Typedpy type: list[str]" in str(excinfo.value)
+
+    Structure.set_block_non_typedpy_field_assignment(False)
+
+    class B(Structure):
+        b = list[str]
+
+
+def test_dont_allow_assignment_to_non_typedpy_types_valid():
+    Structure.set_block_non_typedpy_field_assignment()
+
+    class A(Structure):
+        a: list[str]= list
+    assert A().a == []
+

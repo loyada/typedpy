@@ -510,6 +510,10 @@ class StructMeta(type):
                 raise ValueError(f"{field_name}: invalid field name")
             setattr(cls_dict[field_name], "_name", field_name)
 
+        for key, val in cls_dict.items():
+            if not any([_is_sunder(key), _is_dunder(key), isinstance(val, Field)]) and isinstance(val, type) \
+                    and Structure.is_non_typedpy_field_assignment_blocked():
+                raise TypeError(f"{key}: assigned a non-Typedpy type: {val}")
         _apply_default_and_update_required_not_to_include_fields_with_defaults(
             cls_dict=cls_dict, defaults=defaults, fields=fields
         )
@@ -1111,6 +1115,13 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     def failing_fast():
         return Structure._fail_fast
 
+    @staticmethod
+    def set_block_non_typedpy_field_assignment(flag=True):
+        Structure._block_non_typedpy_field_assignment = flag
+
+    @staticmethod
+    def is_non_typedpy_field_assignment_blocked():
+        return  getattr(Structure, "_block_non_typedpy_field_assignment", False)
 
 class FinalStructure(Structure):
     pass

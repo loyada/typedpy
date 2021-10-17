@@ -1123,6 +1123,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     def is_non_typedpy_field_assignment_blocked():
         return  getattr(Structure, "_block_non_typedpy_field_assignment", False)
 
+
 class FinalStructure(Structure):
     pass
 

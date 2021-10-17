@@ -512,7 +512,15 @@ In other words, the following definition does not define any valid Typedpy Field
 In the example above, Example.st is simply the class str. The reason this is not automatically changed by Typedpy is to
 "play nicely" with other classes or functionality. If you want to use regular Python types, you have to use the ':' notation.
 
+To protect from such mistakes, starting at version 2.6.4, Typedpy introduced the setting:
 
 
+.. code-block:: python
 
+    Structure.set_block_non_typedpy_field_assignment(flag=True)
+
+
+This setting allows the developer to decide whether or not it is allowed to assign fields to types that are not
+Typedpy fields (such as the examples above). When this flag is set to block such definition, a class definition like
+class Example above will throw an appropriate exception.
 

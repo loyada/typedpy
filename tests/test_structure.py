@@ -590,7 +590,7 @@ def test_dont_allow_assignment_to_non_typedpy_types_pep585():
     with raises(TypeError) as excinfo:
         class A(Structure):
             a = list[str]
-    assert "a: assigned a non-Typedpy type: typing.List[str]" in str(excinfo.value)
+    assert "a: assigned a non-Typedpy type: list[str]" in str(excinfo.value)
 
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")

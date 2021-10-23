@@ -1278,6 +1278,16 @@ def test_ignore_none_with_none():
     assert Deserializer(Foo).deserialize({"a": "x", "b": None}) == Foo(a="x")
 
 
+def test_deserialize_single_field():
+    class Foo(ImmutableStructure):
+        a: String
+        b: Optional[String]
+        _ignore_none = True
+
+    res = deserialize_single_field(Array[Foo], [{"a": "x", "b": None}, {"a": "y", "b": "xyz"}])
+    assert res == [Foo(a="x"), Foo(a="y", b="xyz")]
+
+
 def test_deserialize_camel_case_additional_properties_defect():
     from typedpy import ImmutableStructure, String, Deserializer
 

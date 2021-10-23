@@ -1,7 +1,6 @@
 import collections
 import enum
 import json
-from collections.abc import Mapping
 from functools import reduce
 from typing import Dict
 
@@ -249,13 +248,31 @@ def deserialize_map(map_field, source_val, name, camel_case_convert=False):
 def deserialize_single_field(  # pylint: disable=too-many-branches
     field,
     source_val,
-    name,
+    name="value",
     *,
     mapper=None,
     keep_undefined=True,
     camel_case_convert=False,
     ignore_none=False,
 ):
+    """
+        Deserialize a field directly, without the need to define a Structure class.
+        Note the top level must be a python dict - which implies that a JSON of
+        Arguments:
+            field(Field):
+                The field definition. For example: String, Array[Map[str, Foo]], AnyOf[Foo, Bar]
+            source_val:
+                the serialized value to be deserialized
+            name(optional):
+                name to be used for the field in case of raised exceptions
+            mapper(dict): optional
+                A Typedpy deserialization mapper
+            keep_undefined(bool): optional
+                should it create attributes for keys that don't appear in the class? default is True.
+
+        Returns:
+            a deserialized version of the data if successful, or raises an appropriate exception
+        """
     if source_val is None and (ignore_none or isinstance(field, NoneField)):
         return source_val
     if isinstance(field, (Number, String, Enum, Boolean)):
@@ -530,8 +547,6 @@ def deserialize_structure(
 ):
     """
     Deserialize a dict to a Structure instance, Jackson style.
-    Note the top level must be a python dict - which implies that a JSON of
-    simply a number, or string, or array, is unsupported.
     `See working examples in test. <https://github.com/loyada/typedpy/tree/master/tests/test_deserialization.py>`_
 
     Arguments:

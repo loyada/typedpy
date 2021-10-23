@@ -85,8 +85,8 @@ Though the above example does not show it, the deserializer also supports the fo
 
    json.dumps(schema, indent=4)
 
-Serialization to a JSON that is not an object
-=============================================
+Serialization of a Structure to a JSON that is not an object
+============================================================
 If the structure is effectively a wrapper around a single field, Typedpy allows to serialize directly to the \
 JSON representing only that field, using the "compact" flag. For example:
 
@@ -100,8 +100,8 @@ JSON representing only that field, using the "compact" flag. For example:
     assert serialize(foo, compact=True)==['abcde', 234]
     assert serialize(foo.s) == ['abcde', 234]
 
-Deserialization of a non-object JSON
-====================================
+Deserialization of a non-object JSON to a Structure
+===================================================
 If the JSON is not an object, and the target :class:`Structure` is a single field wrapper, then Typedpy \
 tries to deserialize directly to that field. For example:
 
@@ -118,6 +118,58 @@ tries to deserialize directly to that field. For example:
 
 
 .. _custom-serialization:
+
+Serialization/Deserialization of a Field
+========================================
+Serialization
+-------------
+The best way to serialize an arbitrary Field is using the :ref:`serialize_field` function. This function
+requires the first argument to be the Field definition (the Field definition has the information how to serialize).
+
+However, in many common cases the original value has enough information for typedpy to know how to deserialize
+it. These cases include the trivial types (i.e. str, int, float, bool), Structures and Structure-References, as well the values for the following
+Typedpy fields: Array, Map, Enum. In such cases the :ref:`serialize` function provides a simpler API.
+
+For example:
+
+.. code-block:: py
+    class Foo(Structure):
+        a = String
+        i = Integer
+
+    class Bar(Structure):
+        x = Float
+        foos = Array[Foo]
+        dt = DateTime
+
+
+    assert serialize_field(Bar.foos, bar.foos)[0]['a'] == 'a'
+    assert serialize_field(Array[Foo], bar.foos)[0]['a'] == 'a'
+
+    # Simpler:
+    assert serialize(bar.foos)[0]['a'] == 'a'
+
+    # However, this will raise an Exception. Typedpy does not know how to serialize it automatically
+    serialize(bar.dt)
+    #  TypeError: serialize: Not a Structure or Field that with an obvious serialization
+
+
+Deserialization
+---------------
+To deserialize a single field value directly, use :ref:`deserialize_single_field` .
+
+For example:
+
+.. code-block:: py
+
+     class Foo(ImmutableStructure):
+            a: String
+            b: Optional[String]
+            _ignore_none = True
+
+    res = deserialize_single_field(Array[Foo], [{"a": "x", "b": None}, {"a": "y", "b": "xyz"}])
+    assert res == [Foo(a="x"), Foo(a="y", b="xyz")]
+
 
 Custom Serialization
 ====================
@@ -512,6 +564,8 @@ Functions
 
 .. autofunction:: deserialize_structure
 
+.. autofunction:: deserialize_single_field
+
 .. autofunction:: serialize
 
 .. autofunction:: serialize_field
@@ -552,7 +606,7 @@ Be aware that this is not a performant approach. Avoid it if speed is a major co
 
 Deserialization Using a Discriminator Field
 ===========================================
-Sometimes we want to determine to which Structure we deserialize, based on a discriminator field in the input.
+Sometimes we want to determine to which Structure we deserialize to, based on a discriminator field in the input.
 This is supported in Typedpy. Consider the following:
 
 .. code-block:: python

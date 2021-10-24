@@ -520,7 +520,9 @@ To protect from such mistakes, starting at version 2.6.4, Typedpy introduced the
     Structure.set_block_non_typedpy_field_assignment(flag=True)
 
 
-This setting allows the developer to decide whether or not it is allowed to assign fields to types that are not
+This setting allows the developer to decide whether or not it is allowed to assign class attributes to types that are not
 Typedpy fields (such as the examples above). When this flag is set to block such definition, a class definition like
 class Example above will throw an appropriate exception.
+
+By default, this flag is set to True (from version 2.6.5).
 

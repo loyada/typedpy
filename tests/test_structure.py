@@ -202,7 +202,7 @@ def test_do_not_ignore_none(Point):
 def test_do_not_ignore_none_for_required_fields(Point):
     class Foo(Structure):
         i: int
-        date = typing.Optional[DateField]
+        date: typing.Optional[DateField]
         _ignore_none = True
 
     with raises(TypeError) as excinfo:

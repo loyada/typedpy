@@ -1124,7 +1124,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
     @staticmethod
     def is_non_typedpy_field_assignment_blocked():
-        return getattr(Structure, "_block_non_typedpy_field_assignment", False)
+        return getattr(Structure, "_block_non_typedpy_field_assignment", True)
 
 
 class FinalStructure(Structure):

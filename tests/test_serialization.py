@@ -281,6 +281,8 @@ def test_serialize_field_complex_field():
 
     bar = Bar(x=0.5, foos=[Foo(a='a', i=5), Foo(a='b', i=1)])
     assert serialize_field(Bar.foos, bar.foos)[0]['a'] == 'a'
+    assert serialize_field(Array[Foo], bar.foos)[0]['a'] == 'a'
+    assert serialize(bar.foos)[0]['a'] == 'a'
 
 
 def test_serialize_non_typedpy_attribute():

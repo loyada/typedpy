@@ -258,6 +258,7 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
     """
         Deserialize a field directly, without the need to define a Structure class.
         Note the top level must be a python dict - which implies that a JSON of
+
         Arguments:
             field(Field):
                 The field definition. For example: String, Array[Map[str, Foo]], AnyOf[Foo, Bar]
@@ -272,7 +273,7 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
 
         Returns:
             a deserialized version of the data if successful, or raises an appropriate exception
-        """
+    """
     if source_val is None and (ignore_none or isinstance(field, NoneField)):
         return source_val
     if isinstance(field, (Number, String, Enum, Boolean)):

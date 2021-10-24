@@ -72,6 +72,7 @@ from .serialization import (
     serialize,
     serialize_field,
     FunctionCall,
+    deserialize_single_field
 )
 
 from .serialization_wrappers import (

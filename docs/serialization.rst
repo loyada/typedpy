@@ -133,6 +133,7 @@ Typedpy fields: Array, Map, Enum. In such cases the :ref:`serialize` function pr
 For example:
 
 .. code-block:: py
+
     class Foo(Structure):
         a = String
         i = Integer

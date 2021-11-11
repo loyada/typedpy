@@ -1,3 +1,5 @@
+from typing import List
+
 from typedpy import Integer, String, Structure, StructureReference
 from typedpy.commons import deep_get, nested
 
@@ -13,7 +15,7 @@ def test_nested_list():
         x = StructureReference(i=Integer(), s=String())
 
     class Foo(Structure):
-        a: list[Bar]
+        a: List[Bar]
 
         _additionalProperties = False
 

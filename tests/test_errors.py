@@ -37,7 +37,7 @@ def test_error_3():
     with raises(Exception) as ex:
         Foo(a=1, b=10, c=1.1)
     assert standard_readable_error_for_typedpy_exception(ex.value) == \
-           ErrorInfo(problem="missing a required argument: 'arr'")
+           ErrorInfo(field="Foo", problem="missing a required argument: 'arr'")
 
 
 def test_error_4():
@@ -66,7 +66,7 @@ def test_error_7():
     with raises(Exception) as ex:
         Foo(a=1, b=100, c=1.1, arr=["a"], e=5)
     assert standard_readable_error_for_typedpy_exception(ex.value) == \
-           ErrorInfo(problem="got an unexpected keyword argument 'e'")
+           ErrorInfo(field="Foo", problem="got an unexpected keyword argument 'e'")
 
 
 def test_real_world_usage():
@@ -165,15 +165,22 @@ def test_unsuccessful_deserialization_with_many_types(all_errors):
                                        " reason: any: Expected a dictionary; Got"
                                        " [{'name': 'john', 'ssid': '123'}, 'xxx']",
                   value="[{'name': 'john', 'ssid': '123'}, 'xxx']"),
-        ErrorInfo(field='embedded', problem="missing a required argument: 'a2'", value="{'a1': 8}"),
         ErrorInfo(field='enum', problem='Expected one of 1, 2, 3', value='4'),
         ErrorInfo(field='people_0',
                   problem=[
                       ErrorInfo(field='ssid', problem='Expected a minimum length of 3', value="'13'")
                   ]),
+        ErrorInfo(field='embedded', problem="StructureReference_1: missing a required argument: 'a2'",
+                  value="{'a1': 8}"),
+
     ]
-    for e in expected_errors:
+    for e in expected_errors[:-1]:
         assert e in errs
+    expected = expected_errors[-1]
+    for e in errs:
+        if e.field==expected.field and e.value==expected.value:
+            return
+    assert False
 
 
 def test_missed_required(all_errors):

@@ -1,10 +1,9 @@
 import collections
 import enum
 import json
-from functools import reduce
 from typing import Dict
 
-from .commons import raise_errs_if_needed
+from .commons import deep_get, raise_errs_if_needed
 from .versioned_mapping import VERSION_MAPPING, Versioned, convert_dict
 from .mappers import (
     aggregate_deserialization_mappers,
@@ -577,14 +576,9 @@ def deserialize_structure(
     )
 
 
-def _deep_get(dictionary, deep_key):
-    keys = deep_key.split(".")
-    return reduce(lambda d, key: d.get(key) if d else None, keys, dictionary)
-
-
 def get_processed_input(key, mapper, the_dict):
     def _try_deep_get(k):
-        v = _deep_get(the_dict, k)
+        v = deep_get(the_dict, k)
         return v if v is not None else k
 
     key_mapper = mapper[key]
@@ -596,7 +590,7 @@ def get_processed_input(key, mapper, the_dict):
         )
         processed_input = key_mapper.func(*args)
     elif isinstance(key_mapper, (str,)):
-        val = _deep_get(the_dict, key_mapper)
+        val = deep_get(the_dict, key_mapper)
         processed_input = val if val is not None else the_dict.get(key)
     else:
         raise TypeError(
@@ -753,7 +747,7 @@ def _get_mapped_value(mapper, key, items):
         key_mapper = mapper[key]
         if isinstance(key_mapper, (FunctionCall,)):
             args = (
-                [_deep_get(items, k) for k in key_mapper.args]
+                [deep_get(items, k) for k in key_mapper.args]
                 if key_mapper.args
                 else [items.get(key)]
             )

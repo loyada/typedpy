@@ -16,6 +16,7 @@ class Foo(Versioned, ImmutableStructure):
     i: Integer
     j: Integer
     m: Map[String, String]
+    nested: str
 
     _versions_mapping = [
         {
@@ -38,7 +39,8 @@ class Foo(Versioned, ImmutableStructure):
         },
 
         {
-            "i": FunctionCall(func=lambda x: x * 100, args=["i"])
+            "i": FunctionCall(func=lambda x: x * 100, args=["i"]),
+            "nested": "bar.s"
         }
 
     ]
@@ -72,6 +74,7 @@ def test_version_conversion_deserializer():
         m={"abc": "xyz"},
         i=200,
         j=100,
+        nested="john",
         version=4
     )
 
@@ -80,6 +83,7 @@ def test_version_conversion_deserializer():
         m={"abc": "xyzxyzxyzyxyzxyzxyzxz", "b": "bb"},
         i=200,
         j=150,
+        nested="john",
         version=4
     )
 
@@ -93,11 +97,11 @@ def test_version_conversion_without_deserializer():
         },
         "i": 200,
         "j": 100,
+        "nested": "john",
         "m": {"abc": "xyz"},
     }
     assert convert_dict(in_version_1, Foo._versions_mapping) == expected_in_latest_version
     assert convert_dict(expected_in_latest_version, Foo._versions_mapping) == expected_in_latest_version
-
 
 
 def test_deserialize_versioned_mapper_defect():
@@ -150,13 +154,16 @@ def test_deserialize_versioned_mapper_defect():
 
     assert wrapped_v1.foo == wrapped_v2.foo
 
+
 def test_versioned_populates_version_automatically():
     assert Foo(
         bar=Bar(a=[10, 16, 6], s="john"),
         m={"abc": "xcxcxcxcxcxc", "b": "bb"},
         i=200,
+        nested="john",
         j=150
     ).version == 4
+
 
 def test_version_populated_automatically_when_no_mapping():
     class Example(Versioned):

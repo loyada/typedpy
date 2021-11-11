@@ -1,5 +1,6 @@
 import json
 import sys
+from functools import reduce
 
 
 def wrap_val(v):
@@ -25,6 +26,18 @@ def raise_errs_if_needed(errors):
     if errors:
         messages = json.dumps([str(e) for e in errors])
         raise errors[0].__class__(messages) from errors[0]
+
+
+def deep_get(dictionary, deep_key):
+    keys = deep_key.split(".")
+    return reduce(lambda d, key: d.get(key) if d else None, keys, dictionary)
+
+
+def nested(func, default=None):
+    try:
+        return func()
+    except (AttributeError, IndexError):
+        return default
 
 
 py_version = sys.version_info[0:2]

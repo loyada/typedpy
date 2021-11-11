@@ -3,8 +3,8 @@ Module for custom deserialization mappers aggregation
 """
 from collections.abc import Mapping
 from enum import Enum, auto
-from functools import reduce
 
+from .commons import deep_get
 from .structures import ClassReference, Field, Structure, SERIALIZATION_MAPPER
 from .fields import Array, FunctionCall, Set, StructureReference
 
@@ -31,10 +31,6 @@ class Deleted:
 
     pass
 
-
-def _deep_get(dictionary, deep_key):
-    keys = deep_key.split(".")
-    return reduce(lambda d, key: d.get(key) if d else None, keys, dictionary)
 
 
 # pylint:disable=protected-access, missing-function-docstring, invalid-name
@@ -109,7 +105,7 @@ def _apply_mapper(
     latest_mapper_val = latest_mapper.get(val, val)
     if isinstance(latest_mapper_val, (FunctionCall,)):
         args = (
-            [(_deep_get(previous_mapper, k) or k) for k in latest_mapper_val.args]
+            [(deep_get(previous_mapper, k) or k) for k in latest_mapper_val.args]
             if latest_mapper_val.args
             else [previous_mapper.get(key)]
         )

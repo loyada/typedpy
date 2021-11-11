@@ -1,5 +1,6 @@
 import copy
 
+from .commons import deep_get
 from .mappers import Constant, Deleted
 from .structures import Structure
 from .fields import FunctionCall, PositiveInt
@@ -50,7 +51,7 @@ def _convert(mapped_dict: dict, mapping):
 
     for k, v in mapping.items():
         if isinstance(v, str):
-            out_dict[k] = out_dict[v]
+            out_dict[k] = deep_get(out_dict, v)
 
     for k, v in mapping.items():
         if v == Deleted:

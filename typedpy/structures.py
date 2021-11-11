@@ -762,7 +762,10 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     _fail_fast = True
 
     def __init__(self, *args, **kwargs):
-        bound = getattr(self, "__signature__").bind(*args, **kwargs)
+        try:
+            bound = getattr(self, "__signature__").bind(*args, **kwargs)
+        except TypeError as ex:
+            raise TypeError(f"{self.__class__.__name__}: {ex}")
         if "kwargs" in bound.arguments:
             for name, val in bound.arguments["kwargs"].items():
                 setattr(self, name, val)

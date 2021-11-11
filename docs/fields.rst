@@ -122,6 +122,11 @@ Implicit Wrapping of Arbitrary Classes As Field (version > 2.0)
     foo.point_by_int[1] = 3
 
 
+
+| The example above illustrates that if you use the non-Typedpy class as an embedded type, such as List[Point],
+| you can use the class directly, but if it is the type of the field, you have to use the Field[Point] notation.
+
+
 Defining a Field as Optional
 =============================
 Start by reading this: :ref:`optional-fields` .

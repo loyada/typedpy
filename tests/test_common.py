@@ -10,6 +10,7 @@ def test_deep_get():
     assert deep_get({"a1": {"b": {"c": 5}}, "a2": 2}, "a1.x") is None
 
 
+@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_nested_list():
     class Bar(Structure):
         x = StructureReference(i=Integer(), s=String())

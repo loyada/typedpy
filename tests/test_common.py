@@ -1,4 +1,7 @@
+import sys
 from typing import List
+
+import pytest
 
 from typedpy import Integer, String, Structure, StructureReference
 from typedpy.commons import deep_get, nested

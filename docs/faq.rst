@@ -2,6 +2,9 @@
 Frequently Asked Questions
 ==========================
 
+.. currentmodule:: typedpy
+
+.. contents:: :local:
 
 1. What is the equivalent of TypedDict (PEP-589) in Typedpy?
 
@@ -13,5 +16,11 @@ ost to speed.
 You can still use NamedTuple to populate values in a typedpy Tuple field, btw, since a NamedTuple is a tuple.
 Similarly, since any TypedDict is a dict, you can use it to populate a Map field.
 
-3.
+
+3. What are the trade offs of using Typedpy?
+
+* Support from the IDE is limited
+* Performance (especially for immutables)
+* Compile-time check
+
 

@@ -58,6 +58,8 @@ from typedpy.fields import (
     ImmutableNumber,
     ImmutableDeque,
     Deque,
+    ExceptionField,
+    Generator
 )
 
 from typedpy.json_schema_mapping import (

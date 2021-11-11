@@ -96,7 +96,8 @@ Anything that relies on PEP-585 only works on Python version >= 3.9.
 Implicit Wrapping of Arbitrary Classes As Field (version > 2.0)
 ===============================================================
 | Supposed you defined your own class, and you want to use it as a field. There are ways to map it
-explicitly to a Field class (see :ref:`extension-of-classes`).
+| explicitly to a Field class (see :ref:`extension-of-classes`).
+
 | However, after version 2.0 Typepy can also do it implicitly.
 | For example:
 
@@ -362,7 +363,7 @@ Extension and Utilities
 
 
 Defining a Field Independently
-=============================
+==============================
 Supposed you have a field definition you would like to reuse. It's important that you do *not* do it using an assignment, i.e.:
 
   .. code-block:: python
@@ -394,8 +395,9 @@ The example above is wrong. Instead, define a function that returns the field, a
 
 
 | From version 0.51, if you use Python 3.7+, you can also use type hints to let Typedpy know that this is a Field factory.
-In this case, Typedpy will automatically inspect it, so you don't need to call the function explicitly in the class
-definition.
+| In this case, Typedpy will automatically inspect it, so you don't need to call the function explicitly in the class
+| definition.
+
 | For example:
 
  .. code-block:: python
@@ -410,7 +412,7 @@ definition.
 
 | From version 2.00, you can use **any** custom class directly as a field. Typedpy will automatically wrap it as a Typedpy Field.
 | The caveat is that it is cannot be pickled and serialization is no a best-effort basis, since Typedpy
-does not know anything about the class.
+| does not know anything about the class.
 
 For example:
 
@@ -600,7 +602,7 @@ Immutability
 
 
 Other Types With Explicit Support (version > 1.35)
--------------------------------------------------
+--------------------------------------------------
 The following types can be used as fields types and will be automatically converted to Typedpy fields:
 
 * str, int, float, dict, list, set, tuple, bool, frozenset, deque. Versions > 2.0 also support PEP585-style types.

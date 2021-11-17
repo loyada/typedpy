@@ -255,23 +255,23 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
     ignore_none=False,
 ):
     """
-        Deserialize a field directly, without the need to define a Structure class.
-        Note the top level must be a python dict - which implies that a JSON of
+    Deserialize a field directly, without the need to define a Structure class.
+    Note the top level must be a python dict - which implies that a JSON of
 
-        Arguments:
-            field(Field):
-                The field definition. For example: String, Array[Map[str, Foo]], AnyOf[Foo, Bar]
-            source_val:
-                the serialized value to be deserialized
-            name(optional):
-                name to be used for the field in case of raised exceptions
-            mapper(dict): optional
-                A Typedpy deserialization mapper
-            keep_undefined(bool): optional
-                should it create attributes for keys that don't appear in the class? default is True.
+    Arguments:
+        field(Field):
+            The field definition. For example: String, Array[Map[str, Foo]], AnyOf[Foo, Bar]
+        source_val:
+            the serialized value to be deserialized
+        name(optional):
+            name to be used for the field in case of raised exceptions
+        mapper(dict): optional
+            A Typedpy deserialization mapper
+        keep_undefined(bool): optional
+            should it create attributes for keys that don't appear in the class? default is True.
 
-        Returns:
-            a deserialized version of the data if successful, or raises an appropriate exception
+    Returns:
+        a deserialized version of the data if successful, or raises an appropriate exception
     """
     if source_val is None and (ignore_none or isinstance(field, NoneField)):
         return source_val

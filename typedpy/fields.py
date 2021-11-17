@@ -874,7 +874,6 @@ class SizedCollection:
         return self
 
 
-
 class Set(
     SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta
 ):

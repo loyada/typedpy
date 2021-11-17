@@ -32,7 +32,6 @@ class Deleted:
     pass
 
 
-
 # pylint:disable=protected-access, missing-function-docstring, invalid-name
 def _set_base_mapper_no_op(cls, for_serialization):
     mapper = {}

@@ -59,7 +59,7 @@ from typedpy.fields import (
     ImmutableDeque,
     Deque,
     ExceptionField,
-    Generator
+    Generator,
 )
 
 from typedpy.json_schema_mapping import (
@@ -74,7 +74,7 @@ from .serialization import (
     serialize,
     serialize_field,
     FunctionCall,
-    deserialize_single_field
+    deserialize_single_field,
 )
 
 from .serialization_wrappers import (

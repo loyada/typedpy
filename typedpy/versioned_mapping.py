@@ -39,11 +39,12 @@ def _convert(mapped_dict: dict, mapping):
             out_dict[k] = v()
         elif k.endswith("._mapper"):
             field_name = k[: -len("._mapper")]
-            content = mapped_dict[field_name]
-            if isinstance(content, list):
-                out_dict[field_name] = [_convert(x, v) for x in content]
-            else:
-                out_dict[field_name] = _convert(content, v)
+            content = mapped_dict.get(field_name, None)
+            if content is not None:
+                if isinstance(content, list):
+                    out_dict[field_name] = [_convert(x, v) for x in content]
+                else:
+                    out_dict[field_name] = _convert(content, v)
 
         elif isinstance(v, FunctionCall):
             args = [out_dict[x] for x in v.args] if v.args else [out_dict[k]]

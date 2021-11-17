@@ -1,4 +1,5 @@
 import sys
+from typing import Optional
 
 from pytest import mark
 from typedpy import Array, Deserializer, FunctionCall, ImmutableStructure, Integer, Map, PositiveInt, String, Structure, \
@@ -201,3 +202,27 @@ def test_mapping_list_of_objects():
         ]
     )
 
+
+@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_optional_field_mapping():
+    class Example(Versioned):
+        foo: Optional[str]
+        bar: Optional[int]
+
+        _versions_mapping = [
+            {
+                "i._mapper": {
+                    "f": "abc",
+                    "b": "def"
+                },
+            },
+            {
+                "foo": "i.f",
+                "bar": "i.b"
+
+            }
+        ]
+
+    assert Deserializer(Example).deserialize({"i": {"abc": "xyz", "def": 1}}, keep_undefined=False) == Example(
+        foo="xyz", bar=1)
+    assert Deserializer(Example).deserialize({}, keep_undefined=False) == Example()

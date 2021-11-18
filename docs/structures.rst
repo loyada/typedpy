@@ -526,3 +526,13 @@ class Example above will throw an appropriate exception.
 
 By default, this flag is set to True (from version 2.6.5).
 
+Structure Documentation
+=======================
+
+.. autoclass:: Structure
+
+.. autoclass:: ImmutableStructure
+
+
+
+

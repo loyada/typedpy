@@ -5,7 +5,8 @@ from pytest import raises
 from typedpy import Structure, Positive, DecimalNumber
 
 
-class PositiveDecimal(DecimalNumber, Positive): pass
+class PositiveDecimal(DecimalNumber, Positive):
+    pass
 
 
 class Foo(Structure):
@@ -17,7 +18,7 @@ class Foo(Structure):
 
 def test_not_decimal_value():
     with raises(ValueError) as excinfo:
-        Foo(a='1 1 ')
+        Foo(a="1 1 ")
     assert "a: [<class 'decimal.ConversionSyntax'>]" in str(excinfo.value)
 
 
@@ -28,8 +29,8 @@ def test_not_decimal_type():
 
 
 def test_basic_operation():
-    f = Foo(a=Decimal('3.14'))
-    assert f.a - 1 == Decimal('2.14')
+    f = Foo(a=Decimal("3.14"))
+    assert f.a - 1 == Decimal("2.14")
 
 
 def test_too_large():

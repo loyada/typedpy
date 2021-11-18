@@ -12,9 +12,31 @@ if python_ver_atleast_than_37:
 import pytest
 from pytest import raises
 
-from typedpy import ImmutableStructure, NoneField, SerializableField, Structure, Array, Number, String, Integer, \
-    StructureReference, AllOf, deserialize_structure, Enum, \
-    Float, mappers, serialize, Set, AnyOf, DateField, Anything, Map, Function, PositiveInt, DecimalNumber
+from typedpy import (
+    ImmutableStructure,
+    NoneField,
+    SerializableField,
+    Structure,
+    Array,
+    Number,
+    String,
+    Integer,
+    StructureReference,
+    AllOf,
+    deserialize_structure,
+    Enum,
+    Float,
+    mappers,
+    serialize,
+    Set,
+    AnyOf,
+    DateField,
+    Anything,
+    Map,
+    Function,
+    PositiveInt,
+    DecimalNumber,
+)
 from typedpy.extfields import DateTime
 from typedpy import serialize_field
 from typedpy.serialization import FunctionCall
@@ -22,7 +44,7 @@ from typedpy.serialization_wrappers import Serializer, Deserializer
 
 
 class SimpleStruct(Structure):
-    name = String(pattern='[A-Za-z]+$', maxLength=8)
+    name = String(pattern="[A-Za-z]+$", maxLength=8)
 
 
 class Point:
@@ -46,18 +68,13 @@ class Example(Structure):
 @pytest.fixture()
 def serialized_source():
     return {
-        'i': 5,
-        's': 'test',
-        'array': [10, 7],
-        'embedded': {
-            'a1': 8,
-            'a2': 0.5
-        },
-        'simple_struct': {
-            'name': 'danny'
-        },
-        'all': 5,
-        'enum': 3,
+        "i": 5,
+        "s": "test",
+        "array": [10, 7],
+        "embedded": {"a1": 8, "a2": 0.5},
+        "simple_struct": {"name": "danny"},
+        "all": 5,
+        "enum": 3,
     }
 
 
@@ -72,11 +89,13 @@ def test_successful_deserialization_with_many_types(serialized_source, example):
     assert result == serialized_source
 
 
-def test_deserialization_with_non_typedpy_wrapper_can_be_inconsistent(serialized_source, example):
-    serialized_source['points'] = [{'x': 1, 'y': 2}]
+def test_deserialization_with_non_typedpy_wrapper_can_be_inconsistent(
+    serialized_source, example
+):
+    serialized_source["points"] = [{"x": 1, "y": 2}]
     example = deserialize_structure(Example, serialized_source)
     result = serialize(example)
-    assert result['points'][0] != serialized_source['points'][0]
+    assert result["points"][0] != serialized_source["points"][0]
 
 
 def test_some_empty_fields():
@@ -86,7 +105,7 @@ def test_some_empty_fields():
         _required = []
 
     foo = Foo(a=5)
-    assert serialize(foo) == {'a': 5}
+    assert serialize(foo) == {"a": 5}
 
 
 def test_null_fields():
@@ -96,7 +115,7 @@ def test_null_fields():
         _required = []
 
     foo = Foo(a=5, c=None)
-    assert serialize(foo) == {'a': 5}
+    assert serialize(foo) == {"a": 5}
 
 
 def test_serialize_set():
@@ -104,7 +123,7 @@ def test_serialize_set():
         a = Set()
 
     foo = Foo(a={1, 2, 3})
-    assert serialize(foo) == {'a': [1, 2, 3]}
+    assert serialize(foo) == {"a": [1, 2, 3]}
 
 
 def test_string_field_wrapper_compact():
@@ -112,8 +131,8 @@ def test_string_field_wrapper_compact():
         st = String
         _additionalProperties = False
 
-    foo = Foo(st='abcde')
-    assert serialize(foo, compact=True) == 'abcde'
+    foo = Foo(st="abcde")
+    assert serialize(foo, compact=True) == "abcde"
 
 
 def test_string_field_wrapper_not_compact():
@@ -121,8 +140,8 @@ def test_string_field_wrapper_not_compact():
         st = String
         _additionalProperties = False
 
-    foo = Foo(st='abcde')
-    assert serialize(foo, compact=False) == {'st': 'abcde'}
+    foo = Foo(st="abcde")
+    assert serialize(foo, compact=False) == {"st": "abcde"}
 
 
 def test_set_field_wrapper_compact():
@@ -130,8 +149,8 @@ def test_set_field_wrapper_compact():
         s = Array[AnyOf[String, Number]]
         _additionalProperties = False
 
-    foo = Foo(s=['abcde', 234])
-    assert serialize(foo, compact=True) == ['abcde', 234]
+    foo = Foo(s=["abcde", 234])
+    assert serialize(foo, compact=True) == ["abcde", 234]
 
 
 def test_serializable_serialize_and_deserialize():
@@ -143,7 +162,7 @@ def test_serializable_serialize_and_deserialize():
 
     foo = Foo(d=[date(2019, 12, 4), "191205"], i=3)
     serialized = serialize(foo)
-    assert serialized == {'d': ["191204", "191205"], 'i': 3}
+    assert serialized == {"d": ["191204", "191205"], "i": 3}
 
     deserialized = deserialize_structure(Foo, serialized)
     assert deserialized == Foo(i=3, d=[date(2019, 12, 4), date(2019, 12, 5)])
@@ -154,12 +173,12 @@ def test_serialize_map_without_any_type_definition():
         m = Map()
         a = Integer
 
-    original = Bar(a=3, m={'abc': Bar(a=2, m={"x": "xx"}), 'bcd': 2})
+    original = Bar(a=3, m={"abc": Bar(a=2, m={"x": "xx"}), "bcd": 2})
     serialized = serialize(original)
     pickled = pickle.dumps(serialized)
-    assert type(serialized['m']) == dict
-    assert type(serialized['m']['abc']) == dict
-    assert type(serialized['m']['abc']['m']) == dict
+    assert type(serialized["m"]) == dict
+    assert type(serialized["m"]["abc"]) == dict
+    assert type(serialized["m"]["abc"]["m"]) == dict
 
 
 def test_pickle_with_map_without_any_type_definition():
@@ -167,13 +186,13 @@ def test_pickle_with_map_without_any_type_definition():
         m = Map()
         a = Integer
 
-    original = Bar(a=3, m={'abc': Bar(a=2, m={"x": "xx"}), 'bcd': 2})
+    original = Bar(a=3, m={"abc": Bar(a=2, m={"x": "xx"}), "bcd": 2})
     serialized = serialize(original)
     unpickeled = pickle.loads(pickle.dumps(serialized))
     deserialized = Deserializer(target_class=Bar).deserialize(unpickeled)
     # there is no info on the fact that deserialized.m['abc'] should be converted to a Bar instance, so
     # we convert it to a simple dict, to make it straight forward to compare
-    original.m['abc'] = Serializer(original.m['abc']).serialize()
+    original.m["abc"] = Serializer(original.m["abc"]).serialize()
     assert deserialized == original
 
 
@@ -185,15 +204,15 @@ def test_serializable_serialize_and_deserialize2():
         i = Integer
 
     atime = datetime(2020, 1, 30, 5, 35, 35)
-    atime_as_string = atime.strftime('%m/%d/%y %H:%M:%S')
+    atime_as_string = atime.strftime("%m/%d/%y %H:%M:%S")
     foo = Foo(d=[atime, "01/30/20 05:35:35"], i=3)
     serialized = serialize(foo)
-    assert serialized == {
-        'd': [atime_as_string, '01/30/20 05:35:35'],
-        'i': 3}
+    assert serialized == {"d": [atime_as_string, "01/30/20 05:35:35"], "i": 3}
 
     deserialized = deserialize_structure(Foo, serialized)
-    assert str(deserialized) == str(Foo(i=3, d=[atime, datetime(2020, 1, 30, 5, 35, 35)]))
+    assert str(deserialized) == str(
+        Foo(i=3, d=[atime, datetime(2020, 1, 30, 5, 35, 35)])
+    )
 
 
 def test_serializable_serialize_and_deserialize_of_a_non_serializable_value():
@@ -218,39 +237,41 @@ def test_serialize_map():
         m2 = Map
         i = Integer
 
-    foo = Foo(m1={'a': [1, 2, 3], 'b': 1}, m2={1: 2, 'x': 'b'}, i=5)
+    foo = Foo(m1={"a": [1, 2, 3], "b": 1}, m2={1: 2, "x": "b"}, i=5)
     serialized = serialize(foo)
-    assert serialized['m1'] == {'a': [1, 2, 3], 'b': 1}
+    assert serialized["m1"] == {"a": [1, 2, 3], "b": 1}
 
 
 def test_serialize_field_basic_field(serialized_source, example):
-    assert serialize_field(Example.array, example.array) == serialized_source['array']
+    assert serialize_field(Example.array, example.array) == serialized_source["array"]
 
 
 def test_serialize_wrong_value():
     with raises(TypeError) as excinfo:
-        serialize({'abc': 123})
-    assert "serialize: Not a Structure or Field that with an obvious serialization." \
-           " Got: {'abc': 123}. Maybe try serialize_field() instead?" in str(excinfo.value)
+        serialize({"abc": 123})
+    assert (
+        "serialize: Not a Structure or Field that with an obvious serialization."
+        " Got: {'abc': 123}. Maybe try serialize_field() instead?" in str(excinfo.value)
+    )
 
 
 def test_serialize_with_structured_reference(example, serialized_source):
-    assert serialize(example.embedded) == serialized_source['embedded']
+    assert serialize(example.embedded) == serialized_source["embedded"]
 
 
 def test_serialize_with_array(example, serialized_source):
-    assert serialize(example.array) == serialized_source['array']
+    assert serialize(example.array) == serialized_source["array"]
 
 
 def test_serialize_with_class_reference(example, serialized_source):
-    assert serialize(example.simple_struct) == serialized_source['simple_struct']
+    assert serialize(example.simple_struct) == serialized_source["simple_struct"]
 
 
 def test_serialize_with_map():
     class Foo(Structure):
         m = Map[String, Anything]
 
-    original = {'a': [1, 2, 3], 'b': 1}
+    original = {"a": [1, 2, 3], "b": 1}
 
     foo = Foo(m=original)
     assert serialize(foo.m) == original
@@ -260,14 +281,14 @@ def test_serialize_with_anything_field():
     class Foo(Structure):
         m = Map[String, Anything]
 
-    original = {'a': [1, 2, 3], 'b': 1}
+    original = {"a": [1, 2, 3], "b": 1}
 
     foo = Foo(m=original)
     assert serialize(foo.m) == original
 
 
 def test_serialize_with_number(example, serialized_source):
-    assert serialize(example.i) == serialized_source['i']
+    assert serialize(example.i) == serialized_source["i"]
 
 
 def test_serialize_field_complex_field():
@@ -279,10 +300,10 @@ def test_serialize_field_complex_field():
         x = Float
         foos = Array[Foo]
 
-    bar = Bar(x=0.5, foos=[Foo(a='a', i=5), Foo(a='b', i=1)])
-    assert serialize_field(Bar.foos, bar.foos)[0]['a'] == 'a'
-    assert serialize_field(Array[Foo], bar.foos)[0]['a'] == 'a'
-    assert serialize(bar.foos)[0]['a'] == 'a'
+    bar = Bar(x=0.5, foos=[Foo(a="a", i=5), Foo(a="b", i=1)])
+    assert serialize_field(Bar.foos, bar.foos)[0]["a"] == "a"
+    assert serialize_field(Array[Foo], bar.foos)[0]["a"] == "a"
+    assert serialize(bar.foos)[0]["a"] == "a"
 
 
 def test_serialize_non_typedpy_attribute():
@@ -290,9 +311,9 @@ def test_serialize_non_typedpy_attribute():
         a = String
         i = Integer
 
-    foo = Foo(a='a', i=1)
-    foo.x = {'x': 1, 's': 'abc'}
-    assert serialize(foo)['x'] == {'x': 1, 's': 'abc'}
+    foo = Foo(a="a", i=1)
+    foo.x = {"x": 1, "s": "abc"}
+    assert serialize(foo)["x"] == {"x": 1, "s": "abc"}
 
 
 def test_serialize_with_mapper_to_different_keys():
@@ -300,9 +321,9 @@ def test_serialize_with_mapper_to_different_keys():
         a = String
         i = Integer
 
-    foo = Foo(a='string', i=1)
-    mapper = {'a': 'aaa', 'i': 'iii'}
-    assert serialize(foo, mapper=mapper) == {'aaa': 'string', 'iii': 1}
+    foo = Foo(a="string", i=1)
+    mapper = {"a": "aaa", "i": "iii"}
+    assert serialize(foo, mapper=mapper) == {"aaa": "string", "iii": 1}
 
 
 def test_serialize_with_mapper_to_different_keys_in_array():
@@ -313,11 +334,12 @@ def test_serialize_with_mapper_to_different_keys_in_array():
     class Bar(Structure):
         wrapped = Array[Foo]
 
-    bar = Bar(wrapped=[Foo(a='string1', i=1), Foo(a='string2', i=2)])
-    mapper = {'wrapped._mapper': {'a': 'aaa', 'i': 'iii'}, 'wrapped': 'other'}
+    bar = Bar(wrapped=[Foo(a="string1", i=1), Foo(a="string2", i=2)])
+    mapper = {"wrapped._mapper": {"a": "aaa", "i": "iii"}, "wrapped": "other"}
     serialized = serialize(bar, mapper=mapper)
-    assert serialized == \
-           {'other': [{'aaa': 'string1', 'iii': 1}, {'aaa': 'string2', 'iii': 2}]}
+    assert serialized == {
+        "other": [{"aaa": "string1", "iii": 1}, {"aaa": "string2", "iii": 2}]
+    }
 
 
 def test_serialize_with_deep_mapper():
@@ -333,23 +355,13 @@ def test_serialize_with_deep_mapper():
         bar = Bar
         number = Integer
 
-    example = Example(number=1,
-                      bar=Bar(foo=Foo(a="string", i=5), array=[1, 2])
-                      )
-    mapper = {'bar._mapper': {'foo._mapper': {"i": FunctionCall(func=lambda x: x * 2)}}}
+    example = Example(number=1, bar=Bar(foo=Foo(a="string", i=5), array=[1, 2]))
+    mapper = {"bar._mapper": {"foo._mapper": {"i": FunctionCall(func=lambda x: x * 2)}}}
     serialized = serialize(example, mapper=mapper)
-    assert serialized == \
-           {
-               "number": 1,
-               "bar":
-                   {
-                       "foo": {
-                           "a": "string",
-                           "i": 10
-                       },
-                       "array": [1, 2]
-                   }
-           }
+    assert serialized == {
+        "number": 1,
+        "bar": {"foo": {"a": "string", "i": 10}, "array": [1, 2]},
+    }
 
 
 def test_serialize_with_deep_mapper_camel_case():
@@ -366,24 +378,22 @@ def test_serialize_with_deep_mapper_camel_case():
         bar = Bar
         number = Integer
 
-    example = Example(number=1,
-                      bar=Bar(foo_bar=Foo(a="string", i_num=5, c_d=2), array_one=[1, 2])
-                      )
-    mapper = {'bar._mapper': {'foo_bar._mapper': {"c_d": "cccc", "i_num": FunctionCall(func=lambda x: x * 2)}}}
+    example = Example(
+        number=1, bar=Bar(foo_bar=Foo(a="string", i_num=5, c_d=2), array_one=[1, 2])
+    )
+    mapper = {
+        "bar._mapper": {
+            "foo_bar._mapper": {
+                "c_d": "cccc",
+                "i_num": FunctionCall(func=lambda x: x * 2),
+            }
+        }
+    }
     serialized = serialize(example, mapper=mapper, camel_case_convert=True)
-    assert serialized == \
-           {
-               "number": 1,
-               "bar":
-                   {
-                       "fooBar": {
-                           "a": "string",
-                           "iNum": 10,
-                           "cccc": 2
-                       },
-                       "arrayOne": [1, 2]
-                   }
-           }
+    assert serialized == {
+        "number": 1,
+        "bar": {"fooBar": {"a": "string", "iNum": 10, "cccc": 2}, "arrayOne": [1, 2]},
+    }
 
 
 def test_serialize_with_camel_case_setting():
@@ -405,9 +415,7 @@ def test_serialize_with_camel_case_setting():
         "a": "xyz",
         "iNum": 5,
         "cbaDefXyz": 4,
-        "bar": {
-            "BARBar": "abc"
-        }
+        "bar": {"BARBar": "abc"},
     }
 
 
@@ -426,32 +434,36 @@ def test_serialize_with_deep_mapper_camel_case_setting():
         number = Integer
         _serialization_mapper = mappers.TO_CAMELCASE
 
-    example = Example(number=1,
-                      bar=Bar(foo_bar=Foo(a="string", i_num=5, c_d=2), array_one=[1, 2])
-                      )
-    mapper = {'bar._mapper': {'foo_bar._mapper': {"c_d": "cccc", "i_num": FunctionCall(func=lambda x: x * 2)}}}
+    example = Example(
+        number=1, bar=Bar(foo_bar=Foo(a="string", i_num=5, c_d=2), array_one=[1, 2])
+    )
+    mapper = {
+        "bar._mapper": {
+            "foo_bar._mapper": {
+                "c_d": "cccc",
+                "i_num": FunctionCall(func=lambda x: x * 2),
+            }
+        }
+    }
     serialized = serialize(example, mapper=mapper)
-    assert serialized == \
-           {
-               "number": 1,
-               "bar":
-                   {'array_one': [1, 2],
-                    'foo_bar': {'a': 'string', 'cccc': 2, 'i_num': 10}
-                    }
-           }
+    assert serialized == {
+        "number": 1,
+        "bar": {
+            "array_one": [1, 2],
+            "foo_bar": {"a": "string", "cccc": 2, "i_num": 10},
+        },
+    }
 
     serialized = serialize(example, mapper=mapper, camel_case_convert=True)
     assert serialized == {
-        'bar': {
-            'arrayOne': [1, 2],
-            'fooBar': {'a': 'string', 'cccc': 2, 'iNum': 10}
-        },
-            'number': 1
+        "bar": {"arrayOne": [1, 2], "fooBar": {"a": "string", "cccc": 2, "iNum": 10}},
+        "number": 1,
     }
 
 
 def test_serialize_with_mapper_with_functions():
-    def my_func(): pass
+    def my_func():
+        pass
 
     class Foo(Structure):
         function = Function
@@ -459,10 +471,10 @@ def test_serialize_with_mapper_with_functions():
 
     foo = Foo(function=my_func, i=1)
     mapper = {
-        'function': FunctionCall(func=lambda f: f.__name__),
-        'i': FunctionCall(func=lambda x: x + 5)
+        "function": FunctionCall(func=lambda f: f.__name__),
+        "i": FunctionCall(func=lambda x: x + 5),
     }
-    assert serialize(foo, mapper=mapper) == {'function': 'my_func', 'i': 6}
+    assert serialize(foo, mapper=mapper) == {"function": "my_func", "i": 6}
 
 
 def test_serialize_with_mapper_with_function_converting_types():
@@ -472,10 +484,10 @@ def test_serialize_with_mapper_with_function_converting_types():
 
     foo = Foo(num=5.5, i=999)
     mapper = {
-        'num': FunctionCall(func=lambda f: [int(f)]),
-        'i': FunctionCall(func=lambda x: str(x))
+        "num": FunctionCall(func=lambda f: [int(f)]),
+        "i": FunctionCall(func=lambda x: str(x)),
     }
-    assert serialize(foo, mapper=mapper) == {'num': [5], 'i': '999'}
+    assert serialize(foo, mapper=mapper) == {"num": [5], "i": "999"}
 
 
 def test_serialize_with_mapper_with_function_with_args():
@@ -485,10 +497,10 @@ def test_serialize_with_mapper_with_function_with_args():
 
     foo = Foo(f=5.5, i=999)
     mapper = {
-        'f': FunctionCall(func=lambda f: [int(f)], args=['i']),
-        'i': FunctionCall(func=lambda x: str(x), args=['f'])
+        "f": FunctionCall(func=lambda f: [int(f)], args=["i"]),
+        "i": FunctionCall(func=lambda x: str(x), args=["f"]),
     }
-    assert serialize(foo, mapper=mapper) == {'f': [999], 'i': '5.5'}
+    assert serialize(foo, mapper=mapper) == {"f": [999], "i": "5.5"}
 
 
 def test_serialize_invalid_mapper_type():
@@ -497,24 +509,22 @@ def test_serialize_invalid_mapper_type():
 
     with raises(TypeError) as excinfo:
         serialize(Foo(i=1), mapper=[1, 2])
-    assert 'Mapper must be a mapping' in str(excinfo.value)
+    assert "Mapper must be a mapping" in str(excinfo.value)
 
 
 def test_serialize_with_mapper_error():
-    def my_func(): pass
+    def my_func():
+        pass
 
     class Foo(Structure):
         function = Function
         i = Integer
 
     foo = Foo(function=my_func, i=1)
-    mapper = {
-        'function': 5,
-        'i': FunctionCall(func=lambda x: x + 5)
-    }
+    mapper = {"function": 5, "i": FunctionCall(func=lambda x: x + 5)}
     with raises(TypeError) as excinfo:
         serialize(foo, mapper=mapper)
-    assert 'mapper must have a FunctionCall or a string' in str(excinfo.value)
+    assert "mapper must have a FunctionCall or a string" in str(excinfo.value)
 
 
 def test_serializer_with_mapper_with_function_with_args():
@@ -524,10 +534,10 @@ def test_serializer_with_mapper_with_function_with_args():
 
     foo = Foo(f=5.5, i=999)
     mapper = {
-        'f': FunctionCall(func=lambda f: [int(f)], args=['i']),
-        'i': FunctionCall(func=lambda x: str(x), args=['f'])
+        "f": FunctionCall(func=lambda f: [int(f)], args=["i"]),
+        "i": FunctionCall(func=lambda x: str(x), args=["f"]),
     }
-    assert Serializer(source=foo, mapper=mapper).serialize() == {'f': [999], 'i': '5.5'}
+    assert Serializer(source=foo, mapper=mapper).serialize() == {"f": [999], "i": "5.5"}
 
 
 def test_serializer_with_invalid_mapper_key_type():
@@ -537,12 +547,12 @@ def test_serializer_with_invalid_mapper_key_type():
 
     foo = Foo(f=5.5, i=999)
     mapper = {
-        123: FunctionCall(func=lambda f: [int(f)], args=['i']),
-        'i': FunctionCall(func=lambda x: str(x), args=['f'])
+        123: FunctionCall(func=lambda f: [int(f)], args=["i"]),
+        "i": FunctionCall(func=lambda x: str(x), args=["f"]),
     }
     with raises(TypeError) as excinfo:
         Serializer(foo, mapper=mapper)
-    assert 'mapper_key: Got 123; Expected a string' in str(excinfo.value)
+    assert "mapper_key: Got 123; Expected a string" in str(excinfo.value)
 
 
 def test_serializer_with_invalid_mapper_value_type():
@@ -551,13 +561,10 @@ def test_serializer_with_invalid_mapper_value_type():
         i = Integer
 
     foo = Foo(f=5.5, i=999)
-    mapper = {
-        'f': 123,
-        'i': FunctionCall(func=lambda x: str(x), args=['f'])
-    }
+    mapper = {"f": 123, "i": FunctionCall(func=lambda x: str(x), args=["f"])}
     with raises(ValueError) as excinfo:
         Serializer(foo, mapper=mapper)
-    assert 'mapper_value: Got 123; Did not match any field option' in str(excinfo.value)
+    assert "mapper_value: Got 123; Did not match any field option" in str(excinfo.value)
 
 
 def test_serializer_with_invalid_mapper_key():
@@ -567,12 +574,15 @@ def test_serializer_with_invalid_mapper_key():
 
     foo = Foo(f=5.5, i=999)
     mapper = {
-        'x': FunctionCall(func=lambda f: [int(f)], args=['i']),
-        'i': FunctionCall(func=lambda x: str(x), args=['f'])
+        "x": FunctionCall(func=lambda f: [int(f)], args=["i"]),
+        "i": FunctionCall(func=lambda x: str(x), args=["f"]),
     }
     with raises(ValueError) as excinfo:
         Serializer(foo, mapper=mapper)
-    assert 'Invalid key in mapper for class Foo: x. Keys must be one of the class fields.' in str(excinfo.value)
+    assert (
+        "Invalid key in mapper for class Foo: x. Keys must be one of the class fields."
+        in str(excinfo.value)
+    )
 
 
 def test_serializer_with_invalid_function_call_arg():
@@ -582,12 +592,14 @@ def test_serializer_with_invalid_function_call_arg():
 
     foo = Foo(f=5.5, i=999)
     mapper = {
-        'f': FunctionCall(func=lambda f: [int(f)], args=['i', 'x']),
-        'i': FunctionCall(func=lambda x: str(x), args=['f'])
+        "f": FunctionCall(func=lambda f: [int(f)], args=["i", "x"]),
+        "i": FunctionCall(func=lambda x: str(x), args=["f"]),
     }
     with raises(ValueError) as excinfo:
         Serializer(foo, mapper=mapper)
-    assert 'Mapper[f] has a function call with an invalid argument: x' in str(excinfo.value)
+    assert "Mapper[f] has a function call with an invalid argument: x" in str(
+        excinfo.value
+    )
 
 
 def test_enum_serialization_returns_string_name():
@@ -599,8 +611,8 @@ def test_enum_serialization_returns_string_name():
     class Example(Structure):
         arr = Array[Enum[Values]]
 
-    e = Example(arr=[Values.GHI, Values.DEF, 'GHI'])
-    assert Serializer(e).serialize() == {'arr': ['GHI', 'DEF', 'GHI']}
+    e = Example(arr=[Values.GHI, Values.DEF, "GHI"])
+    assert Serializer(e).serialize() == {"arr": ["GHI", "DEF", "GHI"]}
 
 
 def test_serialization_of_classreference_should_work():
@@ -615,9 +627,9 @@ def test_serialization_of_classreference_should_work():
 
         _required = []
 
-    input_dict = {'a': 3, 'bar1': {'x': 3, 'y': 4, 'z': 5}}
+    input_dict = {"a": 3, "bar1": {"x": 3, "y": 4, "z": 5}}
     foo = deserialize_structure(Foo, input_dict)
-    assert Serializer(source=foo.bar1).serialize() == {'x': 3, 'y': 4, 'z': 5}
+    assert Serializer(source=foo.bar1).serialize() == {"x": 3, "y": 4, "z": 5}
 
 
 def test_serialize_enum_field_directly():
@@ -630,7 +642,7 @@ def test_serialize_enum_field_directly():
         arr = Array[Enum[Values]]
 
     foo = Foo(arr=[Values.ABC, Values.DEF])
-    assert serialize(foo.arr[0]) == 'ABC'
+    assert serialize(foo.arr[0]) == "ABC"
 
 
 @pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
@@ -645,7 +657,7 @@ def test_serialization_with_implicit_wrappers_best_effort_can_work():
 
     foo = Foo(points=[SimplePoint(1, 2), SimplePoint(2, 3)])
     serialized = serialize(foo)
-    assert serialized['points'][0] == {"x": 1, "y": 2}
+    assert serialized["points"][0] == {"x": 1, "y": 2}
     deserialized = deserialize_structure(Foo, serialized)
     assert deserialized == foo
 
@@ -661,15 +673,15 @@ def test_example_of_transformation():
 
     def transform_foo_to_bar(foo: Foo) -> Bar:
         mapper = {
-            'i': FunctionCall(func=lambda f: [int(f)], args=['i']),
-            'f': FunctionCall(func=lambda x: str(x), args=['f'])
+            "i": FunctionCall(func=lambda f: [int(f)], args=["i"]),
+            "f": FunctionCall(func=lambda x: str(x), args=["f"]),
         }
-        deserializer = Deserializer(Bar, {'numbers': 'i', 's': 'f'})
+        deserializer = Deserializer(Bar, {"numbers": "i", "s": "f"})
         serializer = Serializer(source=foo, mapper=mapper)
 
         return deserializer.deserialize(serializer.serialize(), keep_undefined=False)
 
-    assert transform_foo_to_bar(Foo(f=5.5, i=999)) == Bar(numbers=[999], s='5.5')
+    assert transform_foo_to_bar(Foo(f=5.5, i=999)) == Bar(numbers=[999], s="5.5")
 
 
 def test_convert_camel_case():
@@ -681,24 +693,20 @@ def test_convert_camel_case():
 
     original = Foo(first_name="joe", last_name="smith", age_years=5)
     res = Serializer(source=original).serialize(camel_case_convert=True)
-    assert res == {
-        "firstName": "joe",
-        "lastName": "smith",
-        "ageYears": 5
-    }
+    assert res == {"firstName": "joe", "lastName": "smith", "ageYears": 5}
 
 
 def test_serialization_decimal():
     def quantize(d):
-        return d.quantize(Decimal('1.00000'))
+        return d.quantize(Decimal("1.00000"))
 
     class Foo(Structure):
         a = DecimalNumber
         s = String
 
-    foo = Foo(a=Decimal('1.11'), s="x")
+    foo = Foo(a=Decimal("1.11"), s="x")
     result = Serializer(source=foo).serialize()
-    assert quantize(Decimal(result['a'])) == quantize(Decimal(1.11))
+    assert quantize(Decimal(result["a"])) == quantize(Decimal(1.11))
 
 
 def test_serialize_field_with_inheritance():
@@ -735,12 +743,7 @@ def test_serialize_mapper_to_lowercase():
     serialized = Serializer(foo).serialize()
     assert serialized == {
         "ABC": 123,
-        "M": {
-            "my_key": {
-                "FIELD1": "xxx",
-                "FIELD2": "yyy"
-            }
-        }
+        "M": {"my_key": {"FIELD1": "xxx", "FIELD2": "yyy"}},
     }
     assert Deserializer(Foo).deserialize(serialized) == foo
 
@@ -805,21 +808,20 @@ def test_trivial_serializable():
 
 def test_serialize_multified_with_any():
     class MyPoint:
-        def __init__(self,x,y):
+        def __init__(self, x, y):
             self.x = x
             self.y = y
-
 
     class Foo(Structure):
         a: Array[AnyOf[Integer, MyPoint]]
 
-    serialized = Serializer(Foo(a=[1, MyPoint(1,2)])).serialize()
-    assert serialized["a"] == [1, {'x': 1, 'y': 2}]
+    serialized = Serializer(Foo(a=[1, MyPoint(1, 2)])).serialize()
+    assert serialized["a"] == [1, {"x": 1, "y": 2}]
 
 
 def test_serialize_multified_with_any_unserializable():
     class MyPoint1:
-        def __init__(self,x,y):
+        def __init__(self, x, y):
             self.x = x
             self.y = y
 
@@ -827,4 +829,6 @@ def test_serialize_multified_with_any_unserializable():
         a: Array[AnyOf[Integer, MyPoint1]]
 
     with raises(ValueError):
-        Serializer(Foo(a=[1, MyPoint1(datetime.datetime.now(), datetime.datetime.now())])).serialize()
+        Serializer(
+            Foo(a=[1, MyPoint1(datetime.datetime.now(), datetime.datetime.now())])
+        ).serialize()

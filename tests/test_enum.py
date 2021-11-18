@@ -5,7 +5,8 @@ from pytest import raises
 from typedpy import Enum, Positive, Structure, Array
 
 
-class PositiveEnum(Enum, Positive): pass
+class PositiveEnum(Enum, Positive):
+    pass
 
 
 class B(Structure):
@@ -44,16 +45,16 @@ def test_within_erray_err():
 
 
 class Values(enum.Enum):
-        ABC = enum.auto()
-        DEF = enum.auto()
-        GHI = enum.auto()
+    ABC = enum.auto()
+    DEF = enum.auto()
+    GHI = enum.auto()
 
 
 def test_enum_using_enum():
     class Example(Structure):
         arr = Array[Enum[Values]]
 
-    e = Example(arr=['ABC', Values.DEF, 'GHI'])
+    e = Example(arr=["ABC", Values.DEF, "GHI"])
     assert e.arr == [Values.ABC, Values.DEF, Values.GHI]
 
 
@@ -62,7 +63,7 @@ def test_enum_using_enum_error():
         arr = Array[Enum[Values]]
 
     with raises(ValueError) as excinfo:
-        Example(arr=['ABC', Values.DEF, 3])
+        Example(arr=["ABC", Values.DEF, 3])
     assert "arr_2: Got 3; Expected one of: ABC, DEF, GHI" in str(excinfo.value)
 
 
@@ -85,12 +86,13 @@ def test_enum_using_enum_with_many_calues_error():
         arr = Array[Enum[Many]]
 
     with raises(ValueError) as excinfo:
-        Example(arr=['A', Many.E, 3])
+        Example(arr=["A", Many.E, 3])
     assert "arr_2: Got 3; Expected a value of <enum 'Many'>" in str(excinfo.value)
 
 
 def test_enum_using_enum_values_should_be_the_enum_values():
-    def EnumValues(): return Enum(values=Values)
+    def EnumValues():
+        return Enum(values=Values)
 
     class Example(Structure):
         arr = Array[EnumValues()]

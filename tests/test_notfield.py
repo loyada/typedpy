@@ -1,6 +1,15 @@
 from pytest import raises
 
-from typedpy import AllOf, Deserializer, Integer, NotField, Positive, Serializer, String, Structure
+from typedpy import (
+    AllOf,
+    Deserializer,
+    Integer,
+    NotField,
+    Positive,
+    Serializer,
+    String,
+    Structure,
+)
 
 
 def test_simple_not():
@@ -10,7 +19,9 @@ def test_simple_not():
     assert Foo(i=-5).i == -5
     with raises(ValueError) as excinfo:
         Foo(i="xyz")
-    assert "i: Got 'xyz'; Expected not to match any field definition" in str(excinfo.value)
+    assert "i: Got 'xyz'; Expected not to match any field definition" in str(
+        excinfo.value
+    )
     with raises(ValueError) as excinfo:
         Foo(i=5)
     assert "i: Got 5; Expected not to match any field definition" in str(excinfo.value)

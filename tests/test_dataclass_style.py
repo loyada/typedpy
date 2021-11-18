@@ -15,7 +15,7 @@ from typedpy import Integer, String, Array, StructureReference
 
 
 class SimpleStruct(Structure):
-    name = String(pattern='[A-Za-z]+$', maxLength=8)
+    name = String(pattern="[A-Za-z]+$", maxLength=8)
 
 
 class Example(Structure):
@@ -55,29 +55,41 @@ def test_partially_use_annotation_invalid_value():
 
 def test_type_conversion_to_typedpy_signature_error():
     with raises(TypeError) as excinfo:
-        MixedTypesExample(i=5, s="xyz", s1="asd", a={'x': 1})
+        MixedTypesExample(i=5, s="xyz", s1="asd", a={"x": 1})
     assert "missing a required argument: 'simple'" in str(excinfo.value)
 
 
 def test_type_conversion_to_typedpy_str_representation():
-    d = MixedTypesExample(i=5, s="xyz", s1="asd", a={'x': 1}, simple=SimpleStruct(name="John"))
+    d = MixedTypesExample(
+        i=5, s="xyz", s1="asd", a={"x": 1}, simple=SimpleStruct(name="John")
+    )
 
-    assert str(d) == "<Instance of MixedTypesExample. Properties: a = {x = 1}, i = 5, s = 'xyz', " \
-                     "s1 = 'asd', simple = <Instance of SimpleStruct. Properties: name = 'John'>>"
-    assert str(MixedTypesExample) == "<Structure: MixedTypesExample. Properties: a = <Map>, " \
-                                     "i = <Integer. Properties: maximum = 10>, s = <String. Properties: maxLength = " \
-                                     "5>, s1 = <String>, simple = <ClassReference: SimpleStruct>>"
+    assert (
+        str(d)
+        == "<Instance of MixedTypesExample. Properties: a = {x = 1}, i = 5, s = 'xyz', "
+        "s1 = 'asd', simple = <Instance of SimpleStruct. Properties: name = 'John'>>"
+    )
+    assert (
+        str(MixedTypesExample)
+        == "<Structure: MixedTypesExample. Properties: a = <Map>, "
+        "i = <Integer. Properties: maximum = 10>, s = <String. Properties: maxLength = "
+        "5>, s1 = <String>, simple = <ClassReference: SimpleStruct>>"
+    )
 
 
 def test_type_conversion_to_typedpy_validation_err_for_converted_type():
     with raises(TypeError) as excinfo:
-        MixedTypesExample(i=5, s="xyz", s1="asd", simple=SimpleStruct(name="John"), a="a")
+        MixedTypesExample(
+            i=5, s="xyz", s1="asd", simple=SimpleStruct(name="John"), a="a"
+        )
     assert "a: Expected a dict" in str(excinfo.value)
 
 
 def test_type_conversion_to_typedpy_validation_err_for_standard_field():
     with raises(ValueError) as excinfo:
-        MixedTypesExample(i=50, s="xyz", s1="asd", a={"a": 1}, simple=SimpleStruct(name="John"))
+        MixedTypesExample(
+            i=50, s="xyz", s1="asd", a={"a": 1}, simple=SimpleStruct(name="John")
+        )
     assert "i: Got 50; Expected a maximum of 10" in str(excinfo.value)
 
 
@@ -88,7 +100,7 @@ def test_all_fields_use_alternate_format():
         mylist: list
         map: dict
 
-    e = Example1(i=1, f=0.5, mylist=['x'], map={'x': 'y'})
+    e = Example1(i=1, f=0.5, mylist=["x"], map={"x": "y"})
     with raises(TypeError) as excinfo:
         e.mylist = 7
     assert "mylist: Got 7; Expected <class 'list'>" in str(excinfo.value)
@@ -100,18 +112,22 @@ def test_all_fields_use_alternate_format_immutable():
         mylist: list
         map: dict
 
-    e = ExampleOfImmutable(i=1, mylist=['x'], map={'x': 'y'})
+    e = ExampleOfImmutable(i=1, mylist=["x"], map={"x": "y"})
     with raises(ValueError) as excinfo:
-        e.mylist.append('y')
+        e.mylist.append("y")
     assert "Field is immutable" in str(excinfo.value)
 
 
 def test_invalid_default():
     with raises(TypeError) as excinfo:
+
         class Example(Structure):
             i: int = "x"
 
-    assert "i: Invalid default value: 'x'; Reason: value: Expected <class 'int'>; Got 'x'" in str(excinfo.value)
+    assert (
+        "i: Invalid default value: 'x'; Reason: value: Expected <class 'int'>; Got 'x'"
+        in str(excinfo.value)
+    )
 
 
 def test_default_values():
@@ -122,10 +138,10 @@ def test_default_values():
         f: Float = 0.5
         f2 = Float(default=1.5)
 
-    e = Example(map={'x': 'y'})
+    e = Example(map={"x": "y"})
     assert e.i == 5
     assert e.mylist == [1, 2, 3]
-    assert e.map == {'x': 'y'}
+    assert e.map == {"x": "y"}
     assert e.f == 0.5
     assert e.f2 == 1.5
 
@@ -136,7 +152,7 @@ def test_default_values_use_equals_on_field_instance():
         map: dict
         arr: Array[SimpleStruct] = [SimpleStruct(name="John")]
 
-    e = Example(map={'x': 'y'})
+    e = Example(map={"x": "y"})
     assert e.f == 0.5
     assert e.arr[0].name == "John"
 
@@ -147,9 +163,9 @@ def test_default_values_use_equals_on_field_instance_with_overriding_required():
         map: dict
         arr: Array[SimpleStruct] = [SimpleStruct(name="John")]
         i = Integer(default=5)
-        _required = ['arr', i]
+        _required = ["arr", i]
 
-    e = Example(map={'x': 'y'})
+    e = Example(map={"x": "y"})
     assert e.f == 0.5
     assert e.arr[0].name == "John"
     assert e.i == 5
@@ -164,7 +180,7 @@ def test_some_default_values_missing_required():
         f2 = Float(default=1.5)
 
     with raises(TypeError) as excinfo:
-        Example(map={'x': 'y'})
+        Example(map={"x": "y"})
     assert "missing a required argument: 'mylist'" in str(excinfo.value)
 
 
@@ -175,9 +191,9 @@ def test_some_default_values_predefined_required():
         map: dict
         f: Float = 0.5
         f2 = Float(default=1.5)
-        _required = ['f2']
+        _required = ["f2"]
 
-    assert ExampleOfImmutable(map={'x': 'y'}).f == 0.5
+    assert ExampleOfImmutable(map={"x": "y"}).f == 0.5
 
 
 @pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
@@ -197,8 +213,11 @@ def test_valid_typing_valid2():
         mymap: Dict[str, List]
         myset: FrozenSet[int]
 
-    assert str(ExampleWithTyping) == '<Structure: ExampleWithTyping. Properties: mymap = <Map. Properties: items' \
-                                     ' = [<String>, <Array>]>, myset = <ImmutableSet. Properties: items = <Integer>>>'
+    assert (
+        str(ExampleWithTyping)
+        == "<Structure: ExampleWithTyping. Properties: mymap = <Map. Properties: items"
+        " = [<String>, <Array>]>, myset = <ImmutableSet. Properties: items = <Integer>>>"
+    )
     e = ExampleWithTyping(myset={1, 2, 3}, mymap={"x": [1, 2, 3]})
     assert e.mymap["x"] == [1, 2, 3]
 
@@ -223,12 +242,15 @@ def test_typing_error_in_generic():
         ExampleWithTyping(i=5, a=[1, 2, 3, "x"])
     assert "a_3: Expected <class 'int'>; Got 'x'" in str(exc_info.value)
 
+
 @pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_typing_error_unsupported():
     with raises(TypeError) as exc_info:
+
         class ExampleWithTyping(Structure):
             i: Iterable[int]
             a: List[int]
+
     assert "typing.Iterable[int] type is not supported" in str(exc_info.value)
 
 
@@ -237,9 +259,11 @@ def test_typing_error_in_generic_union_mapps_to_anyof():
     class ExampleWithTyping(Structure):
         a: Union[int, float, str]
 
-    assert str(ExampleWithTyping) == '<Structure: ExampleWithTyping. Properties: ' \
-                                     'a = <AnyOf [<Integer>, <Float>, <String>]>>'
-    e = ExampleWithTyping(a='x')
+    assert (
+        str(ExampleWithTyping) == "<Structure: ExampleWithTyping. Properties: "
+        "a = <AnyOf [<Integer>, <Float>, <String>]>>"
+    )
+    e = ExampleWithTyping(a="x")
     with raises(ValueError) as exc_info:
         e.a = []
     assert "a: [] Did not match any field option" in str(exc_info.value)
@@ -252,7 +276,7 @@ def test_typing_error_in_generic_pep585_err():
         a: list[int]
         d: deque[int]
 
-    e = ExampleWithTyping(i=5, a=[1, 2, 3], d=deque([1,2]))
+    e = ExampleWithTyping(i=5, a=[1, 2, 3], d=deque([1, 2]))
     assert e.a[0] == 1
     with raises(TypeError) as exc_info:
         e.a[2] = "x"
@@ -281,9 +305,11 @@ def test_valid_typing_and_dataclass():
 
 
 def test_invalid_type():
-    class Bar: pass
+    class Bar:
+        pass
 
     with raises(TypeError):
+
         class Foo(Structure):
             a: list[Bar]
 
@@ -293,8 +319,6 @@ def test_generic_typevar_is_ignored():
     class Foo(Structure):
         a: List[T]
 
-    assert Foo(a=[1,2]).a[1] == 2
+    assert Foo(a=[1, 2]).a[1] == 2
     with raises(TypeError):
         Foo(a=1)
-
-

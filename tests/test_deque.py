@@ -19,7 +19,7 @@ class Example(Structure):
     a = Deque(uniqueItems=True, minItems=3, items=[String(), Number(maximum=10)])
     b = Deque(minItems=3, maxItems=5, items=Number(maximum=10))
     c = Deque(items=[String(), String(), Number(maximum=10)])
-    d = Deque(minItems=2, items='')
+    d = Deque(minItems=2, items="")
     e = Deque(minItems=2)
     f = Deque[Integer]
     g = Deque[Foo]
@@ -35,43 +35,43 @@ def test_wrong_type_for_deque_err():
 
 def test_wrong_type_for_deque_items_err():
     with raises(TypeError) as excinfo:
-        Example(a=deque(['aa', [], 2]))
+        Example(a=deque(["aa", [], 2]))
     assert "a_1: Got []; Expected a number" in str(excinfo.value)
 
 
 def test_non_unique_items_err():
     with raises(ValueError) as excinfo:
-        Example(a=deque(['aa', 2, 2]))
+        Example(a=deque(["aa", 2, 2]))
     assert "a: Got deque(['aa', 2, 2]); Expected unique items" in str(excinfo.value)
 
 
 def test_invalid_number_in_deque_err():
     with raises(ValueError) as excinfo:
-        Example(a=deque(['aa', 12, 2]))
+        Example(a=deque(["aa", 12, 2]))
     assert "a_1: Got 12; Expected a maximum of 10" in str(excinfo.value)
 
 
 def test_invalid_number_in_deque_variation_err():
-    t = Example(a=deque(['aa', 5, 2]))
+    t = Example(a=deque(["aa", 5, 2]))
     with raises(ValueError) as excinfo:
         t.a[1] += 9
     assert "a_1: Got 14; Expected a maximum of 10" in str(excinfo.value)
 
 
 def test_no_schema_for_item_so_no_validation():
-    t = Example(a=deque(['aa', 5, 2]))
+    t = Example(a=deque(["aa", 5, 2]))
     t.a[2] = None
-    assert t.a == deque(['aa', 5, None])
+    assert t.a == deque(["aa", 5, None])
 
 
 def test_a_is_valid():
-    Example(a=deque(['aa', 5, 2]))
+    Example(a=deque(["aa", 5, 2]))
 
 
 def test_update_1():
-    t = Example(a=deque(['aa', 5, 2]))
+    t = Example(a=deque(["aa", 5, 2]))
     t.a[2] += 6
-    assert t.a == deque(['aa', 5, 8])
+    assert t.a == deque(["aa", 5, 8])
     assert t.a[2] == 8
 
 
@@ -89,9 +89,9 @@ def test_reverse():
 
 
 def test_update_append():
-    t = Example(a=deque(['aa', 5, 2]))
+    t = Example(a=deque(["aa", 5, 2]))
     t.a.append(6)
-    assert t.a == deque(['aa', 5, 2, 6])
+    assert t.a == deque(["aa", 5, 2, 6])
 
 
 def test_update_appendleft():
@@ -101,18 +101,20 @@ def test_update_appendleft():
 
 
 def test_append_maintains_field_definition():
-    t = Example(a=deque(['aa', 5, 2]))
+    t = Example(a=deque(["aa", 5, 2]))
     t.a.append(6)
     with raises(TypeError) as excinfo:
         t.a[0] = 0
     assert "a_0: Got 0; Expected a string" in str(excinfo.value)
     with raises(ValueError) as excinfo:
         t.a.appendleft(6)
-    assert "a: Got deque([6, 'aa', 5, 2, 6]); Expected unique items" in str(excinfo.value)
+    assert "a: Got deque([6, 'aa', 5, 2, 6]); Expected unique items" in str(
+        excinfo.value
+    )
 
 
 def test_append_maintains_field_definition_validate_pop():
-    t = Example(a=deque(['aa', 5, 2]))
+    t = Example(a=deque(["aa", 5, 2]))
     t.a.append(6)
     with raises(TypeError) as excinfo:
         t.a.popleft()
@@ -120,14 +122,14 @@ def test_append_maintains_field_definition_validate_pop():
 
 
 def test_update_too_short_err():
-    t = Example(a=deque(['aa', 5, 2]))
+    t = Example(a=deque(["aa", 5, 2]))
     with raises(ValueError) as excinfo:
-        t.a = deque([''])
+        t.a = deque([""])
     assert "a: Expected length of at least 3" in str(excinfo.value)
 
 
 def test_update_to_wrong_type_err():
-    t = Example(a=deque(['aa', 5, 2]))
+    t = Example(a=deque(["aa", 5, 2]))
     with raises(TypeError) as excinfo:
         t.a[0] = 1
     assert "a_0: Got 1; Expected a string" in str(excinfo.value)
@@ -135,7 +137,7 @@ def test_update_to_wrong_type_err():
 
 def test_not_enough_items_err():
     with raises(ValueError) as excinfo:
-        Example(a=deque(['aa', 2]))
+        Example(a=deque(["aa", 2]))
     assert "a: Expected length of at least 3" in str(excinfo.value)
 
 
@@ -158,7 +160,7 @@ def test_single_field_for_all_items_valid():
 
 def test_not_enough_items2_err():
     with raises(ValueError) as excinfo:
-        Example(c=deque(['aa']))
+        Example(c=deque(["aa"]))
     assert "c: Got deque(['aa']); Expected an deque of length 3" in str(excinfo.value)
 
 
@@ -172,7 +174,7 @@ def test_no_items_schema_is_valid():
 
 def test_generics_version_err():
     with raises(ValueError) as excinfo:
-        Example(f=deque(['aa', 'xx']))
+        Example(f=deque(["aa", "xx"]))
     assert "f: f_0: Expected <class 'int'>" in str(excinfo.value)
 
 
@@ -216,7 +218,7 @@ def test_extend_maintains_field_definition():
 def test_insert_err():
     e = Example(b=deque([1, 2, 3]))
     with raises(TypeError) as excinfo:
-        e.b.insert(2, 'a')
+        e.b.insert(2, "a")
     assert "b_2: Got 'a'; Expected a number" in str(excinfo.value)
 
 
@@ -255,7 +257,9 @@ def test_pop_valid():
 def test_deque_of_defined_structure_type_err():
     with raises(TypeError) as excinfo:
         Example(g=deque([Foo(s="abc"), 4]))
-    assert "g_1: Expected <Structure: Foo. Properties: s = <String>>" in str(excinfo.value)
+    assert "g_1: Expected <Structure: Foo. Properties: s = <String>>" in str(
+        excinfo.value
+    )
 
 
 def test_deque_of_defined_structure_valid():
@@ -287,7 +291,9 @@ def test_class_reference_err1():
 
     with raises(TypeError) as excinfo:
         Foo(bars=deque([1]))
-    assert "bars_0: Expected <Structure: Bar. Properties: st = <String>>" in str(excinfo.value)
+    assert "bars_0: Expected <Structure: Bar. Properties: st = <String>>" in str(
+        excinfo.value
+    )
 
 
 def test_class_reference_err2():
@@ -298,8 +304,10 @@ def test_class_reference_err2():
         bars = Deque(items=[Bar, Bar])
 
     with raises(TypeError) as excinfo:
-        Foo(bars=deque([Bar(st='a'), 1]))
-    assert "bars_1: Expected <Structure: Bar. Properties: st = <String>>" in str(excinfo.value)
+        Foo(bars=deque([Bar(st="a"), 1]))
+    assert "bars_1: Expected <Structure: Bar. Properties: st = <String>>" in str(
+        excinfo.value
+    )
 
 
 def test_class_reference_success():
@@ -309,19 +317,20 @@ def test_class_reference_success():
     class Foo(Structure):
         bars = Deque(items=Bar)
 
-    foo = Foo(bars=deque([Bar(st='a'), Bar(st='b')]))
-    assert foo.bars[1].st == 'b'
+    foo = Foo(bars=deque([Bar(st="a"), Bar(st="b")]))
+    assert foo.bars[1].st == "b"
 
 
 @pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.6 or higher")
 def test_deque_with_function_returning_field():
-    def MyField() -> Field: return String()
+    def MyField() -> Field:
+        return String()
 
     class Foo(Structure):
         a = Deque[MyField]
         s = String
 
-    assert Foo(a=deque(['xyz']), s='abc').a[0] == 'xyz'
+    assert Foo(a=deque(["xyz"]), s="abc").a[0] == "xyz"
 
 
 @pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.6 or higher")
@@ -330,6 +339,7 @@ def test_deque_with_function_returning_field_with_params():
         return String(minLength=1)
 
     with raises(TypeError) as excinfo:
+
         class Foo(Structure):
             a = Deque[MyField]
             s = String
@@ -361,7 +371,7 @@ def test_clear_for_deque_with_minimal_size():
         a = Deque(minItems=3)
 
     foo = Foo(a=deque([1, 2, 3]))
-    with raises(ValueError)as excinfo:
+    with raises(ValueError) as excinfo:
         foo.a.clear()
     assert "a: Expected length of at least 3; Got deque([])" in str(excinfo.value)
 
@@ -380,7 +390,6 @@ def test_auto_mapping_of_deque():
     class Foo(Structure):
         d: deque[float]
 
-    with raises(TypeError)as excinfo:
-        Foo(d=deque([0.5,2]))
+    with raises(TypeError) as excinfo:
+        Foo(d=deque([0.5, 2]))
     assert "d_1: Expected <class 'float'>; Got 2" in str(excinfo.value)
-

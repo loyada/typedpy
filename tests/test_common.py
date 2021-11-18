@@ -28,4 +28,3 @@ def test_nested_list():
     assert nested(lambda: foo.a[1].x.i, default=1) == 1
     assert nested(lambda: foo.a[0].x.i) == 5
     assert nested(lambda: foo.a[0].x.w) is None
-

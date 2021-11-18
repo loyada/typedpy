@@ -2,7 +2,17 @@ from typing import Optional
 
 from pytest import raises
 
-from typedpy import Structure, Number, String, Integer, Set, AnyOf, Map, PositiveInt, ImmutableSet
+from typedpy import (
+    Structure,
+    Number,
+    String,
+    Integer,
+    Set,
+    AnyOf,
+    Map,
+    PositiveInt,
+    ImmutableSet,
+)
 
 
 class Example(Structure):
@@ -19,27 +29,31 @@ class Example(Structure):
 
 def test_invalid_items_definitions_err1():
     with raises(TypeError) as excinfo:
+
         class A(Structure):
             a = Set(items=[String, String])
+
     assert "Expected a Field/Structure class or Field instance" in str(excinfo.value)
 
 
 def test_invalid_items_definitions_err2():
     with raises(TypeError) as excinfo:
+
         class A(Structure):
             a = Set[String, String]
+
     assert "Expected a Field/Structure class or Field instance" in str(excinfo.value)
 
 
 def test_wrong_type_for_set_items_err():
     with raises(TypeError) as excinfo:
-        Example(b={3, 'aa', 2})
+        Example(b={3, "aa", 2})
     assert "b: Got 'aa'; Expected a number" in str(excinfo.value)
 
 
 def test_list_instead_of_set_err():
     with raises(TypeError) as excinfo:
-        Example(b=[3, 'aa', 2])
+        Example(b=[3, "aa", 2])
     assert "b: Got [3, 'aa', 2]; Expected <class 'set'>" in str(excinfo.value)
 
 
@@ -64,18 +78,18 @@ def test_right_size_and_Field():
 
 def test_items_simplified_version_type_err():
     with raises(TypeError) as excinfo:
-        Example(d={1, ''})
+        Example(d={1, ""})
     assert "d: Got 1; Expected a string" in str(excinfo.value)
 
 
 def test_items_simplified_version_valid():
     with raises(TypeError) as excinfo:
-        Example(d={1, ''})
+        Example(d={1, ""})
     assert "d: Got 1; Expected a string" in str(excinfo.value)
 
 
 def test_no_items_in_definition():
-    e = Example(e={1, 'sadasd', True})
+    e = Example(e={1, "sadasd", True})
     assert 1 in e.e
 
 
@@ -91,20 +105,22 @@ def test_super_simplified_definition_valid():
 
 
 def test_simplified_definition_with_flexible_types_valid():
-    e = Example(g={10, 'xyz', 45.4})
-    assert 'xyz' in e.g
+    e = Example(g={10, "xyz", 45.4})
+    assert "xyz" in e.g
 
 
 def test_simplified_definition_with_flexible_types_err():
     with raises(ValueError) as excinfo:
-        Example(g={'xy'})
+        Example(g={"xy"})
     assert "g: 'xy' Did not match any field option" in str(excinfo.value)
 
 
 def test_invalid_type():
     with raises(TypeError) as excinfo:
+
         class Foo(Structure):
             a = Set[Map]
+
     assert "Set element of type <class 'dict'> is not hashable" in str(excinfo.value)
 
 
@@ -129,16 +145,20 @@ def test_copies_are_treated_correctly_using_hash_function():
     class Peope(Structure):
         data = Set[Person]
 
-    people = Peope(data={Person(age=54, name="john"), Person(age=34, name="jack"), Person(age=54, name="john")})
+    people = Peope(
+        data={
+            Person(age=54, name="john"),
+            Person(age=34, name="jack"),
+            Person(age=54, name="john"),
+        }
+    )
     assert len(people.data) == 2
     assert Person(age=54, name="john") in people.data
     assert Person(age=55, name="john") not in people.data
 
 
-
-
 def test_simple_set_valid():
-    assert 'abc' in Example(h={1, 2, 3, 'abc'}).h
+    assert "abc" in Example(h={1, 2, 3, "abc"}).h
 
 
 def test_simple_set_invalid():
@@ -148,14 +168,14 @@ def test_simple_set_invalid():
 
 
 def test_immutable_no_update():
-    e = Example(frozen={1,2,3})
+    e = Example(frozen={1, 2, 3})
     with raises(AttributeError) as excinfo:
         e.frozen.clear()
     assert "'frozenset' object has no attribute 'clear'" in str(excinfo.value)
 
 
 def test_immutable_content():
-    e = Example(frozen={1,2,3})
+    e = Example(frozen={1, 2, 3})
     assert 1 in e.frozen
 
 
@@ -164,11 +184,11 @@ def test_immutableset_typerr():
         s: ImmutableSet
 
     with raises(TypeError):
-        Foo(s=[1,2,3])
+        Foo(s=[1, 2, 3])
 
 
 def test_str():
-    e = Example(h={1,2,3})
+    e = Example(h={1, 2, 3})
     assert "h = {1,2,3}" in str(e)
 
 

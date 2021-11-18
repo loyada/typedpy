@@ -1,14 +1,26 @@
 import sys
 
 from pytest import raises
-from typedpy import String, Number, Structure, ImmutableField, ImmutableStructure, Array, Map, Integer, Field
+from typedpy import (
+    String,
+    Number,
+    Structure,
+    ImmutableField,
+    ImmutableStructure,
+    Array,
+    Map,
+    Integer,
+    Field,
+)
 from typing import get_type_hints, Type
 
 
 def test_field_declaration():
-    def Names(): return Array(items=String(minLength=2))
+    def Names():
+        return Array(items=String(minLength=2))
 
-    def TableName(): return String(minLength=3)
+    def TableName():
+        return String(minLength=3)
 
     class Foo(Structure):
         i = Integer
@@ -29,9 +41,11 @@ def test_field_declaration():
 
 
 def test_field_declaration_compact_syntax():
-    def Names(): return Array[String]
+    def Names():
+        return Array[String]
 
-    def TableName(): return String
+    def TableName():
+        return String
 
     class Foo(Structure):
         i = Integer
@@ -104,9 +118,11 @@ def test_field_declaration_simplified_syntax_v051():
         return
 
     # we declare type hint of the return value:
-    def Names() -> Type[Field]: return Array[String]
+    def Names() -> Type[Field]:
+        return Array[String]
 
-    def TableName() -> Field: return String(minLength=5)
+    def TableName() -> Field:
+        return String(minLength=5)
 
     class Foo(Structure):
         i = Integer

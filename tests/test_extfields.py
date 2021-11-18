@@ -25,5 +25,5 @@ def test_date_wrong_type():
 
 
 def test_datatime():
-    e = Example(the_time= datetime.now())
+    e = Example(the_time=datetime.now())
     print(e.the_time)

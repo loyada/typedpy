@@ -121,7 +121,9 @@ def add_mapper_to_aggregation(latest_mapper, previous_mapper, for_serialization=
     if not isinstance(latest_mapper, (Mapping, mappers)):
         raise TypeError("Mapper must be a mapping")
     for k, v in previous_mapper.items():
-        if isinstance(v, str):
+        if v is DoNotSerialize:
+            result_mapper[k] = DoNotSerialize
+        elif isinstance(v, str):
             result_mapper[k] = _apply_mapper(
                 latest_mapper, k, previous_mapper, for_serialization=for_serialization
             )
@@ -182,6 +184,9 @@ def add_mapper_to_aggregation(latest_mapper, previous_mapper, for_serialization=
 
     return result_mapper
 
+
+class DoNotSerialize:
+    pass
 
 class mappers(Enum):
     """Useful custom mappers"""

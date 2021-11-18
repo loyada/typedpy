@@ -3,7 +3,15 @@ import sys
 from typing import List
 
 from pytest import raises, mark
-from typedpy import Array, Deserializer, Integer, SerializableField, Serializer, String, Structure
+from typedpy import (
+    Array,
+    Deserializer,
+    Integer,
+    SerializableField,
+    Serializer,
+    String,
+    Structure,
+)
 
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
@@ -233,10 +241,15 @@ def test_optional_simple():
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_default_factory_invalid_default():
     with raises(TypeError) as excinfo:
+
         class Foo(Structure):
             a: list[str] = lambda: [1, 2, 3]
             i: int
-    assert "a: Invalid default value: [1, 2, 3]; Reason: value_0: Got 1; Expected a string" in str(excinfo.value)
+
+    assert (
+        "a: Invalid default value: [1, 2, 3]; Reason: value_0: Got 1; Expected a string"
+        in str(excinfo.value)
+    )
 
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
@@ -296,4 +309,6 @@ def test_list_of_class_reference():
         Deserializer(Foo).deserialize({"i": 5, "a": [{"a": "x", "b": 5}]})
     assert "a_0: a: Expected <class 'int'>; Got 'x'" in str(excinfo.value)
 
-    assert Deserializer(Foo).deserialize({"i": 5, "a": [{"a": 1, "b": 5}]}) == Foo(a=[Bar(a=1, b=5)], i=5)
+    assert Deserializer(Foo).deserialize({"i": 5, "a": [{"a": 1, "b": 5}]}) == Foo(
+        a=[Bar(a=1, b=5)], i=5
+    )

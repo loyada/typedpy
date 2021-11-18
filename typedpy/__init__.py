@@ -98,6 +98,6 @@ from .errors import standard_readable_error_for_typedpy_exception, ErrorInfo
 
 from .utility import get_list_type, type_is_generic
 
-from .mappers import mappers, Deleted, Constant
+from .mappers import mappers, Deleted, Constant, DoNotSerialize
 
 from .versioned_mapping import convert_dict, Versioned

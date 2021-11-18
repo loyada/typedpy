@@ -21,36 +21,36 @@ def test_wrong_type_for_tuple_err():
 
 def test_wrong_type_for_tuple_items_err1():
     with raises(TypeError) as excinfo:
-        Example(a=('aa', 2))
+        Example(a=("aa", 2))
     assert "a_1: Got 2; Expected a string" in str(excinfo.value)
 
 
 def test_wrong_type_for_tuple_items_err2():
     with raises(TypeError) as excinfo:
-        Example(c=(1, 'aa', 2))
+        Example(c=(1, "aa", 2))
     assert "c_2: Expected <class 'float'>" in str(excinfo.value)
 
 
 def test_wrong_value_for_tuple_item_err():
     with raises(ValueError) as excinfo:
-        Example(b=('aa', 'bb', 92))
+        Example(b=("aa", "bb", 92))
     assert "b_2: Got 92; Expected a maximum of 10" in str(excinfo.value)
 
 
 def test_wrong_length_for_tuple_items_err():
     with raises(ValueError) as excinfo:
-        Example(a=('aa',))
+        Example(a=("aa",))
     assert "a: Got ('aa',); Expected a tuple of length 2" in str(excinfo.value)
 
 
 def test_non_unique_items_err():
     with raises(ValueError) as excinfo:
-        Example(a=('aa', 'aa'))
+        Example(a=("aa", "aa"))
     assert "a: Got ('aa', 'aa'); Expected unique items" in str(excinfo.value)
 
 
 def test_unique_items_valid():
-    assert Example(a=('aa', 'bb')).a == ('aa', 'bb')
+    assert Example(a=("aa", "bb")).a == ("aa", "bb")
 
 
 def test_bad_items_definition_err():
@@ -60,7 +60,7 @@ def test_bad_items_definition_err():
 
 
 def test_simplified_definition_valid_assignment():
-    assert Example(c=(1, 'bb', 0.5)).c[1:] == ('bb', 0.5)
+    assert Example(c=(1, "bb", 0.5)).c[1:] == ("bb", 0.5)
 
 
 def test_wrong_type_in_items_definition_err():
@@ -77,5 +77,5 @@ def test_single_type_tuple():
 
 def test_single_type_tuple_err1():
     with raises(TypeError) as excinfo:
-        Example(d=(3, 2, 'asdasd'))
+        Example(d=(3, 2, "asdasd"))
     assert "d_2: Expected <class 'int'>" in str(excinfo.value)

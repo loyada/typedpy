@@ -1,12 +1,31 @@
 from pytest import raises
 
-from typedpy import String, Structure, structure_to_schema, Integer, Array, \
-    StructureReference, Number, Float, AllOf, Enum, AnyOf, OneOf, NotField, Boolean, Map, Set, DateString, EmailAddress, \
-    Field, Tuple
+from typedpy import (
+    String,
+    Structure,
+    structure_to_schema,
+    Integer,
+    Array,
+    StructureReference,
+    Number,
+    Float,
+    AllOf,
+    Enum,
+    AnyOf,
+    OneOf,
+    NotField,
+    Boolean,
+    Map,
+    Set,
+    DateString,
+    EmailAddress,
+    Field,
+    Tuple,
+)
 
 
 class SimpleStruct(Structure):
-    name = String(pattern='[A-Za-z]+$', maxLength=8)
+    name = String(pattern="[A-Za-z]+$", maxLength=8)
 
 
 class Example(Structure):
@@ -31,132 +50,70 @@ def test_class_reference_in_definitions():
         "SimpleStruct": {
             "type": "object",
             "properties": {
-                "name": {
-                    "type": "string",
-                    "pattern": "[A-Za-z]+$",
-                    "maxLength": 8
-                }
+                "name": {"type": "string", "pattern": "[A-Za-z]+$", "maxLength": 8}
             },
-            "required": [
-                "name"
-            ],
-            "additionalProperties": True
+            "required": ["name"],
+            "additionalProperties": True,
         }
     }
 
 
 def test_schema():
     schema, definitions = structure_to_schema(Example, {})
-    assert set(schema['required']) == {'a', 'all', 'any', 'one', 'no',
-                                       'i', 'foo', 'ss', 'ss_array', 's', 'enum', 'a_set', 'a_tuple'}
-    del schema['required']
-    assert set(schema['properties']['foo']['required']) == {'a1', 'a2'}
-    del schema['properties']['foo']['required']
+    assert set(schema["required"]) == {
+        "a",
+        "all",
+        "any",
+        "one",
+        "no",
+        "i",
+        "foo",
+        "ss",
+        "ss_array",
+        "s",
+        "enum",
+        "a_set",
+        "a_tuple",
+    }
+    del schema["required"]
+    assert set(schema["properties"]["foo"]["required"]) == {"a1", "a2"}
+    del schema["properties"]["foo"]["required"]
     assert dict(schema) == {
         "type": "object",
         "properties": {
             "a": {
-                "items": [
-                    {
-                        "multiplesOf": 5,
-                        "type": "integer"
-                    },
-                    {
-                        "type": "number"
-                    }
-                ],
-                "type": "array"
+                "items": [{"multiplesOf": 5, "type": "integer"}, {"type": "number"}],
+                "type": "array",
             },
-            "all": {
-                "allOf": [
-                    {
-                        "type": "number"
-                    },
-                    {
-                        "type": "integer"
-                    }
-                ]
-            },
-            "any": {
-                "anyOf": [
-                    {
-                        "type": "number",
-                        "minimum": 1
-                    },
-                    {
-                        "type": "integer"
-                    }
-                ]
-            },
-            "one": {
-                "oneOf": [
-                    {
-                        "type": "number",
-                        "minimum": 1
-                    },
-                    {
-                        "type": "integer"
-                    }
-                ]
-            },
-            "no": {
-                "not": [{
-                    "type": "string"
-                }]
-            },
-            "i": {
-                "maximum": 10,
-                "type": "integer"
-            },
+            "all": {"allOf": [{"type": "number"}, {"type": "integer"}]},
+            "any": {"anyOf": [{"type": "number", "minimum": 1}, {"type": "integer"}]},
+            "one": {"oneOf": [{"type": "number", "minimum": 1}, {"type": "integer"}]},
+            "no": {"not": [{"type": "string"}]},
+            "i": {"maximum": 10, "type": "integer"},
             "foo": {
                 "type": "object",
-                "properties": {
-                    "a2": {
-                        "type": "float"
-                    },
-                    "a1": {
-                        "type": "integer"
-                    }
-                },
-                "additionalProperties": True
+                "properties": {"a2": {"type": "float"}, "a1": {"type": "integer"}},
+                "additionalProperties": True,
             },
-            "ss": {
-                "$ref": "#/definitions/SimpleStruct"
-            },
+            "ss": {"$ref": "#/definitions/SimpleStruct"},
             "ss_array": {
                 "type": "array",
-                "items": {
-                    "$ref": "#/definitions/SimpleStruct"
-                }
+                "items": {"$ref": "#/definitions/SimpleStruct"},
             },
-            "s": {
-                "type": "string",
-                "maxLength": 5
-            },
-            "enum": {
-                "enum": [1, 2, 3]
-            },
+            "s": {"type": "string", "maxLength": 5},
+            "enum": {"enum": [1, 2, 3]},
             "a_set": {
                 "type": "array",
                 "uniqueItems": True,
-                "items": {
-                    "type": "integer"
-                }
+                "items": {"type": "integer"},
             },
             "a_tuple": {
                 "type": "array",
                 "additionalItems": False,
-                "items": [
-                    {
-                        "type": "string"
-                    },
-                    {
-                        "type": "integer"
-                    }
-                ]
-            }
+                "items": [{"type": "string"}, {"type": "integer"}],
+            },
         },
-        "additionalProperties": True
+        "additionalProperties": True,
     }
 
 
@@ -169,14 +126,9 @@ def test_array_no_items_definition():
     schema, definitions = structure_to_schema(Foo, {})
     assert schema == {
         "type": "object",
-        "properties": {
-            "arr": {
-                "type": "array",
-                "minItems": 2
-            }
-        },
+        "properties": {"arr": {"type": "array", "minItems": 2}},
         "required": [],
-        "additionalProperties": False
+        "additionalProperties": False,
     }
 
 
@@ -187,39 +139,30 @@ def test_boolean_field():
     schema, definitions = structure_to_schema(Foo, {})
     assert schema == {
         "type": "object",
-        "properties": {
-            "b": {
-                "type": "boolean"
-            }
-        },
+        "properties": {"b": {"type": "boolean"}},
         "required": ["b"],
-        "additionalProperties": True
+        "additionalProperties": True,
     }
 
 
 def test_single_boolean_field_wrapper():
     class Foo(Structure):
         b = Boolean
-        _required = ['b']
+        _required = ["b"]
         _additionalProperties = False
 
     schema, definitions = structure_to_schema(Foo, {})
-    assert schema == {
-        "type": "boolean"
-    }
+    assert schema == {"type": "boolean"}
 
 
 def test_single_array_field_wrapper():
     class Foo(Structure):
         arr = Array(minItems=2)
-        _required = ['arr']
+        _required = ["arr"]
         _additionalProperties = False
 
     schema, definitions = structure_to_schema(Foo, {})
-    assert schema == {
-        "type": "array",
-        "minItems": 2
-    }
+    assert schema == {"type": "array", "minItems": 2}
 
 
 def test_single_array_field_not_just_wrapper():
@@ -228,14 +171,10 @@ def test_single_array_field_not_just_wrapper():
 
     schema, definitions = structure_to_schema(Foo, {})
     assert schema == {
-        'type': 'object',
-        'properties': {
-            'arr': {
-                "type": "array",
-                "minItems": 2
-            }},
-        'required': ['arr'],
-        'additionalProperties': True
+        "type": "object",
+        "properties": {"arr": {"type": "array", "minItems": 2}},
+        "required": ["arr"],
+        "additionalProperties": True,
     }
 
 
@@ -249,13 +188,11 @@ def test_datestring_field():
         "properties": {
             "a": {
                 "type": "string",
-                "pattern": "^([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]))$"
+                "pattern": "^([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]))$",
             }
         },
-        "required": [
-            "a"
-        ],
-        "additionalProperties": True
+        "required": ["a"],
+        "additionalProperties": True,
     }
 
 
@@ -269,18 +206,17 @@ def test_email_field():
         "properties": {
             "a": {
                 "type": "string",
-                "pattern": "(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9]+$)"
+                "pattern": "(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9]+$)",
             }
         },
-        "required": [
-            "a"
-        ],
-        "additionalProperties": True
+        "required": ["a"],
+        "additionalProperties": True,
     }
 
 
 def test_unsupported_field():
-    class AAA(Field): pass
+    class AAA(Field):
+        pass
 
     class Foo(Structure):
         a = AAA

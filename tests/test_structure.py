@@ -7,9 +7,27 @@ from dataclasses import dataclass
 import pytest
 from pytest import raises
 
-from typedpy import Structure, DecimalNumber, PositiveInt, String, Enum, Field, Integer, Map, Array, AnyOf, NoneField, \
-    DateField, DateTime
-from typedpy.structures import FinalStructure, ImmutableStructure, unique, MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
+from typedpy import (
+    Structure,
+    DecimalNumber,
+    PositiveInt,
+    String,
+    Enum,
+    Field,
+    Integer,
+    Map,
+    Array,
+    AnyOf,
+    NoneField,
+    DateField,
+    DateTime,
+)
+from typedpy.structures import (
+    FinalStructure,
+    ImmutableStructure,
+    unique,
+    MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS,
+)
 
 
 class Venue(enum.Enum):
@@ -20,7 +38,7 @@ class Venue(enum.Enum):
 
 
 class Trader(Structure):
-    lei: String(pattern='[0-9A-Z]{18}[0-9]{2}$')
+    lei: String(pattern="[0-9A-Z]{18}[0-9]{2}$")
     alias: String(maxLength=32)
 
 
@@ -28,26 +46,29 @@ def test_optional_fields():
     class Trade(Structure):
         notional: DecimalNumber(maximum=10000, minimum=0)
         quantity: PositiveInt(maximum=100000, multiplesOf=5)
-        symbol: String(pattern='[A-Z]+$', maxLength=6)
+        symbol: String(pattern="[A-Z]+$", maxLength=6)
         buyer: Trader
         seller: Trader
         venue: Enum[Venue]
         comment: String
         _optional = ["comment", "venue"]
 
-    assert set(Trade._required) == {'notional', 'quantity', 'symbol', 'buyer', 'seller'}
-    Trade(notional=1000, quantity=150, symbol="APPL",
-          buyer=Trader(lei="12345678901234567890", alias="GSET"),
-          seller=Trader(lei="12345678901234567888", alias="MSIM"),
-          timestamp="01/30/20 05:35:35",
-          )
+    assert set(Trade._required) == {"notional", "quantity", "symbol", "buyer", "seller"}
+    Trade(
+        notional=1000,
+        quantity=150,
+        symbol="APPL",
+        buyer=Trader(lei="12345678901234567890", alias="GSET"),
+        seller=Trader(lei="12345678901234567888", alias="MSIM"),
+        timestamp="01/30/20 05:35:35",
+    )
 
 
 def test_optional_fields_required_overrides():
     class Trade(Structure):
         notional: DecimalNumber(maximum=10000, minimum=0)
         quantity: PositiveInt(maximum=100000, multiplesOf=5)
-        symbol: String(pattern='[A-Z]+$', maxLength=6)
+        symbol: String(pattern="[A-Z]+$", maxLength=6)
         buyer: Trader
         seller: Trader
         venue: Enum[Venue]
@@ -63,7 +84,7 @@ def test_field_by_name_fins_annotated_fields():
     class Trade(Structure):
         notional: DecimalNumber(maximum=10000, minimum=0)
         quantity: PositiveInt(maximum=100000, multiplesOf=5)
-        symbol: String(pattern='[A-Z]+$', maxLength=6)
+        symbol: String(pattern="[A-Z]+$", maxLength=6)
         buyer: Trader
         my_list: list[str]
         seller: typing.Optional[Trader]
@@ -146,7 +167,10 @@ def test_optional_fields_required_overrides1():
             _optional = ["venue"]
             _required = ["venue"]
 
-    assert "optional cannot override prior required in the class or in a base class" in str(excinfo.value)
+    assert (
+        "optional cannot override prior required in the class or in a base class"
+        in str(excinfo.value)
+    )
 
 
 @pytest.fixture(scope="session")
@@ -217,8 +241,10 @@ def test_field_of_class_typeerror(Point):
 
     with raises(TypeError) as excinfo:
         Foo(i=5, point="xyz")
-    assert "point: Expected <class 'test_structure.Point.<locals>.PointClass'>; Got 'xyz'" in str(
-        excinfo.value)
+    assert (
+        "point: Expected <class 'test_structure.Point.<locals>.PointClass'>; Got 'xyz'"
+        in str(excinfo.value)
+    )
 
 
 def test_using_arbitrary_class_in_anyof(Point):
@@ -259,8 +285,7 @@ def test_optional_err(Point):
 
     with raises(ValueError) as excinfo:
         Foo(i=1, point=3)
-    assert "point: 3 Did not match any field option" in str(
-        excinfo.value)
+    assert "point: 3 Did not match any field option" in str(excinfo.value)
 
 
 def test_field_of_class_in_map(Point):
@@ -288,8 +313,10 @@ def test_field_of_class_in_map_typerror(Point):
 
     with raises(TypeError) as excinfo:
         Foo(i=5, point_by_int={1: Point(3, 4), 2: 3})
-    assert "point_by_int_value: Expected <class 'test_structure.Point.<locals>.PointClass'>; Got 3" in str(
-        excinfo.value)
+    assert (
+        "point_by_int_value: Expected <class 'test_structure.Point.<locals>.PointClass'>; Got 3"
+        in str(excinfo.value)
+    )
 
 
 def test_field_of_class_in_map__simpler_syntax_typerror(Point):
@@ -299,17 +326,19 @@ def test_field_of_class_in_map__simpler_syntax_typerror(Point):
 
     with raises(TypeError) as excinfo:
         Foo(i=5, point_by_int={1: Point(3, 4), 2: 3})
-    assert "point_by_int_value: Expected <class 'test_structure.Point.<locals>.PointClass'>; Got 3" in str(
-        excinfo.value)
+    assert (
+        "point_by_int_value: Expected <class 'test_structure.Point.<locals>.PointClass'>; Got 3"
+        in str(excinfo.value)
+    )
 
 
 def test_simple_invalid_type():
     with raises(TypeError) as excinfo:
+
         class Foo(Structure):
             i = Array["x"]
 
-    assert "Unsupported field type in definition: 'x'" in str(
-        excinfo.value)
+    assert "Unsupported field type in definition: 'x'" in str(excinfo.value)
 
 
 def test_simple_nonefield_usage():
@@ -333,16 +362,21 @@ def test_final_structure_violation():
         s: str
 
     with raises(TypeError) as excinfo:
-        class Bar(Foo): pass
+
+        class Bar(Foo):
+            pass
+
     assert "Tried to extend Foo, which is a FinalStructure. This is forbidden" in str(
-        excinfo.value)
+        excinfo.value
+    )
 
 
 def test_final_structure_no_violation():
     class Foo(Structure):
         s: str
 
-    class Bar(Foo, FinalStructure): pass
+    class Bar(Foo, FinalStructure):
+        pass
 
 
 def test_as_bool():
@@ -364,9 +398,10 @@ def test_unique_violation():
     Foo(s="xxx", i=2)
     with raises(ValueError) as excinfo:
         Foo(s="xxx", i=1)
-    assert "Instance copy in Foo, which is defined as unique. Instance is" \
-           " <Instance of Foo. Properties: i = 1, s = 'xxx'>" in str(
-        excinfo.value)
+    assert (
+        "Instance copy in Foo, which is defined as unique. Instance is"
+        " <Instance of Foo. Properties: i = 1, s = 'xxx'>" in str(excinfo.value)
+    )
 
 
 def test_unique_violation_by_update():
@@ -379,9 +414,10 @@ def test_unique_violation_by_update():
     foo = Foo(s="xxx", i=2)
     with raises(ValueError) as excinfo:
         foo.i = 1
-    assert "Instance copy in Foo, which is defined as unique. Instance is" \
-           " <Instance of Foo. Properties: i = 1, s = 'xxx'>" in str(
-        excinfo.value)
+    assert (
+        "Instance copy in Foo, which is defined as unique. Instance is"
+        " <Instance of Foo. Properties: i = 1, s = 'xxx'>" in str(excinfo.value)
+    )
 
 
 def test_unique_violation_stop_checking__if_too_many_instances():
@@ -399,7 +435,7 @@ def test_copy_with_overrides():
     class Trade(Structure):
         notional: DecimalNumber(maximum=10000, minimum=0)
         quantity: PositiveInt(maximum=100000, multiplesOf=5)
-        symbol: String(pattern='[A-Z]+$', maxLength=6)
+        symbol: String(pattern="[A-Z]+$", maxLength=6)
         timestamp = DateTime
         buyer: Trader
         seller: Trader
@@ -407,11 +443,14 @@ def test_copy_with_overrides():
         comment: String
         _optional = ["comment", "venue"]
 
-    trade_1 = Trade(notional=1000, quantity=150, symbol="APPL",
-                    buyer=Trader(lei="12345678901234567890", alias="GSET"),
-                    seller=Trader(lei="12345678901234567888", alias="MSIM"),
-                    timestamp="01/30/20 05:35:35",
-                    )
+    trade_1 = Trade(
+        notional=1000,
+        quantity=150,
+        symbol="APPL",
+        buyer=Trader(lei="12345678901234567890", alias="GSET"),
+        seller=Trader(lei="12345678901234567888", alias="MSIM"),
+        timestamp="01/30/20 05:35:35",
+    )
     trade_2 = trade_1.shallow_clone_with_overrides(notional=500)
     assert trade_2.notional == 500
     trade_2.notional = 1000
@@ -438,9 +477,11 @@ def test_defect_multiple_inheritance_with_optional_1():
     class Foo2(Structure):
         b = Integer
 
-    class Bar1(Foo1, Foo2): pass
+    class Bar1(Foo1, Foo2):
+        pass
 
-    class Bar2(Foo2, Foo1): pass
+    class Bar2(Foo2, Foo1):
+        pass
 
     Bar1(b=1)
     Bar2(b=1)
@@ -449,14 +490,16 @@ def test_defect_multiple_inheritance_with_optional_1():
 def test_defect_multiple_inheritance_with_optional_2():
     class Foo1(Structure):
         a = Integer
-        _optional = ['a']
+        _optional = ["a"]
 
     class Foo2(Structure):
         b = Integer
 
-    class Bar1(Foo1, Foo2): pass
+    class Bar1(Foo1, Foo2):
+        pass
 
-    class Bar2(Foo2, Foo1): pass
+    class Bar2(Foo2, Foo1):
+        pass
 
     Bar1(b=1)
     Bar2(b=1)
@@ -474,11 +517,7 @@ def test_from_other_class():
         age = Integer
 
     person_model = PersonModel(first_name="john", age=40)
-    person = Person.from_other_class(
-        person_model,
-        id=123,
-        name=person_model.first_name
-    )
+    person = Person.from_other_class(person_model, id=123, name=person_model.first_name)
     assert person == Person(name="john", id=123, age=40)
 
 
@@ -492,12 +531,13 @@ def test_to_other_class():
         id = Integer
         name = String
 
-    person = Person(id=1, name="john").to_other_class(PersonDataclass, ignore_props=["id"], age=40)
+    person = Person(id=1, name="john").to_other_class(
+        PersonDataclass, ignore_props=["id"], age=40
+    )
     assert person == PersonDataclass(name="john", age=40)
 
 
 def test_defaults_are_connected_to_structure():
-
     class Foo(Structure):
         a: Array(items=String, default=list)
 
@@ -509,16 +549,20 @@ def test_defaults_are_connected_to_structure():
 
 
 def test_invalid_defaults_are_caught():
-    def factory(): return [1, 2, 3]
+    def factory():
+        return [1, 2, 3]
 
     with raises(TypeError) as excinfo:
+
         class Foo(Structure):
             a: Array(items=String, default=factory)
+
     assert "Invalid default value: [1, 2, 3];" in str(excinfo.value)
 
 
 def test_default_alternative_style():
-    def default_factory(): return [1, 2, 3]
+    def default_factory():
+        return [1, 2, 3]
 
     class Example(Structure):
         i: Array[Integer] = default_factory
@@ -532,12 +576,16 @@ def test_inheritance_with_optional_field():
         b: String
 
     with raises(ValueError) as excinfo:
+
         class Bar(Foo):
             c: String
 
             _optional = ["b"]
 
-    assert "optional cannot override prior required in the class or in a base class" in str(excinfo.value)
+    assert (
+        "optional cannot override prior required in the class or in a base class"
+        in str(excinfo.value)
+    )
 
 
 def test_classreference_cant_accept_none():
@@ -550,7 +598,10 @@ def test_classreference_cant_accept_none():
 
     with raises(TypeError) as excinfo:
         Bar(bar="abc", foo=None)
-    assert "foo: Expected <Structure: Foo. Properties: bar = <String>>; Got None" in str(excinfo.value)
+    assert (
+        "foo: Expected <Structure: Foo. Properties: bar = <String>>; Got None"
+        in str(excinfo.value)
+    )
 
 
 def test_required_is_inherited_field():
@@ -571,12 +622,16 @@ def test_required_is_inherited_field():
 def test_dont_allow_assignment_to_non_typedpy_types():
     Structure.set_block_non_typedpy_field_assignment()
     with raises(TypeError) as excinfo:
+
         class A(Structure):
             a = typing.List[str]
+
     assert "a: assigned a non-Typedpy type" in str(excinfo.value)
     with raises(TypeError) as excinfo:
+
         class B(Structure):
             b = typing.Optional[str]
+
     assert "b: assigned a non-Typedpy type" in str(excinfo.value)
 
     Structure.set_block_non_typedpy_field_assignment(False)
@@ -589,13 +644,16 @@ def test_dont_allow_assignment_to_non_typedpy_types():
 def test_dont_allow_assignment_to_non_typedpy_types_pep585():
     Structure.set_block_non_typedpy_field_assignment()
     with raises(TypeError) as excinfo:
+
         class A(Structure):
             a = list[str]
+
     assert "a: assigned a non-Typedpy type" in str(excinfo.value)
     Structure.set_block_non_typedpy_field_assignment(False)
 
     class C(Structure):
         b = list[str]
+
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_dont_allow_assignment_to_non_typedpy_types_valid():
@@ -603,5 +661,5 @@ def test_dont_allow_assignment_to_non_typedpy_types_valid():
 
     class A(Structure):
         a: list[str] = list
-    assert A().a == []
 
+    assert A().a == []

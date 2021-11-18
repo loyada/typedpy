@@ -2,8 +2,19 @@ import sys
 from typing import Optional
 
 from pytest import mark
-from typedpy import Array, Deserializer, FunctionCall, ImmutableStructure, Integer, Map, PositiveInt, String, Structure, \
-    Versioned, convert_dict
+from typedpy import (
+    Array,
+    Deserializer,
+    FunctionCall,
+    ImmutableStructure,
+    Integer,
+    Map,
+    PositiveInt,
+    String,
+    Structure,
+    Versioned,
+    convert_dict,
+)
 from typedpy.mappers import Constant, Deleted
 
 
@@ -25,25 +36,16 @@ class Foo(Versioned, ImmutableStructure):
             "old_bar._mapper": {
                 "a": FunctionCall(func=lambda x: [i * 2 for i in x], args=["a"]),
             },
-            "old_m": Constant({"abc": "xyz"})
+            "old_m": Constant({"abc": "xyz"}),
         },
-
         {
-            "old_bar._mapper": {
-                "s": "sss",
-                "sss": Deleted
-            },
+            "old_bar._mapper": {"s": "sss", "sss": Deleted},
             "bar": "old_bar",
             "m": "old_m",
             "old_m": Deleted,
             "old_bar": Deleted,
         },
-
-        {
-            "i": FunctionCall(func=lambda x: x * 100, args=["i"]),
-            "nested": "bar.s"
-        }
-
+        {"i": FunctionCall(func=lambda x: x * 100, args=["i"]), "nested": "bar.s"},
     ]
 
 
@@ -54,7 +56,7 @@ in_version_1 = {
         "sss": "john",
     },
     "i": 2,
-    "old_m": {"a": "aa", "b": "bb"}
+    "old_m": {"a": "aa", "b": "bb"},
 }
 
 in_version_2 = {
@@ -65,7 +67,7 @@ in_version_2 = {
     },
     "i": 2,
     "j": 150,
-    "old_m": {"abc": "xyzxyzxyzyxyzxyzxyzxz", "b": "bb"}
+    "old_m": {"abc": "xyzxyzxyzyxyzxyzxyzxz", "b": "bb"},
 }
 
 
@@ -76,7 +78,7 @@ def test_version_conversion_deserializer():
         i=200,
         j=100,
         nested="john",
-        version=4
+        version=4,
     )
 
     assert Deserializer(Foo).deserialize(in_version_2) == Foo(
@@ -85,7 +87,7 @@ def test_version_conversion_deserializer():
         i=200,
         j=150,
         nested="john",
-        version=4
+        version=4,
     )
 
 
@@ -101,8 +103,13 @@ def test_version_conversion_without_deserializer():
         "nested": "john",
         "m": {"abc": "xyz"},
     }
-    assert convert_dict(in_version_1, Foo._versions_mapping) == expected_in_latest_version
-    assert convert_dict(expected_in_latest_version, Foo._versions_mapping) == expected_in_latest_version
+    assert (
+        convert_dict(in_version_1, Foo._versions_mapping) == expected_in_latest_version
+    )
+    assert (
+        convert_dict(expected_in_latest_version, Foo._versions_mapping)
+        == expected_in_latest_version
+    )
 
 
 def test_deserialize_versioned_mapper_defect():
@@ -125,31 +132,17 @@ def test_deserialize_versioned_mapper_defect():
                     "foobar._mapper": {
                         "data": "string_data",
                         "string_data": Deleted,
-
-                    }
+                    },
                 }
             }
         ]
 
     v1 = {
         "version": 1,
-        "foo": {
-            "string_data": "Foo",
-            "foobar": {
-                "string_data": "FooBar"
-            }
-        }
+        "foo": {"string_data": "Foo", "foobar": {"string_data": "FooBar"}},
     }
 
-    v2 = {
-        "version": 2,
-        "foo": {
-            "data": "Foo",
-            "bar": {
-                "data": "FooBar"
-            }
-        }
-    }
+    v2 = {"version": 2, "foo": {"data": "Foo", "bar": {"data": "FooBar"}}}
     wrapped_v2: VersionedFoo = Deserializer(VersionedFoo).deserialize(v2)
     wrapped_v1: VersionedFoo = Deserializer(VersionedFoo).deserialize(v1)
 
@@ -157,13 +150,16 @@ def test_deserialize_versioned_mapper_defect():
 
 
 def test_versioned_populates_version_automatically():
-    assert Foo(
-        bar=Bar(a=[10, 16, 6], s="john"),
-        m={"abc": "xcxcxcxcxcxc", "b": "bb"},
-        i=200,
-        nested="john",
-        j=150
-    ).version == 4
+    assert (
+        Foo(
+            bar=Bar(a=[10, 16, 6], s="john"),
+            m={"abc": "xcxcxcxcxcxc", "b": "bb"},
+            i=200,
+            nested="john",
+            j=150,
+        ).version
+        == 4
+    )
 
 
 def test_version_populated_automatically_when_no_mapping():
@@ -178,28 +174,12 @@ def test_mapping_list_of_objects():
     class Example(Versioned):
         i: list[Bar]
 
-        _versions_mapping = [
-            {
-                "i._mapper": {
-                    "s": "sss",
-                    "sss": Deleted
-                }
-            }
-        ]
+        _versions_mapping = [{"i._mapper": {"s": "sss", "sss": Deleted}}]
 
-    serialized = {
-        "i": [
-            {
-                "sss": "xyz",
-                "a": [1, 2, 3]
-            }
-        ]
-    }
+    serialized = {"i": [{"sss": "xyz", "a": [1, 2, 3]}]}
 
     assert Deserializer(Example).deserialize(serialized) == Example(
-        i=[
-            Bar(s="xyz", a=[1, 2, 3])
-        ]
+        i=[Bar(s="xyz", a=[1, 2, 3])]
     )
 
 
@@ -211,18 +191,12 @@ def test_optional_field_mapping():
 
         _versions_mapping = [
             {
-                "i._mapper": {
-                    "f": "abc",
-                    "b": "def"
-                },
+                "i._mapper": {"f": "abc", "b": "def"},
             },
-            {
-                "foo": "i.f",
-                "bar": "i.b"
-
-            }
+            {"foo": "i.f", "bar": "i.b"},
         ]
 
-    assert Deserializer(Example).deserialize({"i": {"abc": "xyz", "def": 1}}, keep_undefined=False) == Example(
-        foo="xyz", bar=1)
+    assert Deserializer(Example).deserialize(
+        {"i": {"abc": "xyz", "def": 1}}, keep_undefined=False
+    ) == Example(foo="xyz", bar=1)
     assert Deserializer(Example).deserialize({}, keep_undefined=False) == Example()

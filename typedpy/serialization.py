@@ -6,7 +6,7 @@ from typing import Dict
 from .commons import deep_get, raise_errs_if_needed
 from .versioned_mapping import VERSION_MAPPING, Versioned, convert_dict
 from .mappers import (
-    aggregate_deserialization_mappers,
+    DoNotSerialize, aggregate_deserialization_mappers,
     aggregate_serialization_mappers,
     mappers,
 )
@@ -752,6 +752,8 @@ def _get_mapped_value(mapper, key, items):
                 else [items.get(key)]
             )
             return key_mapper.func(*args)
+        elif key_mapper is DoNotSerialize:
+            return key_mapper
         elif not isinstance(key_mapper, (FunctionCall, str)):
             raise TypeError("mapper must have a FunctionCall or a string")
 
@@ -810,17 +812,18 @@ def serialize_internal(structure, mapper=None, compact=False, camel_case_convert
                 else _convert_to_camel_case_if_required(key, camel_case_convert)
             )
             mapped_value = _get_mapped_value(mapper, key, items_map)
-            the_field_definition = (
-                Anything if mapped_value else field_by_name.get(key, None)
-            )
-            sub_mapper = mapper.get(f"{key}._mapper", {})
-            result[mapped_key] = serialize_val(
-                the_field_definition,
-                key,
-                mapped_value or val,
-                mapper=sub_mapper,
-                camel_case_convert=camel_case_convert,
-            )
+            if mapped_value is not DoNotSerialize:
+                the_field_definition = (
+                    Anything if mapped_value else field_by_name.get(key, None)
+                )
+                sub_mapper = mapper.get(f"{key}._mapper", {})
+                result[mapped_key] = serialize_val(
+                    the_field_definition,
+                    key,
+                    mapped_value or val,
+                    mapper=sub_mapper,
+                    camel_case_convert=camel_case_convert,
+                )
     return result
 
 

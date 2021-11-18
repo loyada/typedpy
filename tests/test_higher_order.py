@@ -2,7 +2,15 @@ from decimal import Decimal
 
 import pytest
 
-from typedpy import StructureReference, Structure, String, Number, PositiveInt, Integer, create_typed_field
+from typedpy import (
+    StructureReference,
+    Structure,
+    String,
+    Number,
+    PositiveInt,
+    Integer,
+    create_typed_field,
+)
 
 
 def test_wrapped_doesnt_need_named_param():
@@ -26,7 +34,9 @@ def validate_range(range):
         raise ValueError()
 
 
-ValidatedRangeField = create_typed_field("RangeField", RangeCL, validate_func=validate_range)
+ValidatedRangeField = create_typed_field(
+    "RangeField", RangeCL, validate_func=validate_range
+)
 
 
 class Foo(Structure):

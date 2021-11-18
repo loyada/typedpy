@@ -1,13 +1,25 @@
 import sys
 
 from pytest import fixture, raises, mark
-from typedpy import Array, Deserializer, Negative, NegativeFloat, NegativeInt, NonNegative, NonNegativeFloat, \
-    NonNegativeInt, \
-    NonPositive, NonPositiveFloat, NonPositiveInt, \
-    Positive, \
-    PositiveFloat, \
-    PositiveInt, \
-    Serializer, Structure, standard_readable_error_for_typedpy_exception
+from typedpy import (
+    Array,
+    Deserializer,
+    Negative,
+    NegativeFloat,
+    NegativeInt,
+    NonNegative,
+    NonNegativeFloat,
+    NonNegativeInt,
+    NonPositive,
+    NonPositiveFloat,
+    NonPositiveInt,
+    Positive,
+    PositiveFloat,
+    PositiveInt,
+    Serializer,
+    Structure,
+    standard_readable_error_for_typedpy_exception,
+)
 
 
 class Foo(Structure):
@@ -35,18 +47,15 @@ def test_valid():
         "negative_int": -1,
         "negative_float": -0.5,
         "negative": [-5],
-
         "positive_int": 1,
         "positive_float": 2.5,
         "positive": [10],
-
         "non_negative_int": 0,
         "non_negative_float": 0.5,
         "non_negative": [0, 0.5, 1],
-
         "non_positive_int": 0,
         "non_positive_float": -5.0,
-        "non_positive": [-1, 0]
+        "non_positive": [-1, 0],
     }
 
     foo = Deserializer(Foo).deserialize(original)
@@ -66,18 +75,15 @@ def test_invalid_numbers(all_errors):
         "negative_int": 0,
         "negative_float": -0,
         "negative": [-5, 5],
-
         "positive_int": 0,
         "positive_float": -1.5,
         "positive": [10, 1.0, 0],
-
         "non_negative_int": -1,
         "non_negative_float": -0.5,
         "non_negative": [0, 0.5, -1],
-
         "non_positive_int": 10,
         "non_positive_float": 5.0,
-        "non_positive": [-1, 0, 1]
+        "non_positive": [-1, 0, 1],
     }
 
     with raises(Exception) as ex:
@@ -85,5 +91,9 @@ def test_invalid_numbers(all_errors):
     errs = standard_readable_error_for_typedpy_exception(ex.value)
     assert len(errs) == 12
     err_fields = {err.field for err in errs}
-    assert {"non_positive_2", "positive_2", "non_negative_2", "negative_1"} <= err_fields
-
+    assert {
+        "non_positive_2",
+        "positive_2",
+        "non_negative_2",
+        "negative_1",
+    } <= err_fields

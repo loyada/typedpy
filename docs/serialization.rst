@@ -470,6 +470,8 @@ Another, more involved mapping:
     assert serialized == {**original, "S": "abcabc"}
 
 
+
+
 Strict Serialization and Deserialization API
 ============================================
 Starting at version 0.70, Typedpy provides a strict API, aligned with the principles of Typedpy. This API uses Typedpy \
@@ -686,8 +688,65 @@ An example:
 
 
 
+Ignoring Fields When Serializing
+--------------------------------
+(since version 2.6.10)
+Certain fields can be marked as DoNotSerialize. This would result in them not being serialized.
+For example:
+
+.. code-block:: python
+
+   class Foo(Structure):
+        a: int
+        s: str
+
+        _serialization_mapper = [{"a": DoNotSerialize}]
+
+    assert Serializer(Foo(a=5, s="xyz")).serialize() == {"s": "xyz"}
+
+As can be seen above, the "s" field is not serialized.
+
+
+
 Chaining Mappers
 ----------------
 
 Typedpy also allows to serialization mappers to be chained. If you define _serialization_mapper
 as a list, the mappers will be applied in order.
+For example:
+
+
+.. code-block:: python
+
+    class Foo(Structure):
+        i: int
+        s: str
+        _serialization_mapper = {"i": "j", "s": "name"}
+
+    class Bar(Foo):
+        a: Array
+
+        _serialization_mapper = [{"j": DoNotSerialize}, mappers.TO_LOWERCASE]
+        _deserialization_mapper = [mappers.TO_LOWERCASE]
+
+    deserialized = Deserializer(Bar).deserialize(
+        {"J": 5, "A": [1, 2, 3], "NAME": "jon"}, keep_undefined=False
+    )
+    assert deserialized == Bar(i=5, a=[1, 2, 3], s="jon")
+    assert Serializer(deserialized).serialize() == {"NAME": "jon", "A": [1, 2, 3]}
+
+
+In the example above, the deseriazation mapper of Bar chains the one Foo and TO_LOWERCASE. The order
+of the mappers is based on the MRO (inherited classes first).
+If we follow the serialization mapper chaining for the "i" field, we see the stages:
+
+1. i -> j
+2. j -> don't serialize
+3. to uppercase  - but this has no impact because of (2)
+
+
+Conversely, the "s" field:
+
+1. s -> name
+2. no impact
+3. name -> NAME

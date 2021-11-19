@@ -157,8 +157,9 @@ Default Values Of Optional Fields
         assert person.name == 'Arthur'
         assert person.num == 5
 
-.. _extension-of-classes:
 
+
+A bad example:
 
 .. code-block:: python
 
@@ -175,7 +176,7 @@ Instead, you need to do the following:
 
 
 
-
+.. _extension-of-classes:
 
 Inheritance and Mixins
 ----------------------
@@ -226,7 +227,7 @@ Any Structure type can also be used as a field.
 
 Inlining a Structure as a Field
 -------------------------------
-.. autoclass:: StructureReference
+See :class:`StructureReference`
 
 
 Immutability

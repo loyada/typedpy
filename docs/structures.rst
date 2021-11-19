@@ -195,7 +195,7 @@ Immutability
 | is trying to change the structure, but even then, Typepy blocks such attempts by using defensive copies.
 | Be aware immutable structures tend to be somewhat slower.
 
-.. autoclass:: ImmutableStructure
+see :class:`ImmutableStructure`
 
 
 Structure As Field

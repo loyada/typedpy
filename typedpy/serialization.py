@@ -830,14 +830,12 @@ def serialize_internal(structure, mapper=None, compact=False, camel_case_convert
 def serialize(value, *, mapper: Dict = None, compact=False, camel_case_convert=False):
     """
     Serialize an instance of :class:`Structure` to a JSON-like dict.
-    `See working examples in test. <https://github.com/loyada/typedpy/tree/master/tests/test_serialization.py>`_
 
     Arguments:
         value(:class:`Structure` or a field value with an obvious serialization):
             The value to be serialized - a structure instance, or a field value for which typedpy can deduce the
-             serialization.
+            serialization.
             In the general case, if you just need to serialize a field value, it's better to use serialize_field().
-
         mapper(dict): optional
              a dictionary where the key is the name of the attribute in the structure, and the value is name of the
              key to map its value to, or a :class:`FunctionCall` where the function is the transformation, and
@@ -853,6 +851,7 @@ def serialize(value, *, mapper: Dict = None, compact=False, camel_case_convert=F
         :param compact: in case there is a single attribute, it does not wrap it with a dictionary
         :param structure: an instance of :class:`Structure`
         :param mapper: a dict with the new key, by the attribute name
+
     """
     if not isinstance(value, (Structure, StructureReference)):
         if value is None or isinstance(value, (int, str, bool, float)):

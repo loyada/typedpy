@@ -90,13 +90,15 @@ The motivation is to further simplify using Typedpy.
 Anything that relies on PEP-585 only works on Python version >= 3.9.
 
 
-.. _arbitrary_classes:
+.. _arbitrary-classes:
 
 
-Implicit Wrapping of Arbitrary Classes As Field (version > 2.0)
-===============================================================
+Implicit Wrapping of Arbitrary Classes As Field
+===============================================
+(version > 2.0)
+
 | Supposed you defined your own class, and you want to use it as a field. There are ways to map it
-| explicitly to a Field class (see :ref:`extension-of-classes`).
+| explicitly to a Field class (see :ref:`Link title <extension-of-classes>`).
 
 | However, after version 2.0 Typepy can also do it implicitly.
 | For example:

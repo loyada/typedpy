@@ -123,12 +123,12 @@ Serialization/Deserialization of a Field
 ========================================
 Serialization
 -------------
-The best way to serialize an arbitrary Field is using the :ref:`serialize_field` function. This function
+The best way to serialize an arbitrary Field is using the :meth:`serialize_field` function. This function
 requires the first argument to be the Field definition (the Field definition has the information how to serialize).
 
 However, in many common cases the original value has enough information for typedpy to know how to deserialize
 it. These cases include the trivial types (i.e. str, int, float, bool), Structures and Structure-References, as well the values for the following
-Typedpy fields: Array, Map, Enum. In such cases the :ref:`serialize` function provides a simpler API.
+Typedpy fields: Array, Map, Enum. In such cases the :meth:`serialize` function provides a simpler API.
 
 For example:
 
@@ -157,7 +157,7 @@ For example:
 
 Deserialization
 ---------------
-To deserialize a single field value directly, use :ref:`deserialize_single_field` .
+To deserialize a single field value directly, use :meth:`deserialize_single_field` .
 
 For example:
 

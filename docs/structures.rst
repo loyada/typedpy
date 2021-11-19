@@ -98,9 +98,10 @@ After version 2.0, you can also use dataclass-style definition. Look at the foll
 Required Fields and Optional Fields
 ===================================
 | By using the **_required** property in the class definition, we can define a list of fields that are required.
-This means that if not all of them are provided in the instantiation, then Typedpy will raise an appropriate exception.
+| This means that if not all of them are provided in the instantiation, then Typedpy will raise an appropriate exception.
 | By default, all the fields are required. In case it is simpler to describe the fields that are optional (for
-example, we have 10 fields and only one of them is optiona), we can use the **_optional** property.
+| example, we have 10 fields and only one of them is optiona), we can use the **_optional** property.
+
 | If **_required** property is stated, the **_optional** property will be ignored.
 |
 | Every field that has a default value is, by definition, optional.

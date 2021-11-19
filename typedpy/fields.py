@@ -28,7 +28,10 @@ from .structures import (
 class SerializableField(Field):
     """
     An abstract class for a field that has custom serialization or deserialization.
-    can override the method:
+    can override the method.
+
+    .. code-block:: python
+
       serialize(self, value),
       deserialize(self, value)
 
@@ -194,7 +197,7 @@ class Integer(TypedField, Number):
 class DecimalNumber(Number, SerializableField):
     """
     An extension of :class:`Number` for a Decimal. Accepts anything that can be
-     converted to a Decimal.
+    converted to a Decimal.
     It converts the value to a Decimal.
     """
 
@@ -1331,6 +1334,7 @@ class Enum(Field, metaclass=_EnumMeta):
              Alternatively, can be an enum.Enum type. See example below.
              When defined with an enum.Enum, serialization converts to strings,
              while deserialization expects strings.
+
     Examples:
 
     .. code-block:: python

@@ -13,8 +13,8 @@ Nothing is perfect, and Typedpy has several trade-offs and limitations:
 Not Incorporated into IDE
 -------------------------
 | Typedpy is not supported by the IDE code analysis, so there are no warnings/errors that are specific to Typedpy in the IDE.
-Errors are found at run-time. There are workaround, like creating a hybrid Structure/dataclass, as explain in :ref:`hybrid` ,
-but it is still a limitation.
+| Errors are found at run-time. There are workaround, like creating a hybrid Structure/dataclass, as explain in :ref:`hybrid` ,
+| but it is still a limitation.
 
 Not Optimized for Speed
 -----------------------
@@ -25,7 +25,7 @@ Implicit Arbitrary Class Wrappers Are not Pickalable
 ----------------------------------------------------
 | Starting with version 2.1, Typedpy supports using arbitrary classes as field types, as described in :ref:`arbitrary-classes`.
 | However, if you use the implicit conversion feature in your structure, your data instance cannot be pickled.
-Typedpy will raise an appropriate exception if you try to do it, so you will be protected from silent failures.
+| Typedpy will raise an appropriate exception if you try to do it, so you will be protected from silent failures.
 
 
 Type Hints Usage Can be Confusing

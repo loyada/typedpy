@@ -102,14 +102,14 @@ class Serializer(Structure):
                        foo = Foo(f=5.5, i=999)
                        Serializer(source=foo)
 
-
                mapper(dict): optional
                    The key is the target key name. The value can either be a path of the value in the source object
                    using dot notation, for example: "aaa.bbb", or a :class:`FunctionCall`. In the latter case,
                    the function is the used to preprocess the input prior to deserialization/validation. \
                    The args attribute in the function call is optional. If non provided, the input to the function is
                    the attribute with the same key. Otherwise it is the names of the attributes  in the input
-                    that are injected to the provided function. \
+                   that are injected to the provided function. \
+
                    See working examples in the tests link above. \
                    This class will ensure that the mapper is a valid one for its target_class.
                    Example:

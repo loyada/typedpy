@@ -274,6 +274,7 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
     """
     Base class for a field(i.e. property) in a structure.
     Should not be used directly by developers.
+
     Arguments:
         immutable: optional
             Marks the field as immutable. Typically the developer does not need to use it,

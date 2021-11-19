@@ -159,6 +159,7 @@ class DateTime(SerializableField):
     """
     A datetime.datetime field. Can accept either a datetime object, or a string
     that can be converted to a date, using the date_format in the constructor.
+
     Arguments:
         datetime_format(str): optional
             The format used to convert to/from a string. Default is '%m/%d/%y %H:%M:%S'

@@ -89,7 +89,7 @@ After version 2.0, you can also use dataclass-style definition. Look at the foll
 
 
 
-.. autoclass:: Structure
+see :class:`Structure`
 
 
 

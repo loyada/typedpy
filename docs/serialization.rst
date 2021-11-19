@@ -711,8 +711,8 @@ As can be seen above, the "s" field is not serialized.
 Chaining Mappers
 ----------------
 
-Typedpy also allows to serialization mappers to be chained. If you define _serialization_mapper
-as a list, the mappers will be applied in order.
+Typedpy also allows chaining of serialization mappers. If you define _serialization_mapper
+as a list, the mappers will be applied in order, and aggregate through inheritance.
 For example:
 
 

@@ -755,6 +755,30 @@ class Structure(UniqueMixin, metaclass=StructMeta):
              Default is False.
              Required fields never ignore None (since they are required)
 
+        _serialization_mapper(dict or mapper): optional
+             mapper for the purpose of serialization/deserialization
+             if no _deserialization_mapper is defined, it is also
+             used for deserialization.
+             Example:
+
+             .. code-block:: python
+
+                class Foo(Structure):
+                    i: int
+                    _serialization_mapper = {"i": "j"}
+
+                class Bar(Foo):
+                    a: Array
+                    _serialization_mapper = mappers.TO_LOWERCASE
+
+                assert Deserializer(Bar).deserialize(
+                  {"J": 5, "A": [1, 2, 3]}, keep_undefined=False
+                ) == Bar(i=5, a=[1, 2, 3])
+
+        _deserializatin_mapper(dict or mapper): optional
+            mapper specifically for deserialization, in case you need to differentiate between
+            serialization and deserialization mappers.
+
     Decorating it with @unique ensures that no all instances of this structure will be unique. It
     will raise an exception otherwise (see "Uniqueness" section).
     """

@@ -64,6 +64,7 @@ Let's examine usage of default values, in the following dataclass-based code:
 
     print(FooDataClass(a = {}).i)
     # prints "a"
+
 Note that this code has an error: we switched the default values of i and s. Value "a" is not a valid int.
 Yet, the code will not raise an exception.
 In contrast, in Typedpy:

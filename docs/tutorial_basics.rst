@@ -16,18 +16,19 @@ Basic Use-Case story
 | A trade has many parameters: price, quantity, Participants details, symbol, date and time, venue etc.
 
 | The trades are passed around by throughout the system. Often that will result in an unwieldy list of function parameters,
-or a dict with names of the fields and their value. This is an anti-pattern, since it relies on all the collaborators
-somehow having precise knowledge about the implementation of the field names and values, as well as the hope that no invalid
-trade or attribute was created by mistake, values extraction was bug-free (for example, someone reading "notional" as
-float) and that no one updated the dictionary on purpose or by mistake.
-| Another common problem is partially constructed instances. For example, when the developer forgot one of the fields.
+| or a dict with names of the fields and their value. This is an anti-pattern, since it relies on all the collaborators
+| somehow having precise knowledge about the implementation of the field names and values, as well as the hope that no invalid
+| trade or attribute was created by mistake, values extraction was bug-free (for example, someone reading "notional" as
+| float) and that no one updated the dictionary on purpose or by mistake.
+
+Another common problem is partially constructed instances. For example, when the developer forgot one of the fields.
 | These are just some of the problems with having a loose definition of the API, or data. In short - we end up with a
 brittle and unmaintainable code.
 |
 | Furthermore, typically every function/component validates the content of the parameters. This can result in a a lot
-of repetitive boilerplate code, or inconsistencies in the expectations from the values of the properties. For example, Different
-functions might expect different date format.
-|
+| of repetitive boilerplate code, or inconsistencies in the expectations from the values of the properties. For example, Different
+| functions might expect different date format.
+
 | Ideally, the specification should be expressed declaratively, and the trade object will be guaranteed to
   conform to the specs. In other words, we want the validation to be self-contained. Also, you may want a guarantee
   that the trade was not changed in any way during its processing.

@@ -47,7 +47,7 @@ def _convert(mapped_dict: dict, mapping):
                     out_dict[field_name] = _convert(content, v)
 
         elif isinstance(v, FunctionCall):
-            args = [out_dict[x] for x in v.args] if v.args else [out_dict[k]]
+            args = [out_dict.get(x) for x in v.args] if v.args else [out_dict.get(k)]
             out_dict[k] = v.func(*args)
 
     for k, v in mapping.items():
@@ -55,7 +55,7 @@ def _convert(mapped_dict: dict, mapping):
             out_dict[k] = deep_get(out_dict, v)
 
     for k, v in mapping.items():
-        if v == Deleted:
+        if v == Deleted and k in out_dict:
             del out_dict[k]
     return out_dict
 

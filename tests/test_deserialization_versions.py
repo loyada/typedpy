@@ -200,3 +200,20 @@ def test_optional_field_mapping():
         {"i": {"abc": "xyz", "def": 1}}, keep_undefined=False
     ) == Example(foo="xyz", bar=1)
     assert Deserializer(Example).deserialize({}, keep_undefined=False) == Example()
+
+
+@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_deleted_and_missing_field():
+    class Example(Versioned):
+        foo: str
+        bar: int
+
+        _versions_mapping = [
+            {
+                "blah": Deleted
+            },
+        ]
+
+    assert Deserializer(Example).deserialize(
+        {"foo": "xyz", "bar": 1}, keep_undefined=False
+    ) == Example(foo="xyz", bar=1)

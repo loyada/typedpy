@@ -389,6 +389,16 @@ def test_final_immutablestructure_violation():
     )
 
 
+def test_immutable_blocks_non_field_attribute_update():
+    class Foo(ImmutableStructure):
+        s: str
+
+    foo = Foo(s="xyz")
+    with raises(ValueError) as excinfo:
+        foo.a = 1
+    assert "Structure is immutable" in str(excinfo.value)
+
+
 def test_final_immutablefield_violation():
 
     with raises(TypeError) as excinfo:

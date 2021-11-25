@@ -663,3 +663,14 @@ def test_dont_allow_assignment_to_non_typedpy_types_valid():
         a: list[str] = list
 
     assert A().a == []
+
+
+def test_additional_properties_blocks_additional_properties_even_after_instantiation():
+    class Foo(Structure):
+        i: int
+        _additionalProperties = False
+
+    foo = Foo(i=5)
+    with raises(ValueError) as excinfo:
+        foo.x = []
+    assert "Foo: trying to set a non-field 'x' is not allowed" in str(excinfo.value)

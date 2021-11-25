@@ -833,9 +833,16 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
     def __setattr__(self, key, value):
         if getattr(self, IS_IMMUTABLE, False):
-            if key in self.__dict__:
+            if getattr(self, "_instantiated", False):
                 raise ValueError("Structure is immutable")
             value = deepcopy(value)
+        if not any([
+            getattr(self, ADDITIONAL_PROPERTIES, True),
+            key in self.get_all_fields_by_name(),
+            _is_sunder(key),
+            _is_dunder(key)
+        ]):
+            raise ValueError(f"{self.__class__.__name__}: trying to set a non-field '{key}' is not allowed")
         if all(
             [
                 getattr(self, IGNORE_NONE_VALUES, False),

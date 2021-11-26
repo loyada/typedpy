@@ -1325,3 +1325,25 @@ class ImmutableField(Field):
     """
 
     _immutable = True
+
+
+class PartialMeta(type):
+    def __getitem__(cls, clazz: StructMeta):
+        if not isinstance(clazz, StructMeta):
+            raise TypeError("Partial must have a Structure class as a parameter")
+        attributes_to_include = {"_fields", ADDITIONAL_PROPERTIES, SERIALIZATION_MAPPER,
+                                 DESERIALIZATION_MAPPER, IGNORE_NONE_VALUES, DEFAULTS}
+        cls_dict = {}
+        for k, v in clazz.__dict__.items():
+            if k in attributes_to_include or not _is_sunder(k) and not _is_dunder(k):
+                cls_dict[k] = v
+        cls_dict[REQUIRED_FIELDS] = []
+
+        classname = f"Partial{clazz.__name__}"
+        newclass = type(classname, (Structure,), cls_dict)
+
+        return newclass
+
+
+class Partial(metaclass=PartialMeta):
+    _required = []

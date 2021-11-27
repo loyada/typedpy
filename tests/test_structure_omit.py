@@ -52,6 +52,16 @@ def test_direct_assignment_to_omit():
     with pytest.raises(TypeError) as excinfo:
         bar.d = {"x": "y"}
     assert "d_value: Expected <class 'int'>; Got 'y'" in str(excinfo.value)
+    assert Bar.__name__ == "OmitFoo"
+
+
+def test_direct_assignment_to_omit_with_class_name():
+    Bar = Foo.omit("a", "b", "i", "s", class_name="Bar")
+    assert not issubclass(Bar, Foo)
+    assert issubclass(Bar, Structure)
+    Bar(d={"a": 5})
+    assert Bar.__name__ == "Bar"
+
 
 
 def test_partial_immutable():

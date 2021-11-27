@@ -51,6 +51,11 @@ def test_direct_assignment_to_partial():
     assert "d_value: Expected <class 'int'>; Got 'y'" in str(excinfo.value)
 
 
+def test_direct_assignment_to_partial_with_class_name():
+    Bar = Partial[Foo, "Bar"]
+    assert Bar.__name__ == "Bar"
+
+
 def test_partial_immutable():
     class Bar(Partial[Foo], ImmutableStructure):
         x: str

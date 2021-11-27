@@ -1162,7 +1162,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         return getattr(Structure, "_block_non_typedpy_field_assignment", True)
 
     @classmethod
-    def omit(cls, *fields_to_omit):
+    def omit(cls, *fields_to_omit, class_name: str = ""):
         """
             Define a new Structure class with all the fields of the given class, except for the omitted ones.
              For Example:
@@ -1201,7 +1201,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 cls_dict[k] = v
         cls_dict[REQUIRED_FIELDS] = [x for x in getattr(cls, REQUIRED_FIELDS) if x not in fields_to_omit]
 
-        classname = f"Omit{cls.__name__}"
+        classname = class_name if class_name else f"Omit{cls.__name__}"
         newclass = type(classname, (Structure,), cls_dict)
 
         return newclass
@@ -1373,18 +1373,19 @@ class ImmutableField(Field):
 
 
 class PartialMeta(type):
-    def __getitem__(cls, clazz: StructMeta):
+    def __getitem__(cls, clazz: typing.Union[StructMeta, typing.Tuple[StructMeta, str]]):
         if not isinstance(clazz, StructMeta):
-            raise TypeError("Partial must have a Structure class as a parameter")
+            if not isinstance(clazz, tuple) or (isinstance(clazz, tuple) and (len(clazz)!=2 or not isinstance(clazz[0], StructMeta) or not isinstance(clazz[1], str))):
+                raise TypeError("Partial must have a Structure class as a parameter, and an optional name for the class")
+        clazz, classname = clazz if isinstance(clazz, tuple) else (clazz, f"Partial{clazz.__name__}")
         attributes_to_include = {"_fields", ADDITIONAL_PROPERTIES, SERIALIZATION_MAPPER,
                                  DESERIALIZATION_MAPPER, IGNORE_NONE_VALUES, DEFAULTS}
         cls_dict = {}
         for k, v in clazz.__dict__.items():
-            if k in attributes_to_include or not _is_sunder(k) and not _is_dunder(k):
+            if k in attributes_to_include or (not _is_sunder(k) and not _is_dunder(k)):
                 cls_dict[k] = v
         cls_dict[REQUIRED_FIELDS] = []
 
-        classname = f"Partial{clazz.__name__}"
         newclass = type(classname, (Structure,), cls_dict)
 
         return newclass
@@ -1393,7 +1394,7 @@ class PartialMeta(type):
 class Partial(metaclass=PartialMeta):
     """
     Define a new Structure class with all the fields of the given class, but all of them are optional.
-     For Example:
+    For Example:
 
      .. code-block:: python
 
@@ -1418,7 +1419,63 @@ class Partial(metaclass=PartialMeta):
 
         bar = Bar(i=5)
 
+        # or if you want to have a consistent class name for troubleshooting:
+        Bar = Partial[Foo, "Bar"]
+
     """
     _required = []
 
 
+class ExtendMeta(type):
+    def __getitem__(cls, clazz: typing.Union[StructMeta, typing.Tuple[StructMeta, str]]):
+        if not isinstance(clazz, StructMeta):
+            if not isinstance(clazz, tuple) or (isinstance(clazz, tuple) and (len(clazz)!=2 or not isinstance(clazz[0], StructMeta) or not isinstance(clazz[1], str))):
+                raise TypeError("Extend must have a Structure class as a parameter, and an optional name for the class")
+        clazz, classname = clazz if isinstance(clazz, tuple) else (clazz, f"Extend{clazz.__name__}")
+        attributes_to_include = {"_fields", ADDITIONAL_PROPERTIES, SERIALIZATION_MAPPER, REQUIRED_FIELDS,
+                                 DESERIALIZATION_MAPPER, IGNORE_NONE_VALUES, DEFAULTS}
+        cls_dict = {}
+        for k, v in clazz.__dict__.items():
+            if k in attributes_to_include or (not _is_sunder(k) and not _is_dunder(k)):
+                cls_dict[k] = v
+
+        newclass = type(classname, (Structure,), cls_dict)
+
+        return newclass
+
+
+class Extend(metaclass=ExtendMeta):
+    """
+       Define a new Structure class with all the fields of the given class
+       For Example:
+
+        .. code-block:: python
+
+            class Foo(ImmutableStructure):
+               i: int
+               d: dict[str, int] = dict
+               s: str
+               a: set
+
+            class Bar(Extend[Foo]):
+               x: str
+
+       "Bar" has all the fields of Foo, and in addition "x". So the required fields in this case are i, s, a, x
+       (since d has a default value).
+       Note that Bar does not extend Foo, but it is a Structure class.
+       It does copy attributes like serialization mappers, _ignore_none, _additionalProperties, but Bar can override
+       any of them.
+
+       Another valid usage:
+
+       .. code-block:: python
+
+           Bar = Extend[Foo]
+
+           bar = Bar(i=5)
+
+           # or if you want to have a consistent class name for troubleshooting:
+           Bar = Partial[Foo, "Bar"]
+
+    """
+    pass

@@ -13,6 +13,8 @@ from typedpy.structures import (
     FinalStructure,
     ImmutableField,
     unique,
+    Partial,
+    Extend
 )
 from typedpy.fields import (
     Number,
@@ -101,3 +103,5 @@ from .utility import get_list_type, type_is_generic
 from .mappers import mappers, Deleted, Constant, DoNotSerialize
 
 from .versioned_mapping import convert_dict, Versioned
+
+from .commons import nested, deep_get

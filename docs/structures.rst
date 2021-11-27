@@ -527,8 +527,21 @@ class Example above will throw an appropriate exception.
 
 By default, this flag is set to True (from version 2.6.5).
 
+Alternative Methods for Structure reuse
+=======================================
+
+Beyond regular class inheritance for reuse, which is supported by Typedpy, there are several other options:
+
+1. Partial - a copy of a given Structure class, in which all the fields are optional
+
+2. Structure.omit - a copy of a given class, omitting specific fields
+
+3. Extend - a copy of a given class, but not inheriting
+
+See below for detail.
+
 Partial
-=======
+-------
 Partial creates a new Structure class from an existing Structure class, that has all the original fields, but all are
 optional. It is NOT a subclass of the original class, so it can be used with ImmutableStructure.
 For example:
@@ -555,12 +568,13 @@ In the example above, we could have also called :
 
 .. code-block:: python
 
-    Bar = Partial[Foo]
+    Bar = Partial[Foo, "Bar"]
 
-...with a similar outcome.
+...with a similar outcome. The "Bar" string above is name that will be given to the new class, to help with troubleshooting.
+This name is optional.
 
 Omit
-====
+----
 Omit creates a new Structure class with all the original fields of the current class, except the ones specified to omit.
 A simple example will clarify:
 
@@ -582,6 +596,28 @@ A simple example will clarify:
     bar = Bar(i=5, x=10, s={1, 2, 3})
 
 
+Extend
+------
+Copies the fields and other attributes of a given class, but not inheriting. This allows to extends even ImmutableStructure or
+FinalStructure.
+
+For example:
+
+.. code-block:: python
+
+    class Foo(ImmutableStructure):
+        i: int
+        d: dict[str, int] = dict
+        s: set
+        a: str
+        b: Integer
+
+    class Bar(Extend[Foo]):
+        x: int
+
+    # Bar has all the fields of Foo, plus "x".
+
+Just like Partial, Extend can also be used directly.
 
 Structure Documentation
 =======================
@@ -591,6 +627,8 @@ Structure Documentation
 .. autoclass:: ImmutableStructure
 
 .. autoclass:: Partial
+
+.. autoclass:: Extend
 
 
 

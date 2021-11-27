@@ -834,7 +834,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     def __setattr__(self, key, value):
         if getattr(self, IS_IMMUTABLE, False):
             if getattr(self, "_instantiated", False):
-                raise ValueError("Structure is immutable")
+                raise ValueError(f"{self.__class__.__name__}: Structure is immutable")
             value = deepcopy(value)
         if not any([
             getattr(self, ADDITIONAL_PROPERTIES, True),
@@ -1161,6 +1161,51 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     def is_non_typedpy_field_assignment_blocked():
         return getattr(Structure, "_block_non_typedpy_field_assignment", True)
 
+    @classmethod
+    def omit(cls, *fields_to_omit):
+        """
+            Define a new Structure class with all the fields of the given class, except for the omitted ones.
+             For Example:
+
+             .. code-block:: python
+
+                 class Foo(ImmutableStructure):
+                    i: int
+                    d: dict[str, int] = dict
+                    s: set
+                    a: str
+                    b: Integer
+
+                 class Bar(Foo.omit("a", "b")):
+                    x: int
+
+            "Bar" has the fields: i, d, s, x. Note that Bar does not extend Foo, but it is a Structure class.
+             It does copy attributes like serialization mappers, _ignore_none, _additionalProperties,
+            but Bar can override any of them.
+
+            Another valid usage:
+
+            .. code-block:: python
+
+                Bar = Foo.omit("a", "b", "i", "s")
+                bar = Bar(d={"a": 5})
+
+        """
+        attributes_to_include = {"_fields", ADDITIONAL_PROPERTIES, SERIALIZATION_MAPPER,
+                                 DESERIALIZATION_MAPPER, IGNORE_NONE_VALUES, DEFAULTS}
+        cls_dict = {}
+        for k, v in cls.__dict__.items():
+            if k in attributes_to_include:
+                cls_dict[k] = v
+            elif k in cls.get_all_fields_by_name() and k not in fields_to_omit:
+                cls_dict[k] = v
+        cls_dict[REQUIRED_FIELDS] = [x for x in getattr(cls, REQUIRED_FIELDS) if x not in fields_to_omit]
+
+        classname = f"Omit{cls.__name__}"
+        newclass = type(classname, (Structure,), cls_dict)
+
+        return newclass
+
 
 class FinalStructure(Structure):
     pass
@@ -1346,4 +1391,34 @@ class PartialMeta(type):
 
 
 class Partial(metaclass=PartialMeta):
+    """
+    Define a new Structure class with all the fields of the given class, but all of them are optional.
+     For Example:
+
+     .. code-block:: python
+
+         class Foo(ImmutableStructure):
+            i: int
+            d: dict[str, int] = dict
+            s: str
+            a: set
+
+         class Bar(Partial[Foo]):
+            x: str
+
+    "Bar" has all the fields of Foo as optional, and in addition "x" as required. Note that Bar does not extend Foo, but
+    it is a Structure class. It does copy attributes like serialization mappers, _ignore_none, _additionalProperties,
+    but Bar can override any of them.
+
+    Another valid usage:
+
+    .. code-block:: python
+
+        Bar = Partial[Foo]
+
+        bar = Bar(i=5)
+
+    """
     _required = []
+
+

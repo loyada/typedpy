@@ -527,6 +527,62 @@ class Example above will throw an appropriate exception.
 
 By default, this flag is set to True (from version 2.6.5).
 
+Partial
+=======
+Partial creates a new Structure class from an existing Structure class, that has all the original fields, but all are
+optional. It is NOT a subclass of the original class, so it can be used with ImmutableStructure.
+For example:
+
+.. code-block:: python
+
+    class Foo(ImmutableStructure):
+        i: int
+        d: dict[str, int] = dict
+        s: str
+        a: set
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+     class Bar(Partial[Foo]):
+        x: str
+
+    assert Bar._required == ["x"]
+    assert not issubclass(Bar, Foo)
+    assert issubclass(Bar, Structure)
+    bar = Bar(i=5, x="xyz")
+
+In the example above, we could have also called :
+
+.. code-block:: python
+
+    Bar = Partial[Foo]
+
+...with a similar outcome.
+
+Omit
+====
+Omit creates a new Structure class with all the original fields of the current class, except the ones specified to omit.
+A simple example will clarify:
+
+.. code-block:: python
+
+    class Foo(ImmutableStructure):
+        i: int
+        d: dict[str, int] = dict
+        s: set
+        a: str
+        b: Integer
+
+    class Bar(Foo.omit("a", "b")):
+        x: int
+
+    assert set(Bar._required) == {"i", "s", "x"}
+    assert not issubclass(Bar, Foo)
+    assert issubclass(Bar, Structure)
+    bar = Bar(i=5, x=10, s={1, 2, 3})
+
+
+
 Structure Documentation
 =======================
 
@@ -534,6 +590,7 @@ Structure Documentation
 
 .. autoclass:: ImmutableStructure
 
+.. autoclass:: Partial
 
 
 

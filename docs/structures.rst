@@ -542,6 +542,7 @@ See below for detail.
 
 Partial
 -------
+(from v2.7.0)
 Partial creates a new Structure class from an existing Structure class, that has all the original fields, but all are
 optional. It is NOT a subclass of the original class, so it can be used with ImmutableStructure.
 For example:
@@ -575,6 +576,7 @@ This name is optional.
 
 Omit
 ----
+(from v2.7.0)
 Omit creates a new Structure class with all the original fields of the current class, except the ones specified to omit.
 A simple example will clarify:
 
@@ -598,6 +600,7 @@ A simple example will clarify:
 
 Extend
 ------
+(from v2.7.1)
 Copies the fields and other attributes of a given class, but not inheriting. This allows to extends even ImmutableStructure or
 FinalStructure.
 

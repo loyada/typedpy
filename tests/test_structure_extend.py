@@ -29,6 +29,7 @@ def test_extend_structure():
     assert bar.s is None
     bar.d["x"] = 1
     assert bar.d["x"] == 1
+    assert set(Bar.get_all_fields_by_name().keys()) == {"x", "i", "a", "s", "d"}
     with pytest.raises(TypeError) as excinfo:
         bar.d = {"x": "y"}
     assert "d_value: Expected <class 'int'>; Got 'y'" in str(excinfo.value)
@@ -58,6 +59,7 @@ def test_direct_assignment_to_extend_with_name():
     with pytest.raises(TypeError) as excinfo:
         Bar(i=5, s="xyz")
     assert "Bar: missing a required argument: 'a'" in str(excinfo.value)
+    assert str(Bar).startswith("<Structure: Bar.")
 
 
 def test_extend_and_immutable():

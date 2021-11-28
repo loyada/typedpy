@@ -617,7 +617,14 @@ For example:
 
     # Bar has all the fields of Foo, plus "x".
 
-Just like Partial, Extend can also be used directly.
+Just like Partial, Extend can also be used directly:
+
+.. code-block:: python
+
+    Bar = Extend[Foo, "Bar"]
+
+    # now Bar.__name__ is "Bar", which helps in troubleshooting
+
 
 Structure Documentation
 =======================

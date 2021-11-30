@@ -6,7 +6,8 @@ from typing import Dict
 from .commons import deep_get, raise_errs_if_needed
 from .versioned_mapping import VERSION_MAPPING, Versioned, convert_dict
 from .mappers import (
-    DoNotSerialize, aggregate_deserialization_mappers,
+    DoNotSerialize,
+    aggregate_deserialization_mappers,
     aggregate_serialization_mappers,
     mappers,
 )

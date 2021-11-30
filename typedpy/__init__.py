@@ -16,7 +16,7 @@ from typedpy.structures import (
     Partial,
     Omit,
     Pick,
-    Extend
+    Extend,
 )
 from typedpy.fields import (
     Number,

@@ -188,6 +188,7 @@ def add_mapper_to_aggregation(latest_mapper, previous_mapper, for_serialization=
 class DoNotSerialize:
     pass
 
+
 class mappers(Enum):
     """Useful custom mappers"""
 

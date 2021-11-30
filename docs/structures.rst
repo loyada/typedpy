@@ -534,9 +534,11 @@ Beyond regular class inheritance for reuse, which is supported by Typedpy, there
 
 1. Partial - a copy of a given Structure class, in which all the fields are optional
 
-2. Structure.omit - a copy of a given class, omitting specific fields
+2. Structure.omit / Omit - a copy of a given class, omitting specific fields
 
-3. Extend - a copy of a given class, but not inheriting
+3. Structure.pick / Pick - a copy of a given class, picking specific fields (opposite of omit)
+
+4. Extend - a copy of a given class, but not inheriting
 
 See below for detail.
 
@@ -589,13 +591,44 @@ A simple example will clarify:
         a: str
         b: Integer
 
-    class Bar(Foo.omit("a", "b")):
+    class Bar(Omit[Foo, ("a", "b")]):
         x: int
 
     assert set(Bar._required) == {"i", "s", "x"}
     assert not issubclass(Bar, Foo)
     assert issubclass(Bar, Structure)
     bar = Bar(i=5, x=10, s={1, 2, 3})
+
+
+Just like Partial, Omit can also be used directly:
+
+.. code-block:: python
+
+    Bar = Omit[Foo, ("a", "b"), "Bar"]
+
+
+Pick
+----
+(from v2.7.2)
+Pick creates a new Structure class, picking specific fields from the original class (opposite of Omit)
+In the example above:
+
+.. code-block:: python
+
+    class Bar(Pick[Foo, ("a", "b")]):
+        x: int
+
+    assert set(Bar._required) == {"a", "b", "x"}
+    assert not issubclass(Bar, Foo)
+    assert issubclass(Bar, Structure)
+    bar = Bar(a="abc", x=10, b=8)
+
+
+Just like Partial, Omit can also be used directly:
+
+.. code-block:: python
+
+    Bar = Pick[Foo, ("a", "b"), "Bar"]
 
 
 Extend
@@ -639,6 +672,10 @@ Structure Documentation
 .. autoclass:: Partial
 
 .. autoclass:: Extend
+
+.. autoclass:: Omit
+
+.. autoclass:: Pick
 
 
 

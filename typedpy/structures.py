@@ -1180,7 +1180,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                     x: int
 
             "Bar" has the fields: i, d, s, x. Note that Bar does not extend Foo, but it is a Structure class.
-             It does copy attributes like serialization mappers, _ignore_none, _additionalProperties,
+             It does copy attributes like serialization mappers, _ignore_none,
             but Bar can override any of them.
 
             Another valid usage:
@@ -1191,7 +1191,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 bar = Bar(d={"a": 5})
 
         """
-        attributes_to_include = {"_fields", ADDITIONAL_PROPERTIES, SERIALIZATION_MAPPER,
+        attributes_to_include = {"_fields", SERIALIZATION_MAPPER,
                                  DESERIALIZATION_MAPPER, IGNORE_NONE_VALUES, DEFAULTS}
         cls_dict = {}
         for k, v in cls.__dict__.items():
@@ -1202,6 +1202,51 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         cls_dict[REQUIRED_FIELDS] = [x for x in getattr(cls, REQUIRED_FIELDS) if x not in fields_to_omit]
 
         classname = class_name if class_name else f"Omit{cls.__name__}"
+        newclass = type(classname, (Structure,), cls_dict)
+
+        return newclass
+
+    @classmethod
+    def pick(cls, *fields_to_pick, class_name: str = ""):
+        """
+            Define a new Structure class with that picks specific fields from a predefined class.
+             For Example:
+
+             .. code-block:: python
+
+                 class Foo(ImmutableStructure):
+                    i: int
+                    d: dict[str, int] = dict
+                    s: set
+                    a: str
+                    b: Integer
+
+                 class Bar(Foo.pick("a", "b")):
+                    x: int
+
+            "Bar" has the fields: a, b, x. Note that Bar does not extend Foo, but it is a Structure class.
+             It does copy attributes like serialization mappers, _ignore_none,
+            but Bar can override any of them.
+
+            Another valid usage:
+
+            .. code-block:: python
+
+                Bar = Foo.pick("d")
+                bar = Bar(d={"a": 5})
+
+        """
+        attributes_to_include = {"_fields", SERIALIZATION_MAPPER,
+                                 DESERIALIZATION_MAPPER, IGNORE_NONE_VALUES, DEFAULTS}
+        cls_dict = {}
+        for k, v in cls.__dict__.items():
+            if k in attributes_to_include:
+                cls_dict[k] = v
+            elif k in cls.get_all_fields_by_name() and k in fields_to_pick:
+                cls_dict[k] = v
+        cls_dict[REQUIRED_FIELDS] = [x for x in getattr(cls, REQUIRED_FIELDS) if x in fields_to_pick]
+
+        classname = class_name if class_name else f"Pick{cls.__name__}"
         newclass = type(classname, (Structure,), cls_dict)
 
         return newclass
@@ -1378,7 +1423,7 @@ class PartialMeta(type):
             if not isinstance(clazz, tuple) or (isinstance(clazz, tuple) and (len(clazz)!=2 or not isinstance(clazz[0], StructMeta) or not isinstance(clazz[1], str))):
                 raise TypeError("Partial must have a Structure class as a parameter, and an optional name for the class")
         clazz, classname = clazz if isinstance(clazz, tuple) else (clazz, f"Partial{clazz.__name__}")
-        attributes_to_include = {"_fields", ADDITIONAL_PROPERTIES, SERIALIZATION_MAPPER,
+        attributes_to_include = {"_fields", SERIALIZATION_MAPPER,
                                  DESERIALIZATION_MAPPER, IGNORE_NONE_VALUES, DEFAULTS}
         cls_dict = {}
         for k, v in clazz.__dict__.items():
@@ -1408,7 +1453,7 @@ class Partial(metaclass=PartialMeta):
             x: str
 
     "Bar" has all the fields of Foo as optional, and in addition "x" as required. Note that Bar does not extend Foo, but
-    it is a Structure class. It does copy attributes like serialization mappers, _ignore_none, _additionalProperties,
+    it is a Structure class. It does copy attributes like serialization mappers, _ignore_none,
     but Bar can override any of them.
 
     Another valid usage:
@@ -1432,7 +1477,7 @@ class ExtendMeta(type):
             if not isinstance(clazz, tuple) or (isinstance(clazz, tuple) and (len(clazz)!=2 or not isinstance(clazz[0], StructMeta) or not isinstance(clazz[1], str))):
                 raise TypeError("Extend must have a Structure class as a parameter, and an optional name for the class")
         clazz, classname = clazz if isinstance(clazz, tuple) else (clazz, f"Extend{clazz.__name__}")
-        attributes_to_include = {"_fields", ADDITIONAL_PROPERTIES, SERIALIZATION_MAPPER, REQUIRED_FIELDS,
+        attributes_to_include = {"_fields", SERIALIZATION_MAPPER, REQUIRED_FIELDS,
                                  DESERIALIZATION_MAPPER, IGNORE_NONE_VALUES, DEFAULTS}
         cls_dict = {}
         for k, v in clazz.__dict__.items():
@@ -1463,7 +1508,7 @@ class Extend(metaclass=ExtendMeta):
        "Bar" has all the fields of Foo, and in addition "x". So the required fields in this case are i, s, a, x
        (since d has a default value).
        Note that Bar does not extend Foo, but it is a Structure class.
-       It does copy attributes like serialization mappers, _ignore_none, _additionalProperties, but Bar can override
+       It does copy attributes like serialization mappers, _ignore_none, but Bar can override
        any of them.
 
        Another valid usage:
@@ -1479,3 +1524,89 @@ class Extend(metaclass=ExtendMeta):
 
     """
     pass
+
+
+class OmitMeta(type):
+    def __getitem__(cls, params: typing.Union[typing.Tuple[StructMeta, Iterable[str], str], typing.Tuple[StructMeta,  Iterable[str]]]):
+        if not isinstance(params, tuple) or not 1<len(params)<4 or not isinstance(params[0], StructMeta):
+            raise TypeError("Omit accepts the source class name, a list of fields, and an optional name for the new class it creates")
+        clazz, fields, *new_name_maybe = params
+        class_name = new_name_maybe[0] if new_name_maybe else f"Omit{clazz.__name__}"
+        return clazz.omit(*fields, class_name=class_name)
+
+
+class Omit(metaclass=OmitMeta):
+    """
+            Define a new Structure class with all the fields of the given class, except for the omitted ones.
+             For Example:
+
+             .. code-block:: python
+
+                 class Foo(ImmutableStructure):
+                    i: int
+                    d: dict[str, int] = dict
+                    s: set
+                    a: str
+                    b: Integer
+
+                 class Bar(Omit[Foo, ("a", "b")]):
+                    x: int
+
+            "Bar" has the fields: i, d, s, x. Note that Bar does not extend Foo, but it is a Structure class.
+             It does copy attributes like serialization mappers, _ignore_none,
+            but Bar can override any of them.
+
+            Another valid usage:
+
+            .. code-block:: python
+
+                Bar = Omit[Foo, ("a", "b", "i", "s"), class_name="Bar"]
+                bar = Bar(d={"a": 5})
+
+        """
+    pass
+
+
+
+
+class PickMeta(type):
+    def __getitem__(cls, params: typing.Union[typing.Tuple[StructMeta, Iterable[str], str], typing.Tuple[StructMeta,  Iterable[str]]]):
+        if not isinstance(params, tuple) or not 1<len(params)<4 or not isinstance(params[0], StructMeta):
+            raise TypeError("Pick accepts the source class name, a list of fields, and an optional name for the new class it creates")
+        clazz, fields, *new_name_maybe = params
+        class_name = new_name_maybe[0] if new_name_maybe else f"Pick{clazz.__name__}"
+        return clazz.pick(*fields, class_name=class_name)
+
+
+class Pick(metaclass=PickMeta):
+    """
+            Define a new Structure class with that picks specific fields from a predefined class.
+             For Example:
+
+             .. code-block:: python
+
+                 class Foo(ImmutableStructure):
+                    i: int
+                    d: dict[str, int] = dict
+                    s: set
+                    a: str
+                    b: Integer
+
+                 class Bar(Pick[Foo, ("a", "b")]):
+                    x: int
+
+            "Bar" has the fields: a, b, x. Note that Bar does not extend Foo, but it is a Structure class.
+             It does copy attributes like serialization mappers, _ignore_none,
+            but Bar can override any of them.
+
+            Another valid usage:
+
+            .. code-block:: python
+
+                Bar = Pick[Foo, ("d"), class_name="Bar"]
+                bar = Bar(d={"a": 5})
+
+        """
+    pass
+
+

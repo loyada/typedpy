@@ -3,12 +3,14 @@ from typing import Optional
 import pytest
 
 from typedpy import ImmutableStructure, Map, Structure, mappers, Serializer, Extend
-from typedpy.structures import Partial
 
 
-class Foo(ImmutableStructure):
+class Blah(Structure):
     i: int
     d: Map[str, int] = dict
+
+
+class Foo(Blah, ImmutableStructure):
     s: Optional[str]
     a: set
 

@@ -695,6 +695,7 @@ def convert_field_type_if_possible(the_field):
         return get_typing_lib_info(the_field)
 
 
+
 class Structure(UniqueMixin, metaclass=StructMeta):
     """
     The base class to support strictly defined structures. When creating a new instance of
@@ -1195,22 +1196,14 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             bar = Bar(d={"a": 5})
 
         """
-        attributes_to_include = {
-            "_fields",
-            SERIALIZATION_MAPPER,
-            DESERIALIZATION_MAPPER,
-            IGNORE_NONE_VALUES,
-            DEFAULTS,
-        }
-        cls_dict = {}
-        for k, v in cls.__dict__.items():
-            if k in attributes_to_include:
-                cls_dict[k] = v
-            elif k in cls.get_all_fields_by_name() and k not in fields_to_omit:
-                cls_dict[k] = v
+
+        cls_dict = _init_class_dict(cls)
         cls_dict[REQUIRED_FIELDS] = [
             x for x in getattr(cls, REQUIRED_FIELDS) if x not in fields_to_omit
         ]
+        for k, v in cls.get_all_fields_by_name().items():
+            if k not in fields_to_omit:
+                cls_dict[k] = v
 
         classname = class_name if class_name else f"Omit{cls.__name__}"
         newclass = type(classname, (Structure,), cls_dict)
@@ -1247,27 +1240,36 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             bar = Bar(d={"a": 5})
 
         """
-        attributes_to_include = {
-            "_fields",
-            SERIALIZATION_MAPPER,
-            DESERIALIZATION_MAPPER,
-            IGNORE_NONE_VALUES,
-            DEFAULTS,
-        }
-        cls_dict = {}
-        for k, v in cls.__dict__.items():
-            if k in attributes_to_include:
-                cls_dict[k] = v
-            elif k in cls.get_all_fields_by_name() and k in fields_to_pick:
+        cls_dict = _init_class_dict(cls)
+
+        for k, v in cls.get_all_fields_by_name().items():
+            if k in fields_to_pick:
                 cls_dict[k] = v
         cls_dict[REQUIRED_FIELDS] = [
             x for x in getattr(cls, REQUIRED_FIELDS) if x in fields_to_pick
         ]
 
+
+
         classname = class_name if class_name else f"Pick{cls.__name__}"
         newclass = type(classname, (Structure,), cls_dict)
 
         return newclass
+
+
+def _init_class_dict(cls):
+    attributes_to_include = {
+        "_fields",
+        IGNORE_NONE_VALUES,
+        DEFAULTS,
+    }
+    cls_dict = {}
+    for k, v in cls.__dict__.items():
+        if k in attributes_to_include:
+            cls_dict[k] = v
+    cls_dict[SERIALIZATION_MAPPER] = cls.get_aggregated_serialization_mapper()
+    cls_dict[DESERIALIZATION_MAPPER] = cls.get_aggregated_deserialization_mapper()
+    return cls_dict
 
 
 class FinalStructure(Structure):
@@ -1454,17 +1456,11 @@ class PartialMeta(type):
         clazz, classname = (
             clazz if isinstance(clazz, tuple) else (clazz, f"Partial{clazz.__name__}")
         )
-        attributes_to_include = {
-            "_fields",
-            SERIALIZATION_MAPPER,
-            DESERIALIZATION_MAPPER,
-            IGNORE_NONE_VALUES,
-            DEFAULTS,
-        }
-        cls_dict = {}
-        for k, v in clazz.__dict__.items():
-            if k in attributes_to_include or (not _is_sunder(k) and not _is_dunder(k)):
-                cls_dict[k] = v
+
+        cls_dict = _init_class_dict(clazz)
+        for k, v in clazz.get_all_fields_by_name().items():
+            cls_dict[k] = v
+
         cls_dict[REQUIRED_FIELDS] = []
 
         newclass = type(classname, (Structure,), cls_dict)
@@ -1527,18 +1523,10 @@ class ExtendMeta(type):
         clazz, classname = (
             clazz if isinstance(clazz, tuple) else (clazz, f"Extend{clazz.__name__}")
         )
-        attributes_to_include = {
-            "_fields",
-            SERIALIZATION_MAPPER,
-            REQUIRED_FIELDS,
-            DESERIALIZATION_MAPPER,
-            IGNORE_NONE_VALUES,
-            DEFAULTS,
-        }
-        cls_dict = {}
-        for k, v in clazz.__dict__.items():
-            if k in attributes_to_include or (not _is_sunder(k) and not _is_dunder(k)):
-                cls_dict[k] = v
+        cls_dict = _init_class_dict(clazz)
+        cls_dict[REQUIRED_FIELDS] = getattr(clazz, REQUIRED_FIELDS, [])
+        for k, v in clazz.get_all_fields_by_name().items():
+            cls_dict[k] = v
 
         newclass = type(classname, (Structure,), cls_dict)
 
@@ -1651,7 +1639,8 @@ class PickMeta(type):
             or not isinstance(params[0], StructMeta)
         ):
             raise TypeError(
-                "Pick accepts the source class name, a list of fields, and an optional name for the new class it creates"
+                "Pick accepts the source class name, a list of fields, and an optional name for the new class it "
+                "creates "
             )
         clazz, fields, *new_name_maybe = params
         class_name = new_name_maybe[0] if new_name_maybe else f"Pick{clazz.__name__}"

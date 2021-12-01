@@ -7,11 +7,14 @@ def build_default_dict():
     return {"abc": 0}
 
 
-class Foo(ImmutableStructure):
+class Blah(Structure):
     i: int
     d: Map[str, int] = build_default_dict
-    s: set
     a: str
+
+
+class Foo(Blah, ImmutableStructure):
+    s: set
     b: Integer
 
     _serialization_mapper = mappers.TO_LOWERCASE

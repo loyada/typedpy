@@ -4,10 +4,13 @@ from typedpy import ImmutableStructure, Map, Structure, mappers, Serializer
 from typedpy.structures import Partial
 
 
-class Foo(ImmutableStructure):
+class Blah(Structure):
     i: int
     d: Map[str, int] = dict
     s: str
+
+
+class Foo(Blah, ImmutableStructure):
     a: set
 
     _serialization_mapper = mappers.TO_LOWERCASE

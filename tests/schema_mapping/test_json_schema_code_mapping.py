@@ -4,7 +4,7 @@ from traceback import extract_stack
 
 import pytest
 
-from typedpy import structure_to_schema
+from typedpy import structure_to_schema, write_code_from_schema
 
 
 def get_abs_path_from_here(relative_path: str) -> Path:
@@ -39,13 +39,7 @@ def test_example(schema_load, code_load):
 
     from .example import Example
     schema, definitions = structure_to_schema(Example, {})
-    assert definitions == {
-        "SimpleStruct": {
-            "type": "object",
-            "properties": {
-                "name": {"type": "string", "pattern": "[A-Za-z]+$", "maxLength": 8}
-            },
-            "required": ["name"],
-            "additionalProperties": True,
-        }
-    }
+    assert definitions == expected_schema["definitions"]
+    assert schema == expected_schema["example"]
+
+    write_code_from_schema(schema, definitions, str(get_abs_path_from_here("generated") / "generated_example.py"), "Example")

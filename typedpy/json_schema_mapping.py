@@ -4,7 +4,7 @@ from typing import Union
 
 from .commons import wrap_val
 from .fields import (
-    Map, StructureReference,
+    Map, Negative, NonNegative, NonPositive, Positive, StructureReference,
     Integer,
     Number,
     Float,
@@ -315,16 +315,33 @@ class NumberMapper(Mapper):
         return list((k, v) for k, v in params.items() if v is not None)
 
     def to_schema(self, definitions):
+        def get_min(value):
+            if value.minimum is not None:
+                return value.minimum
+            if isinstance(value, NonNegative):
+                return 0
+            if isinstance(value, Positive):
+                return 1 if isinstance(value, Integer) else 0.000001
+            return None
+
+        def get_max(value):
+            if value.maximum is not None:
+                return value.maximum
+            if isinstance(value, NonPositive):
+                return 0
+            if isinstance(value, Negative):
+                return -1 if isinstance(value, Integer) else -0.000001
+            return None
+
         value = self.value
         params = {
             "type": "number",
             "multiplesOf": value.multiplesOf,
-            "minimum": value.minimum,
-            "maximum": value.maximum,
+            "minimum": get_min(value),
+            "maximum": get_max(value),
             "exclusiveMaximum": value.exclusiveMaximum,
         }
         return {k: v for k, v in params.items() if v is not None}
-
 
 
 class MapMapper(Mapper):

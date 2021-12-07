@@ -14,7 +14,7 @@
         "oneOf": [
           {"type": "number", "multiplesOf": 5, "minimum": -10, "maximum": 20},
           {"type": "integer"},
-          {"type": "number"},
+          {"type": "number", "minimum": 1e-06},
           {"type": "string"}
         ]
       },
@@ -51,14 +51,14 @@
         "allOf": [
           {"type": "number", "multiplesOf": 5, "minimum": -10, "maximum": 20},
           {"type": "integer"},
-          {"type": "number"}
+          {"type": "number", "minimum": 1e-06}
         ]
       },
       "b": {
         "anyOf": [
           {"type": "number", "minimum": -10, "maximum": 20},
           {"type": "integer"},
-          {"type": "number"},
+          {"type": "number", "minimum": 1e-06},
           {"type": "string"}
         ]
       },

@@ -653,10 +653,11 @@ def add_annotations_to_class_dict(cls_dict, previous_frame):
             first_arg = getattr(v, "__args__", [0])[0]
             mros = getattr(first_arg, "__mro__", getattr(v, "__mro__", []))
             if not type_is_generic(v) and (
-                isinstance(v, (Field, Structure)) or Field in mros or Structure in mros
+                isinstance(v, (Field, Structure)) or Field in mros or Structure in mros or is_function_returning_field(v)
             ):
                 if k in cls_dict:
                     defaults[k] = cls_dict[k]
+
                 cls_dict[k] = v
             else:
                 the_type = get_typing_lib_info(v)

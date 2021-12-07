@@ -674,3 +674,16 @@ def test_additional_properties_blocks_additional_properties_even_after_instantia
     with raises(ValueError) as excinfo:
         foo.x = []
     assert "Foo: trying to set a non-field 'x' is not allowed" in str(excinfo.value)
+
+
+def test_find_fields_with_function_returning_field():
+    def Name()-> Field:
+        return String(minLength=10)
+
+    class Foo(Structure) :
+        age: int
+        name: Name
+
+    assert set(Foo.get_all_fields_by_name().keys()) == {"age", "name"}
+    assert str(Foo.name) == "<String. Properties: minLength = 10>"
+

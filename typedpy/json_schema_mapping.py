@@ -1,8 +1,10 @@
+import enum
 from collections import OrderedDict
+from typing import Union
 
 from .commons import wrap_val
 from .fields import (
-    StructureReference,
+    Map, StructureReference,
     Integer,
     Number,
     Float,
@@ -24,6 +26,11 @@ from .extfields import DateString
 from .structures import ADDITIONAL_PROPERTIES
 
 
+SCHEMA_PATTERN_PROPERTIES = "patternProperties"
+SCHEMA_ADDITIONAL_PROPERTIES = "additionalProperties"
+SCHEMA_PROPETIES = "properties"
+SCHEMA_PROPERTY_NAMES = "propertyNames"
+
 def get_mapper(field_cls):
     field_type_to_mapper = {
         StructureReference: StructureReferenceMapper,
@@ -41,6 +48,7 @@ def get_mapper(field_cls):
         NotField: NotFieldMapper,
         Tuple: ArrayMapper,
         Set: ArrayMapper,
+        Map: MapMapper,
     }
     for cls in field_cls.__mro__:
         if issubclass(cls, Field) and cls in field_type_to_mapper:
@@ -129,6 +137,7 @@ def convert_to_field_code(schema, definitions):
         def_name = schema["$ref"][len("#/definitions/") :]
         return def_name
 
+
     type_name_to_field = {
         "object": StructureReference,
         "integer": Integer,
@@ -149,7 +158,14 @@ def convert_to_field_code(schema, definitions):
         cls = Enum
         mapper = get_mapper(cls)
     else:
-        cls = type_name_to_field[schema.get("type", "object")]
+        object_type = schema.get("type", "object")
+        if object_type == "object":
+            if SCHEMA_PROPETIES in schema:
+                cls = StructureReference
+            else:
+                cls = Map
+        else:
+            cls = type_name_to_field[schema.get("type", "object")]
         mapper = get_mapper(cls)
     params_list = mapper.get_paramlist_from_schema(schema, definitions)
 
@@ -310,6 +326,57 @@ class NumberMapper(Mapper):
         return {k: v for k, v in params.items() if v is not None}
 
 
+
+class MapMapper(Mapper):
+    @staticmethod
+    def get_paramlist_from_schema(schema, definitions):
+        additional_properties = schema.get(SCHEMA_ADDITIONAL_PROPERTIES, None)
+        pattern_properties = schema.get(SCHEMA_PATTERN_PROPERTIES, None)
+        property_names = schema.get(SCHEMA_PATTERN_PROPERTIES, {})
+        if (pattern_properties and len(pattern_properties)>1) or (pattern_properties and additional_properties) or (
+                pattern_properties and property_names):
+            raise NotImplementedError("Conversion for this map is unsupported")
+        if not any([additional_properties, property_names, pattern_properties]):
+            return []
+
+        key_type = convert_to_field_code({**property_names, "type": "string"}, globals()) if property_names else "String()"
+        adjusted_key_type = f"String(pattern='{list(pattern_properties.keys())[0]}')" if pattern_properties else key_type
+        value_type = convert_to_field_code(additional_properties, definitions) if additional_properties else (
+            convert_to_schema(pattern_properties, definitions) if additional_properties else "Anything"
+        )
+
+        items = f"[{adjusted_key_type}, {value_type}]"
+        params = {
+            "items": items,
+            "maxItems": schema.get("maxItems", None),
+            "minItems": schema.get("minItems", None)
+        }
+        return list((k, v) for k, v in params.items() if v is not None)
+
+    def to_schema(self, definitions):
+        value = self.value
+        params = {
+            "type": "object",
+        }
+        if value.items:
+            keys, values = value.items
+            if not isinstance(keys, String):
+                raise TypeError("JSON supports only Strings as keys")
+
+            suffix = ''
+            if keys.maxLength or keys.minLength:
+                suffix = f"{{{keys.minLength or ''}, {keys.maxLength or ''}}}"
+            pattern_props = f"{keys.pattern or ''}{suffix}" or None
+            values_schema = convert_to_schema(values, definitions)
+            if pattern_props:
+                params[SCHEMA_PATTERN_PROPERTIES] = values_schema
+            elif values_schema:
+                params[SCHEMA_ADDITIONAL_PROPERTIES] = values_schema
+        params["maxItems"] = value.maxItems
+        params["minItems"] = value.minItems
+        return {k: v for k, v in params.items() if v is not None}
+
+
 class IntegerMapper(NumberMapper):
     def to_schema(self, definitions):
         params = super().to_schema(definitions)
@@ -415,7 +482,15 @@ class EnumMapper(Mapper):
         return list(params.items())
 
     def to_schema(self, definitions):
-        params = {"enum": self.value.values}
+        def adjust(val) -> Union[str, int, float]:
+            if isinstance(val, enum.Enum):
+                return val.name
+            if not isinstance(val, (int, str, float)):
+                raise TypeError("enum must be an enum, str, or number")
+            return val
+
+        values = [adjust(v) for v in  self.value.values]
+        params = {"enum": values}
         return {k: v for k, v in params.items() if v is not None}
 
 

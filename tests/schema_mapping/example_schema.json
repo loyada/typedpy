@@ -1,0 +1,76 @@
+{
+  "definitions": {
+    "Foo": {
+      "type": "object",
+      "properties": {"s": {"type": "string"}},
+      "required": ["s"],
+      "additionalProperties": true
+    }
+  },
+  "example": {
+    "type": "object",
+    "properties": {
+      "c": {
+        "oneOf": [
+          {"type": "number", "multiplesOf": 5, "minimum": -10, "maximum": 20},
+          {"type": "integer"},
+          {"type": "number"},
+          {"type": "string"}
+        ]
+      },
+      "d": {
+        "not": [
+          {
+            "type": "number",
+            "multiplesOf": 5,
+            "minimum": -10, "maximum": 20
+          }, {"type": "string"}
+        ]
+      },
+      "e": {
+        "allOf": []
+      },
+      "broken": {
+        "allOf": [
+          {"type": "string"},
+          {"type": "integer"}
+        ]
+      },
+      "f": {
+        "not": [
+          {"type": "number"}
+        ]
+      },
+      "g": {
+        "anyOf": [
+          {"$ref": "#/definitions/Foo"},
+          {"type": "integer"}
+        ]
+      },
+      "a": {
+        "allOf": [
+          {"type": "number", "multiplesOf": 5, "minimum": -10, "maximum": 20},
+          {"type": "integer"},
+          {"type": "number"}
+        ]
+      },
+      "b": {
+        "anyOf": [
+          {"type": "number", "minimum": -10, "maximum": 20},
+          {"type": "integer"},
+          {"type": "number"},
+          {"type": "string"}
+        ]
+      },
+      "values": {
+        "enum": ["one", "two", "three"]
+      },
+      "m": {
+        "type": "object",
+        "additionalProperties": {"$ref": "#/definitions/Foo"}
+      }
+    },
+    "required": [],
+    "additionalProperties": true
+  }
+}

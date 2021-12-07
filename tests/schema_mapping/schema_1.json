@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+      "d": {
+          "type": "object",
+          "additionalProperties": {
+              "type": "integer"
+          }
+      }
+  },
+  "required": [],
+  "additionalProperties": true
+}

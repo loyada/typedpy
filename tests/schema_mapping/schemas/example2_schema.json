@@ -1,0 +1,41 @@
+{
+    "definitions": {
+        "SimpleStruct": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string", "maxLength": 8, "pattern": "[A-Za-z]+$"}
+            },
+            "required": ["name"],
+            "additionalProperties": true
+        },
+        "ComplexStruct": {
+            "type": "object",
+            "properties": {
+                "simple": {"$ref": "#/definitions/SimpleStruct"}
+            },
+            "required": ["simple"],
+            "additionalProperties": true
+        }
+    },
+    "example": {
+        "type": "object",
+        "properties": {
+            "foo": {
+                "type": "object",
+                "properties": {
+                    "a2": {"type": "float"},
+                    "a1": {"type": "integer"}
+                },
+                "required": ["a1", "a2"],
+                "additionalProperties": true
+            },
+            "ss": {"$ref": "#/definitions/ComplexStruct"},
+            "enum": {"enum": [1, 2, 3]},
+            "s": {"type": "string", "maxLength": 5},
+            "i": {"type": "integer", "maximum": 10},
+            "all": {"allOf": [{"type": "number"}, {"type": "integer"}]},
+            "a": {"type": "array", "items": [{"type": "integer", "multiplesOf": 5}, {"type": "number"}]}},
+        "required": ["a",  "all", "enum", "foo", "i", "s","ss"],
+        "additionalProperties": true
+    }
+}

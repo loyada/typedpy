@@ -21,25 +21,42 @@ def get_abs_path_from_here(relative_path: str) -> Path:
 @pytest.fixture(name="schema_load")
 def fixture_schema_load():
     def wrapped(file_name: str) -> dict:
-        with open(get_abs_path_from_here(file_name), encoding="utf-8") as f:
+        with open(get_abs_path_from_here("schemas") / file_name, encoding="utf-8") as f:
             return json.load(f)
+
     return wrapped
+
 
 @pytest.fixture(name="code_load")
 def fixture_code_load():
     def wrapped(file_name: str) -> str:
         with open(get_abs_path_from_here(file_name), encoding="utf-8") as f:
             return f.read()
+
     return wrapped
 
 
-def test_example(schema_load, code_load):
-    expected_schema = schema_load("example_schema.json")
-    expected_code = code_load("example.py")
+@pytest.mark.parametrize("original_class_name, expected_schema_filename, generated_filename",
+                         [
+                             ("Example1", "example1_schema.json", "generated_example1.py"),
+                             ("Example2", "example2_schema.json", "generated_example2.py")
 
-    from .example import Example
-    schema, definitions = structure_to_schema(Example, {})
+                         ])
+def test_example(schema_load, code_load, original_class_name, expected_schema_filename, generated_filename):
+    expected_schema = schema_load(expected_schema_filename)
+
+    import tests.schema_mapping.structures as original_classes
+    # noinspection PyPep8Naming
+    OriginalClass = getattr(original_classes, original_class_name)
+
+    schema, definitions = structure_to_schema(OriginalClass, {})
     assert definitions == expected_schema["definitions"]
     assert schema == expected_schema["example"]
 
-    write_code_from_schema(schema, definitions, str(get_abs_path_from_here("generated") / "generated_example.py"), "Example")
+    generated_file_name = str(get_abs_path_from_here("generated") / generated_filename)
+    expected_file_name = str(get_abs_path_from_here("expected") / generated_filename)
+
+    write_code_from_schema(schema, definitions, generated_file_name, "Example1")
+    generated_code = code_load(generated_file_name)
+    expected_code = code_load(expected_file_name)
+    assert generated_code == expected_code

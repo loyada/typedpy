@@ -98,9 +98,9 @@ def structure_to_schema(structure, definitions_schema):
     """
     # json schema draft4 does not support inheritance, so we don't need to worry about that
     props = structure.__dict__
-    fields = [key for key, val in props.items() if isinstance(val, Field)]
-    required = props.get("_required", fields)
-    additional_props = props.get(ADDITIONAL_PROPERTIES, True)
+    fields = structure.get_all_fields_by_name().keys()
+    required = getattr(structure, "_required", fields)
+    additional_props = getattr(structure, ADDITIONAL_PROPERTIES, True)
     if len(fields) == 1 and required == fields and additional_props is False:
         return (
             convert_to_schema(props[fields[0]], definitions_schema),
@@ -114,12 +114,13 @@ def structure_to_schema(structure, definitions_schema):
         fields_schema.update(
             OrderedDict(
                 [
-                    ("required", required),
+                    ("required", sorted(required)),
                     ("additionalProperties", additional_props),
                 ]
             )
         )
-    return (fields_schema, definitions_schema)
+
+    return fields_schema, definitions_schema
 
 
 def convert_to_field_code(schema, definitions):
@@ -211,7 +212,6 @@ def schema_to_struct_code(struct_name, schema, definitions_schema):
         if schema.get("type", "object") == "object"
         else ["wrapped"]
     )
-    body += [f"    _required = {required}"] if required is not None else []
     the_type = schema.get("type", "object" if "properties" in schema else None)
 
     if the_type == "object":
@@ -220,6 +220,8 @@ def schema_to_struct_code(struct_name, schema, definitions_schema):
             body += [f"    {name} = {convert_to_field_code(sch, definitions_schema)}"]
     else:
         body += [f"    wrapped = {convert_to_field_code(schema, definitions_schema)}"]
+
+    body += ["", f"    _required = {required}"] if required is not None else []
 
     return "\n".join(body)
 
@@ -239,7 +241,7 @@ def schema_definitions_to_code(schema):
     code = []
     for (name, sch) in schema.items():
         code.append(schema_to_struct_code(name, sch, schema))
-    return "\n\n".join(code)
+    return "\n\n\n".join(code)
 
 
 def write_code_from_schema(schema, definitions_schema, filename, class_name):
@@ -267,9 +269,9 @@ def write_code_from_schema(schema, definitions_schema, filename, class_name):
     supporting_classes = schema_definitions_to_code(definitions_schema)
     structure_code = schema_to_struct_code(class_name, schema, definitions_schema)
     with open(filename, "w", encoding="utf-8") as fout:
-        fout.write("from typedpy import *\n\n")
+        fout.write("from typedpy import *\n\n\n")
         fout.write(supporting_classes)
-        fout.write("\n\n# ********************\n\n")
+        fout.write("\n\n# ********************\n\n\n")
         fout.write(structure_code)
         fout.write("\n")
 

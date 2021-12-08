@@ -23,7 +23,7 @@ class Values(enum.Enum):
     three = enum.auto()
 
 
-class Example(Structure):
+class Example1(Structure):
     _additionalProperties = True
     _required = []
     a: AllOf([Number(multiplesOf=5, maximum=20, minimum=-10), Integer, Positive])
@@ -39,3 +39,5 @@ class Example(Structure):
     g = AnyOf[Foo, Integer]
     values: Enum[Values]
     m: dict[str, Foo]
+
+

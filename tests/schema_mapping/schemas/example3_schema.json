@@ -1,0 +1,28 @@
+{
+    "definitions": {
+        "Person": {
+            "type": "object",
+            "properties": {
+                "first_name": {"type": "string"},
+                "last_name": {"type": "string"},
+                "age": {"type": "integer", "minimum": 1}
+            }, "required": ["first_name", "last_name"],
+            "additionalProperties": true
+        }
+    },
+    "example": {
+        "type": "object",
+        "properties": {
+            "people": {
+                "type": "array",
+                "items": {"$ref": "#/definitions/Person"}
+            },
+            "id": {"type": "integer"},
+            "i": {"type": "integer"},
+            "s": {"type": "string"},
+            "m": {"type": "object", "additionalProperties": {"$ref": "#/definitions/Person"}}
+        },
+        "required": ["id", "m", "people"],
+        "additionalProperties": true
+    }
+}

@@ -33,6 +33,10 @@ def deep_get(dictionary, deep_key):
     return reduce(lambda d, key: d.get(key) if d else None, keys, dictionary)
 
 
+def first_in(iterable):
+    return next(iter(iterable), None)
+
+
 def nested(func, default=None):
     try:
         return func()

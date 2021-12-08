@@ -2,7 +2,7 @@ import enum
 from collections import OrderedDict
 from typing import Union
 
-from .commons import wrap_val
+from .commons import first_in, wrap_val
 from .fields import (
     Map, Negative, NonNegative, NonPositive, Positive, StructureReference,
     Integer,
@@ -23,8 +23,7 @@ from .fields import (
 )
 
 from .extfields import DateString
-from .structures import ADDITIONAL_PROPERTIES
-
+from .structures import ADDITIONAL_PROPERTIES, NoneField
 
 SCHEMA_PATTERN_PROPERTIES = "patternProperties"
 SCHEMA_ADDITIONAL_PROPERTIES = "additionalProperties"
@@ -98,18 +97,18 @@ def structure_to_schema(structure, definitions_schema):
     """
     # json schema draft4 does not support inheritance, so we don't need to worry about that
     props = structure.__dict__
-    fields = structure.get_all_fields_by_name().keys()
-    required = getattr(structure, "_required", fields)
+    field_by_name = structure.get_all_fields_by_name()
+    required = getattr(structure, "_required", list(field_by_name.keys()))
     additional_props = getattr(structure, ADDITIONAL_PROPERTIES, True)
-    if len(fields) == 1 and required == fields and additional_props is False:
+    if len(field_by_name) == 1 and set(required) == set(field_by_name.keys()) and additional_props is False:
         return (
-            convert_to_schema(props[fields[0]], definitions_schema),
+            convert_to_schema(first_in(field_by_name.items()[0]), definitions_schema),
             definitions_schema,
         )
     else:
         fields_schema = OrderedDict([("type", "object")])
         fields_schema["properties"] = OrderedDict(
-            [(key, convert_to_schema(props[key], definitions_schema)) for key in fields]
+            [(key, convert_to_schema(field_by_name[key], definitions_schema)) for key in field_by_name]
         )
         fields_schema.update(
             OrderedDict(
@@ -533,6 +532,8 @@ class OneOfMapper(Mapper):
 
 class AnyOfMapper(Mapper):
     def to_schema(self, definitions):
+        if len(self.value._fields)==2 and self.value._fields[1].__class__ == NoneField:
+            return convert_to_schema(self.value._fields[0], definitions)
         return {"anyOf": convert_to_schema(self.value._fields, definitions)}
 
 

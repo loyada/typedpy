@@ -242,7 +242,7 @@ def test_field_of_class_typeerror(Point):
     with raises(TypeError) as excinfo:
         Foo(i=5, point="xyz")
     assert (
-        "point: Expected <class 'test_structure.Point.<locals>.PointClass'>; Got 'xyz'"
+        "point: Expected <class 'tests.test_structure.Point.<locals>.PointClass'>; Got 'xyz'"
         in str(excinfo.value)
     )
 
@@ -314,7 +314,7 @@ def test_field_of_class_in_map_typerror(Point):
     with raises(TypeError) as excinfo:
         Foo(i=5, point_by_int={1: Point(3, 4), 2: 3})
     assert (
-        "point_by_int_value: Expected <class 'test_structure.Point.<locals>.PointClass'>; Got 3"
+        "point_by_int_value: Expected <class 'tests.test_structure.Point.<locals>.PointClass'>; Got 3"
         in str(excinfo.value)
     )
 
@@ -327,7 +327,7 @@ def test_field_of_class_in_map__simpler_syntax_typerror(Point):
     with raises(TypeError) as excinfo:
         Foo(i=5, point_by_int={1: Point(3, 4), 2: 3})
     assert (
-        "point_by_int_value: Expected <class 'test_structure.Point.<locals>.PointClass'>; Got 3"
+        "point_by_int_value: Expected <class 'tests.test_structure.Point.<locals>.PointClass'>; Got 3"
         in str(excinfo.value)
     )
 

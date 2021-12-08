@@ -70,7 +70,6 @@ def test_definitions():
 def test_schema():
     definitions_code = schema_definitions_to_code(definitions)
     exec(definitions_code, globals())
-    write_code_from_schema(schema, definitions, "structures/example2.py", "Example2")
 
     struct_code = schema_to_struct_code("Duba", schema, definitions)
     exec(struct_code, globals())

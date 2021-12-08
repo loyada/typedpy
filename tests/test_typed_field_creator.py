@@ -27,7 +27,7 @@ class A(Structure):
 def test_wrong_type_err():
     with raises(TypeError) as excinfo:
         A(a=2)
-    assert "a: Expected <class 'test_typed_field_creator.Foo'>" in str(excinfo.value)
+    assert "a: Expected <class 'tests.test_typed_field_creator.Foo'>" in str(excinfo.value)
 
 
 def test_right_type1():

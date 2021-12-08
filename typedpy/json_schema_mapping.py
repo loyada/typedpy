@@ -102,7 +102,7 @@ def structure_to_schema(structure, definitions_schema):
     additional_props = getattr(structure, ADDITIONAL_PROPERTIES, True)
     if len(field_by_name) == 1 and set(required) == set(field_by_name.keys()) and additional_props is False:
         return (
-            convert_to_schema(first_in(field_by_name.items()[0]), definitions_schema),
+            convert_to_schema(first_in(field_by_name.items())[1], definitions_schema),
             definitions_schema,
         )
     else:

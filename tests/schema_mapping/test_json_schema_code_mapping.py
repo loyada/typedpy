@@ -43,6 +43,7 @@ def fixture_code_load():
                              ("Example3", "example3_schema.json", "generated_example3.py")
 
                          ])
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_example_code_to_schema_and_back(
         schema_load,
         code_load,

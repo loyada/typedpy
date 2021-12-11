@@ -8,6 +8,12 @@ class Person(Structure):
 
     _required = ['first_name', 'last_name']
 
+
+class Groups(Structure):
+    groups = Array(items=Person)
+
+    _required = ['groups']
+
 # ********************
 
 
@@ -17,5 +23,6 @@ class Example1(Structure):
     i = Integer()
     s = String()
     m = Map(items=[String(), Person])
+    groups = Groups
 
-    _required = ['id', 'm', 'people']
+    _required = ['groups', 'id', 'm', 'people']

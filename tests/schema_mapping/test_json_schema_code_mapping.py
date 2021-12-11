@@ -41,7 +41,8 @@ def fixture_code_load():
                          [
                              ("Example1", "example1_schema.json", "generated_example1.py"),
                              ("Example2", "example2_schema.json", "generated_example2.py"),
-                             ("Example3", "example3_schema.json", "generated_example3.py")
+                             ("Example3", "example3_schema.json", "generated_example3.py"),
+                             ("Example4", "example4_schema.json", "generated_example4.py"),
 
                          ])
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
@@ -59,7 +60,7 @@ def test_example_code_to_schema_and_back(
     OriginalClass = getattr(original_classes, original_class_name)
 
     schema, definitions = structure_to_schema(OriginalClass, {})
-    assert definitions == expected_schema["definitions"]
+    assert definitions == expected_schema.get("definitions", {})
     assert schema == expected_schema["example"]
 
     generated_file_name = str(get_abs_path_from_here("generated") / generated_filename)

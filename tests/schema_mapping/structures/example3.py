@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from typedpy import ImmutableStructure, Map, PositiveInt, Structure
+from typedpy import Array, ImmutableStructure, Map, PositiveInt, Structure
 
 
 class Person(ImmutableStructure):
@@ -9,6 +9,10 @@ class Person(ImmutableStructure):
     age: PositiveInt
 
     _optional = ["age"]
+
+
+class Groups(Structure):
+    groups: Array[Person]
 
 
 class Foo(Structure):
@@ -23,4 +27,5 @@ class Bar(Structure):
 
 class Example3(Foo, Bar, ImmutableStructure):
     m: Map[str, Person]
+    groups: Groups
 

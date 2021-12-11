@@ -1,0 +1,26 @@
+{
+    "example": {
+        "type": "object",
+        "properties": {
+            "firstName": {
+                "type": "string"
+            },
+            "lastName": {
+                "type": "string"
+            },
+            "socialSecurity": {
+                "type": "string"
+            },
+            "ageYears": {
+                "type": "integer"
+            }
+        },
+        "required": [
+            "age_years",
+            "first_name",
+            "last_name",
+            "social_security"
+        ],
+        "additionalProperties": true
+    }
+}

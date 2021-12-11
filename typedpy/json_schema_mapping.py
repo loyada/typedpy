@@ -1,10 +1,11 @@
 import enum
+import logging
 from collections import OrderedDict
 from typing import Union
 
 from .commons import first_in, wrap_val
 from .fields import (
-    Map, Negative, NonNegative, NonPositive, Positive, StructureReference,
+    FunctionCall, Map, Negative, NonNegative, NonPositive, Positive, StructureReference,
     Integer,
     Number,
     Float,
@@ -23,12 +24,18 @@ from .fields import (
 )
 
 from .extfields import DateString
+from .mappers import DoNotSerialize, aggregate_serialization_mappers
 from .structures import ADDITIONAL_PROPERTIES, NoneField
 
 SCHEMA_PATTERN_PROPERTIES = "patternProperties"
 SCHEMA_ADDITIONAL_PROPERTIES = "additionalProperties"
 SCHEMA_PROPETIES = "properties"
 SCHEMA_PROPERTY_NAMES = "propertyNames"
+
+FORMAT = '%(asctime)s  %(message)s'
+logging.basicConfig(format=FORMAT)
+logger = logging.getLogger('tcpserver')
+
 
 def get_mapper(field_cls):
     field_type_to_mapper = {
@@ -62,7 +69,7 @@ def _map_class_reference(reference, definitions_schema):
     return {"$ref": f"#/definitions/{name}"}
 
 
-def convert_to_schema(field, definitions_schema):
+def convert_to_schema(field, definitions_schema, serialization_mapper: dict = None):
     """
     In case field is None, should return None.
     Should deal with a list of fields, as well as a single one
@@ -72,12 +79,27 @@ def convert_to_schema(field, definitions_schema):
     if isinstance(field, ClassReference):
         return _map_class_reference(field, definitions_schema)
     if isinstance(field, list):
-        return [convert_to_schema(f, definitions_schema) for f in field]
+        return [convert_to_schema(f, definitions_schema, serialization_mapper=serialization_mapper) for f in field]
     mapper = get_mapper(field.__class__)(field)
-    return mapper.to_schema(definitions_schema)
+    return mapper.to_schema(definitions_schema, serialization_mapper=serialization_mapper)
 
 
-def structure_to_schema(structure, definitions_schema):
+def _validated_mapped_value(mapper, key):
+    if key in mapper:
+        key_mapper = mapper[key]
+        if isinstance(key_mapper, (FunctionCall,)):
+            logger.error(f"{key} is mapped to a function  in serialization mapper- "
+                           "This is unsupported by code-to-schema conversion. "
+                           "You will need to manually fix it.")
+        elif key_mapper is DoNotSerialize:
+            return key_mapper
+        elif not isinstance(key_mapper, (FunctionCall, str)):
+            raise TypeError("mapper must have a FunctionCall or a string")
+
+    return None
+
+
+def structure_to_schema(structure, definitions_schema, serialization_mapper = None):
     """
     Generate JSON schema from :class:`Structure`
     `See working examples in test. <https://github.com/loyada/typedpy/tree/master/tests/test_struct_to_schema.py>`_
@@ -100,16 +122,24 @@ def structure_to_schema(structure, definitions_schema):
     field_by_name = structure.get_all_fields_by_name()
     required = getattr(structure, "_required", list(field_by_name.keys()))
     additional_props = getattr(structure, ADDITIONAL_PROPERTIES, True)
+    mapper = aggregate_serialization_mappers(structure, serialization_mapper) or {}
     if len(field_by_name) == 1 and set(required) == set(field_by_name.keys()) and additional_props is False:
+        _, value = first_in(field_by_name.items())
         return (
-            convert_to_schema(first_in(field_by_name.items())[1], definitions_schema),
+            convert_to_schema(value, definitions_schema),
             definitions_schema,
         )
     else:
         fields_schema = OrderedDict([("type", "object")])
-        fields_schema["properties"] = OrderedDict(
-            [(key, convert_to_schema(field_by_name[key], definitions_schema)) for key in field_by_name]
-        )
+        fields_schema["properties"] = {}
+        properties = fields_schema["properties"]
+        for key, field in field_by_name.items():
+            mapped_key = mapper[key] if key in mapper and isinstance(mapper[key], (str,)) else key
+            mapped_value = _validated_mapped_value(mapper, key)
+            if mapped_value is not DoNotSerialize:
+                sub_mapper = mapper.get(f"{key}._mapper", {})
+                properties[mapped_key] = convert_to_schema(field, definitions_schema, serialization_mapper=sub_mapper)
+
         fields_schema.update(
             OrderedDict(
                 [
@@ -298,8 +328,8 @@ class StructureReferenceMapper(Mapper):
         ]
         return body
 
-    def to_schema(self, definitions):
-        schema, _ = structure_to_schema(getattr(self.value, "_newclass"), definitions)
+    def to_schema(self, definitions, serialization_mapper):
+        schema, _ = structure_to_schema(getattr(self.value, "_newclass"), definitions, serialization_mapper)
         schema["type"] = "object"
         return schema
 
@@ -315,7 +345,7 @@ class NumberMapper(Mapper):
         }
         return list((k, v) for k, v in params.items() if v is not None)
 
-    def to_schema(self, definitions):
+    def to_schema(self, definitions, serialization_mapper):
         def get_min(value):
             if value.minimum is not None:
                 return value.minimum
@@ -371,7 +401,7 @@ class MapMapper(Mapper):
         }
         return list((k, v) for k, v in params.items() if v is not None)
 
-    def to_schema(self, definitions):
+    def to_schema(self, definitions, serialization_mapper):
         value = self.value
         params = {
             "type": "object",
@@ -385,7 +415,7 @@ class MapMapper(Mapper):
             if keys.maxLength or keys.minLength:
                 suffix = f"{{{keys.minLength or ''}, {keys.maxLength or ''}}}"
             pattern_props = f"{keys.pattern or ''}{suffix}" or None
-            values_schema = convert_to_schema(values, definitions)
+            values_schema = convert_to_schema(values, definitions, serialization_mapper=serialization_mapper)
             if pattern_props:
                 params[SCHEMA_PATTERN_PROPERTIES] = values_schema
             elif values_schema:
@@ -396,15 +426,15 @@ class MapMapper(Mapper):
 
 
 class IntegerMapper(NumberMapper):
-    def to_schema(self, definitions):
-        params = super().to_schema(definitions)
+    def to_schema(self, definitions, serialization_mapper):
+        params = super().to_schema(definitions, serialization_mapper)
         params.update({"type": "integer"})
         return params
 
 
 class FloatMapper(NumberMapper):
-    def to_schema(self, definitions):
-        params = super().to_schema(definitions)
+    def to_schema(self, definitions, serialization_mapper):
+        params = super().to_schema(definitions, serialization_mapper)
         params.update({"type": "float"})
         return params
 
@@ -414,7 +444,7 @@ class BooleanMapper(Mapper):
     def get_paramlist_from_schema(schema, definitions):
         return []
 
-    def to_schema(self, definitions):  # pylint: disable=R0201
+    def to_schema(self, definitions, serialization_mapper):  # pylint: disable=R0201
         params = {
             "type": "boolean",
         }
@@ -431,7 +461,7 @@ class StringMapper(Mapper):
         }
         return list((k, v) for k, v in params.items() if v is not None)
 
-    def to_schema(self, definitions):
+    def to_schema(self, definitions, serialization_mapper):
         value = self.value
         params = {
             "type": "string",
@@ -462,14 +492,14 @@ class ArrayMapper(Mapper):
         }
         return list((k, v) for k, v in params.items() if v is not None)
 
-    def to_schema(self, definitions):
+    def to_schema(self, definitions, serialization_mapper):
         value = self.value
         if isinstance(value, Tuple):
             params = {
                 "type": "array",
                 "uniqueItems": value.uniqueItems,
                 "additionalItems": False,
-                "items": convert_to_schema(value.items, definitions),
+                "items": convert_to_schema(value.items, definitions, serialization_mapper),
             }
         elif isinstance(value, Set):
             params = {
@@ -477,7 +507,7 @@ class ArrayMapper(Mapper):
                 "uniqueItems": True,
                 "maxItems": value.maxItems,
                 "minItems": value.minItems,
-                "items": convert_to_schema(value.items, definitions),
+                "items": convert_to_schema(value.items, definitions, serialization_mapper),
             }
         else:
             params = {
@@ -486,7 +516,7 @@ class ArrayMapper(Mapper):
                 "additionalItems": value.additionalItems,
                 "maxItems": value.maxItems,
                 "minItems": value.minItems,
-                "items": convert_to_schema(value.items, definitions),
+                "items": convert_to_schema(value.items, definitions, serialization_mapper),
             }
         return {k: v for k, v in params.items() if v is not None}
 
@@ -499,7 +529,7 @@ class EnumMapper(Mapper):
         }
         return list(params.items())
 
-    def to_schema(self, definitions):
+    def to_schema(self, definitions, serialization_mapper):
         def adjust(val) -> Union[str, int, float]:
             if isinstance(val, enum.Enum):
                 return val.name
@@ -521,22 +551,22 @@ class MultiFieldMapper:
 
 
 class AllOfMapper(Mapper):
-    def to_schema(self, definitions):
-        return {"allOf": convert_to_schema(self.value._fields, definitions)}
+    def to_schema(self, definitions, serialization_mapper):
+        return {"allOf": convert_to_schema(self.value._fields, definitions, serialization_mapper)}
 
 
 class OneOfMapper(Mapper):
-    def to_schema(self, definitions):
-        return {"oneOf": convert_to_schema(self.value._fields, definitions)}
+    def to_schema(self, definitions, serialization_mapper):
+        return {"oneOf": convert_to_schema(self.value._fields, definitions, serialization_mapper)}
 
 
 class AnyOfMapper(Mapper):
-    def to_schema(self, definitions):
+    def to_schema(self, definitions, serialization_mapper):
         if len(self.value._fields)==2 and self.value._fields[1].__class__ == NoneField:
-            return convert_to_schema(self.value._fields[0], definitions)
-        return {"anyOf": convert_to_schema(self.value._fields, definitions)}
+            return convert_to_schema(self.value._fields[0], definitions, serialization_mapper)
+        return {"anyOf": convert_to_schema(self.value._fields, definitions, serialization_mapper)}
 
 
 class NotFieldMapper(Mapper):
-    def to_schema(self, definitions):
-        return {"not": convert_to_schema(self.value._fields, definitions)}
+    def to_schema(self, definitions, serialization_mapper):
+        return {"not": convert_to_schema(self.value._fields, definitions, serialization_mapper)}

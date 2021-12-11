@@ -8,7 +8,18 @@
                 "age": {"type": "integer", "minimum": 1}
             }, "required": ["first_name", "last_name"],
             "additionalProperties": true
-        }
+        },
+         "Groups": {
+             "type": "object",
+             "properties": {
+                 "groups": {
+                     "type": "array",
+                     "items": {"$ref": "#/definitions/Person"}
+                 }
+             },
+             "required": ["groups"],
+             "additionalProperties": true
+         }
     },
     "example": {
         "type": "object",
@@ -20,9 +31,10 @@
             "id": {"type": "integer"},
             "i": {"type": "integer"},
             "s": {"type": "string"},
-            "m": {"type": "object", "additionalProperties": {"$ref": "#/definitions/Person"}}
+            "m": {"type": "object", "additionalProperties": {"$ref": "#/definitions/Person"}},
+            "groups": {"$ref": "#/definitions/Groups"}
         },
-        "required": ["id", "m", "people"],
+        "required": ["groups","id", "m", "people"],
         "additionalProperties": true
     }
 }

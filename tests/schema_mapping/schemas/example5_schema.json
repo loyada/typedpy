@@ -1,0 +1,11 @@
+{
+    "example": {
+        "type": "object",
+        "properties": {
+            "NAME": {"type": "string"},
+            "A": {"type": "array"}},
+
+        "required": ["A", "NAME"],
+
+        "additionalProperties": true}
+}

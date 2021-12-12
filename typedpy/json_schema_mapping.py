@@ -136,10 +136,14 @@ def structure_to_schema(structure, definitions_schema, serialization_mapper = No
         for key, field in field_by_name.items():
             mapped_key = mapper[key] if key in mapper and isinstance(mapper[key], (str,)) else key
             mapped_value = _validated_mapped_value(mapper, key)
+            if mapped_value is DoNotSerialize:
+                if mapped_key in required:
+                    required.pop(required.index(mapped_key))
             if mapped_value is not DoNotSerialize:
+                if key in required:
+                    required[required.index(key)] = mapped_key
                 sub_mapper = mapper.get(f"{key}._mapper", {})
                 properties[mapped_key] = convert_to_schema(field, definitions_schema, serialization_mapper=sub_mapper)
-
         fields_schema.update(
             OrderedDict(
                 [

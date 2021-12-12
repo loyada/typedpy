@@ -1,0 +1,10 @@
+{
+    "example": {
+        "type": "object",
+        "properties": {
+            "bbCc": {"type": "integer"},
+            "x": {"type": "string"}},
+        "required": ["bbCc", "x"],
+        "additionalProperties": true
+    }
+}

@@ -12,4 +12,4 @@ class Example1(Structure):
     socialSecurity = String()
     ageYears = Integer()
 
-    _required = ['age_years', 'first_name', 'last_name', 'social_security']
+    _required = ['ageYears', 'firstName', 'lastName', 'socialSecurity']

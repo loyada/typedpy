@@ -16,10 +16,10 @@
             }
         },
         "required": [
-            "age_years",
-            "first_name",
-            "last_name",
-            "social_security"
+            "ageYears",
+            "firstName",
+            "lastName",
+            "socialSecurity"
         ],
         "additionalProperties": true
     }

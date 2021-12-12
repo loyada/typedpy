@@ -1,0 +1,24 @@
+{
+    "definitions": {
+        "Foo": {
+            "type": "object",
+            "properties": {
+                "xyz": {"type": "array"},
+                "j": {"type": "integer"}
+            }, "required": ["j", "xyz"],
+            "additionalProperties": true
+        }
+    },
+    "example": {
+        "type": "object",
+        "properties": {
+            "xyz": {"type": "array"},
+            "j": {"type": "integer"},
+            "a": {"type": "array"},
+            "s": {"type": "string"},
+            "foo": {"$ref": "#/definitions/Foo"}
+        },
+        "required": ["a", "foo", "j", "s", "xyz"],
+        "additionalProperties": true
+    }
+}

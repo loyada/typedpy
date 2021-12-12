@@ -32,10 +32,6 @@ SCHEMA_ADDITIONAL_PROPERTIES = "additionalProperties"
 SCHEMA_PROPETIES = "properties"
 SCHEMA_PROPERTY_NAMES = "propertyNames"
 
-FORMAT = '%(asctime)s  %(message)s'
-logging.basicConfig(format=FORMAT)
-logger = logging.getLogger('tcpserver')
-
 
 def get_mapper(field_cls):
     field_type_to_mapper = {
@@ -88,7 +84,7 @@ def _validated_mapped_value(mapper, key):
     if key in mapper:
         key_mapper = mapper[key]
         if isinstance(key_mapper, (FunctionCall,)):
-            logger.error(f"{key} is mapped to a function  in serialization mapper- "
+            logging.error(f"{key} is mapped to a function  in serialization mapper- "
                            "This is unsupported by code-to-schema conversion. "
                            "You will need to manually fix it.")
         elif key_mapper is DoNotSerialize:

@@ -1,11 +1,6 @@
 from typedpy import *
 
 
-
-
-# ********************
-
-
 class Example1(Structure):
     firstName = String()
     lastName = String()

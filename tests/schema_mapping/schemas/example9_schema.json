@@ -1,0 +1,18 @@
+{
+    "definitions": {
+    },
+    "example": {
+        "type": "object",
+        "properties": {
+            "D": {
+                "type": "object",
+                "additionalProperties": {
+                    "type": "integer"
+                },
+                "default": {"abc": 0}
+            }
+        },
+        "required": [],
+        "additionalProperties": true
+    }
+}

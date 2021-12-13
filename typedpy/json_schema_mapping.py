@@ -139,7 +139,12 @@ def structure_to_schema(structure, definitions_schema, serialization_mapper = No
                 if key in required:
                     required[required.index(key)] = mapped_key
                 sub_mapper = mapper.get(f"{key}._mapper", {})
-                properties[mapped_key] = convert_to_schema(field, definitions_schema, serialization_mapper=sub_mapper)
+                sub_schema = convert_to_schema(field, definitions_schema, serialization_mapper=sub_mapper)
+                default_raw = getattr(field,"_default")
+                if default_raw is not None:
+                    default_val = default_raw() if callable(default_raw) else default_raw
+                    sub_schema["default"] = default_val
+                properties[mapped_key] =sub_schema
         fields_schema.update(
             OrderedDict(
                 [
@@ -198,7 +203,11 @@ def convert_to_field_code(schema, definitions):
             cls = type_name_to_field[schema.get("type", "object")]
         mapper = get_mapper(cls)
     params_list = mapper.get_paramlist_from_schema(schema, definitions)
-
+    if "default" in schema:
+        default_val = schema["default"]
+        if isinstance(default_val, (list, dict)):
+            default_val = f"lambda: {default_val}"
+        params_list.append(("default", default_val))
     params_as_string = ", ".join([f"{name}={val}" for (name, val) in params_list])
     return f"{cls.__name__}({params_as_string})"
 
@@ -299,8 +308,9 @@ def write_code_from_schema(schema, definitions_schema, filename, class_name):
     structure_code = schema_to_struct_code(class_name, schema, definitions_schema)
     with open(filename, "w", encoding="utf-8") as fout:
         fout.write("from typedpy import *\n\n\n")
-        fout.write(supporting_classes)
-        fout.write("\n\n# ********************\n\n\n")
+        if definitions_schema:
+            fout.write(supporting_classes)
+            fout.write("\n\n# ********************\n\n\n")
         fout.write(structure_code)
         fout.write("\n")
 
@@ -473,7 +483,7 @@ class StringMapper(Mapper):
 
 
 class DateStringMapper(Mapper):
-    def to_schema(self, definitions):  # pylint: disable=no-self-use
+    def to_schema(self, definitions, serialization_mapper):  # pylint: disable=no-self-use
         params = {
             "type": "string",
             "pattern": r"^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$",

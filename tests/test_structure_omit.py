@@ -95,24 +95,3 @@ def test_omit_immutable():
         bar.d = {}
     assert "Bar: Structure is immutable" in str(excinfo.value)
 
-
-def test_to_schema():
-    expected = {
-        "type": "object",
-        "properties": {
-            "d": {
-                "type": "object",
-                "additionalProperties": {
-                    "type": "integer"
-                }
-            }
-        },
-        "required": [],
-        "additionalProperties": True
-}
-    schema,_ = structure_to_schema(Bar4,{})
-    assert schema == expected
-    struct_code = schema_to_struct_code("Bar_4", schema, {})
-    exec(struct_code, globals())
-    assert Bar_4.get_all_fields_by_name().keys() == Bar4.get_all_fields_by_name().keys()
-

@@ -1,0 +1,18 @@
+{
+    "definitions": {
+    },
+    "example": {
+        "type": "object",
+        "properties": {
+            "D": {
+                "type": "object",
+                "additionalProperties": {"type": "integer"},
+                "default": {"abc": 0}
+            },
+            "I": {"type": "integer"},
+            "S": {"type": "array", "uniqueItems": true},
+            "X": {"type": "integer"}},
+        "required": ["I", "S", "X"],
+        "additionalProperties": true
+    }
+}

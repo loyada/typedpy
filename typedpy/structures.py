@@ -1561,7 +1561,8 @@ class AllFieldsRequiredMeta(type):
 class AllFieldsRequired(metaclass=AllFieldsRequiredMeta):
     """
     Define a new Structure class with all the fields of the given class, and all are required (even if they were
-    not required in the reference class). The exception is fields that were defined with explicit default value
+    not required in the reference class). The exception is fields that were defined with explicit default value.
+
     For Example:
 
      .. code-block:: python

@@ -14,6 +14,7 @@ from typedpy.structures import (
     ImmutableField,
     unique,
     Partial,
+    AllFieldsRequired,
     Omit,
     Pick,
     Extend,

@@ -183,6 +183,16 @@ class _FieldMeta(type):
         _check_for_final_violations(clsobj.mro())
         return clsobj
 
+    def __or__(self, other):
+        from .fields import AnyOf
+
+        if isinstance(other, (Field, Structure, _FieldMeta, StructMeta)):
+            return AnyOf[self, other]
+        converted = convert_basic_types (other)
+        if converted:
+            return AnyOf[self, converted]
+        raise TypeError(f"| is Supported only between field types; Got {self} and {other}")
+
     def __getitem__(cls, val):
         if isinstance(val, Field):
             return val
@@ -318,6 +328,16 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
         if default:
             default_val = default() if callable(default) else default
             self._try_default_value(default_val)
+
+    def __or__(self, other):
+        from .fields import AnyOf
+
+        if isinstance(other, (Field, Structure, _FieldMeta, StructMeta)):
+            return AnyOf[self, other]
+        converted = convert_basic_types(other)
+        if converted:
+            return AnyOf[self, converted]
+        raise TypeError(f"| is Supported only between field types; Got {self} and {other}")
 
     def _try_default_value(self, default):
         try:
@@ -1499,6 +1519,77 @@ class Partial(metaclass=PartialMeta):
 
         # or if you want to have a consistent class name for troubleshooting:
         Bar = Partial[Foo, "Bar"]
+
+    """
+
+    _required = []
+
+
+
+class AllFieldsRequiredMeta(type):
+    def __getitem__(
+        cls, clazz: typing.Union[StructMeta, typing.Tuple[StructMeta, str]]
+    ) -> StructMeta:
+        if not isinstance(clazz, StructMeta):
+            if not isinstance(clazz, tuple) or (
+                isinstance(clazz, tuple)
+                and (
+                    len(clazz) != 2
+                    or not isinstance(clazz[0], StructMeta)
+                    or not isinstance(clazz[1], str)
+                )
+            ):
+                raise TypeError(
+                    "Partial must have a Structure class as a parameter, and an optional name for the class"
+                )
+        clazz, classname = (
+            clazz if isinstance(clazz, tuple) else (clazz, f"Partial{clazz.__name__}")
+        )
+
+        cls_dict = _init_class_dict(clazz)
+        cls_dict[REQUIRED_FIELDS] = []
+        for k, v in clazz.get_all_fields_by_name().items():
+            cls_dict[k] = v
+            if getattr(v, "_default") is None:
+                cls_dict[REQUIRED_FIELDS].append(k)
+
+        newclass = type(classname, (Structure,), cls_dict)
+
+        return newclass
+
+
+class AllFieldsRequired(metaclass=AllFieldsRequiredMeta):
+    """
+    Define a new Structure class with all the fields of the given class, and all are required (even if they were
+    not required in the reference class). The exception is fields that were defined with explicit default value
+    For Example:
+
+     .. code-block:: python
+
+         class Foo(ImmutableStructure):
+            i: int
+            d: dict[str, int] = dict
+            s: str
+            a: set
+
+         class Bar(AllFieldsRequired[Foo]):
+            x: str
+
+    "Bar" has all the fields of Foo as required with the exception of "d" (since it has a default value), and in
+     addition "x" as required.
+     Note that Bar does not extend Foo, but it is a Structure class. It does copy attributes like serialization
+      mappers, _ignore_none, but Bar can override any of them.
+
+    Another valid usage:
+
+    .. code-block:: python
+
+        Bar = AllFieldsRequired[Foo]
+
+        bar = Bar(i=5)
+
+        # or if you want to have a consistent class name for troubleshooting:
+        Bar = AllFieldsRequired[Foo, "Bar"]
 
     """
 

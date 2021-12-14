@@ -4,6 +4,8 @@ import enum
 import sys
 import typing
 from dataclasses import dataclass
+from datetime import datetime
+
 import pytest
 from pytest import raises
 
@@ -687,4 +689,32 @@ def test_find_fields_with_function_returning_field():
 
     assert set(Foo.get_all_fields_by_name().keys()) == {"age", "name"}
     assert str(Foo.name) == "<String. Properties: minLength = 10>"
+
+
+def test_or_operator():
+    class Foo(Structure):
+        i: int
+
+    class Bar(Structure):
+        a: Integer | Foo
+
+    assert Bar(a=5).a == 5
+    assert Bar(a=Foo(i=4)).a.i == 4
+    with raises(ValueError):
+        Bar(a="xxx")
+
+    class Blah(Structure):
+        a: Integer | str
+
+    assert Blah(a="xxx").a == "xxx"
+
+    with raises(TypeError):
+        class Bad(Structure):
+            a: Integer | datetime
+
+    class Chain(Structure):
+        a: Integer | Foo | str
+
+    assert Chain(a=Foo(i=5)).a.i == 5
+    assert Chain(a="xxx").a == "xxx"
 

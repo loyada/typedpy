@@ -534,6 +534,9 @@ Beyond regular class inheritance for reuse, which is supported by Typedpy, there
 
 1. Partial - a copy of a given Structure class, in which all the fields are optional
 
+2. AllFieldsRequired - a copy of a given Structure class, in which all the fields are required, except for fields
+with explicit defaults
+
 2. Structure.omit / Omit - a copy of a given class, omitting specific fields
 
 3. Structure.pick / Pick - a copy of a given class, picking specific fields (opposite of omit)
@@ -572,6 +575,41 @@ In the example above, we could have also called :
 .. code-block:: python
 
     Bar = Partial[Foo, "Bar"]
+
+...with a similar outcome. The "Bar" string above is name that will be given to the new class, to help with troubleshooting.
+This name is optional.
+
+
+AllFieldsRequired
+-----------------
+(from v2.8.0)
+Partial creates a new Structure class from an existing Structure class, that has all the original fields, but all are
+optional. It is NOT a subclass of the original class, so it can be used with ImmutableStructure.
+For example:
+
+.. code-block:: python
+
+    class Foo(ImmutableStructure):
+        i: int
+        d: dict[str, int] = dict
+        s: str
+        a: set
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+     class Bar(AllFieldsRequired[Foo]):
+        x: str
+
+    assert set(Bar._required) == {"x", "i", "s", "a"}
+    assert not issubclass(Bar, Foo)
+    assert issubclass(Bar, Structure)
+    bar = Bar(i=5, x="xyz", a={1, 2, 3}, s="abc")
+
+In the example above, we could have also called :
+
+.. code-block:: python
+
+    Bar = AllFieldsRequired[Foo, "Bar"]
 
 ...with a similar outcome. The "Bar" string above is name that will be given to the new class, to help with troubleshooting.
 This name is optional.
@@ -677,5 +715,5 @@ Structure Documentation
 
 .. autoclass:: Pick
 
-
+.. autoclass:: AllFieldsRequired
 

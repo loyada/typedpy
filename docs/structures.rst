@@ -537,11 +537,11 @@ Beyond regular class inheritance for reuse, which is supported by Typedpy, there
 2. AllFieldsRequired - a copy of a given Structure class, in which all the fields are required, except for fields
 with explicit defaults
 
-2. Structure.omit / Omit - a copy of a given class, omitting specific fields
+3. Structure.omit / Omit - a copy of a given class, omitting specific fields
 
-3. Structure.pick / Pick - a copy of a given class, picking specific fields (opposite of omit)
+4. Structure.pick / Pick - a copy of a given class, picking specific fields (opposite of omit)
 
-4. Extend - a copy of a given class, but not inheriting
+5. Extend - a copy of a given class, but not inheriting
 
 See below for detail.
 

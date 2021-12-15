@@ -527,6 +527,24 @@ class Example above will throw an appropriate exception.
 
 By default, this flag is set to True (from version 2.6.5).
 
+Support for PEP-604 Style
+=========================
+(since 2.8)
+Typedpy supports the "|" notation similarly to Python 3.10.
+For example, the following is valid:
+
+.. code-block:: python
+
+      class Foo(Structure):
+          ...
+
+      class Chain(Structure):
+        a: Integer(maximum=100) | Foo | str
+
+
+     # equivalent to AnyOf[Integer(maximum=100), Foo, String]
+
+
 Alternative Methods for Structure reuse
 =======================================
 

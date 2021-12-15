@@ -713,8 +713,9 @@ def test_or_operator():
             a: Integer | datetime
 
     class Chain(Structure):
-        a: Integer | Foo | str
+        a: Integer(maximum=100) | Foo | str
 
     assert Chain(a=Foo(i=5)).a.i == 5
     assert Chain(a="xxx").a == "xxx"
+    assert Chain(a=13).a == 13
 

@@ -25,7 +25,7 @@ def test_extend_structure():
     assert set(Bar._required) == {"x", "i", "a"}
     assert not issubclass(Bar, Foo)
     assert issubclass(Bar, Structure)
-    bar = Bar(i=5, x="xyz", a = {1,2,3})
+    bar = Bar(i=5, x="xyz", a = {1,2,3}) # noqa
     assert bar.d == {}
     assert bar.i == 5
     assert bar.s is None
@@ -48,7 +48,6 @@ def test_direct_assignment_to_extend():
     assert "ExtendFoo: missing a required argument: 'a'" in str(excinfo.value)
 
     bar = Bar(i=5, a={1,2})
-    assert bar.i == 5
     assert bar.s is None
     assert bar.a == {2,1}
     with pytest.raises(TypeError) as excinfo:
@@ -57,7 +56,7 @@ def test_direct_assignment_to_extend():
 
 
 def test_direct_assignment_to_extend_with_name():
-    Bar = Extend[Foo, "Bar"]
+    Bar = Extend[Foo, "Bar"] # noqa
     with pytest.raises(TypeError) as excinfo:
         Bar(i=5, s="xyz")
     assert "Bar: missing a required argument: 'a'" in str(excinfo.value)
@@ -70,6 +69,6 @@ def test_extend_and_immutable():
 
     bar = Bar(i=5, x="xyz", a={"abc", 1, (4, 5, 6)}, d={"x": 1})
     with pytest.raises(ValueError) as excinfo:
-        bar.d["x"] = 2
+        bar.d["x"] = 2  # noqa
     assert "d: Field is immutable" in str(excinfo.value)
 

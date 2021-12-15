@@ -13,12 +13,16 @@ from typedpy.structures import (
     FinalStructure,
     ImmutableField,
     unique,
+)
+
+from typedpy.structures_reuse import (
     Partial,
     AllFieldsRequired,
     Omit,
     Pick,
     Extend,
 )
+
 from typedpy.fields import (
     Number,
     Integer,

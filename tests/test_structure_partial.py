@@ -1,7 +1,6 @@
 import pytest
 
-from typedpy import ImmutableStructure, Map, Structure, mappers, Serializer
-from typedpy.structures import Partial
+from typedpy import ImmutableStructure, Map, Partial, Structure, mappers, Serializer
 
 
 class Blah(Structure):

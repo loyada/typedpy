@@ -23,7 +23,7 @@ def test_allfieldsrequired_of_structure():
     assert set(Bar._required) == {"x", "i", "s", "a"}
     assert not issubclass(Bar, Foo)
     assert issubclass(Bar, Structure)
-    bar = Bar(i=5, x="xyz", a={1, 2, 3}, s="abc")
+    bar = Bar(i=5, x="xyz", a={1, 2, 3}, s="abc") # noqa
     assert bar.d == {}
     bar.d = {"x": 1}
 
@@ -40,7 +40,7 @@ def test_allfieldsrequired_of_structure():
 
 
 def test_direct_assignment_to_allfieldsrequired():
-    Bar = AllFieldsRequired[Foo]
+    Bar = AllFieldsRequired[Foo]  # noqa
     assert not issubclass(Bar, Foo)
     assert issubclass(Bar, Structure)
     with pytest.raises(TypeError):
@@ -56,7 +56,7 @@ def test_direct_assignment_to_allfieldsrequired():
 
 
 def test_direct_assignment_to_partial_with_class_name():
-    Bar = AllFieldsRequired[Foo, "Bar"]
+    Bar = AllFieldsRequired[Foo, "Bar"] # noqa
     assert Bar.__name__ == "Bar"
 
 

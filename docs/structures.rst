@@ -606,8 +606,8 @@ This name is optional.
 AllFieldsRequired
 -----------------
 (from v2.8.0)
-Partial creates a new Structure class from an existing Structure class, that has all the original fields, but all are
-optional. It is NOT a subclass of the original class, so it can be used with ImmutableStructure.
+AllFieldsRequired creates a new Structure class from an existing Structure class, that has all the original fields, but all are
+required. It is NOT a subclass of the original class, so it can be used with ImmutableStructure.
 For example:
 
 .. code-block:: python

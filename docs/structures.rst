@@ -539,10 +539,15 @@ For example, the following is valid:
           ...
 
       class Chain(Structure):
-        a: Integer(maximum=100) | Foo | str
+        a: Integer(maximum=100) | Foo | str | 529
 
 
-     # equivalent to AnyOf[Integer(maximum=100), Foo, String]
+     # a can be assigned:
+     # - any integer up to 100
+     # - instance of Foo
+     # - string
+     # - the number 529
+
 
 
 Alternative Methods for Structure reuse

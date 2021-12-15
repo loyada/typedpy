@@ -175,6 +175,19 @@ def _check_for_final_violations(classes):
                 )
 
 
+def _or_fields(first, other):
+    from .fields import AnyOf, Enum
+
+    if isinstance(other, (Field, Structure, _FieldMeta, StructMeta)):
+        return AnyOf[first, other]
+    if isinstance(other, (str, int, float, bool, list, set, dict, tuple)):
+        return AnyOf[first, Enum(values=[other])]
+    converted = convert_basic_types(other)
+    if converted:
+        return AnyOf[first, converted]
+    raise TypeError(f"| is Supported only between field types; Got {first} and {other}")
+
+
 class _FieldMeta(type):
     _registry = {}
 
@@ -184,14 +197,7 @@ class _FieldMeta(type):
         return clsobj
 
     def __or__(self, other):
-        from .fields import AnyOf
-
-        if isinstance(other, (Field, Structure, _FieldMeta, StructMeta)):
-            return AnyOf[self, other]
-        converted = convert_basic_types (other)
-        if converted:
-            return AnyOf[self, converted]
-        raise TypeError(f"| is Supported only between field types; Got {self} and {other}")
+        return _or_fields(self, other)
 
     def __getitem__(cls, val):
         if isinstance(val, Field):
@@ -330,14 +336,7 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
             self._try_default_value(default_val)
 
     def __or__(self, other):
-        from .fields import AnyOf
-
-        if isinstance(other, (Field, Structure, _FieldMeta, StructMeta)):
-            return AnyOf[self, other]
-        converted = convert_basic_types(other)
-        if converted:
-            return AnyOf[self, converted]
-        raise TypeError(f"| is Supported only between field types; Got {self} and {other}")
+        return _or_fields(self, other)
 
     def _try_default_value(self, default):
         try:

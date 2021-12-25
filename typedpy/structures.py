@@ -985,6 +985,15 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             v is not None for k, v in self.__dict__.items() if k not in internal_props
         )
 
+    def _additional_serialization(self) -> dict:
+        """
+        :return: additional fields when serializing a structure,
+            Each key is a key in the output json, and each value
+            can either be a function with no parameters, a method, or a
+            simple value
+        """
+        return {}
+
     @classmethod
     def get_all_fields_by_name(cls):
         return _get_all_fields_by_name(cls)

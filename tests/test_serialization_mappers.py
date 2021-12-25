@@ -134,8 +134,8 @@ def test_aggregated_with_function_unsupported():
     with pytest.raises(NotImplementedError) as excinfo:
         Serializer(blah).serialize()
     assert (
-        "Combining functions and other mapping in a serialization mapper is unsupported"
-        in str(excinfo.value)
+            "Combining functions and other mapping in a serialization mapper is unsupported"
+            in str(excinfo.value)
     )
 
 
@@ -212,3 +212,39 @@ def test_dont_serialize_inheritance_chained():
     )
     assert deserialized == Bar(i=5, a=[1, 2, 3], s="jon")
     assert Serializer(deserialized).serialize() == {"NAME": "jon", "A": [1, 2, 3]}
+
+
+def test_chained_mappers_with_additional_serialization_props():
+    class Foo(Structure):
+        a: int
+        s: str
+
+        x = 1
+
+        def double_a(self):
+            return self.a * 2
+
+        _serialization_mapper = [{"a": "b"}, mappers.TO_LOWERCASE]
+
+        def _additional_serialization(self) -> dict:
+            return {
+                "double_a": self.double_a,
+                "x": self.x,
+                "triple_a": self.a * 3,
+                "y": [1, 2, 3],
+                "z": lambda: Foo.x + self.a
+            }
+
+    original = {"B": 5, "S": "xyz"}
+    deserialized = Deserializer(Foo).deserialize(original, keep_undefined=False)
+    assert deserialized == Foo(a=5, s="xyz")
+    serialized = Serializer(deserialized).serialize()
+    assert serialized == {
+        **original,
+        "double_a": 10,
+        "x": 1,
+        "triple_a": 15,
+        "y": [1, 2, 3],
+        "z": 6
+    }
+

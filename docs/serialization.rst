@@ -750,3 +750,53 @@ Conversely, the "s" field:
 1. s -> name
 2. no impact
 3. name -> NAME
+
+
+Serializing Additional Values Except For Fields
+===============================================
+In certain cases, you might want to serialize Typepy structures so that the serialization includes other values besides
+fields. For example, you may have a "Purchase" Structure class with all the line items of the purchase and their price,
+and the class has a calculated Python property of the total_amount that you want to include - in the serialization.
+
+
+For such cases, you can override the method Structure._additional_serialization().
+
+This method returns a dict of additional values to be serialized. Each value can an expression or a function that does
+not accept any parameters.
+Here is a fairly comprehensive example from the tests:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        a: int
+        s: str
+        x = 1
+
+        def double_a(self):
+            return self.a * 2
+
+        _serialization_mapper = [{"a": "b"}, mappers.TO_LOWERCASE]
+
+        def _additional_serialization(self) -> dict:
+            return {
+                "double_a": self.double_a,   # a method (e.g. be a @property)
+                "x": self.x,
+                "triple_a": self.a * 3,     # an expression
+                "y": [1, 2, 3],
+                "z": lambda: Foo.x + self.a  # a function with no arguments
+            }
+
+    foo = Foo(a=5, s="xyz")
+    serialized = Serializer(foo).serialize()
+    assert serialized == {
+        "B": 5,
+        "S": "xyz",
+        "double_a": 10,
+        "x": 1,
+        "triple_a": 15,
+        "y": [1, 2, 3],
+        "z": 6
+    }
+
+As seen in the example, the "additional serialization" is applied as the last step, after the serialization mappers were
+already applied. In other words, the serialization mappers do not apply to the "additional serialization".

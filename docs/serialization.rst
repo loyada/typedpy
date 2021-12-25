@@ -756,15 +756,15 @@ Serializing Additional Values Beyond Fields
 ===========================================
 (from v2.9)
 
-In certain cases, you might want to serialize Typepy structures so that the result includes other values besides
+In certain cases, you might want to serialize Typepy structures so that the result includes other values in addition to
 fields. For example, you may have a "Purchase" Structure class with all the line-items of the purchase and their price,
-and the class has a calculated Python property of the total_amount that you want to include in the serialization.
+and also a calculated Python property of the total_amount that you want to include in the serialization.
 
 For such cases, you can override the method Structure._additional_serialization().
 
-This method returns a dict of additional values to be serialized. Each value can an expression or a function that does
+This method returns a dict of additional values to be serialized. Each value is an expression or a function that does
 not accept any parameters.
-Here is a fairly comprehensive example from the tests:
+Here is a fairly comprehensive example from the unit tests:
 
 .. code-block:: python
 

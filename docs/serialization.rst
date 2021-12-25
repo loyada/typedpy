@@ -754,6 +754,8 @@ Conversely, the "s" field:
 
 Serializing Additional Values Except For Fields
 ===============================================
+(from v2.9)
+
 In certain cases, you might want to serialize Typepy structures so that the serialization includes other values besides
 fields. For example, you may have a "Purchase" Structure class with all the line items of the purchase and their price,
 and the class has a calculated Python property of the total_amount that you want to include - in the serialization.

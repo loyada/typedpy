@@ -134,8 +134,8 @@ def test_aggregated_with_function_unsupported():
     with pytest.raises(NotImplementedError) as excinfo:
         Serializer(blah).serialize()
     assert (
-            "Combining functions and other mapping in a serialization mapper is unsupported"
-            in str(excinfo.value)
+        "Combining functions and other mapping in a serialization mapper is unsupported"
+        in str(excinfo.value)
     )
 
 
@@ -232,7 +232,7 @@ def test_chained_mappers_with_additional_serialization_props():
                 "x": self.x,
                 "triple_a": self.a * 3,
                 "y": [1, 2, 3],
-                "z": lambda: Foo.x + self.a
+                "z": lambda: Foo.x + self.a,
             }
 
     original = {"B": 5, "S": "xyz"}
@@ -245,6 +245,29 @@ def test_chained_mappers_with_additional_serialization_props():
         "x": 1,
         "triple_a": 15,
         "y": [1, 2, 3],
-        "z": 6
+        "z": 6,
     }
 
+
+def test_additional_serialization_props_as_dict():
+    class Purchase(Structure):
+        amount_by_product: dict[str, int]
+        commission = 10
+
+        def purchase_total(self):
+            return sum(self.amount_by_product.values()) + self.commission
+
+        def _additional_serialization(self):
+            return {
+                "commission": Purchase.commission,
+                "purchase_total": self.purchase_total,
+            }
+
+    amount_by_product = {"a": 50, "b": 30}
+    purchase = Purchase(amount_by_product=amount_by_product)
+    serialized = Serializer(purchase).serialize()
+    assert serialized == {
+        "amount_by_product": amount_by_product,
+        "commission": 10,
+        "purchase_total": 90,
+    }

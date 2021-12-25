@@ -8,4 +8,3 @@ class Example4(Structure):
     age_years: int
 
     _serialization_mapper = mappers.TO_CAMELCASE
-

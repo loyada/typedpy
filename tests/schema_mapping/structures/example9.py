@@ -1,4 +1,13 @@
-from typedpy import Array, FunctionCall, ImmutableStructure, Integer, Map, Omit, Structure, mappers
+from typedpy import (
+    Array,
+    FunctionCall,
+    ImmutableStructure,
+    Integer,
+    Map,
+    Omit,
+    Structure,
+    mappers,
+)
 
 
 def build_default_dict():

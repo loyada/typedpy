@@ -677,13 +677,12 @@ def test_additional_properties_blocks_additional_properties_even_after_instantia
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_find_fields_with_function_returning_field():
-    def Name()-> Field:
+    def Name() -> Field:
         return String(minLength=10)
 
-    class Foo(Structure) :
+    class Foo(Structure):
         age: int
         name: Name
 
     assert set(Foo.get_all_fields_by_name().keys()) == {"age", "name"}
     assert str(Foo.name) == "<String. Properties: minLength = 10>"
-

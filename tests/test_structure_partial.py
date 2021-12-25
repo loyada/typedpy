@@ -34,20 +34,20 @@ def test_partial_of_structure():
     with pytest.raises(TypeError) as excinfo:
         bar.d = {"x": "y"}
     assert "d_value: Expected <class 'int'>; Got 'y'" in str(excinfo.value)
-    assert Serializer(bar).serialize() == {'D': {'x': 1}, 'I': 5, 'X': 'xyz'}
+    assert Serializer(bar).serialize() == {"D": {"x": 1}, "I": 5, "X": "xyz"}
 
     Bar._serialization_mapper = {"I": "number"}
-    assert Serializer(bar).serialize() == {'D': {'x': 1}, 'number': 5, 'X': 'xyz'}
+    assert Serializer(bar).serialize() == {"D": {"x": 1}, "number": 5, "X": "xyz"}
 
 
 def test_direct_assignment_to_partial():
     Bar = Partial[Foo]
     assert not issubclass(Bar, Foo)
     assert issubclass(Bar, Structure)
-    bar = Bar(i=5, a={1,2})
+    bar = Bar(i=5, a={1, 2})
     assert bar.i == 5
     assert bar.s is None
-    assert bar.a == {2,1}
+    assert bar.a == {2, 1}
     with pytest.raises(TypeError) as excinfo:
         bar.d = {"x": "y"}
     assert "d_value: Expected <class 'int'>; Got 'y'" in str(excinfo.value)
@@ -66,5 +66,3 @@ def test_partial_immutable():
     with pytest.raises(ValueError) as excinfo:
         bar.d = {}
     assert "Bar: Structure is immutable" in str(excinfo.value)
-
-

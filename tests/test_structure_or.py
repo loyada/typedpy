@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pytest import raises
 
-from typedpy import (Integer, Structure)
+from typedpy import Integer, Structure
 
 
 class Foo(Structure):
@@ -26,6 +26,7 @@ def test_or_operator_structmeta_and_python_type():
     assert Blah(a="xxx").a == "xxx"
 
     with raises(TypeError):
+
         class Bad(Structure):
             a: Integer | datetime
 

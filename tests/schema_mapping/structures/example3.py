@@ -28,4 +28,3 @@ class Bar(Structure):
 class Example3(Foo, Bar, ImmutableStructure):
     m: Map[str, Person]
     groups: Groups
-

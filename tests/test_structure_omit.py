@@ -2,8 +2,20 @@ from typing import Type
 
 import pytest
 
-from typedpy import ImmutableStructure, Integer, Map, Serializer, Structure, mappers, Omit, schema_to_struct_code, \
-    structure_to_schema, String, Structure, Integer
+from typedpy import (
+    ImmutableStructure,
+    Integer,
+    Map,
+    Serializer,
+    Structure,
+    mappers,
+    Omit,
+    schema_to_struct_code,
+    structure_to_schema,
+    String,
+    Structure,
+    Integer,
+)
 
 
 def build_default_dict():
@@ -31,7 +43,6 @@ class Bar2(Omit[Foo, ("a", "b")]):
     x: int
 
 
-
 @pytest.mark.parametrize("Bar", [Bar1, Bar2], ids=["Structure.omit", "Omit[Structure]"])
 def test_omit_and_construct(Bar):
     assert set(Bar._required) == {"i", "s", "x"}
@@ -48,10 +59,20 @@ def test_omit_and_construct(Bar):
     with pytest.raises(TypeError) as excinfo:
         bar.d = {"x": "y"}
     assert "d_value: Expected <class 'int'>; Got 'y'" in str(excinfo.value)
-    assert Serializer(bar).serialize() == {'D': {'x': 1}, 'I': 5, 'S': [1, 2, 3], 'X': 10}
+    assert Serializer(bar).serialize() == {
+        "D": {"x": 1},
+        "I": 5,
+        "S": [1, 2, 3],
+        "X": 10,
+    }
 
     Bar._serialization_mapper = {"I": "number", "X": "xxx"}
-    assert Serializer(bar).serialize() == {'D': {'x': 1}, 'number': 5, 'S': [1, 2, 3], 'xxx': 10}
+    assert Serializer(bar).serialize() == {
+        "D": {"x": 1},
+        "number": 5,
+        "S": [1, 2, 3],
+        "xxx": 10,
+    }
 
 
 Bar3 = Foo.omit("a", "b", "i", "s")
@@ -90,8 +111,7 @@ def test_omit_immutable():
     class Bar(Foo.omit("a", "b"), ImmutableStructure):
         x: str
 
-    bar = Bar(i=5, x="xyz", s= {1,2,3})
+    bar = Bar(i=5, x="xyz", s={1, 2, 3})
     with pytest.raises(ValueError) as excinfo:
         bar.d = {}
     assert "Bar: Structure is immutable" in str(excinfo.value)
-

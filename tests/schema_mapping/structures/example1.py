@@ -1,7 +1,8 @@
 import enum
 
 from typedpy import (
-    Enum, Structure,
+    Enum,
+    Structure,
     AllOf,
     AnyOf,
     OneOf,
@@ -39,5 +40,3 @@ class Example1(Structure):
     g = AnyOf[Foo, Integer]
     values: Enum[Values]
     m: dict[str, Foo]
-
-

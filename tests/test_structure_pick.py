@@ -1,6 +1,14 @@
 import pytest
 
-from typedpy import ImmutableStructure, Integer, Map, Serializer, Structure, mappers, Pick
+from typedpy import (
+    ImmutableStructure,
+    Integer,
+    Map,
+    Serializer,
+    Structure,
+    mappers,
+    Pick,
+)
 
 
 def build_default_dict():
@@ -44,10 +52,10 @@ def test_pick_and_construct(Bar):
     with pytest.raises(TypeError) as excinfo:
         bar.d = {"x": "y"}
     assert "d_value: Expected <class 'int'>; Got 'y'" in str(excinfo.value)
-    assert Serializer(bar).serialize() == {'D': {'x': 1}, 'B': 5, 'A': "a", "X": 10}
+    assert Serializer(bar).serialize() == {"D": {"x": 1}, "B": 5, "A": "a", "X": 10}
 
     Bar._serialization_mapper = {"A": "ABC", "X": "xxx"}
-    assert Serializer(bar).serialize() == {'D': {'x': 1}, 'ABC': "a", "B": 5, 'xxx': 10}
+    assert Serializer(bar).serialize() == {"D": {"x": 1}, "ABC": "a", "B": 5, "xxx": 10}
 
 
 Bar3 = Foo.pick("d")
@@ -86,7 +94,7 @@ def test_pick_immutable():
     class Bar(Pick[Foo, ("d", "s", "i")], ImmutableStructure):
         x: str
 
-    bar = Bar(i=5, x="xyz", s= {1,2,3})
+    bar = Bar(i=5, x="xyz", s={1, 2, 3})
     with pytest.raises(ValueError) as excinfo:
         bar.d = {}
     assert "Bar: Structure is immutable" in str(excinfo.value)

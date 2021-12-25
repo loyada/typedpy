@@ -209,9 +209,7 @@ def test_deleted_and_missing_field():
         bar: int
 
         _versions_mapping = [
-            {
-                "blah": Deleted
-            },
+            {"blah": Deleted},
         ]
 
     assert Deserializer(Example).deserialize(

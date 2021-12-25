@@ -37,31 +37,33 @@ def fixture_code_load():
     return wrapped
 
 
-@pytest.mark.parametrize("original_class_name, expected_schema_filename, generated_filename",
-                         [
-                             ("Example1", "example1_schema.json", "generated_example1.py"),
-                             ("Example2", "example2_schema.json", "generated_example2.py"),
-                             ("Example3", "example3_schema.json", "generated_example3.py"),
-                             ("Example4", "example4_schema.json", "generated_example4.py"),
-                             ("Example5", "example5_schema.json", "generated_example5.py"),
-                             ("Example6", "example6_schema.json", "generated_example6.py"),
-                             ("Example7", "example7_schema.json", "generated_example7.py"),
-                             ("Example8", "example8_schema.json", "generated_example8.py"),
-                             ("Example9", "example9_schema.json", "generated_example9.py"),
-                             ("Example10", "example10_schema.json", "generated_example10.py"),
-
-                         ])
+@pytest.mark.parametrize(
+    "original_class_name, expected_schema_filename, generated_filename",
+    [
+        ("Example1", "example1_schema.json", "generated_example1.py"),
+        ("Example2", "example2_schema.json", "generated_example2.py"),
+        ("Example3", "example3_schema.json", "generated_example3.py"),
+        ("Example4", "example4_schema.json", "generated_example4.py"),
+        ("Example5", "example5_schema.json", "generated_example5.py"),
+        ("Example6", "example6_schema.json", "generated_example6.py"),
+        ("Example7", "example7_schema.json", "generated_example7.py"),
+        ("Example8", "example8_schema.json", "generated_example8.py"),
+        ("Example9", "example9_schema.json", "generated_example9.py"),
+        ("Example10", "example10_schema.json", "generated_example10.py"),
+    ],
+)
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_example_code_to_schema_and_back(
-        schema_load,
-        code_load,
-        original_class_name,
-        expected_schema_filename,
-        generated_filename
+    schema_load,
+    code_load,
+    original_class_name,
+    expected_schema_filename,
+    generated_filename,
 ):
     expected_schema = schema_load(expected_schema_filename)
 
     import tests.schema_mapping.structures as original_classes
+
     # noinspection PyPep8Naming
     OriginalClass = getattr(original_classes, original_class_name)
 

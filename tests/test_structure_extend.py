@@ -25,7 +25,7 @@ def test_extend_structure():
     assert set(Bar._required) == {"x", "i", "a"}
     assert not issubclass(Bar, Foo)
     assert issubclass(Bar, Structure)
-    bar = Bar(i=5, x="xyz", a = {1,2,3}) # noqa
+    bar = Bar(i=5, x="xyz", a={1, 2, 3})  # noqa
     assert bar.d == {}
     assert bar.i == 5
     assert bar.s is None
@@ -35,10 +35,20 @@ def test_extend_structure():
     with pytest.raises(TypeError) as excinfo:
         bar.d = {"x": "y"}
     assert "d_value: Expected <class 'int'>; Got 'y'" in str(excinfo.value)
-    assert Serializer(bar).serialize() == {'A': [1, 2, 3], 'D': {'x': 1}, 'I': 5, 'X': 'xyz'}
+    assert Serializer(bar).serialize() == {
+        "A": [1, 2, 3],
+        "D": {"x": 1},
+        "I": 5,
+        "X": "xyz",
+    }
 
     Bar._serialization_mapper = {"I": "number"}
-    assert Serializer(bar).serialize() == {'A': [1, 2, 3], 'D': {'x': 1}, 'X': 'xyz', 'number': 5}
+    assert Serializer(bar).serialize() == {
+        "A": [1, 2, 3],
+        "D": {"x": 1},
+        "X": "xyz",
+        "number": 5,
+    }
 
 
 def test_direct_assignment_to_extend():
@@ -47,16 +57,16 @@ def test_direct_assignment_to_extend():
         Bar(i=5, s="xyz")
     assert "ExtendFoo: missing a required argument: 'a'" in str(excinfo.value)
 
-    bar = Bar(i=5, a={1,2})
+    bar = Bar(i=5, a={1, 2})
     assert bar.s is None
-    assert bar.a == {2,1}
+    assert bar.a == {2, 1}
     with pytest.raises(TypeError) as excinfo:
         bar.d = {"x": "y"}
     assert "d_value: Expected <class 'int'>; Got 'y'" in str(excinfo.value)
 
 
 def test_direct_assignment_to_extend_with_name():
-    Bar = Extend[Foo, "Bar"] # noqa
+    Bar = Extend[Foo, "Bar"]  # noqa
     with pytest.raises(TypeError) as excinfo:
         Bar(i=5, s="xyz")
     assert "Bar: missing a required argument: 'a'" in str(excinfo.value)
@@ -71,4 +81,3 @@ def test_extend_and_immutable():
     with pytest.raises(ValueError) as excinfo:
         bar.d["x"] = 2  # noqa
     assert "d: Field is immutable" in str(excinfo.value)
-

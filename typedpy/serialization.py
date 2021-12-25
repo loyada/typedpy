@@ -825,12 +825,12 @@ def serialize_internal(structure, mapper=None, compact=False, camel_case_convert
                     mapper=sub_mapper,
                     camel_case_convert=camel_case_convert,
                 )
-
-    additional_props = structure._additional_serialization()
-    if not isinstance(additional_props, dict):
-        raise TypeError("_additional_serialization must return a dict")
-    for key, value in additional_props.items():
-        result[key] = value() if callable(value) else value
+    if getattr(structure, "_additional_serialization", None):
+        additional_props = structure._additional_serialization()
+        if not isinstance(additional_props, dict):
+            raise TypeError("_additional_serialization must return a dict")
+        for key, value in additional_props.items():
+            result[key] = value() if callable(value) else value
     return result
 
 

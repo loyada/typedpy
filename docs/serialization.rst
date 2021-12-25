@@ -752,8 +752,8 @@ Conversely, the "s" field:
 3. name -> NAME
 
 
-Serializing Additional Values Except For Fields
-===============================================
+Serializing Additional Values Beyond Fields
+===========================================
 (from v2.9)
 
 In certain cases, you might want to serialize Typepy structures so that the serialization includes other values besides

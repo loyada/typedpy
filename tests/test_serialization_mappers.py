@@ -4,7 +4,7 @@ from typedpy import (
     Array,
     Deserializer,
     FunctionCall,
-    Serializer,
+    Map, Serializer,
     String,
     Structure,
     mappers,
@@ -249,9 +249,9 @@ def test_chained_mappers_with_additional_serialization_props():
     }
 
 
-def test_additional_serialization_props_as_dict():
+def test_additional_serialization_props():
     class Purchase(Structure):
-        amount_by_product: dict[str, int]
+        amount_by_product: Map[str, int]
         commission = 10
 
         def purchase_total(self):

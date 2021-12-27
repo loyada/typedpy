@@ -1,4 +1,6 @@
 [![][travis img]][travis]
+[![][GA img]][GA]
+
 [![][docs img]][docs]
 
 [![][coverage img]][coverage]
@@ -54,6 +56,9 @@
 
 [travis]:https://travis-ci.com/loyada/typedpy
 [travis img]:https://travis-ci.com/loyada/typedpy.svg?branch=master
+
+[GA]:https://github.com/loyada/typedpy/actions
+[GA img]:https://github.com/loyada/typedpy/actions/workflows/main.yml/badge.svg
 
 [docs img]:https://readthedocs.org/projects/typedpy/badge/?version=latest
 [docs]:https://typedpy.readthedocs.io/en/latest/?badge=latest

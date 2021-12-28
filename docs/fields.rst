@@ -451,6 +451,8 @@ Predefined Types
 
 .. autoclass:: StructureReference
 
+.. autoclass:: SubClass
+
 Numerical
 ---------
 

@@ -46,6 +46,7 @@ Contents:
    errors
    tutorial_dataclass_comparison
    limitations
+   common_utilities
    faq
 
 

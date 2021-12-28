@@ -1,6 +1,9 @@
 import json
 import sys
-from functools import reduce
+from collections.abc import Iterable, Mapping, Generator
+from functools import reduce, wraps
+from inspect import signature
+from typing import Optional, TypeVar, Union
 
 
 def wrap_val(v):
@@ -10,10 +13,10 @@ def wrap_val(v):
 def _is_dunder(name):
     """Returns True if a __dunder__ name, False otherwise."""
     return (
-        len(name) > 4
-        and name[:2] == name[-2:] == "__"
-        and name[2] != "_"
-        and name[-3] != "_"
+            len(name) > 4
+            and name[:2] == name[-2:] == "__"
+            and name[2] != "_"
+            and name[-3] != "_"
     )
 
 
@@ -28,23 +31,167 @@ def raise_errs_if_needed(errors):
         raise errors[0].__class__(messages) from errors[0]
 
 
-def deep_get(dictionary, deep_key):
-    keys = deep_key.split(".")
-    return reduce(lambda d, key: d.get(key) if d else None, keys, dictionary)
+T = TypeVar("T")
 
 
-def first_in(iterable):
-    return next(iter(iterable), None)
+def first_in(my_list: Iterable[T], ignore_none: bool = False) -> Optional[T]:
+    if ignore_none:
+        return next(filter(None, iter(my_list)), None)
+    return next(iter(my_list), None)
 
 
 def nested(func, default=None):
+    """
+        get a nested value if it exists, or return the given default if it doesn't
+
+            Arguments:
+                func(function):
+                    A function with no arguments that returns the nested value
+                default:
+                    the default value, in case the nested value does not exist
+
+
+            Returns:
+                the nested attribute(s) or the default value. For example:
+
+            For example:
+
+                .. code-block:: python
+
+                   d = D(c=C(b=B(a=A(i=5))))
+                   assert nested(lambda: d.c.b.a.i) == 5
+
+                   d.c.foo = [1, 2, 3]
+                   assert nested(lambda: d.c.foo[100]) is None
+                   assert nested(lambda: d.c.foo[2]) == 3
+    """
     try:
         return func()
-    except (AttributeError, IndexError):
+    except (AttributeError, TypeError, IndexError, KeyError):
         return default
+
+
+def flatten(iterable, ignore_none=False) -> list:
+    """
+         Flatten an iterable completely, getting rid of None values
+
+            Arguments:
+                   iterable(Iterable):
+                        the input
+                   ignore_none(bool): optional
+                        whether to skip None values or not. Default is False.
+
+            Returns:
+                A flattened list
+
+                .. code-block:: python
+
+                   flatten(
+                   [
+                     [[1]],
+                     [[2], 3, None, (5,)],
+                     []
+                   ], ignore_none=True) == [1, 2, 3, 5]
+
+        """
+    res = (
+        sum([flatten(x, ignore_none) for x in iterable], [])
+        if isinstance(iterable, (list, tuple, Generator))
+        else [iterable]
+    )
+    if isinstance(res, (list, tuple, Generator)) and ignore_none:
+        return [x for x in res if x is not None]
+    return res
+
+
+def deep_get(dictionary, deep_key, default=None, do_flatten=False):
+    """
+        Get a nested value from within a dictionary. Supports also nested lists, in
+        which case the result is a a list of values
+
+        Arguments:
+               dictionary(dict):
+                    the input
+               deep_key(str):
+                    nested key of the form aaa.bbb.ccc.ddd
+               default:
+                    the default value, in case the path does not exist
+               do_flatten(bool): optional
+                    flatten the outputs, in case the result is multiple outputs
+
+        Returns:
+            the nested attribute(s) or the default value. For example:
+
+        For example:
+
+            .. code-block:: python
+
+               example = {"a": {"b": [{"c": [None, {"d": [1]}]}, {"c": [None, {"d": [2]}, {"d": 3}]}, {"c": []}]}}
+               assert deep_get(example, "a.b.c.d") == [[[1]], [[2], 3], []]
+               assert deep_get(example, "a.b.c.d", do_flatten=True) == [1, 2, 3]
+
+    """
+    def _get_next_level(d: Optional[Union[Mapping, Iterable]], key):
+        if d is None:
+            return None
+        if isinstance(d, Mapping):
+            return d.get(key)
+        if isinstance(d, (list, tuple, Generator)):
+            res = [_get_next_level(r, key) for r in d if r is not None]
+            return res
+        return None
+
+    keys = deep_key.split(".")
+    result = reduce(lambda d, key: _get_next_level(d, key) if d else None, keys, dictionary)
+    if isinstance(result, (list, tuple, Generator)) and do_flatten:
+        result = flatten(result)
+    return result or default
+
+
+def default_factories(func):
+    """
+         A function decorator that allows to have default values that are generators of the actual
+         default values to be used. This is useful when the default values are mutable, like
+         dicts or lists
+
+            Arguments:
+                   iterable(Iterable):
+                        the input
+                   ignore_none(bool): optional
+                        whether to skip None values or not. Default is False.
+
+            Returns:
+                A flattened list
+
+        For example:
+
+                .. code-block:: python
+
+                   @default_factories
+                   def func(a, b = 0, c = list, d = dict):
+                        return a, b, c, d
+
+                   assert func(1) == 1, 0, [] , {}
+
+    """
+    func_signature = signature(func, follow_wrapped=True)
+
+    @wraps(func)
+    def decorated(*args, **kwargs):
+        bound = func_signature.bind(*args, **kwargs)
+
+        for k, v in func_signature.parameters.items():
+            if k not in bound.arguments:
+                default = v.default() if callable(v.default) and v.default != v.empty else v.default
+                if v.default != v.empty:
+                    kwargs[k] = default
+        return func(*args, **kwargs)
+
+    return decorated
 
 
 py_version = sys.version_info[0:2]
 python_ver_36 = py_version == (3, 6)
 python_ver_atleast_than_37 = py_version > (3, 6)
 python_ver_atleast_39 = py_version >= (3, 9)
+python_ver_atleast_310 = py_version >= (3, 10)

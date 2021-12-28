@@ -1,5 +1,5 @@
 import pytest
-from typedpy import Structure
+from typedpy import Map, Structure
 from typedpy.subclass import SubClass
 
 
@@ -17,7 +17,7 @@ class Baz(Structure):
 
 def test_correct_usage():
     class Container1(Structure):
-        data: dict[SubClass(clazz=Foo), str]
+        data: Map[SubClass(clazz=Foo), str]
 
         _additionalProperties = False
 
@@ -29,7 +29,7 @@ def test_correct_usage():
 
 def test_correct_usage_variation():
     class Container1(Structure):
-        data: dict[SubClass[Foo], str]
+        data: Map[SubClass[Foo], str]
 
         _additionalProperties = False
 
@@ -48,7 +48,7 @@ def test_invalid_definition():
 
 def test_invalid_type():
     class Container1(Structure):
-        data: dict[SubClass[Foo], str]
+        data: Map[SubClass[Foo], str]
 
     with pytest.raises(TypeError) as excinfo:
         Container1(data={Baz: "baz"})

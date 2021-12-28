@@ -672,7 +672,10 @@ def add_annotations_to_class_dict(cls_dict, previous_frame):
             first_arg = getattr(v, "__args__", [0])[0]
             mros = getattr(first_arg, "__mro__", getattr(v, "__mro__", []))
             if not type_is_generic(v) and (
-                isinstance(v, (Field, Structure)) or Field in mros or Structure in mros or is_function_returning_field(v)
+                isinstance(v, (Field, Structure))
+                or Field in mros
+                or Structure in mros
+                or is_function_returning_field(v)
             ):
                 if k in cls_dict:
                     defaults[k] = cls_dict[k]
@@ -713,7 +716,6 @@ def convert_field_type_if_possible(the_field):
         return the_field
     else:
         return get_typing_lib_info(the_field)
-
 
 
 class Structure(UniqueMixin, metaclass=StructMeta):
@@ -1277,8 +1279,6 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         cls_dict[REQUIRED_FIELDS] = [
             x for x in getattr(cls, REQUIRED_FIELDS) if x in fields_to_pick
         ]
-
-
 
         classname = class_name if class_name else f"Pick{cls.__name__}"
         newclass = type(classname, (Structure,), cls_dict)

@@ -88,7 +88,9 @@ class AllFieldsRequiredMeta(type):
                     "Partial must have a Structure class as a parameter, and an optional name for the class"
                 )
         clazz, classname = (
-            clazz if isinstance(clazz, tuple) else (clazz, f"AllFieldsRequired{clazz.__name__}")
+            clazz
+            if isinstance(clazz, tuple)
+            else (clazz, f"AllFieldsRequired{clazz.__name__}")
         )
 
         cls_dict = _init_class_dict(clazz)

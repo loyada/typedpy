@@ -37,46 +37,28 @@ def raise_errs_if_needed(errors):
         raise errors[0].__class__(messages) from errors[0]
 
 
-if python_ver_atleast_39:
-    T = TypeVar("T")
-
-    def first_in(my_list: Iterable[T], ignore_none: bool = False) -> Optional[T]:
-        """
-         get the first in an Iterable (i.e. list, tuple, generator, dict, etc.).
-         Optionally ignoring None values.
-
-            Arguments:
-                my_list(Iterable):
-                    The input iterable, such as a list
-                ignore_none(bool): optional
-                    whether or not to ignore None values. Default is False
+T = TypeVar("T")
 
 
-            Returns:
-                The first value found in the input, or None if none found
-        """
-        if ignore_none:
-            return next(filter(None, iter(my_list)), None)
-        return next(iter(my_list), None)
-else:
-    def first_in(my_list: Iterable, ignore_none: bool = False) -> Optional:
-        """
-         get the first in an Iterable (i.e. list, tuple, generator, dict, etc.).
-         Optionally ignoring None values.
+# pylint: disable=unsubscriptable-object
+def first_in(my_list: Iterable[T], ignore_none: bool = False) -> Optional[T]:
+    """
+     get the first in an Iterable (i.e. list, tuple, generator, dict, etc.).
+     Optionally ignoring None values.
 
-            Arguments:
-                my_list(Iterable):
-                    The input iterable, such as a list
-                ignore_none(bool): optional
-                    whether or not to ignore None values. Default is False
+        Arguments:
+            my_list(Iterable):
+                The input iterable, such as a list
+            ignore_none(bool): optional
+                whether or not to ignore None values. Default is False
 
 
-            Returns:
-                The first value found in the input, or None if none found
-        """
-        if ignore_none:
-            return next(filter(None, iter(my_list)), None)
-        return next(iter(my_list), None)
+        Returns:
+            The first value found in the input, or None if none found
+    """
+    if ignore_none:
+        return next(filter(None, iter(my_list)), None)
+    return next(iter(my_list), None)
 
 
 def nested(func, default=None):

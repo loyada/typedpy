@@ -2,7 +2,7 @@ from typedpy.commons import default_factories
 
 
 @default_factories
-def f(a, b: int = 0, c: list[int] = list, d: dict[str, str] = dict):
+def f(a, b: int = 0, c = list, d = dict):
     c.append(a)
     return a, b, c, d
 

@@ -3,7 +3,7 @@ from typedpy.structures import TypedField, _FieldMeta
 
 class _SubClassMeta(_FieldMeta):
     def __getitem__(cls, value):
-        return cls(clazz=value)
+        return cls(clazz=value)  # pylint: disable=E1120, E1123
 
 
 class SubClass(TypedField, metaclass=_SubClassMeta):

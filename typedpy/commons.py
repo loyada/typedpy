@@ -5,6 +5,12 @@ from functools import reduce, wraps
 from inspect import signature
 from typing import Optional, TypeVar, Union
 
+py_version = sys.version_info[0:2]
+python_ver_36 = py_version == (3, 6)
+python_ver_atleast_than_37 = py_version > (3, 6)
+python_ver_atleast_39 = py_version >= (3, 9)
+python_ver_atleast_310 = py_version >= (3, 10)
+
 
 def wrap_val(v):
     return f"'{v}'" if isinstance(v, str) else v
@@ -31,13 +37,46 @@ def raise_errs_if_needed(errors):
         raise errors[0].__class__(messages) from errors[0]
 
 
-T = TypeVar("T")
+if python_ver_atleast_39:
+    T = TypeVar("T")
+
+    def first_in(my_list: Iterable[T], ignore_none: bool = False) -> Optional[T]:
+        """
+         get the first in an Iterable (i.e. list, tuple, generator, dict, etc.).
+         Optionally ignoring None values.
+
+            Arguments:
+                my_list(Iterable):
+                    The input iterable, such as a list
+                ignore_none(bool): optional
+                    whether or not to ignore None values. Default is False
 
 
-def first_in(my_list: Iterable[T], ignore_none: bool = False) -> Optional[T]:
-    if ignore_none:
-        return next(filter(None, iter(my_list)), None)
-    return next(iter(my_list), None)
+            Returns:
+                The first value found in the input, or None if none found
+        """
+        if ignore_none:
+            return next(filter(None, iter(my_list)), None)
+        return next(iter(my_list), None)
+else:
+    def first_in(my_list: Iterable, ignore_none: bool = False) -> Optional:
+        """
+         get the first in an Iterable (i.e. list, tuple, generator, dict, etc.).
+         Optionally ignoring None values.
+
+            Arguments:
+                my_list(Iterable):
+                    The input iterable, such as a list
+                ignore_none(bool): optional
+                    whether or not to ignore None values. Default is False
+
+
+            Returns:
+                The first value found in the input, or None if none found
+        """
+        if ignore_none:
+            return next(filter(None, iter(my_list)), None)
+        return next(iter(my_list), None)
 
 
 def nested(func, default=None):
@@ -131,6 +170,7 @@ def deep_get(dictionary, deep_key, default=None, do_flatten=False):
                assert deep_get(example, "a.b.c.d", do_flatten=True) == [1, 2, 3]
 
     """
+
     def _get_next_level(d: Optional[Union[Mapping, Iterable]], key):
         if d is None:
             return None
@@ -188,10 +228,3 @@ def default_factories(func):
         return func(*args, **kwargs)
 
     return decorated
-
-
-py_version = sys.version_info[0:2]
-python_ver_36 = py_version == (3, 6)
-python_ver_atleast_than_37 = py_version > (3, 6)
-python_ver_atleast_39 = py_version >= (3, 9)
-python_ver_atleast_310 = py_version >= (3, 10)

@@ -114,3 +114,5 @@ from .mappers import mappers, Deleted, Constant, DoNotSerialize
 from .versioned_mapping import convert_dict, Versioned
 
 from .commons import nested, deep_get, first_in, flatten
+
+from .keysof import keys_of

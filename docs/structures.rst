@@ -723,6 +723,46 @@ Just like Partial, Extend can also be used directly:
     # now Bar.__name__ is "Bar", which helps in troubleshooting
 
 
+
+Ensuring Field Names Include All Possible Enum Values
+=====================================================
+Suppose you have an Employee class, that has an attribute of a role. Role is an Enum with several possible values:
+manager, admin, sales, engineer, etc. You want to create a class that defines for each role, what is the range of salary.
+This is easy enough. But let's say you want to guarantee that as the list of possible roles evolves, all the roles are
+always accounted for, and if not, you want to be alerted as early as possible (i.e. the class itself is invalid).
+
+
+To deal with such use cases, Typedpy has a class decorator of "keys_of". It accepts one or more enum classes, and validates
+that the fields of the class include all possible enum names.
+
+An example will make it clear:
+
+
+.. code-block:: python
+
+    class Role(enum.Enum):
+        admin = auto()
+        manager = auto()
+        sales = auto()
+        engineer = auto()
+        driver = auto()
+
+
+   @keys_of(Role)
+   class SalaryRules(Structure):
+        admin: Range
+        manager: Range
+        sales: Range
+
+        policies: list[Policy]
+
+   # This class definiton will throw the following exception:
+   # TypeError: SalaryRules: missing fields: driver, engineer
+
+
+This way, we can guarantee consistency between our Structure class and Enums, especially as the code evolves.
+
+
 Structure Documentation
 =======================
 

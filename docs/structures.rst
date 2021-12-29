@@ -726,6 +726,8 @@ Just like Partial, Extend can also be used directly:
 
 Ensuring Field Names Include All Possible Enum Values
 =====================================================
+(from v2.9.1)
+
 Suppose you have an Employee class, that has an attribute of a role. Role is an Enum with several possible values:
 manager, admin, sales, engineer, etc. You want to create a class that defines for each role, what is the range of salary.
 This is easy enough. But let's say you want to guarantee that as the list of possible roles evolves, all the roles are

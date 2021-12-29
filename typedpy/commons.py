@@ -1,6 +1,5 @@
 import json
 import sys
-import uuid
 from collections.abc import Iterable, Mapping, Generator
 from functools import reduce, wraps
 from inspect import signature
@@ -123,8 +122,6 @@ def flatten(iterable, ignore_none=False) -> list:
     return res
 
 
-_SENTINAL = uuid.uuid1()
-
 def deep_get(dictionary, deep_key, default=None, do_flatten=False):
     """
         Get a nested value from within a dictionary. Supports also nested lists, in
@@ -152,7 +149,6 @@ def deep_get(dictionary, deep_key, default=None, do_flatten=False):
                assert deep_get(example, "a.b.c.d", do_flatten=True) == [1, 2, 3]
 
     """
-
 
     def _get_next_level(d: Optional[Union[Mapping, Iterable]], key, default):
         if isinstance(d, Mapping):

@@ -999,14 +999,16 @@ class Map(
             setattr(key_field, "_name", self._name + "_key")
             setattr(value_field, "_name", self._name + "_value")
             res = OrderedDict()
-
             for key, val in value.items():
                 temp_st = Structure()
                 key_field.__set__(temp_st, key)
                 value_field.__set__(temp_st, val)
+
                 res[getattr(temp_st, getattr(key_field, "_name"))] = getattr(
                     temp_st, getattr(value_field, "_name")
                 )
+                value = res
+
         super().__set__(instance, _DictStruct(self, instance, value, self._name))
 
 
@@ -1382,6 +1384,11 @@ class Enum(Field, metaclass=_EnumMeta):
             raise ValueError(
                 f"{self._name}: Got {value}; Expected one of {', '.join([str(v) for v in self.values])}"
             )
+
+    def deserialize(self, value):  # pylint: disable=no-self-use
+        if self._is_enum and isinstance(value, (str,)):
+                return self._enum_class[value]
+        return value
 
     def __set__(self, instance, value):
         self._validate(value)

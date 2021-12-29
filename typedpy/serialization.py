@@ -278,7 +278,7 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
         return source_val
     if isinstance(field, (Number, String, Enum, Boolean)):
         field._validate(source_val)
-        value = source_val
+        value = field.deserialize(source_val) if isinstance(field, Enum) else source_val
     elif (
         isinstance(field, TypedField)
         and getattr(field, "_ty", "") in {str, int, float}

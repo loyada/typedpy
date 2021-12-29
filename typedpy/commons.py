@@ -1,5 +1,6 @@
 import json
 import sys
+import uuid
 from collections.abc import Iterable, Mapping, Generator
 from functools import reduce, wraps
 from inspect import signature
@@ -122,6 +123,8 @@ def flatten(iterable, ignore_none=False) -> list:
     return res
 
 
+_SENTINAL = uuid.uuid1()
+
 def deep_get(dictionary, deep_key, default=None, do_flatten=False):
     """
         Get a nested value from within a dictionary. Supports also nested lists, in
@@ -150,21 +153,20 @@ def deep_get(dictionary, deep_key, default=None, do_flatten=False):
 
     """
 
-    def _get_next_level(d: Optional[Union[Mapping, Iterable]], key):
-        if d is None:
-            return None
+
+    def _get_next_level(d: Optional[Union[Mapping, Iterable]], key, default):
         if isinstance(d, Mapping):
-            return d.get(key)
+            return d.get(key, default)
         if isinstance(d, (list, tuple, Generator)):
-            res = [_get_next_level(r, key) for r in d if r is not None]
+            res = [_get_next_level(r, key, default) for r in d if r is not None]
             return res
-        return None
+        return default
 
     keys = deep_key.split(".")
-    result = reduce(lambda d, key: _get_next_level(d, key) if d else None, keys, dictionary)
+    result = reduce(lambda d, key: _get_next_level(d, key, default) if d else default, keys, dictionary)
     if isinstance(result, (list, tuple, Generator)) and do_flatten:
         result = flatten(result)
-    return result or default
+    return result
 
 
 def default_factories(func):

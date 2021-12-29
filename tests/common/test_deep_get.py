@@ -16,3 +16,11 @@ def test_deep_get_without_lists():
     assert deep_get(example, "a.b.e.d") is None
     assert deep_get(example, "a.b.e.d", do_flatten=True) is None
 
+
+def test_deep_get_for_a_falsy_val():
+    example = {"a": None, "b": [], "c": 0}
+    assert deep_get(example, "a") is None
+    assert deep_get(example, "a", default=0) is None
+    assert deep_get(example, "b") == []
+    assert deep_get(example, "c") == 0
+    assert deep_get(example, "a.x", default=0) == 0

@@ -13,12 +13,12 @@ def test_defaults_basic_usage():
 
 def test_bad_vs_good_use():
     # pylint: disable=dangerous-default-value
-    def buggy(a, b: int = 0, c: list = [], d: dict = {}):
+    def buggy_with_mutable_defaults(a, b: int = 0, c: list = [], d: dict = {}):
         c.append(a)
         return a, b, c, d
 
-    assert buggy(1) == (1, 0, [1], {})
-    assert buggy(1) == (1, 0, [1, 1], {})  # <- bug !
+    assert buggy_with_mutable_defaults(1) == (1, 0, [1], {})
+    assert buggy_with_mutable_defaults(1) == (1, 0, [1, 1], {})  # <- bug !
 
     assert f(1) == (1, 0, [1], {})
     assert f(1) == (1, 0, [1], {})  # correct!

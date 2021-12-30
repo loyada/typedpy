@@ -29,7 +29,6 @@ from .fields import (
     Array,
     Map,
     ClassReference,
-    Enum,
     MultiFieldWrapper,
     Boolean,
     Tuple,
@@ -47,7 +46,7 @@ from .fields import (
     Deque,
     Generator,
 )
-
+from .enum import Enum
 
 # pylint: disable=too-many-locals, too-many-arguments, too-many-branches
 

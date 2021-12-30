@@ -7,6 +7,7 @@ from typedpy import (
 )
 from typedpy.structures import *
 from typedpy.fields import *
+from typedpy.enum import Enum
 
 definitions = {
     "SimpleStruct": {

@@ -43,8 +43,6 @@ from typedpy.fields import (
     String,
     SizedString,
     Sized,
-    Enum,
-    EnumString,
     AllOf,
     AnyOf,
     OneOf,
@@ -77,6 +75,8 @@ from typedpy.json_schema_mapping import (
     schema_definitions_to_code,
     write_code_from_schema,
 )
+
+from .enum import Enum, EnumString
 
 from .serialization import (
     deserialize_structure,

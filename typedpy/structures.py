@@ -176,7 +176,8 @@ def _check_for_final_violations(classes):
 
 
 def _or_fields(first, other):
-    from .fields import AnyOf, Enum
+    from .fields import AnyOf
+    from .enum import Enum
 
     if isinstance(other, (Field, Structure, _FieldMeta, StructMeta)):
         return AnyOf[first, other]

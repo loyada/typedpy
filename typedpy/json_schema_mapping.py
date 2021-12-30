@@ -16,7 +16,6 @@ from .fields import (
     Number,
     Float,
     Array,
-    Enum,
     String,
     ClassReference,
     Field,
@@ -28,6 +27,7 @@ from .fields import (
     Tuple,
     Set,
 )
+from .enum import Enum
 
 from .extfields import DateString
 from .mappers import DoNotSerialize, aggregate_serialization_mappers

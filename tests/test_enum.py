@@ -101,29 +101,37 @@ def test_enum_using_enum_values_should_be_the_enum_values():
     assert Example.arr.items.values == [Values.ABC, Values.DEF, Values.GHI]
 
 
-def test_enum_convert_string_to_enumm_value():
-    class Many(enum.Enum):
-        A = 1
-        B = 2
-        C = 3
-        D = 4
+class Many(enum.Enum):
+    A = 1
+    B = 2
+    C = 3
+    D = 4
 
 
-    class Example(Structure):
-        map = Map[Enum[Many], Integer]
-        arr = Array[Enum[Many]]
+class Example(Structure):
+    map = Map[Enum[Many], Integer]
+    arr = Array[Enum[Many]]
 
-        _required = []
+    _required = []
 
 
+def test_enum_convert_string_to_enum_value_in_map():
     example = Example(map={"A": 0, "B": 1, "C": 2})
-    serialized = Serializer(example).serialize()
-    deserialized = Deserializer(Example).deserialize(serialized)
     assert set(example.map.keys()) == {Many.A, Many.B, Many.C}
+
+
+def test_enum_convert_string_to_enum_value_in_map_serialization():
+    serialized = Serializer(Example(map={"A": 0, "B": 1, "C": 2})).serialize()
+    deserialized = Deserializer(Example).deserialize(serialized)
     assert set(deserialized.map.keys()) == {Many.A, Many.B, Many.C}
 
+
+def test_enum_convert_string_to_enum_value_in_array():
     example = Example(arr=["A", "B", "C"])
-    serialized = Serializer(example).serialize()
-    deserialized = Deserializer(Example).deserialize(serialized)
     assert example.arr == [Many.A, Many.B, Many.C]
+
+
+def test_enum_convert_string_to_enum_value_in_array_serialization():
+    serialized = Serializer(Example(arr=["A", "B", "C"])).serialize()
+    deserialized = Deserializer(Example).deserialize(serialized)
     assert deserialized.arr == [Many.A, Many.B, Many.C]

@@ -135,3 +135,21 @@ def test_enum_convert_string_to_enum_value_in_array_serialization():
     serialized = Serializer(Example(arr=["A", "B", "C"])).serialize()
     deserialized = Deserializer(Example).deserialize(serialized)
     assert deserialized.arr == [Many.A, Many.B, Many.C]
+
+
+def test_enum_deserialize_by_value():
+    class Foo(Structure):
+        many: Array[Enum(values=Many, serialization_by_value=True)]
+        i: int
+
+    foo = Deserializer(Foo).deserialize({"i": 1, "many": [4, 3, 2, 4]})
+    assert foo.many == [Many.D, Many.C, Many.B, Many.D]
+
+
+def test_enum_serialize_by_value():
+    class Foo(Structure):
+        many: Array[Enum(values=Many, serialization_by_value=True)]
+        i: int
+
+    foo = Foo(i=5, many=[Many.D, Many.C, Many.D, Many.A])
+    assert Serializer(foo).serialize() == {"i": 5, "many": [4, 3, 4, 1]}

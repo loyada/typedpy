@@ -275,9 +275,9 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
     """
     if source_val is None and (ignore_none or isinstance(field, NoneField)):
         return source_val
-    if isinstance(field, (Number, String, Enum, Boolean)):
+    if isinstance(field, (Number, String, Boolean)):
         field._validate(source_val)
-        value = field.deserialize(source_val) if isinstance(field, Enum) else source_val
+        value = source_val
     elif (
         isinstance(field, TypedField)
         and getattr(field, "_ty", "") in {str, int, float}
@@ -613,9 +613,7 @@ def serialize_multifield_wrapper(fields, name, val, mapper, camel_case_convert):
 
 
 def serialize_val(field_definition, name, val, mapper=None, camel_case_convert=False):
-    if isinstance(field_definition, SerializableField) and isinstance(
-        field_definition, Field
-    ):
+    if isinstance(field_definition, SerializableField):
         return field_definition.serialize(val)
     if isinstance(field_definition, MultiFieldWrapper):
         return serialize_multifield_wrapper(
@@ -626,10 +624,6 @@ def serialize_val(field_definition, name, val, mapper=None, camel_case_convert=F
     if isinstance(field_definition, Anything) and (
         isinstance(val, (int, float, str, bool)) or val is None
     ):
-        return val
-    if isinstance(val, enum.Enum):
-        return val.name
-    if isinstance(field_definition, Enum) and isinstance(val, (int, float, str, bool)):
         return val
     if isinstance(field_definition, SizedCollection):
         if isinstance(field_definition, Map):

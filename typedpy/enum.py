@@ -1,6 +1,6 @@
 import enum
 
-from .fields import String
+from .fields import SerializableField, String
 from .structures import Field, _FieldMeta
 
 
@@ -11,7 +11,7 @@ class _EnumMeta(_FieldMeta):
         return cls(values=list(values))  # pylint: disable=E1120, E1123
 
 
-class Enum(Field, metaclass=_EnumMeta):
+class Enum(SerializableField, metaclass=_EnumMeta):
     """
     Enum field. value can be one of predefined values.
 
@@ -23,14 +23,23 @@ class Enum(Field, metaclass=_EnumMeta):
              while deserialization expects strings. In this case, strings are converted
              to the original enum values.
 
+         serialization_by_value(bool): optional
+             When set to True and the values is an enum.Enum class, then instead of serializing
+             by the name of the enum, serialize by its value, and similarly, when deserializing,
+             expect the enum value instead of the name. Default is False.
+             This is especially useful when you are interfacing with another system and the values
+              are strings that you don't control, like the example below.
+
+
+
     Examples:
 
     .. code-block:: python
 
        class Values(enum.Enum):
-            ABC = enum.auto()
-            DEF = enum.auto()
-            GHI = enum.auto()
+            ABC = 1
+            DEF = 2
+            GHI = 3
 
        class Example(Structure):
           arr = Array[Enum[Values]]
@@ -42,12 +51,34 @@ class Enum(Field, metaclass=_EnumMeta):
        # deserialization example:
        deserialized = Deserializer(target_class=Example).deserialize({'arr': ['GHI', 'DEF', 'ABC'], 'e': 3})
        assert deserialized.arr == [Values.GHI, Values.DEF, Values.ABC]
+
+
+    An example of serialization_by_value:
+
+     .. code-block:: python
+
+        class StreamCommand(enum.Enum):
+            open = "open new stream"
+            close = "close current stream"
+            delete = "delete steam"
+
+        class Action(Structure):
+            command: Enum(value=StreamCommand, serialization_by_value=True)
+            ....
+
+
+        assert Deserializer(Action).deserialize({"command": "delete stream"}).command is StreamCommand.delete
+
     """
 
-    def __init__(self, *args, values, **kwargs):
+    def __init__(self, *args, values, serialization_by_value: bool = False, **kwargs):
         self._is_enum = isinstance(values, (type,)) and issubclass(values, enum.Enum)
+        self.serialization_by_value = serialization_by_value
+
         if self._is_enum:
             self._enum_class = values
+            if serialization_by_value:
+                self._enum_by_value = {e.value: e for e in self._enum_class}
             self.values = list(values)
         else:
             self.values = values
@@ -71,9 +102,22 @@ class Enum(Field, metaclass=_EnumMeta):
                 f"{self._name}: Got {value}; Expected one of {', '.join([str(v) for v in self.values])}"
             )
 
+    def serialize(self, value):
+        if self._is_enum:
+            if self.serialization_by_value:
+                if not isinstance(value.value, (bool, str, int, float)):
+                    raise TypeError(f"{self._name}: Cannot serialize value: {value.value}")
+            return value.value if self.serialization_by_value else value.name
+        return value
+
     def deserialize(self, value):  # pylint: disable=no-self-use
-        if self._is_enum and isinstance(value, (str,)):
+        if self._is_enum:
+            if self.serialization_by_value:
+                return self._enum_by_value[value]
+            if isinstance(value, (str,)):
                 return self._enum_class[value]
+
+        self._validate(value)
         return value
 
     def __set__(self, instance, value):

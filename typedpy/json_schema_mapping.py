@@ -31,7 +31,7 @@ from .enum import Enum
 
 from .extfields import DateString
 from .mappers import DoNotSerialize, aggregate_serialization_mappers
-from .structures import ADDITIONAL_PROPERTIES, NoneField
+from .structures import ADDITIONAL_PROPERTIES, NoneField, Structure
 
 SCHEMA_PATTERN_PROPERTIES = "patternProperties"
 SCHEMA_ADDITIONAL_PROPERTIES = "additionalProperties"
@@ -116,8 +116,8 @@ def structure_to_schema(structure, definitions_schema, serialization_mapper=None
     `See working examples in test. <https://github.com/loyada/typedpy/tree/master/tests/test_struct_to_schema.py>`_
 
     Arguments:
-        structure( :class:`Structure` ):
-            the json schema for the main structure
+        structure( subclass of :class:`Structure` ):
+            the class
         definitions_schema(dict):
             the json schema for all the definitions (typically under "#/definitions" in the schema.
             If it is the first call, just use and empty dict.
@@ -130,10 +130,15 @@ def structure_to_schema(structure, definitions_schema, serialization_mapper=None
     """
     # json schema draft4 does not support inheritance, so we don't need to worry about that
     props = structure.__dict__
+    if not issubclass(structure, Structure):
+        raise TypeError("Expected a Structure subclass")
     field_by_name = structure.get_all_fields_by_name()
     required = getattr(structure, "_required", list(field_by_name.keys()))
     additional_props = getattr(structure, ADDITIONAL_PROPERTIES, True)
     mapper = aggregate_serialization_mappers(structure, serialization_mapper) or {}
+    if getattr(structure, "_additional_serialization") != getattr(Structure, "_additional_serialization"):
+        logging.warning("mapping to schema does not support _additional_serialization method. You"
+                        " will have to edit it manually.")
     if (
         len(field_by_name) == 1
         and set(required) == set(field_by_name.keys())
@@ -597,7 +602,7 @@ class EnumMapper(Mapper):
     def to_schema(self, definitions, serialization_mapper):
         def adjust(val) -> Union[str, int, float]:
             if isinstance(val, enum.Enum):
-                return val.name
+                return val.value if getattr(self.value, "serialization_by_value", False) else val.name
             if not isinstance(val, (int, str, float)):
                 raise TypeError("enum must be an enum, str, or number")
             return val

@@ -1,0 +1,19 @@
+{
+    "definitions": {
+    },
+    "example": {
+        "type": "object",
+        "properties": {
+            "many": {
+                "type": "array",
+                "items": {
+                    "enum": [1, 2, 3]
+                }
+            },
+            "i": {"type": "integer"}
+        },
+        "required": ["i", "many"],
+        "additionalProperties": true
+    }
+}
+

@@ -81,3 +81,29 @@ def test_extend_and_immutable():
     with pytest.raises(ValueError) as excinfo:
         bar.d["x"] = 2  # noqa
     assert "d: Field is immutable" in str(excinfo.value)
+
+
+def test_extend_serialization_mappers_are_consistent1():
+    class Foo(Structure):
+        x: str
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    class Bar(Extend[Foo], Structure):
+        y: str
+
+    assert Bar._serialization_mapper == [mappers.TO_LOWERCASE]
+    assert Bar._deserialization_mapper == [mappers.TO_LOWERCASE]
+
+
+def test_extend_serialization_mappers_are_consistent2():
+    class Foo(Structure):
+        x: str
+
+    class Bar(Extend[Foo], Structure):
+        y: str
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    assert Bar._serialization_mapper == mappers.TO_LOWERCASE
+    assert Bar._deserialization_mapper is None

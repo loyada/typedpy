@@ -1297,8 +1297,8 @@ def _init_class_dict(cls):
     for k, v in cls.__dict__.items():
         if k in attributes_to_include:
             cls_dict[k] = v
-    cls_dict[SERIALIZATION_MAPPER] = cls.get_aggregated_serialization_mapper()
-    cls_dict[DESERIALIZATION_MAPPER] = cls.get_aggregated_deserialization_mapper()
+    cls_dict[SERIALIZATION_MAPPER] = cls.get_aggregated_serialization_mapper() or None
+    cls_dict[DESERIALIZATION_MAPPER] = cls.get_aggregated_deserialization_mapper() or None
     return cls_dict
 
 

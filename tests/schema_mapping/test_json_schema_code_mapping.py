@@ -2,10 +2,11 @@ import json
 import sys
 from pathlib import Path
 from traceback import extract_stack
+from unittest.mock import patch
 
 import pytest
 
-from typedpy import structure_to_schema, write_code_from_schema
+from typedpy import Structure, structure_to_schema, write_code_from_schema
 
 
 def get_abs_path_from_here(relative_path: str) -> Path:
@@ -50,6 +51,7 @@ def fixture_code_load():
         ("Example8", "example8_schema.json", "generated_example8.py"),
         ("Example9", "example9_schema.json", "generated_example9.py"),
         ("Example10", "example10_schema.json", "generated_example10.py"),
+        ("Example11", "example11_schema.json", "generated_example11.py"),
     ],
 )
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
@@ -78,3 +80,19 @@ def test_example_code_to_schema_and_back(
     generated_code = code_load(generated_file_name).strip()
     expected_code = code_load(expected_file_name).strip()
     assert generated_code == expected_code
+
+
+@patch('logging.warning')
+def test_warn_that_additional_serialization_is_not_supported(warning):
+    class Foo(Structure):
+        i: int
+        s: str
+
+        def _additional_serialization(self):
+            return {"x": 1}
+
+    structure_to_schema(Foo, {})
+
+    warning.assert_called_with("mapping to schema does not support _additional_serialization method. You"
+                               " will have to edit it manually.")
+

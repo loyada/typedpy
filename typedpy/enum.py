@@ -31,9 +31,9 @@ class Enum(SerializableField, metaclass=_EnumMeta):
              while deserialization expects strings (unless using serialization_by_value). 
              In this case, strings are converted to the original enum values.
              
-             Another option is to assign to a list of specific values from an enum.Enum class.
-             In this case, it will work like asigning an Enum class, but allowing anly specific values
-             of that enum. 
+             Another option is assign a list of specific values from an enum.Enum class.
+             In this case, it will work like asigning an Enum class, but allowing only specific values
+             of that enum (see example below).
 
          serialization_by_value(bool): optional
              When set to True and the values is an enum.Enum class, then instead of serializing
@@ -89,7 +89,9 @@ class Enum(SerializableField, metaclass=_EnumMeta):
             command: Enum(values=[StreamCommand.open, StreamCommand.close], serialization_by_value=True)
             ....
 
-      # command works like in the previous example, but allows open/close values from StreamCommand
+      # command works like in the previous example, but allows open/close values from StreamCommand, thus
+      # the following line results in an exception:
+      Deserializer(Action).deserialize({"command": "delete stream"})
 
     """
 

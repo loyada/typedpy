@@ -1,5 +1,6 @@
 import enum
 
+from .commons import first_in, wrap_val
 from .fields import SerializableField, String
 from .structures import Field, _FieldMeta
 
@@ -11,6 +12,13 @@ class _EnumMeta(_FieldMeta):
         return cls(values=list(values))  # pylint: disable=E1120, E1123
 
 
+def _all_values_from_single_enum(values):
+    clazz = first_in(values).__class__
+    if not(isinstance(clazz, (type,)) and issubclass(clazz, enum.Enum)):
+        return False
+    return all([v.__class__ is clazz for v in values])
+
+
 class Enum(SerializableField, metaclass=_EnumMeta):
     """
     Enum field. value can be one of predefined values.
@@ -20,8 +28,12 @@ class Enum(SerializableField, metaclass=_EnumMeta):
              allowed values. Can be of any type.
              Alternatively, can be an enum.Enum type. See example below.
              When defined with an enum.Enum, serialization converts to strings,
-             while deserialization expects strings. In this case, strings are converted
-             to the original enum values.
+             while deserialization expects strings (unless using serialization_by_value). 
+             In this case, strings are converted to the original enum values.
+             
+             Another option is to assign to a list of specific values from an enum.Enum class.
+             In this case, it will work like asigning an Enum class, but allowing anly specific values
+             of that enum. 
 
          serialization_by_value(bool): optional
              When set to True and the values is an enum.Enum class, then instead of serializing
@@ -63,22 +75,36 @@ class Enum(SerializableField, metaclass=_EnumMeta):
             delete = "delete steam"
 
         class Action(Structure):
-            command: Enum(value=StreamCommand, serialization_by_value=True)
+            command: Enum(values=StreamCommand, serialization_by_value=True)
             ....
 
 
         assert Deserializer(Action).deserialize({"command": "delete stream"}).command is StreamCommand.delete
+        
+    An example of allowing only specific values of an Enum class, referencging StreamCommand in the previous example:
+    
+    .. code-block:: python
+
+       class Action(Structure):
+            command: Enum(values=[StreamCommand.open, StreamCommand.close], serialization_by_value=True)
+            ....
+
+      # command works like in the previous example, but allows open/close values from StreamCommand
 
     """
 
     def __init__(self, *args, values, serialization_by_value: bool = False, **kwargs):
-        self._is_enum = isinstance(values, (type,)) and issubclass(values, enum.Enum)
+        if not values:
+            raise ValueError("Enum requires values parameters")
+        self._is_enum = (isinstance(values, (type,)) and issubclass(values, enum.Enum)
+                         or _all_values_from_single_enum(values))
         self.serialization_by_value = serialization_by_value
 
         if self._is_enum:
-            self._enum_class = values
+            self._enum_class = values if isinstance(values, (type,)) else first_in(values).__class__
             if serialization_by_value:
                 self._enum_by_value = {e.value: e for e in self._enum_class}
+            self._valid_enum_values = [v for v in self._enum_class] if  isinstance(values, (type,)) else values
             self.values = list(values)
         else:
             self.values = values
@@ -86,9 +112,9 @@ class Enum(SerializableField, metaclass=_EnumMeta):
 
     def _validate(self, value):
         if self._is_enum:
-            enum_names = {v.name for v in self._enum_class}
-            if value not in enum_names and not isinstance(value, (self._enum_class,)):
-                enum_values = [r.name for r in self._enum_class]
+            enum_names = {v.name for v in self._valid_enum_values}
+            if value not in enum_names and value not in self._valid_enum_values:
+                enum_values = [r.name for r in self._valid_enum_values]
                 if len(enum_values) < 11:
                     raise ValueError(
                         f"{self._name}: Got {value}; Expected one of: {', '.join(enum_values)}"
@@ -113,8 +139,13 @@ class Enum(SerializableField, metaclass=_EnumMeta):
     def deserialize(self, value):  # pylint: disable=no-self-use
         if self._is_enum:
             if self.serialization_by_value:
+                if value not in self._enum_by_value:
+                    raise ValueError(f"Invalid value: {wrap_val(value)}")
                 return self._enum_by_value[value]
             if isinstance(value, (str,)):
+                valid_names = {v.name for v in self._valid_enum_values}
+                if value not in valid_names:
+                    raise ValueError(f"Invalid value: {wrap_val(value)}")
                 return self._enum_class[value]
 
         self._validate(value)
@@ -144,5 +175,3 @@ class EnumString(Enum, String):
     """
 
     pass
-
-

@@ -64,10 +64,10 @@ def test_enum_using_enum_error():
 
     with raises(ValueError) as excinfo:
         Example(arr=["ABC", Values.DEF, 3])
-    assert "arr_2: Got 3; Expected one of: ABC, DEF, GHI" in str(excinfo.value)
+    assert "arr_2: Got 3; Expected one of: ABC, DEF, GHI" == str(excinfo.value)
 
 
-def test_enum_using_enum_with_many_calues_error():
+def test_enum_using_enum_with_many_values_error():
     class Many(enum.Enum):
         A = 1
         B = 2
@@ -153,3 +153,63 @@ def test_enum_serialize_by_value():
 
     foo = Foo(i=5, many=[Many.D, Many.C, Many.D, Many.A])
     assert Serializer(foo).serialize() == {"i": 5, "many": [4, 3, 4, 1]}
+
+
+def test_enum_not_all_values():
+    class Many(enum.Enum):
+        A = 1
+        B = 2
+        C = 3
+        D = 4
+        E = 5
+        F = 6
+
+    class Example(Structure):
+        arr = Array[Enum(values=[Many.A, Many.B, Many.D])]
+
+    example = Example(arr=["B", Many.A])
+    with raises(ValueError) as excinfo:
+        example.arr.append(Many.E)
+    assert "arr_2: Got Many.E; Expected one of: A, B, D" in str(excinfo.value)
+
+
+def test_enum_not_all_values_deserialization():
+    class Many(enum.Enum):
+        A = 1
+        B = 2
+        C = 3
+        D = 4
+        E = 5
+
+    class Example(Structure):
+        arr = Array[Enum(values=[Many.A, Many.B, Many.D])]
+
+    example = Deserializer(Example).deserialize({"arr": ["A", "D", "D"]})
+    assert example.arr[2] == Many.D
+    with raises(ValueError) as excinfo:
+        Deserializer(Example).deserialize({"arr": ["A", "E", "D"]})
+    assert "arr_1: Invalid value: 'E'" == str(excinfo.value)
+
+
+def test_enum_not_all_values_serialization_by_value():
+    class Many(enum.Enum):
+        A = 1
+        B = 2
+        C = 3
+        D = 4
+        E = 5
+
+    class Example(Structure):
+        arr = Array[Enum(values=[Many.A, Many.B, Many.D], serialization_by_value=True)]
+
+    example = Deserializer(Example).deserialize({"arr": [1, 4, 1]})
+    assert example.arr[2] == Many.A
+    assert Serializer(example).serialize()["arr"] == [1, 4, 1]
+
+    with raises(ValueError) as excinfo:
+        Deserializer(Example).deserialize({"arr": ["A"]})
+    assert "arr_0: Invalid value: 'A'" in str(excinfo.value)
+
+    with raises(ValueError) as excinfo:
+        Deserializer(Example).deserialize({"arr": [1, 4, 2, 3]})
+    assert "arr_3: Got Many.C; Expected one of: A, B, D" in str(excinfo.value)

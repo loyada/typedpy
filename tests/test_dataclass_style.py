@@ -150,7 +150,7 @@ def test_default_values_use_equals_on_field_instance():
     class Example(Structure):
         f: Float() = 0.5
         map: dict
-        arr: Array[SimpleStruct] = [SimpleStruct(name="John")]
+        arr: Array[SimpleStruct] = lambda: [SimpleStruct(name="John")]
 
     e = Example(map={"x": "y"})
     assert e.f == 0.5
@@ -161,7 +161,7 @@ def test_default_values_use_equals_on_field_instance_with_overriding_required():
     class Example(Structure):
         f: Float() = 0.5
         map: dict
-        arr: Array[SimpleStruct] = [SimpleStruct(name="John")]
+        arr: Array[SimpleStruct] = lambda: [SimpleStruct(name="John")]
         i = Integer(default=5)
         _required = ["arr", i]
 

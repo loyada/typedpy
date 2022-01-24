@@ -268,6 +268,21 @@ def test_map_iterator_return_defensive_copies_for_immutables():
     assert e.m == {"x": [1, 2, 3]}
 
 
+def test_copy_of_immutable_to_immutable_avoids_deepcopy():
+    class Example(ImmutableStructure):
+        arr = Array
+        m = Map
+
+    class Foo(ImmutableStructure):
+        example: Example
+        arr: Array[Example]
+
+    e = Example(arr=[{"x": 1}], m={"x": [1, 2, 3]})
+    foo = Foo(example=e, arr=[e])
+    assert foo.arr[0] is e
+    assert foo.example is e
+
+
 def test_map_iterator_return_direct_reference_for_mutables():
     class Example(Structure):
         arr = Array

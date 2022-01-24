@@ -115,3 +115,4 @@ def test_omit_immutable():
     with pytest.raises(ValueError) as excinfo:
         bar.d = {}
     assert "Bar: Structure is immutable" in str(excinfo.value)
+

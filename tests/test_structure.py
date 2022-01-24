@@ -686,3 +686,10 @@ def test_find_fields_with_function_returning_field():
 
     assert set(Foo.get_all_fields_by_name().keys()) == {"age", "name"}
     assert str(Foo.name) == "<String. Properties: minLength = 10>"
+
+
+def test_disallow_mutable_default():
+    with pytest.raises(ValueError) as excinfo:
+        class Foo(Structure):
+            a: list = []
+    assert "use a generating function" in str(excinfo.value)

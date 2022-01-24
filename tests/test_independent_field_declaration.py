@@ -100,7 +100,7 @@ def test_field_declaration_bad_usage():
         i = Integer
         _additionalProperties = False
 
-    with raises(RecursionError) as ex:
+    with raises(KeyError) as ex:
         Foo.first_name_foo
 
     # this can cause a lot of weirdness....
@@ -108,8 +108,11 @@ def test_field_declaration_bad_usage():
     bar = Bar(i=1, first_name_bar="jack", last_name_bar="smith")
     assert bar.first_name_bar == bar.last_name_bar
     # and even:
-    with raises(RecursionError) as ex:
-        Foo(i=1, first_name_foo="Tom", last_name_foo="Jones")
+    foo = Foo(i=1, first_name_foo="Tom", last_name_foo="Jones")
+
+    # This is a mess...
+    assert (str(foo) == "<Instance of Foo. Properties: i = 1, last_name_bar = 'Tom'>" or
+           str(foo) == "<Instance of Foo. Properties: i = 1, last_name_bar = 'Jones'>")
     # so watch out!
 
 

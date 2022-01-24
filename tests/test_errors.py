@@ -238,3 +238,17 @@ def test_missed_required(all_errors):
         deserialize_structure(Foo, {})
     errs = standard_readable_error_for_typedpy_exception(ex.value)
     assert errs[0].problem.startswith("missing a required argument: 'r'")
+
+#
+# def test_string_err_wrapper(all_errors):
+#     class Foo(Structure):
+#         a: String(pattern=r"[\d]{3}")
+#      #   b: String(pattern="[\\d]{5}")
+#
+#     class Bar(Structure):
+#         foos: Array[Foo]
+#
+#     with raises(ValueError) as ex:
+#      Bar(foos=[Foo(a="a")])
+#     print(ex.value.args[0])
+#     assert ex.value.args[0] == """[a: Got 'a'; Does not match regular expression: '[\d]{3}]"""

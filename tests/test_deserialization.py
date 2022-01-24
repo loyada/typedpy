@@ -378,8 +378,8 @@ def test_invalid_value_err():
     with raises(ValueError) as excinfo:
         deserialize_structure(Example, data)
     assert (
-        """name: Got '123'; Does not match regular expression: "[A-Za-z]+$"""
-        "" in str(excinfo.value)
+        """name: Got '123'; Does not match regular expression: '[A-Za-z]+$'"""
+        in str(excinfo.value)
     )
 
 

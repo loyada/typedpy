@@ -38,7 +38,7 @@ def test_string_with_regex_err():
         Person(
             name="fo d", ssid="fff", num=25, foo={"a": "aaa", "b": {"c": 10, "d": 1}}
         )
-    assert "name: Got 'fo d'; Does not match regular expression: \"[A-Za-z]+$\"" in str(
+    assert "name: Got 'fo d'; Does not match regular expression: '[A-Za-z]+$'" in str(
         excinfo.value
     )
 

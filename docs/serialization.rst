@@ -805,10 +805,12 @@ already applied. In other words, the serialization mappers do not apply to the "
 
 Adding Type Of Class To Serialization
 =====================================
-If you have a base class, such as Employee, and several classes that extend it, you might need to deserialize a list
-of Employees, and add to each one what type of employee it is. You could set this value explicitly, but this seems
-like boilerplate, and you may set the wrong value. Typedpy offers a small mixin to deal with that, call HasType.
-It adds to the serialized representation a "type" attribute, with the name of the subclass.
+If you have a base class, such as Employee, and several classes that extend it, you might need to serialize a list
+of Employees, adding to each employee its type. You could set this value explicitly, but this seems
+like boilerplate code and error-prone.
+
+Typedpy provides a small mixin to deal with such use-case, call HasType. It adds to the serialized representation
+a "type" attribute, with the name of the subclass.
 
 To illustrate the usage, examine the following snippet:
 

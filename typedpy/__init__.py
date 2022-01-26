@@ -13,6 +13,7 @@ from typedpy.structures import (
     FinalStructure,
     ImmutableField,
     unique,
+    ABCStructure
 )
 
 from typedpy.structures_reuse import (

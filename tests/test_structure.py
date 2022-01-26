@@ -22,7 +22,7 @@ from typedpy import (
     DateTime,
 )
 from typedpy.structures import (
-    FinalStructure,
+    ABCStructure, FinalStructure,
     ImmutableStructure,
     unique,
     MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS,
@@ -693,3 +693,16 @@ def test_disallow_mutable_default():
         class Foo(Structure):
             a: list = []
     assert "use a generating function" in str(excinfo.value)
+
+
+def test_abcstructure():
+    class Base(ABCStructure):
+        i: int
+
+    class Foo(Base):
+        a: str
+
+    assert Foo(i=1, a="xyz").a == "xyz"
+    with pytest.raises(TypeError) as excinfo:
+        Base(i=1)
+    assert "Not allowed to instantiate an abstract Structure" in str(excinfo.value)

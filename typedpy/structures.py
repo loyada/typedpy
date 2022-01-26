@@ -1482,3 +1482,19 @@ class ImmutableField(Field):
     """
 
     _immutable = True
+
+
+class ABCStructure(Structure):
+    """
+    A replacement to extending (Structure, ABC). In other words, Defines a Structure class
+    That cannot be instantiated because it is abstract. To instantiate, you are required to extend it.
+    """
+    def __init__(self, *args, **kwargs):
+        found_subclass = False
+        for clz in self.__class__.__mro__[1:]:
+            if issubclass(clz, ABCStructure) and not clz is ABCStructure:
+                found_subclass = True
+                break
+        if not found_subclass:
+            raise TypeError("Not allowed to instantiate an abstract Structure")
+        super().__init__(*args, **kwargs)

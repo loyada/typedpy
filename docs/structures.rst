@@ -765,6 +765,36 @@ An example will make it clear:
 This way, we can guarantee consistency between our Structure class and Enums, especially as the code evolves.
 
 
+Abstract Structure
+==================
+Since the following is not valid Python:
+
+.. code-block:: python
+
+    # Wrong!
+   class Foo(Structure, ABC):
+       ...
+
+In order to facilitate something equivalent, Typedpy provides :class:`ABCStructure` . It defines an Abstract Structure.
+such a Structure cannot be instantiated directly. Only its subtypes can be instantiated.
+For example:
+
+.. code-block:: python
+
+    class Base(ABCStructure):
+        i: int
+
+    class Foo(Base):
+        a: str
+
+    # Good !
+    Foo(i=1, a="xyz")
+
+    # Will fail!
+    Base(i=1)
+
+
+
 Structure Documentation
 =======================
 
@@ -782,3 +812,4 @@ Structure Documentation
 
 .. autoclass:: AllFieldsRequired
 
+.. autoclass:: ABCStructure

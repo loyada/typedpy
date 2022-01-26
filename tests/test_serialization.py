@@ -39,7 +39,7 @@ from typedpy import (
 )
 from typedpy.extfields import DateTime
 from typedpy import serialize_field
-from typedpy.serialization import FunctionCall
+from typedpy.serialization import FunctionCall, HasTypes
 from typedpy.serialization_wrappers import Serializer, Deserializer
 
 
@@ -832,3 +832,34 @@ def test_serialize_multified_with_any_unserializable():
         Serializer(
             Foo(a=[1, MyPoint1(datetime.datetime.now(), datetime.datetime.now())])
         ).serialize()
+
+
+def test_serialize_descriminator():
+    class Employee(Structure, HasTypes):
+        name: str
+
+    class Engineer(Employee):
+        pass
+
+    class Sales(Employee):
+        pass
+
+    class Marketer(Employee):
+        pass
+
+    class Firm(Structure):
+        employees: Array[Employee]
+
+    firm = Firm(employees=[
+        Engineer(name="john"),
+        Marketer(name="rob"),
+        Sales(name="joe")
+    ])
+
+    assert Serializer(firm).serialize() == {
+        "employees": [
+            {"type": "engineer", "name": "john"},
+            {"type": "marketer", "name": "rob"},
+            {"type": "sales", "name": "joe"},
+        ]
+    }

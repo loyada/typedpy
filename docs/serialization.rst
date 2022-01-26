@@ -801,3 +801,44 @@ Here is a fairly comprehensive example from the unit tests:
 
 As seen in the example, the "additional serialization" is applied as the last step, after the serialization mappers were
 already applied. In other words, the serialization mappers do not apply to the "additional serialization".
+
+
+Adding Type Of Class To Serialization
+=====================================
+If you have a base class, such as Employee, and several classes that extend it, you might need to deserialize a list
+of Employees, and add to each one what type of employee it is. You could set this value explicitly, but this seems
+like boilerplate, and you may set the wrong value. Typedpy offers a small mixin to deal with that, call HasType.
+It adds to the serialized representation a "type" attribute, with the name of the subclass.
+
+To illustrate the usage, examine the following snippet:
+
+.. code-block:: python
+
+   class Employee(Structure, HasTypes):
+        name: str
+
+    class Engineer(Employee):
+        pass
+
+    class Sales(Employee):
+        pass
+
+    class Marketer(Employee):
+        pass
+
+    class Firm(Structure):
+        employees: Array[Employee]
+
+    firm = Firm(employees=[
+        Engineer(name="john"),
+        Marketer(name="rob"),
+        Sales(name="joe")
+    ])
+
+    assert Serializer(firm).serialize() == {
+        "employees": [
+            {"type": "engineer", "name": "john"},
+            {"type": "marketer", "name": "rob"},
+            {"type": "sales", "name": "joe"},
+        ]
+    }

@@ -873,3 +873,11 @@ def serialize(value, *, mapper: Dict = None, compact=False, camel_case_convert=F
     return serialize_internal(
         value, mapper=mapper, compact=compact, camel_case_convert=camel_case_convert
     )
+
+
+class HasTypes:
+    def _additional_serialization(self) -> dict:
+        return {
+            "type": self.__class__.__name__.lower()
+        }
+

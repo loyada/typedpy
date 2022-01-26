@@ -1002,6 +1002,8 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             can either be a function with no parameters, a method, or a
             simple value
         """
+        if callable(getattr(super(), "_additional_serialization", None)):
+            return super()._additional_serialization()
         return {}
 
     @classmethod

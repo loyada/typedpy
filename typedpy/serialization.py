@@ -877,7 +877,7 @@ def serialize(value, *, mapper: Dict = None, compact=False, camel_case_convert=F
 
 class HasTypes:
     """
-        A mixin that of a base-class :class:`Structure`, that adds to the serialization of
+        A mixin that can be added to a base-class :class:`Structure`. It adds to the serialization of
         any instance of a subclass, its type.
         Since version 2.12.1.
     """

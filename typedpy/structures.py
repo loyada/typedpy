@@ -382,8 +382,12 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
         if getattr(self, IS_IMMUTABLE, False) and not getattr(
                 self, "_custom_deep_copy_implementation", False
         ):
+            needs_defensive_copy = (
+                    not isinstance(value, (ImmutableMixin, int, float, str, bool, enum.Enum, Field, ImmutableStructure))
+                    or value is None
+            )
             try:
-                instance.__dict__[self._name] = deepcopy(value)
+                instance.__dict__[self._name] = deepcopy(value) if needs_defensive_copy else value
             except TypeError:
                 raise TypeError(
                     f"{self._name} cannot be immutable, as its type does not support pickle."
@@ -864,7 +868,11 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             if getattr(self, "_instantiated", False):
                 raise ValueError(f"{self.__class__.__name__}: Structure is immutable")
             if not getattr(value, IS_IMMUTABLE, False):
-                value = deepcopy(value)
+                needs_defensive_copy = (
+                        not isinstance(value,
+                                       (ImmutableMixin, int, float, str, bool, enum.Enum, Field, ImmutableStructure))
+                )
+                value = deepcopy(value) if needs_defensive_copy else value
         if not any(
                 [
                     getattr(self, ADDITIONAL_PROPERTIES, True),
@@ -1083,8 +1091,8 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             that = (
                 deepcopy(self)
                 if (
-                        issubclass(cls, ImmutableStructure)
-                        or issubclass(self.__class__, ImmutableStructure)
+                        issubclass(cls, ImmutableStructure) and not issubclass(self.__class__, ImmutableStructure)
+                        or issubclass(self.__class__, ImmutableStructure) and not issubclass(cls, ImmutableStructure)
                 )
                 else self
             )

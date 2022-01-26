@@ -84,6 +84,7 @@ from .serialization import (
     serialize_field,
     FunctionCall,
     deserialize_single_field,
+    HasTypes
 )
 
 from .serialization_wrappers import (

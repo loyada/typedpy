@@ -561,6 +561,8 @@ Classes
 
 .. autoclass:: Deserializer
 
+.. autoclass:: HasTypes
+
 
 Functions
 =========
@@ -809,7 +811,7 @@ If you have a base class, such as Employee, and several classes that extend it, 
 of Employees, adding to each employee its type. You could set this value explicitly, but this seems
 like boilerplate code and error-prone.
 
-Typedpy provides a small mixin to deal with such use-case, call HasType. It adds to the serialized representation
+Typedpy provides a small mixin to deal with this use-case:  :class:`HasTypes`. It adds to the serialized representation
 a "type" attribute, with the name of the subclass.
 
 To illustrate the usage, examine the following snippet:

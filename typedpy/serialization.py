@@ -876,6 +876,11 @@ def serialize(value, *, mapper: Dict = None, compact=False, camel_case_convert=F
 
 
 class HasTypes:
+    """
+        A mixin that of a base-class :class:`Structure`, that adds to the serialization of
+        any instance of a subclass, its type.
+        Since version 2.12.1.
+    """
     def _additional_serialization(self) -> dict:
         return {
             "type": self.__class__.__name__.lower()

@@ -775,13 +775,13 @@ Since the following is not valid Python:
    class Foo(Structure, ABC):
        ...
 
-In order to facilitate something equivalent, Typedpy provides :class:`ABCStructure` . It defines an Abstract Structure.
+In order to facilitate something equivalent, Typedpy provides :class:`AbstractStructure` . It defines an Abstract Structure.
 such a Structure cannot be instantiated directly. Only its subtypes can be instantiated.
 For example:
 
 .. code-block:: python
 
-    class Base(ABCStructure):
+    class Base(AbstractStructure):
         i: int
 
     class Foo(Base):
@@ -812,4 +812,4 @@ Structure Documentation
 
 .. autoclass:: AllFieldsRequired
 
-.. autoclass:: ABCStructure
+.. autoclass:: AbstractStructure

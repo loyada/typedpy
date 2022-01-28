@@ -22,7 +22,7 @@ from typedpy import (
     DateTime,
 )
 from typedpy.structures import (
-    ABCStructure, FinalStructure,
+    AbstractStructure, FinalStructure,
     ImmutableStructure,
     unique,
     MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS,
@@ -695,8 +695,8 @@ def test_disallow_mutable_default():
     assert "use a generating function" in str(excinfo.value)
 
 
-def test_abcstructure():
-    class Base(ABCStructure):
+def test_abstract_structure():
+    class Base(AbstractStructure):
         i: int
 
     class Foo(Base):

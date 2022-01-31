@@ -1,6 +1,7 @@
 import collections
 import enum
 import json
+import uuid
 from typing import Dict
 
 from .commons import deep_get, raise_errs_if_needed
@@ -576,19 +577,26 @@ def deserialize_structure(
     )
 
 
+SENTITNEL = uuid.uuid4()
+
+
 def get_processed_input(key, mapper, the_dict):
     def _try_deep_get(k):
-        v = deep_get(the_dict, k)
+        v = deep_get(the_dict, k, default=SENTITNEL)
         return v if v is not None else k
+
+    def _get_arg_list(key_mapper):
+        vals = [_try_deep_get(k) for k in key_mapper.args]
+        return [v for v in vals if v != SENTITNEL]
 
     key_mapper = mapper[key]
     if isinstance(key_mapper, (FunctionCall,)):
         args = (
-            [_try_deep_get(k) for k in key_mapper.args]
+            _get_arg_list(key_mapper)
             if key_mapper.args
             else [the_dict.get(key)]
         )
-        processed_input = key_mapper.func(*args)
+        processed_input = key_mapper.func(*args) if args else None
     elif isinstance(key_mapper, (str,)):
         val = deep_get(the_dict, key_mapper)
         processed_input = val if val is not None else the_dict.get(key)

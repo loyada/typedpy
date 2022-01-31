@@ -1,8 +1,10 @@
+from decimal import Decimal
+
 import pytest
 
 from typedpy import (
     Array,
-    Deserializer,
+    DecimalNumber, Deserializer,
     FunctionCall,
     Map, Serializer,
     String,
@@ -271,3 +273,72 @@ def test_additional_serialization_props():
         "commission": 10,
         "purchase_total": 90,
     }
+
+
+def test_defect_in_complex_mapper1():
+    class Blah(Structure):
+        amount: DecimalNumber
+
+        _deserialization_mapper = [
+            {"amount": "amount_decimal"},
+            {"amount_decimal": FunctionCall(func=lambda x: Decimal(x) * 2)},
+        ]
+        _required = []
+
+    class Foo(Structure): # noqa
+        blah: Blah
+        i: int
+
+        _required = []
+
+    class FooList(Structure):
+        foos: list[Foo]
+
+    assert Deserializer(FooList).deserialize({"foos": [{"i": 5}]}, keep_undefined=False) == FooList(foos=[Foo(i=5)])
+
+
+def test_defect_in_complex_mapper2():
+    class Blah(Structure):
+        amount: DecimalNumber
+
+        _serialization_mapper = [
+            {"amount": FunctionCall(func=lambda x: Decimal(x) * 2, args=["amount_decimal"])},
+        ]
+        _required = []
+
+
+    class Foo(Structure): # noqa
+        blah: Blah
+        i: int
+
+        _required = []
+
+    class FooList(Structure):
+        foos: list[Foo]
+
+    deserialized = Deserializer(FooList).deserialize({"foos": [
+        {"i": 5},
+        {"i": 4, "blah": {}},
+        {"i": 3, "blah": {"amount_decimal": "5"}}
+    ]
+    }, keep_undefined=False)
+    assert deserialized == FooList(foos=[
+        Foo(i=5),
+        Foo(i=4, blah=Blah()),
+        Foo(i=3, blah=Blah(amount=Decimal(10)))
+    ])
+
+
+def test_defect_in_complex_mapper3():
+    class Blah(Structure):
+        amount: DecimalNumber
+
+        _serialization_mapper = [
+            {"amount": FunctionCall(func=lambda x: Decimal(x) * 2, args=["amount_decimal"])},
+        ]
+        _required = []
+
+    class Foo(Structure):
+        blas: list[Blah]
+
+    assert Deserializer(Foo).deserialize({"blas": [{}]}, keep_undefined=False) == Foo(blas=[Blah()])

@@ -96,7 +96,7 @@ def _convert_to_snakecase(key):
 def _apply_mapper(
     latest_mapper, key, previous_mapper, for_serialization, is_self=False
 ):
-    val = key if is_self else previous_mapper[key]
+    val = key if is_self else previous_mapper.get(key, key)
     if latest_mapper == mappers.TO_CAMELCASE:
         return _convert_to_camelcase(val)
     if latest_mapper == mappers.TO_LOWERCASE:
@@ -121,7 +121,9 @@ def add_mapper_to_aggregation(latest_mapper, previous_mapper, for_serialization=
     if not isinstance(latest_mapper, (Mapping, mappers)):
         raise TypeError("Mapper must be a mapping")
     for k, v in previous_mapper.items():
-        if v is DoNotSerialize:
+        if isinstance(latest_mapper, dict) and v == latest_mapper.get(k):
+            result_mapper[k] = previous_mapper.get(k)
+        elif v is DoNotSerialize:
             result_mapper[k] = DoNotSerialize
         elif isinstance(v, str):
             result_mapper[k] = _apply_mapper(

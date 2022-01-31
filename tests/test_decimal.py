@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from pytest import raises
 
-from typedpy import Structure, Positive, DecimalNumber
+from typedpy import Deserializer, Structure, Positive, DecimalNumber
 
 
 class PositiveDecimal(DecimalNumber, Positive):
@@ -60,4 +60,9 @@ def test_positivedecimal_err():
 
 def test_positivedecimal_valid():
     f = Foo(c=Decimal(5))
+    assert int(f.c) == 5
+
+
+def test_deserialize_string_as_decimal():
+    f = Deserializer(Foo).deserialize({"c": "5"})
     assert int(f.c) == 5

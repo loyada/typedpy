@@ -197,11 +197,11 @@ def deserializer_by_discriminator(class_by_discriminator_value):
     }
 
     def _get_content(discriminator, data):
-        try:
-            return _desererializer_by_type[discriminator].deserialize(data)
-        except KeyError as e:
+        if discriminator not in _desererializer_by_type:
             raise ValueError(
                 f"discriminator: got {wrap_val(discriminator)}; Expected one of {list(_desererializer_by_type.keys())}"
-            ) from e
+            )
+
+        return _desererializer_by_type[discriminator].deserialize(data)
 
     return _get_content

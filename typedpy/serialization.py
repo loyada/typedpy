@@ -276,7 +276,7 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
     """
     if source_val is None and (ignore_none or isinstance(field, NoneField)):
         return source_val
-    if isinstance(field, (Number, String, Boolean)):
+    if isinstance(field, (Number, String, Boolean)) and not isinstance(field, SerializableField):
         field._validate(source_val)
         value = source_val
     elif (

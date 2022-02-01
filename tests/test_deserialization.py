@@ -8,7 +8,7 @@ from pytest import raises
 
 from typedpy import (
     Boolean,
-    ImmutableStructure,
+    Constant, ImmutableStructure,
     Structure,
     Array,
     Number,
@@ -1342,3 +1342,32 @@ def test_custom_field_that_accepts_multiple_values():
 
     foo = Deserializer(Foo).deserialize({"p": [1, 2, 3]})
     assert foo.p.x == 1
+
+
+def test_serialization_constant1():
+    class A(Structure):
+        i: int
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    class B(A):
+        a: str
+        _serialization_mapper = {"I": Constant(5), "A": "number"}
+
+    assert Deserializer(B).deserialize({"number": "xyz"}, keep_undefined=False) == B(a="xyz", i=5)
+    assert Serializer(B(a="xyz", i=5)).serialize() == {'i': 5, 'number': 'xyz'}
+
+
+def test_serialization_constant_in_list():
+    class A(Structure):
+        i: int
+
+        _serialization_mapper = {"i": Constant(10)}
+
+    class B(Structure):
+        arr: Array[A]
+        _serialization_mapper = [mappers.TO_LOWERCASE, {"ARR": "numbers"}]
+
+    assert Deserializer(B).deserialize({"numbers": [{}, {}]}, keep_undefined=False) == B(arr=[A(10), A(10)])
+    assert Serializer(B(arr=[A(10), A(10)])).serialize() == {'numbers': [{'i': 10}, {'i': 10}]}
+    

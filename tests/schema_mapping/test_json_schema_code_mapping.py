@@ -52,6 +52,7 @@ def fixture_code_load():
         ("Example9", "example9_schema.json", "generated_example9.py"),
         ("Example10", "example10_schema.json", "generated_example10.py"),
         ("Example11", "example11_schema.json", "generated_example11.py"),
+        ("Example12", "example12_schema.json", "generated_example12.py"),
     ],
 )
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")

@@ -7,7 +7,7 @@ from typing import Dict
 from .commons import deep_get, raise_errs_if_needed
 from .versioned_mapping import VERSION_MAPPING, Versioned, convert_dict
 from .mappers import (
-    DoNotSerialize,
+    Constant, DoNotSerialize,
     aggregate_deserialization_mappers,
     aggregate_serialization_mappers,
     mappers,
@@ -600,6 +600,8 @@ def get_processed_input(key, mapper, the_dict):
     elif isinstance(key_mapper, (str,)):
         val = deep_get(the_dict, key_mapper)
         processed_input = val if val is not None else the_dict.get(key)
+    elif isinstance(key_mapper, Constant):
+        processed_input = key_mapper()
     else:
         raise TypeError(
             f"mapper value must be a key in the input or a FunctionCal. Got {wrap_val(key_mapper)}"
@@ -756,6 +758,8 @@ def _get_mapped_value(mapper, key, items):
             return key_mapper.func(*args)
         elif key_mapper is DoNotSerialize:
             return key_mapper
+        elif isinstance(key_mapper, Constant):
+            return key_mapper()
         elif not isinstance(key_mapper, (FunctionCall, str)):
             raise TypeError("mapper must have a FunctionCall or a string")
 

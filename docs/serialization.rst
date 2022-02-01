@@ -846,3 +846,42 @@ To illustrate the usage, examine the following snippet:
             {"type": "sales", "name": "joe"},
         ]
     }
+
+
+Force a Field To Be Set As A Constant During Deserialization
+============================================================
+(new in 2.13.0)
+Imagine a use-case in which you have an abstract base class "Car", and several cars that inherit from it. One of
+the fields you might want to have is "maker":
+
+.. code-block:: python
+
+    class Car(AbstractStructure):
+        maker: str
+        ...
+
+    class SubaruOutback(Car):
+        ...
+
+    class AcuraMVX(Car):
+        ...
+
+
+When you deserialize SubaruOutback or AcuraMVX, you should set the "maker" explicitly to a predefined value.
+Typedpy supports it, by defining "Constant" in the serialization mapper (similar to Version Mapping). See below:
+
+.. code-block:: python
+
+    class SubaruOutback(Car):
+        ...
+
+        _deserialization_mapper = {"maker": Constant("Subaru")}
+
+
+    class AcuraMVX(Car):
+        ...
+
+        _deserialization_mapper = {"maker": Constant("Acura")}
+
+This means that the field "maker" will ignore the input to the deserializer, and always set to the value defined
+in the mapper.

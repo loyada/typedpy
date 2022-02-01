@@ -30,7 +30,7 @@ from .fields import (
 from .enum import Enum
 
 from .extfields import DateString
-from .mappers import DoNotSerialize, aggregate_serialization_mappers
+from .mappers import Constant, DoNotSerialize, aggregate_serialization_mappers
 from .structures import ADDITIONAL_PROPERTIES, NoneField, Structure
 
 SCHEMA_PATTERN_PROPERTIES = "patternProperties"
@@ -102,7 +102,7 @@ def _validated_mapped_value(mapper, key):
                 "This is unsupported by code-to-schema conversion. "
                 "You will need to manually fix it."
             )
-        elif key_mapper is DoNotSerialize:
+        elif key_mapper is DoNotSerialize or isinstance(key_mapper, Constant):
             return key_mapper
         elif not isinstance(key_mapper, (FunctionCall, str)):
             raise TypeError("mapper must have a FunctionCall or a string")
@@ -160,10 +160,10 @@ def structure_to_schema(structure, definitions_schema, serialization_mapper=None
                 else key
             )
             mapped_value = _validated_mapped_value(mapper, key)
-            if mapped_value is DoNotSerialize:
+            if mapped_value is DoNotSerialize or isinstance(mapped_value, Constant):
                 if mapped_key in required:
                     required.pop(required.index(mapped_key))
-            if mapped_value is not DoNotSerialize:
+            else:
                 if key in required:
                     required[required.index(key)] = mapped_key
                 sub_mapper = mapper.get(f"{key}._mapper", {})

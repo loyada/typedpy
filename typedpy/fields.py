@@ -262,7 +262,7 @@ class String(TypedField):
             )
         if self.pattern is not None and not self._compiled_pattern.match(value):
             raise ValueError(
-                f'{err_prefix()}Does not match regular expression: {wrap_val(self.pattern)}'
+                f"{err_prefix()}Does not match regular expression: {wrap_val(self.pattern)}"
             )
 
     def __set__(self, instance, value):

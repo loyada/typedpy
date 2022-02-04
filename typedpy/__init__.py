@@ -13,7 +13,7 @@ from typedpy.structures import (
     FinalStructure,
     ImmutableField,
     unique,
-    AbstractStructure
+    AbstractStructure,
 )
 
 from typedpy.structures_reuse import (
@@ -85,7 +85,7 @@ from .serialization import (
     serialize_field,
     FunctionCall,
     deserialize_single_field,
-    HasTypes
+    HasTypes,
 )
 
 from .serialization_wrappers import (

@@ -7,7 +7,8 @@ from typing import Dict
 from .commons import deep_get, raise_errs_if_needed
 from .versioned_mapping import VERSION_MAPPING, Versioned, convert_dict
 from .mappers import (
-    Constant, DoNotSerialize,
+    Constant,
+    DoNotSerialize,
     aggregate_deserialization_mappers,
     aggregate_serialization_mappers,
     mappers,
@@ -276,7 +277,9 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
     """
     if source_val is None and (ignore_none or isinstance(field, NoneField)):
         return source_val
-    if isinstance(field, (Number, String, Boolean)) and not isinstance(field, SerializableField):
+    if isinstance(field, (Number, String, Boolean)) and not isinstance(
+        field, SerializableField
+    ):
         field._validate(source_val)
         value = source_val
     elif (
@@ -591,11 +594,7 @@ def get_processed_input(key, mapper, the_dict):
 
     key_mapper = mapper[key]
     if isinstance(key_mapper, (FunctionCall,)):
-        args = (
-            _get_arg_list(key_mapper)
-            if key_mapper.args
-            else [the_dict.get(key)]
-        )
+        args = _get_arg_list(key_mapper) if key_mapper.args else [the_dict.get(key)]
         processed_input = key_mapper.func(*args) if args else None
     elif isinstance(key_mapper, (str,)):
         val = deep_get(the_dict, key_mapper)
@@ -889,12 +888,10 @@ def serialize(value, *, mapper: Dict = None, compact=False, camel_case_convert=F
 
 class HasTypes:
     """
-        A mixin that can be added to a base-class :class:`Structure`. It adds to the serialization of
-        any instance of a subclass, its type.
-        Since version 2.12.1.
+    A mixin that can be added to a base-class :class:`Structure`. It adds to the serialization of
+    any instance of a subclass, its type.
+    Since version 2.12.1.
     """
-    def _additional_serialization(self) -> dict:
-        return {
-            "type": self.__class__.__name__.lower()
-        }
 
+    def _additional_serialization(self) -> dict:
+        return {"type": self.__class__.__name__.lower()}

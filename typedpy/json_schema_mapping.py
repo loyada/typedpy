@@ -136,9 +136,13 @@ def structure_to_schema(structure, definitions_schema, serialization_mapper=None
     required = getattr(structure, "_required", list(field_by_name.keys()))
     additional_props = getattr(structure, ADDITIONAL_PROPERTIES, True)
     mapper = aggregate_serialization_mappers(structure, serialization_mapper) or {}
-    if getattr(structure, "_additional_serialization") != getattr(Structure, "_additional_serialization"):
-        logging.warning("mapping to schema does not support _additional_serialization method. You"
-                        " will have to edit it manually.")
+    if getattr(structure, "_additional_serialization") != getattr(
+        Structure, "_additional_serialization"
+    ):
+        logging.warning(
+            "mapping to schema does not support _additional_serialization method. You"
+            " will have to edit it manually."
+        )
     if (
         len(field_by_name) == 1
         and set(required) == set(field_by_name.keys())
@@ -602,7 +606,11 @@ class EnumMapper(Mapper):
     def to_schema(self, definitions, serialization_mapper):
         def adjust(val) -> Union[str, int, float]:
             if isinstance(val, enum.Enum):
-                return val.value if getattr(self.value, "serialization_by_value", False) else val.name
+                return (
+                    val.value
+                    if getattr(self.value, "serialization_by_value", False)
+                    else val.name
+                )
             if not isinstance(val, (int, str, float)):
                 raise TypeError("enum must be an enum, str, or number")
             return val

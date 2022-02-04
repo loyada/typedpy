@@ -2,7 +2,7 @@ from typing import Optional
 
 import pytest
 
-from typedpy import ImmutableStructure, Map, Structure, mappers, Serializer, Extend
+from typedpy import Deserializer, ImmutableStructure, Map, Structure, mappers, Serializer, Extend
 
 
 class Blah(Structure):
@@ -106,4 +106,5 @@ def test_extend_serialization_mappers_are_consistent2():
         _serialization_mapper = mappers.TO_LOWERCASE
 
     assert Bar._serialization_mapper == mappers.TO_LOWERCASE
-    assert Bar._deserialization_mapper is None
+    assert not hasattr(Bar, "_deserialization_mapper")
+    assert Deserializer(Bar).deserialize({"X": "a", "Y": "b"}) == Bar(x="a", y="b")

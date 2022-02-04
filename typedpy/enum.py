@@ -14,7 +14,7 @@ class _EnumMeta(_FieldMeta):
 
 def _all_values_from_single_enum(values):
     clazz = first_in(values).__class__
-    if not(isinstance(clazz, (type,)) and issubclass(clazz, enum.Enum)):
+    if not (isinstance(clazz, (type,)) and issubclass(clazz, enum.Enum)):
         return False
     return all([v.__class__ is clazz for v in values])
 
@@ -28,9 +28,9 @@ class Enum(SerializableField, metaclass=_EnumMeta):
              allowed values. Can be of any type.
              Alternatively, can be an enum.Enum type. See example below.
              When defined with an enum.Enum, serialization converts to strings,
-             while deserialization expects strings (unless using serialization_by_value). 
+             while deserialization expects strings (unless using serialization_by_value).
              In this case, strings are converted to the original enum values.
-             
+
              Another option is assign a list of specific values from an enum.Enum class.
              In this case, it will work like asigning an Enum class, but allowing only specific values
              of that enum (see example below).
@@ -80,9 +80,9 @@ class Enum(SerializableField, metaclass=_EnumMeta):
 
 
         assert Deserializer(Action).deserialize({"command": "delete stream"}).command is StreamCommand.delete
-        
+
     An example of allowing only specific values of an Enum class, referencging StreamCommand in the previous example:
-    
+
     .. code-block:: python
 
        class Action(Structure):
@@ -98,15 +98,22 @@ class Enum(SerializableField, metaclass=_EnumMeta):
     def __init__(self, *args, values, serialization_by_value: bool = False, **kwargs):
         if not values:
             raise ValueError("Enum requires values parameters")
-        self._is_enum = (isinstance(values, (type,)) and issubclass(values, enum.Enum)
-                         or _all_values_from_single_enum(values))
+        self._is_enum = (
+            isinstance(values, (type,))
+            and issubclass(values, enum.Enum)
+            or _all_values_from_single_enum(values)
+        )
         self.serialization_by_value = serialization_by_value
 
         if self._is_enum:
-            self._enum_class = values if isinstance(values, (type,)) else first_in(values).__class__
+            self._enum_class = (
+                values if isinstance(values, (type,)) else first_in(values).__class__
+            )
             if serialization_by_value:
                 self._enum_by_value = {e.value: e for e in self._enum_class}
-            self._valid_enum_values = [v for v in self._enum_class] if  isinstance(values, (type,)) else values
+            self._valid_enum_values = (
+                [v for v in self._enum_class] if isinstance(values, (type,)) else values
+            )
             self.values = list(values)
         else:
             self.values = values
@@ -134,7 +141,9 @@ class Enum(SerializableField, metaclass=_EnumMeta):
         if self._is_enum:
             if self.serialization_by_value:
                 if not isinstance(value.value, (bool, str, int, float)):
-                    raise TypeError(f"{self._name}: Cannot serialize value: {value.value}")
+                    raise TypeError(
+                        f"{self._name}: Cannot serialize value: {value.value}"
+                    )
             return value.value if self.serialization_by_value else value.name
         return value
 

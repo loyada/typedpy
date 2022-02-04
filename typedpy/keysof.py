@@ -42,7 +42,9 @@ def keys_of(*enum_classes):
             expected_field_names |= set(e.name for e in c)
         if not expected_field_names <= field_names:
             missing_fields = sorted(expected_field_names - field_names)
-            raise TypeError(f"{clazz.__name__}: missing fields: {', '.join(missing_fields)}")
+            raise TypeError(
+                f"{clazz.__name__}: missing fields: {', '.join(missing_fields)}"
+            )
         return clazz
 
     return wrapper

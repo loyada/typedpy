@@ -19,10 +19,10 @@ def wrap_val(v):
 def _is_dunder(name):
     """Returns True if a __dunder__ name, False otherwise."""
     return (
-            len(name) > 4
-            and name[:2] == name[-2:] == "__"
-            and name[2] != "_"
-            and name[-3] != "_"
+        len(name) > 4
+        and name[:2] == name[-2:] == "__"
+        and name[2] != "_"
+        and name[-3] != "_"
     )
 
 
@@ -37,21 +37,20 @@ def raise_errs_if_needed(errors):
         raise errors[0].__class__(messages) from errors[0]
 
 
-
 def first_in(my_list: Iterable, ignore_none: bool = False) -> Optional:
     """
-     get the first in an Iterable (i.e. list, tuple, generator, dict, etc.).
-     Optionally ignoring None values.
+    get the first in an Iterable (i.e. list, tuple, generator, dict, etc.).
+    Optionally ignoring None values.
 
-        Arguments:
-            my_list(Iterable):
-                The input iterable, such as a list
-            ignore_none(bool): optional
-                whether or not to ignore None values. Default is False
+       Arguments:
+           my_list(Iterable):
+               The input iterable, such as a list
+           ignore_none(bool): optional
+               whether or not to ignore None values. Default is False
 
 
-        Returns:
-            The first value found in the input, or None if none found
+       Returns:
+           The first value found in the input, or None if none found
     """
     if ignore_none:
         return next(filter(None, iter(my_list)), None)
@@ -60,28 +59,28 @@ def first_in(my_list: Iterable, ignore_none: bool = False) -> Optional:
 
 def nested(func, default=None):
     """
-        get a nested value if it exists, or return the given default if it doesn't
+    get a nested value if it exists, or return the given default if it doesn't
 
-            Arguments:
-                func(function):
-                    A function with no arguments that returns the nested value
-                default:
-                    the default value, in case the nested value does not exist
+        Arguments:
+            func(function):
+                A function with no arguments that returns the nested value
+            default:
+                the default value, in case the nested value does not exist
 
 
-            Returns:
-                the nested attribute(s) or the default value. For example:
+        Returns:
+            the nested attribute(s) or the default value. For example:
 
-            For example:
+        For example:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                   d = D(c=C(b=B(a=A(i=5))))
-                   assert nested(lambda: d.c.b.a.i) == 5
+               d = D(c=C(b=B(a=A(i=5))))
+               assert nested(lambda: d.c.b.a.i) == 5
 
-                   d.c.foo = [1, 2, 3]
-                   assert nested(lambda: d.c.foo[100]) is None
-                   assert nested(lambda: d.c.foo[2]) == 3
+               d.c.foo = [1, 2, 3]
+               assert nested(lambda: d.c.foo[100]) is None
+               assert nested(lambda: d.c.foo[2]) == 3
     """
     try:
         return func()
@@ -91,27 +90,27 @@ def nested(func, default=None):
 
 def flatten(iterable, ignore_none=False) -> list:
     """
-         Flatten an iterable completely, getting rid of None values
+    Flatten an iterable completely, getting rid of None values
 
-            Arguments:
-                   iterable(Iterable):
-                        the input
-                   ignore_none(bool): optional
-                        whether to skip None values or not. Default is False.
+       Arguments:
+              iterable(Iterable):
+                   the input
+              ignore_none(bool): optional
+                   whether to skip None values or not. Default is False.
 
-            Returns:
-                A flattened list
+       Returns:
+           A flattened list
 
-                .. code-block:: python
+           .. code-block:: python
 
-                   flatten(
-                   [
-                     [[1]],
-                     [[2], 3, None, (5,)],
-                     []
-                   ], ignore_none=True) == [1, 2, 3, 5]
+              flatten(
+              [
+                [[1]],
+                [[2], 3, None, (5,)],
+                []
+              ], ignore_none=True) == [1, 2, 3, 5]
 
-        """
+    """
     res = (
         sum([flatten(x, ignore_none) for x in iterable], [])
         if isinstance(iterable, (list, tuple, Generator))
@@ -124,29 +123,29 @@ def flatten(iterable, ignore_none=False) -> list:
 
 def deep_get(dictionary, deep_key, default=None, do_flatten=False):
     """
-        Get a nested value from within a dictionary. Supports also nested lists, in
-        which case the result is a a list of values
+    Get a nested value from within a dictionary. Supports also nested lists, in
+    which case the result is a a list of values
 
-        Arguments:
-               dictionary(dict):
-                    the input
-               deep_key(str):
-                    nested key of the form aaa.bbb.ccc.ddd
-               default:
-                    the default value, in case the path does not exist
-               do_flatten(bool): optional
-                    flatten the outputs, in case the result is multiple outputs
+    Arguments:
+           dictionary(dict):
+                the input
+           deep_key(str):
+                nested key of the form aaa.bbb.ccc.ddd
+           default:
+                the default value, in case the path does not exist
+           do_flatten(bool): optional
+                flatten the outputs, in case the result is multiple outputs
 
-        Returns:
-            the nested attribute(s) or the default value. For example:
+    Returns:
+        the nested attribute(s) or the default value. For example:
 
-        For example:
+    For example:
 
-            .. code-block:: python
+        .. code-block:: python
 
-               example = {"a": {"b": [{"c": [None, {"d": [1]}]}, {"c": [None, {"d": [2]}, {"d": 3}]}, {"c": []}]}}
-               assert deep_get(example, "a.b.c.d") == [[[1]], [[2], 3], []]
-               assert deep_get(example, "a.b.c.d", do_flatten=True) == [1, 2, 3]
+           example = {"a": {"b": [{"c": [None, {"d": [1]}]}, {"c": [None, {"d": [2]}, {"d": 3}]}, {"c": []}]}}
+           assert deep_get(example, "a.b.c.d") == [[[1]], [[2], 3], []]
+           assert deep_get(example, "a.b.c.d", do_flatten=True) == [1, 2, 3]
 
     """
 
@@ -159,7 +158,11 @@ def deep_get(dictionary, deep_key, default=None, do_flatten=False):
         return default
 
     keys = deep_key.split(".")
-    result = reduce(lambda d, key: _get_next_level(d, key, default) if d else default, keys, dictionary)
+    result = reduce(
+        lambda d, key: _get_next_level(d, key, default) if d else default,
+        keys,
+        dictionary,
+    )
     if isinstance(result, (list, tuple, Generator)) and do_flatten:
         result = flatten(result)
     return result
@@ -167,28 +170,28 @@ def deep_get(dictionary, deep_key, default=None, do_flatten=False):
 
 def default_factories(func):
     """
-         A function decorator that allows to have default values that are generators of the actual
-         default values to be used. This is useful when the default values are mutable, like
-         dicts or lists
+     A function decorator that allows to have default values that are generators of the actual
+     default values to be used. This is useful when the default values are mutable, like
+     dicts or lists
 
-            Arguments:
-                   iterable(Iterable):
-                        the input
-                   ignore_none(bool): optional
-                        whether to skip None values or not. Default is False.
+        Arguments:
+               iterable(Iterable):
+                    the input
+               ignore_none(bool): optional
+                    whether to skip None values or not. Default is False.
 
-            Returns:
-                A flattened list
+        Returns:
+            A flattened list
 
-        For example:
+    For example:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                   @default_factories
-                   def func(a, b = 0, c = list, d = dict):
-                        return a, b, c, d
+               @default_factories
+               def func(a, b = 0, c = list, d = dict):
+                    return a, b, c, d
 
-                   assert func(1) == 1, 0, [] , {}
+               assert func(1) == 1, 0, [] , {}
 
     """
     func_signature = signature(func, follow_wrapped=True)
@@ -199,7 +202,11 @@ def default_factories(func):
 
         for k, v in func_signature.parameters.items():
             if k not in bound.arguments:
-                default = v.default() if callable(v.default) and v.default != v.empty else v.default
+                default = (
+                    v.default()
+                    if callable(v.default) and v.default != v.empty
+                    else v.default
+                )
                 if v.default != v.empty:
                     kwargs[k] = default
         return func(*args, **kwargs)

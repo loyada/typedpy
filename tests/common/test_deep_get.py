@@ -2,7 +2,15 @@ from typedpy import deep_get
 
 
 def test_deep_get_with_lists():
-    example = {"a": {"b": [{"c": [None, {"d": [1]}]}, {"c": [None, {"d": [2]}, {"d": 3}]}, {"c": []}]}}
+    example = {
+        "a": {
+            "b": [
+                {"c": [None, {"d": [1]}]},
+                {"c": [None, {"d": [2]}, {"d": 3}]},
+                {"c": []},
+            ]
+        }
+    }
     assert deep_get(example, "a.b.c.d") == [[[1]], [[2], 3], []]
     assert deep_get(example, "a.b.c.d", do_flatten=True) == [1, 2, 3]
     assert deep_get(example, "a.b.c.e") == [[None], [None, None], []]

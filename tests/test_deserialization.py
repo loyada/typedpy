@@ -8,7 +8,8 @@ from pytest import raises
 
 from typedpy import (
     Boolean,
-    Constant, ImmutableStructure,
+    Constant,
+    ImmutableStructure,
     Structure,
     Array,
     Number,
@@ -1354,8 +1355,10 @@ def test_serialization_constant1():
         a: str
         _serialization_mapper = {"I": Constant(5), "A": "number"}
 
-    assert Deserializer(B).deserialize({"number": "xyz"}, keep_undefined=False) == B(a="xyz", i=5)
-    assert Serializer(B(a="xyz", i=5)).serialize() == {'i': 5, 'number': 'xyz'}
+    assert Deserializer(B).deserialize({"number": "xyz"}, keep_undefined=False) == B(
+        a="xyz", i=5
+    )
+    assert Serializer(B(a="xyz", i=5)).serialize() == {"i": 5, "number": "xyz"}
 
 
 def test_serialization_constant_in_list():
@@ -1368,6 +1371,9 @@ def test_serialization_constant_in_list():
         arr: Array[A]
         _serialization_mapper = [mappers.TO_LOWERCASE, {"ARR": "numbers"}]
 
-    assert Deserializer(B).deserialize({"numbers": [{}, {}]}, keep_undefined=False) == B(arr=[A(10), A(10)])
-    assert Serializer(B(arr=[A(10), A(10)])).serialize() == {'numbers': [{'i': 10}, {'i': 10}]}
-    
+    assert Deserializer(B).deserialize(
+        {"numbers": [{}, {}]}, keep_undefined=False
+    ) == B(arr=[A(10), A(10)])
+    assert Serializer(B(arr=[A(10), A(10)])).serialize() == {
+        "numbers": [{"i": 10}, {"i": 10}]
+    }

@@ -10,5 +10,5 @@ def test_first_in():
 
 def test_first_in_generator():
     assert first_in(range(100, 200)) is 100
-    assert first_in(i for i in range(100, 200)if i>150) is 151
+    assert first_in(i for i in range(100, 200) if i > 150) is 151
     assert first_in(range(0)) is None

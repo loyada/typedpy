@@ -111,8 +111,10 @@ def test_field_declaration_bad_usage():
     foo = Foo(i=1, first_name_foo="Tom", last_name_foo="Jones")
 
     # This is a mess...
-    assert (str(foo) == "<Instance of Foo. Properties: i = 1, last_name_bar = 'Tom'>" or
-           str(foo) == "<Instance of Foo. Properties: i = 1, last_name_bar = 'Jones'>")
+    assert (
+        str(foo) == "<Instance of Foo. Properties: i = 1, last_name_bar = 'Tom'>"
+        or str(foo) == "<Instance of Foo. Properties: i = 1, last_name_bar = 'Jones'>"
+    )
     # so watch out!
 
 

@@ -53,4 +53,7 @@ def test_invalid_type():
     with pytest.raises(TypeError) as excinfo:
         Container1(data={Baz: "baz"})
 
-    assert "data_key: Expected a subclass of Foo; Got <Structure: Baz. Properties: >" in str(excinfo.value)
+    assert (
+        "data_key: Expected a subclass of Foo; Got <Structure: Baz. Properties: >"
+        in str(excinfo.value)
+    )

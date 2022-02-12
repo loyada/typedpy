@@ -6,9 +6,11 @@ from pytest import mark
 
 from typedpy import (
     Array,
-    DecimalNumber, Deserializer,
+    DecimalNumber,
+    Deserializer,
     FunctionCall,
-    Map, Serializer,
+    Map,
+    Serializer,
     String,
     Structure,
     mappers,
@@ -276,6 +278,7 @@ def test_additional_serialization_props():
         "purchase_total": 90,
     }
 
+
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_defect_in_complex_mapper1():
     class Blah(Structure):
@@ -287,7 +290,7 @@ def test_defect_in_complex_mapper1():
         ]
         _required = []
 
-    class Foo(Structure): # noqa
+    class Foo(Structure):  # noqa
         blah: Blah
         i: int
 
@@ -296,7 +299,9 @@ def test_defect_in_complex_mapper1():
     class FooList(Structure):
         foos: list[Foo]
 
-    assert Deserializer(FooList).deserialize({"foos": [{"i": 5}]}, keep_undefined=False) == FooList(foos=[Foo(i=5)])
+    assert Deserializer(FooList).deserialize(
+        {"foos": [{"i": 5}]}, keep_undefined=False
+    ) == FooList(foos=[Foo(i=5)])
 
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
@@ -305,12 +310,15 @@ def test_defect_in_complex_mapper2():
         amount: DecimalNumber
 
         _serialization_mapper = [
-            {"amount": FunctionCall(func=lambda x: Decimal(x) * 2, args=["amount_decimal"])},
+            {
+                "amount": FunctionCall(
+                    func=lambda x: Decimal(x) * 2, args=["amount_decimal"]
+                )
+            },
         ]
         _required = []
 
-
-    class Foo(Structure): # noqa
+    class Foo(Structure):  # noqa
         blah: Blah
         i: int
 
@@ -319,17 +327,19 @@ def test_defect_in_complex_mapper2():
     class FooList(Structure):
         foos: list[Foo]
 
-    deserialized = Deserializer(FooList).deserialize({"foos": [
-        {"i": 5},
-        {"i": 4, "blah": {}},
-        {"i": 3, "blah": {"amount_decimal": "5"}}
-    ]
-    }, keep_undefined=False)
-    assert deserialized == FooList(foos=[
-        Foo(i=5),
-        Foo(i=4, blah=Blah()),
-        Foo(i=3, blah=Blah(amount=Decimal(10)))
-    ])
+    deserialized = Deserializer(FooList).deserialize(
+        {
+            "foos": [
+                {"i": 5},
+                {"i": 4, "blah": {}},
+                {"i": 3, "blah": {"amount_decimal": "5"}},
+            ]
+        },
+        keep_undefined=False,
+    )
+    assert deserialized == FooList(
+        foos=[Foo(i=5), Foo(i=4, blah=Blah()), Foo(i=3, blah=Blah(amount=Decimal(10)))]
+    )
 
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
@@ -338,11 +348,17 @@ def test_defect_in_complex_mapper3():
         amount: DecimalNumber
 
         _serialization_mapper = [
-            {"amount": FunctionCall(func=lambda x: Decimal(x) * 2, args=["amount_decimal"])},
+            {
+                "amount": FunctionCall(
+                    func=lambda x: Decimal(x) * 2, args=["amount_decimal"]
+                )
+            },
         ]
         _required = []
 
     class Foo(Structure):
         blas: list[Blah]
 
-    assert Deserializer(Foo).deserialize({"blas": [{}]}, keep_undefined=False) == Foo(blas=[Blah()])
+    assert Deserializer(Foo).deserialize({"blas": [{}]}, keep_undefined=False) == Foo(
+        blas=[Blah()]
+    )

@@ -2,7 +2,17 @@ import enum
 
 from pytest import raises
 
-from typedpy import Deserializer, Enum, Integer, Map, Positive, Serializer, String, Structure, Array
+from typedpy import (
+    Deserializer,
+    Enum,
+    Integer,
+    Map,
+    Positive,
+    Serializer,
+    String,
+    Structure,
+    Array,
+)
 
 
 class PositiveEnum(Enum, Positive):

@@ -1,9 +1,12 @@
+import json
+
 from typedpy.extfields import DateField
 from typedpy import (
     Structure,
     DecimalNumber,
     String,
     Array,
+    first_in,
     standard_readable_error_for_typedpy_exception,
     Positive,
     deserialize_structure,
@@ -117,12 +120,18 @@ def test_multiple_errors_not_fail_fast(all_errors):
         Foo(a=1, b=1000, c=-5, arr=[1])
     errs = standard_readable_error_for_typedpy_exception(ex.value)
     assert (
-        ErrorInfo(field="b", problem="Expected a maximum of 100", value="1000") in errs
+            ErrorInfo(field="b", problem="Expected a maximum of 100", value="1000") in errs
     )
     assert ErrorInfo(field="arr_0", problem="Expected a string", value="1") in errs
     assert (
-        ErrorInfo(field="c", problem="Expected a positive number", value="-5") in errs
+            ErrorInfo(field="c", problem="Expected a positive number", value="-5") in errs
     )
+    simple_form = json.loads(str(ex.value))
+    assert set(simple_form) == {
+        "b: Got 1000; Expected a maximum of 100",
+        "arr_0: Got 1; Expected a string",
+        "c: Got -5; Expected a positive number",
+    }
 
 
 ###############################################################################################
@@ -200,10 +209,10 @@ def test_unsuccessful_deserialization_with_many_types(all_errors):
         ErrorInfo(
             field="any",
             problem="Does not match any field option:"
-            " (1) Does not match <Array. Properties: items = <ClassReference: Person>>. reason: any_1: Expected "
-            "a dictionary; Got 'xxx'. (2) Does not match <ClassReference: Person>."
-            " reason: any: Expected a dictionary; Got"
-            " [{'name': 'john', 'ssid': '123'}, 'xxx']",
+                    " (1) Does not match <Array. Properties: items = <ClassReference: Person>>. reason: any_1: Expected "
+                    "a dictionary; Got 'xxx'. (2) Does not match <ClassReference: Person>."
+                    " reason: any: Expected a dictionary; Got"
+                    " [{'name': 'john', 'ssid': '123'}, 'xxx']",
             value="[{'name': 'john', 'ssid': '123'}, 'xxx']",
         ),
         ErrorInfo(field="enum", problem="Expected one of 1, 2, 3", value="4"),
@@ -223,6 +232,18 @@ def test_unsuccessful_deserialization_with_many_types(all_errors):
     ]
     for e in expected_errors[:-1]:
         assert e in errs
+    simple_form = json.loads(str(ex.value))
+    for e in simple_form:
+        if "StructureReference" not in e:
+            assert e in {
+                "i: Got 50; Expected a maximum of 10",
+                "s: Got []; Expected a string",
+                "any: Got [{'name': 'john', 'ssid': '123'}, 'xxx']; Does not match any field option: (1) Does not match <Array. Properties: items = <ClassReference: Person>>. reason: any_1: Expected a dictionary; Got 'xxx'. (2) Does not match <ClassReference: Person>. reason: any: Expected a dictionary; Got [{'name': 'john', 'ssid': '123'}, 'xxx']",
+                "people_0: [\"ssid: Got '13'; Expected a minimum length of 3\"]",
+                "embedded: Got {'a1': 8}; StructureReference_1: missing a required argument: 'a2'",
+                "enum: Got 4; Expected one of 1, 2, 3",
+            }
+
     expected = expected_errors[-1]
     for e in errs:
         if e.field == expected.field and e.value == expected.value:
@@ -239,16 +260,18 @@ def test_missed_required(all_errors):
     errs = standard_readable_error_for_typedpy_exception(ex.value)
     assert errs[0].problem.startswith("missing a required argument: 'r'")
 
-#
-# def test_string_err_wrapper(all_errors):
-#     class Foo(Structure):
-#         a: String(pattern=r"[\d]{3}")
-#      #   b: String(pattern="[\\d]{5}")
-#
-#     class Bar(Structure):
-#         foos: Array[Foo]
-#
-#     with raises(ValueError) as ex:
-#      Bar(foos=[Foo(a="a")])
-#     print(ex.value.args[0])
-#     assert ex.value.args[0] == """[a: Got 'a'; Does not match regular expression: '[\d]{3}]"""
+
+def test_string_err_wrapper(all_errors):
+    class Foo(Structure):
+        a: String(pattern=r"[\d]{3}")
+
+    #   b: String(pattern="[\\d]{5}")
+
+    class Bar(Structure):
+        foos: Array[Foo]
+
+    with raises(ValueError) as ex:
+        Bar(foos=[Foo(a="a")])
+    simple_form = json.loads(str(ex.value))
+    print(ex.value.args[0])
+    assert simple_form[0] == """a: Got 'a'; Does not match regular expression: '[\d]{3}'"""

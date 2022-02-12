@@ -22,7 +22,8 @@ from typedpy import (
     DateTime,
 )
 from typedpy.structures import (
-    AbstractStructure, FinalStructure,
+    AbstractStructure,
+    FinalStructure,
     ImmutableStructure,
     unique,
     MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS,
@@ -690,8 +691,10 @@ def test_find_fields_with_function_returning_field():
 
 def test_disallow_mutable_default():
     with pytest.raises(ValueError) as excinfo:
+
         class Foo(Structure):
             a: list = []
+
     assert "use a generating function" in str(excinfo.value)
 
 

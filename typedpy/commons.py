@@ -31,10 +31,14 @@ def _is_sunder(name):
     return len(name) > 2 and name[0] == "_" and name[1:2] != "_"
 
 
+class InvalidStructureErr(ValueError, TypeError):
+    pass
+
+
 def raise_errs_if_needed(errors):
     if errors:
-        messages = json.dumps([str(e) for e in errors])
-        raise errors[0].__class__(messages) from errors[0]
+        messages = [str(e) for e in errors]
+        raise InvalidStructureErr(json.dumps(messages)) from errors[0]
 
 
 def first_in(my_list: Iterable, ignore_none: bool = False) -> Optional:

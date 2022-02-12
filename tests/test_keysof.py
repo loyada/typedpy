@@ -38,6 +38,7 @@ def test_keys_of_single_enum_correct():
 
 def test_keys_of_invalid_param():
     with pytest.raises(TypeError) as excinfo:
+
         @keys_of(datetime)
         class Foo(Structure):  # noqa
             aaa: int
@@ -50,6 +51,7 @@ def test_keys_of_invalid_param():
 
 def test_keys_of_single_enum_missing_fields():
     with pytest.raises(TypeError) as excinfo:
+
         @keys_of(FirstEnum)
         class Foo(Structure):  # noqa
             aaa: int
@@ -61,6 +63,7 @@ def test_keys_of_single_enum_missing_fields():
 
 def test_keys_of_multiple_enums_missing_fields():
     with pytest.raises(TypeError) as excinfo:
+
         @keys_of(FirstEnum, SecondEnum)
         class Foo(Structure):  # noqa
             aaa: int
@@ -82,4 +85,3 @@ def test_keys_of_multiple_enums_valid():
         another: str
 
     # This is valid, so nothing is expected
-

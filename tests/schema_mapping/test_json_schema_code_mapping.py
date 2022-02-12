@@ -83,7 +83,7 @@ def test_example_code_to_schema_and_back(
     assert generated_code == expected_code
 
 
-@patch('logging.warning')
+@patch("logging.warning")
 def test_warn_that_additional_serialization_is_not_supported(warning):
     class Foo(Structure):
         i: int
@@ -94,6 +94,7 @@ def test_warn_that_additional_serialization_is_not_supported(warning):
 
     structure_to_schema(Foo, {})
 
-    warning.assert_called_with("mapping to schema does not support _additional_serialization method. You"
-                               " will have to edit it manually.")
-
+    warning.assert_called_with(
+        "mapping to schema does not support _additional_serialization method. You"
+        " will have to edit it manually."
+    )

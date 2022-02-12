@@ -850,11 +850,9 @@ def test_serialize_descriminator():
     class Firm(Structure):
         employees: Array[Employee]
 
-    firm = Firm(employees=[
-        Engineer(name="john"),
-        Marketer(name="rob"),
-        Sales(name="joe")
-    ])
+    firm = Firm(
+        employees=[Engineer(name="john"), Marketer(name="rob"), Sales(name="joe")]
+    )
 
     assert Serializer(firm).serialize() == {
         "employees": [

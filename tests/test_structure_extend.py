@@ -2,7 +2,15 @@ from typing import Optional
 
 import pytest
 
-from typedpy import Deserializer, ImmutableStructure, Map, Structure, mappers, Serializer, Extend
+from typedpy import (
+    Deserializer,
+    ImmutableStructure,
+    Map,
+    Structure,
+    mappers,
+    Serializer,
+    Extend,
+)
 
 
 class Blah(Structure):

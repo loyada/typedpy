@@ -115,6 +115,13 @@ from .mappers import mappers, Deleted, Constant, DoNotSerialize
 
 from .versioned_mapping import convert_dict, Versioned
 
-from .commons import nested, deep_get, first_in, flatten, default_factories
+from .commons import (
+    nested,
+    deep_get,
+    first_in,
+    flatten,
+    default_factories,
+    InvalidStructureErr
+)
 
 from .keysof import keys_of

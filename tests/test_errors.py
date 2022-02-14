@@ -2,11 +2,10 @@ import json
 
 from typedpy.extfields import DateField
 from typedpy import (
-    Structure,
+    InvalidStructureErr, Structure,
     DecimalNumber,
     String,
     Array,
-    first_in,
     standard_readable_error_for_typedpy_exception,
     Positive,
     deserialize_structure,
@@ -23,7 +22,7 @@ from typedpy import (
 
 from pytest import raises, fixture
 
-from typedpy.errors import ErrorInfo
+from typedpy.errors import ErrorInfo, get_simplified_error
 
 
 class PositiveDecimal(DecimalNumber, Positive):
@@ -232,14 +231,14 @@ def test_unsuccessful_deserialization_with_many_types(all_errors):
     ]
     for e in expected_errors[:-1]:
         assert e in errs
-    simple_form = json.loads(str(ex.value))
+    simple_form = get_simplified_error(str(ex.value))
     for e in simple_form:
         if "StructureReference" not in e:
             assert e in {
                 "i: Got 50; Expected a maximum of 10",
                 "s: Got []; Expected a string",
                 "any: Got [{'name': 'john', 'ssid': '123'}, 'xxx']; Does not match any field option: (1) Does not match <Array. Properties: items = <ClassReference: Person>>. reason: any_1: Expected a dictionary; Got 'xxx'. (2) Does not match <ClassReference: Person>. reason: any: Expected a dictionary; Got [{'name': 'john', 'ssid': '123'}, 'xxx']",
-                "people_0: [\"ssid: Got '13'; Expected a minimum length of 3\"]",
+                "people_0: ssid: Got '13'; Expected a minimum length of 3",
                 "embedded: Got {'a1': 8}; StructureReference_1: missing a required argument: 'a2'",
                 "enum: Got 4; Expected one of 1, 2, 3",
             }
@@ -249,6 +248,19 @@ def test_unsuccessful_deserialization_with_many_types(all_errors):
         if e.field == expected.field and e.value == expected.value:
             return
     assert False
+
+
+def test_simplified_form1(all_errors):
+    err1 = "a: got foo; expected bar"
+    err1_wrapped = json.dumps([err1])
+    err2 = f"b:{err1_wrapped}"
+    err2_wrapped = json.dumps([err2])
+    err3 = f"c: {err2_wrapped}"
+    err3_wrapped = json.dumps([err3])
+
+    simple_form = get_simplified_error(err3_wrapped)
+
+    assert simple_form == ["c: b: a: got foo; expected bar"]
 
 
 def test_missed_required(all_errors):
@@ -272,6 +284,5 @@ def test_string_err_wrapper(all_errors):
 
     with raises(ValueError) as ex:
         Bar(foos=[Foo(a="a")])
-    simple_form = json.loads(str(ex.value))
-    print(ex.value.args[0])
-    assert simple_form[0] == """a: Got 'a'; Does not match regular expression: '[\d]{3}'"""
+    simple_form = get_simplified_error(str(ex.value))
+    assert simple_form == ["""a: Got 'a'; Does not match regular expression: '[\d]{3}'"""]

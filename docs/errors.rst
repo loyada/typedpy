@@ -56,3 +56,42 @@ An example of usage, take from the automated tests:
         assert ErrorInfo(field='arr_0', problem='Expected a string', value='1') in errs
         assert ErrorInfo(field='c', problem='Expected a positive number', value='-5') in errs
 
+
+An ErrorInfo can also be hierarchical, in case the error is nested, for example:
+
+.. code-block:: python
+
+    class Person(Structure):
+        name: str
+        ssid: String(minLength=3)
+
+    class Group(Structure):
+        people: list[Person]
+
+
+    with raises(Exception) as ex:
+        deserialize_structure(Group, { "people": [{"name": "john", "ssid": "13"}]})
+    errs = standard_readable_error_for_typedpy_exception(ex.value)
+    expected_errors = [
+        ErrorInfo(
+            field="people_0",
+            problem=[
+                ErrorInfo(
+                    field="ssid", problem="Expected a minimum length of 3", value="'13'"
+                )
+            ],
+        ),
+    ]
+    assert errs == expected_errors
+
+
+If you don't want to use the custom ErrorInfo class, and just get a "simplied" list of errors, Typedpy
+offers the function get_simplified_error(). Here is an example usage:
+
+.. code-block:: python
+
+   err_str = '["c: [\\"b:[\\\\\\"a: got foo; expected bar\\\\\\"]\\"]"]'
+
+   simple_form = get_simplified_error(err_str)
+
+   assert simple_form == ["c: b: a: got foo; expected bar"]

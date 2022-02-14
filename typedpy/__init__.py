@@ -107,7 +107,7 @@ from .extfields import (
 
 from .subclass import SubClass
 
-from .errors import standard_readable_error_for_typedpy_exception, ErrorInfo
+from .errors import standard_readable_error_for_typedpy_exception, ErrorInfo, get_simplified_error
 
 from .utility import get_list_type, type_is_generic
 

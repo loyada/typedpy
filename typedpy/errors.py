@@ -84,3 +84,23 @@ def _standard_readable_error_for_typedpy_exception_internal(err_message: str):
         problem = _transform_class_to_readable(match.group(2))
         return ErrorInfo(problem=try_expand(problem), field=field)
     return ErrorInfo(problem=err_message)
+
+
+def get_simplified_error(err: str, as_list=True):
+    try:
+        res = json.loads(err)
+        if isinstance(res, list):
+            fixed = []
+            for e in res:
+                try:
+                    key, *rest = e.split(':')
+                    val = ":".join(rest)
+                    corrected = get_simplified_error(val.strip(), as_list=False)
+                    fixed.append(f"{key}: {corrected}")
+                except Exception:  # noqa
+                    fixed.append(e)
+
+            return fixed if len(res) > 1 or as_list is True else fixed[0]
+    except JSONDecodeError:
+        pass
+    return err

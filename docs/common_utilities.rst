@@ -17,3 +17,8 @@ Common Utilities
 .. autofunction:: default_factories
 
 
+Testing Utilities
+=================
+
+.. autofunction:: find_diff
+

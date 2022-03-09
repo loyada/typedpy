@@ -20,5 +20,5 @@ Common Utilities
 Testing Utilities
 =================
 
-.. autofunction:: find_diff
+.. autofunction:: testing.find_diff
 

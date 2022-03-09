@@ -8,7 +8,7 @@ class Person(Structure):
 
 
 class Foo(Structure):
-    a: list[str]
+    a: Array[str]
     i: Person
 
     _required = []

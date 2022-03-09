@@ -93,7 +93,7 @@ def get_simplified_error(err: str, as_list=True):
             fixed = []
             for e in res:
                 try:
-                    key, *rest = e.split(':')
+                    key, *rest = e.split(":")
                     val = ":".join(rest)
                     corrected = get_simplified_error(val.strip(), as_list=False)
                     fixed.append(f"{key}: {corrected}")

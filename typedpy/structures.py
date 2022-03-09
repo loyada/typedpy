@@ -259,7 +259,9 @@ class UniqueMixin:
             getattr(myclass, "_ALL_INSTANCES", set()).add(hash_of_instance)
 
     def __manage_uniqueness_for_field__(self, instance, value):
-        if not getattr(instance, "_instantiated", False) or not getattr(self, MUST_BE_UNIQUE, False):
+        if not getattr(instance, "_instantiated", False) or not getattr(
+            self, MUST_BE_UNIQUE, False
+        ):
             return
         field_name = getattr(self, "_name")
         structure_class_name = instance.__class__.__name__

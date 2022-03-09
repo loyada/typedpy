@@ -2,7 +2,8 @@ import json
 
 from typedpy.extfields import DateField
 from typedpy import (
-    InvalidStructureErr, Structure,
+    InvalidStructureErr,
+    Structure,
     DecimalNumber,
     String,
     Array,
@@ -119,11 +120,11 @@ def test_multiple_errors_not_fail_fast(all_errors):
         Foo(a=1, b=1000, c=-5, arr=[1])
     errs = standard_readable_error_for_typedpy_exception(ex.value)
     assert (
-            ErrorInfo(field="b", problem="Expected a maximum of 100", value="1000") in errs
+        ErrorInfo(field="b", problem="Expected a maximum of 100", value="1000") in errs
     )
     assert ErrorInfo(field="arr_0", problem="Expected a string", value="1") in errs
     assert (
-            ErrorInfo(field="c", problem="Expected a positive number", value="-5") in errs
+        ErrorInfo(field="c", problem="Expected a positive number", value="-5") in errs
     )
     simple_form = json.loads(str(ex.value))
     assert set(simple_form) == {
@@ -208,10 +209,10 @@ def test_unsuccessful_deserialization_with_many_types(all_errors):
         ErrorInfo(
             field="any",
             problem="Does not match any field option:"
-                    " (1) Does not match <Array. Properties: items = <ClassReference: Person>>. reason: any_1: Expected "
-                    "a dictionary; Got 'xxx'. (2) Does not match <ClassReference: Person>."
-                    " reason: any: Expected a dictionary; Got"
-                    " [{'name': 'john', 'ssid': '123'}, 'xxx']",
+            " (1) Does not match <Array. Properties: items = <ClassReference: Person>>. reason: any_1: Expected "
+            "a dictionary; Got 'xxx'. (2) Does not match <ClassReference: Person>."
+            " reason: any: Expected a dictionary; Got"
+            " [{'name': 'john', 'ssid': '123'}, 'xxx']",
             value="[{'name': 'john', 'ssid': '123'}, 'xxx']",
         ),
         ErrorInfo(field="enum", problem="Expected one of 1, 2, 3", value="4"),
@@ -285,4 +286,6 @@ def test_string_err_wrapper(all_errors):
     with raises(ValueError) as ex:
         Bar(foos=[Foo(a="a")])
     simple_form = get_simplified_error(str(ex.value))
-    assert simple_form == ["""a: Got 'a'; Does not match regular expression: '[\d]{3}'"""]
+    assert simple_form == [
+        """a: Got 'a'; Does not match regular expression: '[\d]{3}'"""
+    ]

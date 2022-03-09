@@ -109,8 +109,10 @@ def find_diff(first, second) -> Union[dict, str]:
         to be equal. This is useful to have more useful assertion error messages.
 
         Arguments:
-            first - first value. Can be a Structure, list, dict, set
-            second - second value. Can be a Structure, list, dict, set
+            first:
+                first value. Can be a Structure, list, dict, set
+            second:
+                second value. Can be a Structure, list, dict, set
 
         Returns:
             a dictionary with the differences, or the difference is trivial - a string.

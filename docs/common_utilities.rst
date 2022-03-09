@@ -20,5 +20,7 @@ Common Utilities
 Testing Utilities
 =================
 
-.. autofunction:: testing.find_diff
+.. currentmodule:: typedpy.testing
+
+.. autofunction:: find_diff
 

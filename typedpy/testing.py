@@ -106,7 +106,8 @@ def _diff_list(val, otherval, outer_result: dict, outer_key: str) -> dict:
 def find_diff(first, second) -> Union[dict, str]:
     """
         Utility for testing to find the differences between two values that are "supposed"
-        to be equal. This is useful to have more useful assertion error messages.
+        to be equal. This is useful to have more useful assertion error messages,
+        especially with pytest, using pytest_assertrepr_compare.
 
         Arguments:
             first:
@@ -118,6 +119,21 @@ def find_diff(first, second) -> Union[dict, str]:
             a dictionary with the differences, or the difference is trivial - a string.
             Note that this function does not employ any sophisticated algorithm and is meant
             just as a best-effort utility for testing.
+
+        Example of the output (taken from the unit tests):
+
+        .. code-block:: python
+
+            actual = find_diff(bar2, bar1)
+            assert actual == {
+                "f": {
+                    "m['aaa']": {"age": "123 vs 12"},
+                    "missing values": ["bbb"],
+                    "additional values": ["ccc"],
+                },
+                "missing values": ["x"],
+            }
+
         """
     return _find_diff(first, second)
 

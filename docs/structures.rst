@@ -685,7 +685,7 @@ In the example above:
     bar = Bar(a="abc", x=10, b=8)
 
 
-Just like Partial, Omit can also be used directly:
+Just like Partial, Pick can also be used directly:
 
 .. code-block:: python
 

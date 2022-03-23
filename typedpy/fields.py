@@ -1446,7 +1446,7 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             raise ValueError(
                 f"{prefix}{wrap_val(value)} Did not match any field option"
             )
-        super().__set__(instance, value)
+        super().__set__(instance, getattr(instance, self._name))
 
     def __str__(self):
         return _str_for_multioption_field(self)

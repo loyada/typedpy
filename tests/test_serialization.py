@@ -477,6 +477,20 @@ def test_serialize_with_mapper_with_functions():
     assert serialize(foo, mapper=mapper) == {"function": "my_func", "i": 6}
 
 
+def test_serialize_with_mapper_with_functions_null():
+    class Foo(Structure):
+        function: str
+        i: int
+
+        _serialization_mapper = {
+            "function": FunctionCall(func=lambda f: f"--{f}--" if f else "unknown"),
+            "i": FunctionCall(func=lambda x: x + 5 if x is not None else 999, args=["i"]),
+        }
+
+    foo = Deserializer(Foo).deserialize({"i": None, "function": None})
+    assert foo == Foo(function="unknown", i=999)
+
+
 def test_serialize_with_mapper_with_function_converting_types():
     class Foo(Structure):
         num = Float

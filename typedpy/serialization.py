@@ -584,12 +584,8 @@ SENTITNEL = uuid.uuid4()
 
 
 def get_processed_input(key, mapper, the_dict):
-    def _try_deep_get(k):
-        v = deep_get(the_dict, k, default=SENTITNEL)
-        return v if v is not None else k
-
     def _get_arg_list(key_mapper):
-        vals = [_try_deep_get(k) for k in key_mapper.args]
+        vals = [deep_get(the_dict, k, default=SENTITNEL) for k in key_mapper.args]
         return [v for v in vals if v != SENTITNEL]
 
     key_mapper = mapper[key]

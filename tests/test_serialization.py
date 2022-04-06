@@ -484,7 +484,9 @@ def test_serialize_with_mapper_with_functions_null():
 
         _serialization_mapper = {
             "function": FunctionCall(func=lambda f: f"--{f}--" if f else "unknown"),
-            "i": FunctionCall(func=lambda x: x + 5 if x is not None else 999, args=["i"]),
+            "i": FunctionCall(
+                func=lambda x: x + 5 if x is not None else 999, args=["i"]
+            ),
         }
 
     foo = Deserializer(Foo).deserialize({"i": None, "function": None})

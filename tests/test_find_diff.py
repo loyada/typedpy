@@ -267,6 +267,7 @@ def test_find_diff_set():
         "s[1]": {"additional values": [foo4], "missing values": [foo3]},
     }
 
+
 #
 # def test_assertion_err_example():
 #     bar1 = Bar(

@@ -463,7 +463,7 @@ def deserialize_structure_internal(
     name=None,
     *,
     mapper=None,
-    keep_undefined=True,
+    keep_undefined=False,
     camel_case_convert=False,
 ):
     """

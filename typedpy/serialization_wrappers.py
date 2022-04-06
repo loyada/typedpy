@@ -71,7 +71,7 @@ class Deserializer(Structure):
                         "the class fields. "
                     )
 
-    def deserialize(self, input_data, keep_undefined=True):
+    def deserialize(self, input_data, keep_undefined=None):
         return deserialize_structure(
             self.target_class,
             input_data,
@@ -183,7 +183,7 @@ class Serializer(Structure):
         )
 
 
-def deserializer_by_discriminator(class_by_discriminator_value):
+def deserializer_by_discriminator(class_by_discriminator_value, keep_undefined=False):
     """
     create deserialized based on discriminator value in the input.
 
@@ -202,6 +202,6 @@ def deserializer_by_discriminator(class_by_discriminator_value):
                 f"discriminator: got {wrap_val(discriminator)}; Expected one of {list(_desererializer_by_type.keys())}"
             )
 
-        return _desererializer_by_type[discriminator].deserialize(data)
+        return _desererializer_by_type[discriminator].deserialize(data, keep_undefined=keep_undefined)
 
     return _get_content

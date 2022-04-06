@@ -743,6 +743,82 @@ def test_mapper_class_by_discriminator_2():
     assert deserialized == Bar(t="2", f=[1, 2, 3], foo=Foo2(a=123, i=9))
 
 
+def test_mapper_class_by_discriminator_drop_extra_attributes1():
+    serialized = {
+        "type": "2",
+        "f": [1, 2, 3],
+        "x": {"foo": {"a": 123, "i": 9, "xxx": [], "yyy": 0}},
+    }
+    deserialized = Deserializer(Bar).deserialize(serialized, keep_undefined=False)
+    assert deserialized == Bar(t="2", f=[1, 2, 3], foo=Foo2(a=123, i=9))
+
+
+def test_mapper_class_by_discriminator_drop_extra_attributes2():
+    class Bar(Structure):
+        t: str
+        f: Array[Integer]
+        foo: Foo
+
+        _serialization_mapper = {
+            "t": "type",
+            "foo": FunctionCall(
+                func=deserializer_by_discriminator(
+                    {
+                        "1": Foo1,
+                        "2": Foo2,
+                    },
+                ),
+                args=["type", "x.foo"],
+            ),
+        }
+
+    serialized = {
+        "a": 1,
+        "type": "2",
+        "f": [1, 2, 3],
+        "x": {"foo": {"a": 123, "i": 9, "xxx": [], "yyy": 0}},
+    }
+    deserialized = Deserializer(Bar).deserialize(serialized)
+    assert deserialized == Bar(t="2", f=[1, 2, 3], foo=Foo2(a=123, i=9))
+
+
+def test_mapper_class_by_discriminator_keep_extra_attributes():
+    class Bar(Structure):
+        t: str
+        f: Array[Integer]
+        foo: Foo
+
+        _serialization_mapper = {
+            "t": "type",
+            "foo": FunctionCall(
+                func=deserializer_by_discriminator(
+                    {
+                        "1": Foo1,
+                        "2": Foo2,
+                    },
+                    keep_undefined=True,
+                ),
+                args=["type", "x.foo"],
+            ),
+        }
+
+    serialized = {
+        "a": 1,
+        "type": "2",
+        "f": [1, 2, 3],
+        "x": {"foo": {"a": 123, "i": 9, "xxx": [], "yyy": 0}},
+    }
+    deserialized = Deserializer(Bar).deserialize(serialized, keep_undefined=True)
+    assert deserialized == Bar(
+        type="2",
+        a=1,
+        t="2",
+        f=[1, 2, 3],
+        foo=Foo2(a=123, i=9, xxx=[], yyy=0),
+        x={"foo": {"a": 123, "i": 9, "xxx": [], "yyy": 0}},
+    )
+
+
 def test_mapper_class_by_data_doesnt_match_discriminator():
     serialized = {"type": "1", "f": [1, 2, 3], "x": {"foo": {"a": 123, "i": 9}}}
     with raises(TypeError) as excinfo:

@@ -5,9 +5,11 @@ from pytest import raises
 from typedpy import (
     Deserializer,
     Enum,
-    ImmutableStructure, Integer,
+    ImmutableStructure,
+    Integer,
     Map,
-    NoneField, Positive,
+    NoneField,
+    Positive,
     Serializer,
     String,
     Structure,
@@ -225,7 +227,6 @@ def test_enum_not_all_values_serialization_by_value():
     assert "arr_3: Got Many.C; Expected one of: A, B, D" in str(excinfo.value)
 
 
-
 class Method(enum.Enum):
     aaa = 1
     bbb = 2
@@ -238,4 +239,3 @@ def test_serialize_optional_given_a_string():
     foo = Foo(pref="aaa")
 
     assert Serializer(foo).serialize() == {"pref": "aaa"}
-

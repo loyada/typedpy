@@ -447,6 +447,27 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
         self._immutable = immutable
 
 
+class TypedField(Field):
+    """
+    A strictly typed base field.
+    Should not be used directly. Instead, use :func:`create_typed_field`
+    """
+
+    _ty = object
+
+    def _validate(self, value):
+        def err_prefix():
+            return f"{self._name}: " if self._name else ""
+
+        if not isinstance(value, self._ty):
+            raise TypeError(f"{err_prefix()}Expected {self._ty}; Got {wrap_val(value)}")
+
+    def __set__(self, instance, value):
+        if not getattr(instance, "_skip_validation", False):
+            self._validate(value)
+        super().__set__(instance, value)
+
+
 # noinspection PyBroadException
 def is_function_returning_field(field_definition_candidate):
     python_ver_higher_than_36 = sys.version_info[0:2] != (3, 6)
@@ -572,8 +593,12 @@ class StructMeta(type):
         cls_dict.pop(DEFAULTS, None)
         clsobj = super().__new__(cls, name, bases, dict(cls_dict))
         _check_for_final_violations(clsobj.mro())
-
         clsobj._fields = fields
+
+        for key, val in _get_all_fields_by_name(clsobj).items():
+            if key not in clsobj.__annotations__ and isinstance(val, TypedField):
+                clsobj.__annotations__[key] = getattr(val, '_ty')
+
         default_required = (
             list(set(bases_required + fields)) if bases_params else fields
         )
@@ -586,6 +611,7 @@ class StructMeta(type):
                     "optional cannot override prior required in the class or in a base class"
                 )
         additional_props = cls_dict.get(ADDITIONAL_PROPERTIES, True)
+
         sig = make_signature(
             clsobj._fields,
             required,
@@ -1400,25 +1426,6 @@ class ImmutableStructure(Structure):
     _immutable = True
 
 
-class TypedField(Field):
-    """
-    A strictly typed base field.
-    Should not be used directly. Instead, use :func:`create_typed_field`
-    """
-
-    _ty = object
-
-    def _validate(self, value):
-        def err_prefix():
-            return f"{self._name}: " if self._name else ""
-
-        if not isinstance(value, self._ty):
-            raise TypeError(f"{err_prefix()}Expected {self._ty}; Got {wrap_val(value)}")
-
-    def __set__(self, instance, value):
-        if not getattr(instance, "_skip_validation", False):
-            self._validate(value)
-        super().__set__(instance, value)
 
 
 class NoneField(TypedField):
@@ -1537,3 +1544,5 @@ class AbstractStructure(Structure):
         if found:
             raise TypeError("Not allowed to instantiate an abstract Structure")
         super().__init__(*args, **kwargs)
+
+

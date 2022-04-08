@@ -1,13 +1,14 @@
 import typing
 from typing import Iterable
-
 from typedpy.structures import REQUIRED_FIELDS, StructMeta, Structure, _init_class_dict
+
+T = typing.TypeVar('T')
 
 
 class PartialMeta(type):
     def __getitem__(
-        cls, clazz: typing.Union[StructMeta, typing.Tuple[StructMeta, str]]
-    ):
+        cls: T, clazz: typing.Union[StructMeta, typing.Tuple[StructMeta, str]]
+    ) -> T:
         if not isinstance(clazz, StructMeta):
             if not isinstance(clazz, tuple) or (
                 isinstance(clazz, tuple)
@@ -30,9 +31,12 @@ class PartialMeta(type):
 
         cls_dict[REQUIRED_FIELDS] = []
 
-        newclass = type(classname, (Structure,), cls_dict)
+        new_class = type(classname, (Structure,), cls_dict)
+        for k, v in clazz.__annotations__.items():
+            if k not in new_class.__annotations__:
+                new_class.__annotations__[k] = v
 
-        return newclass
+        return new_class
 
 
 class Partial(metaclass=PartialMeta):

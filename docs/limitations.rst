@@ -16,6 +16,9 @@ Not Incorporated into IDE
 | Errors are found at run-time. There are workaround, like creating a hybrid Structure/dataclass, as explain in :ref:`hybrid` ,
 | but it is still a limitation.
 
+| However, since version 2.14, Typedpy allows to easily generate Python Interface files. These files are read automatically
+| by Pycharm, and will result it correct intellisense.
+
 Not Optimized for Speed
 -----------------------
 | Typedpy is not optimized for speed, especially when dealing with immutables. If speed is absolutely crucial, you need to be aware of that.

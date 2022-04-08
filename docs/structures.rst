@@ -725,6 +725,8 @@ Just like Partial, Extend can also be used directly:
 
 Allowing the IDE to Resolve Types and Offer Intellisense
 ========================================================
+(since version 2.14)
+
 Since currently Pycharm does not resolve annotations dynamically, Typedpy offers a way to create a Python Interface file
 (pyi file), by adding a small snippets to the end of the file in which the Structures are defined.
 For example, suppose you have the following "api.py" file:

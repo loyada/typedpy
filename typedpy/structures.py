@@ -595,9 +595,10 @@ class StructMeta(type):
         _check_for_final_violations(clsobj.mro())
         clsobj._fields = fields
 
-        for key, val in _get_all_fields_by_name(clsobj).items():
-            if key not in clsobj.__annotations__ and isinstance(val, TypedField):
-                clsobj.__annotations__[key] = getattr(val, '_ty')
+        if hasattr(clsobj, '__annotations__'):
+            for key, val in _get_all_fields_by_name(clsobj).items():
+                if key not in clsobj.__annotations__ and isinstance(val, TypedField):
+                    clsobj.__annotations__[key] = getattr(val, '_ty')
 
         default_required = (
             list(set(bases_required + fields)) if bases_params else fields

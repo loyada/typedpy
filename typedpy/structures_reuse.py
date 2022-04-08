@@ -32,9 +32,6 @@ class PartialMeta(type):
         cls_dict[REQUIRED_FIELDS] = []
 
         new_class = type(classname, (Structure,), cls_dict)
-        for k, v in clazz.__annotations__.items():
-            if k not in new_class.__annotations__:
-                new_class.__annotations__[k] = v
 
         return new_class
 

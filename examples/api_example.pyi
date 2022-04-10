@@ -1,3 +1,4 @@
+from examples.api_example import State
 from typedpy import Structure
 from typing import Union, Optional, Any
 
@@ -93,6 +94,7 @@ class Bar(Structure):
         any: Any,
         x: int,
         opt: Optional[float],
+        state: State,
         **kw
     ): ...
 
@@ -103,4 +105,5 @@ class Bar(Structure):
     any: Any
     x: int
     opt: Optional[float]
+    state: State
 

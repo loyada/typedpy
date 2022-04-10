@@ -1,4 +1,4 @@
-from .api_example import Bar
+from .api_example import Bar, State
 
 # i: int
 # d: dict
@@ -13,4 +13,14 @@ from .api_example import Bar
 # bar.i.append(4)
 
 
-bar = Bar(i=5, d={}, s="xyz", union=[], any=[1, 2, "xxx"], x="xxxx", opt=11, xxxxxxx=3)
+bar = Bar(
+    i=5,
+    d={},
+    s="xyz",
+    union=[],
+    any=[1, 2, "xxx"],
+    x="xxxx",
+    opt=11,
+    xxxxxxx=3,
+    state=State.NY,
+)

@@ -1,8 +1,10 @@
+import enum
 from typing import Optional
 
 from typedpy import (
     AnyOf,
     Anything,
+    Enum,
     Float,
     ImmutableStructure,
     Integer,
@@ -15,6 +17,13 @@ from typedpy import (
     mappers,
 )
 from typedpy import create_pyi
+
+
+class State(enum.Enum):
+    NY = 1
+    NJ = 2
+    AL = 3
+    FL = 4
 
 
 class Blah(Structure):
@@ -49,6 +58,7 @@ class FooPick(Pick[Foo, {"d", "a"}]):
 class Bar(Foo.omit("a", "b")):
     x: int
     opt: Optional[Float]
+    state: Enum[State]
 
 
 if __name__ == "__main__":

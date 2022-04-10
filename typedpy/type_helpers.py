@@ -2,7 +2,7 @@ from pathlib import Path
 import inspect
 from typing import Union
 
-from . import AnyOf, Deserializer, FunctionCall, Map, Serializer
+from . import AnyOf, Deserializer, Enum, FunctionCall, Map, Serializer
 from .structures import ImmutableStructure, NoneField, TypedField, Structure
 
 INDENT = "    "
@@ -20,6 +20,11 @@ def _get_type_info(field):
     if isinstance(field, Map):
         sub_types = ", ".join([_get_type_info(f) for f in field.items])
         return f"dict[{sub_types}]"
+
+    if isinstance(field, Enum):
+        if field._is_enum:
+            return field._enum_class.__name__
+
     the_type = field.get_type
 
     return f"{the_type.__name__}"

@@ -1,4 +1,3 @@
-from examples.enums import State
 from typedpy import Structure
 from typing import Union, Optional, Any
 

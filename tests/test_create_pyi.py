@@ -1,8 +1,12 @@
+import sys
 from pathlib import Path
 
 from typedpy import create_pyi
 import importlib.util
 import filecmp
+
+from pytest import mark
+
 
 def get_abs_path_from_here(relative_path: str, calling_file_name: str) -> Path:
     """
@@ -16,9 +20,9 @@ def get_abs_path_from_here(relative_path: str, calling_file_name: str) -> Path:
     return full_path.resolve()
 
 
-
+@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_create_pyi():
-    module_name = str(get_abs_path_from_here("api_example.py", __file__))
+    module_name = str(get_abs_path_from_here("../examples/api_example.py", __file__))
     spec = importlib.util.spec_from_file_location("example_pyi", module_name)
     the_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(the_module)
@@ -28,6 +32,6 @@ def test_create_pyi():
 
     create_pyi(str(pyi_path), the_module.__dict__)
 
-    actual_filename = get_abs_path_from_here('types_for_test_create_pyi.pyi', __file__)
-    expected_filename = get_abs_path_from_here( 'api_example.pyi', __file__)
+    actual_filename = get_abs_path_from_here("types_for_test_create_pyi.pyi", __file__)
+    expected_filename = get_abs_path_from_here("../examples/api_example.pyi", __file__)
     assert filecmp.cmp(actual_filename, expected_filename)

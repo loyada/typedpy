@@ -1,6 +1,6 @@
 from typing import Optional
 
-from .enums import State
+from examples.enums import State
 from typedpy import (
     AnyOf,
     Anything,

@@ -30,7 +30,7 @@ def _get_type_info(field):
     return f"{the_type.__name__}"
 
 
-def _get_all_type_info(cls) -> dict[str, str]:
+def _get_all_type_info(cls) -> dict:
     type_by_name = {}
     required = getattr(cls, "_required", None)
     for field_name, field in cls.get_all_fields_by_name().items():

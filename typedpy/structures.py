@@ -446,6 +446,10 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
     def _set_immutable(self, immutable: bool):
         self._immutable = immutable
 
+    @property
+    def get_type(self):
+        return typing.Any
+
 
 class TypedField(Field):
     """
@@ -466,6 +470,10 @@ class TypedField(Field):
         if not getattr(instance, "_skip_validation", False):
             self._validate(value)
         super().__set__(instance, value)
+
+    @property
+    def get_type(self):
+        return self.__class__._ty
 
 
 # noinspection PyBroadException
@@ -595,10 +603,10 @@ class StructMeta(type):
         _check_for_final_violations(clsobj.mro())
         clsobj._fields = fields
 
-        if hasattr(clsobj, '__annotations__'):
+        if hasattr(clsobj, "__annotations__"):
             for key, val in _get_all_fields_by_name(clsobj).items():
                 if key not in clsobj.__annotations__ and isinstance(val, TypedField):
-                    clsobj.__annotations__[key] = getattr(val, '_ty')
+                    clsobj.__annotations__[key] = getattr(val, "_ty")
 
         default_required = (
             list(set(bases_required + fields)) if bases_params else fields
@@ -1427,8 +1435,6 @@ class ImmutableStructure(Structure):
     _immutable = True
 
 
-
-
 class NoneField(TypedField):
     """
     A field that maps to a single allowable value: None.
@@ -1545,5 +1551,3 @@ class AbstractStructure(Structure):
         if found:
             raise TypeError("Not allowed to instantiate an abstract Structure")
         super().__init__(*args, **kwargs)
-
-

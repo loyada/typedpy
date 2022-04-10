@@ -1,4 +1,4 @@
-from .api_example import Bar, State
+from .api_example import Bar
 
 # i: int
 # d: dict
@@ -11,7 +11,7 @@ from .api_example import Bar, State
 # append is invalid
 # bar = Bar(i=5, d={}, s="xyz", union="union", any=[1,2,"xxx"], x="xxxx", opt="opt", asdasd=234234)
 # bar.i.append(4)
-
+from .enums import State
 
 bar = Bar(
     i=5,

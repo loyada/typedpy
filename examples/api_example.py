@@ -1,6 +1,6 @@
-import enum
 from typing import Optional
 
+from .enums import State
 from typedpy import (
     AnyOf,
     Anything,
@@ -17,13 +17,6 @@ from typedpy import (
     mappers,
 )
 from typedpy import create_pyi
-
-
-class State(enum.Enum):
-    NY = 1
-    NJ = 2
-    AL = 3
-    FL = 4
 
 
 class Blah(Structure):

@@ -1,6 +1,6 @@
+import typing
 from pathlib import Path
 import inspect
-from typing import Union
 
 from . import AnyOf, Deserializer, Enum, FunctionCall, Map, Serializer
 from .structures import ImmutableStructure, NoneField, TypedField, Structure
@@ -26,6 +26,8 @@ def _get_type_info(field):
             return field._enum_class.__name__
 
     the_type = field.get_type
+    if the_type is typing.Any:
+        return "Any"
 
     return f"{the_type.__name__}"
 

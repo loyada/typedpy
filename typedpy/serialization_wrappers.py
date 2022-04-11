@@ -202,6 +202,8 @@ def deserializer_by_discriminator(class_by_discriminator_value, keep_undefined=F
                 f"discriminator: got {wrap_val(discriminator)}; Expected one of {list(_desererializer_by_type.keys())}"
             )
 
-        return _desererializer_by_type[discriminator].deserialize(data, keep_undefined=keep_undefined)
+        return _desererializer_by_type[discriminator].deserialize(
+            data, keep_undefined=keep_undefined
+        )
 
     return _get_content

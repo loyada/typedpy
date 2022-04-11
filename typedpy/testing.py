@@ -54,7 +54,6 @@ def _diff_dict(val, otherval) -> dict:
     return result
 
 
-
 def _diff_list(val, otherval, outer_result: dict, outer_key: str) -> dict:
     result = {}
     for i, v in enumerate(val):
@@ -72,7 +71,9 @@ def _diff_list(val, otherval, outer_result: dict, outer_key: str) -> dict:
                 else:
                     result[i] = diff
             else:
-                internal_diff = _find_diff(v, otherval[i], outer_result=outer_result, out_key=outer_key)
+                internal_diff = _find_diff(
+                    v, otherval[i], outer_result=outer_result, out_key=outer_key
+                )
                 if internal_diff:
                     if outer_key:
                         outer_result[f"{outer_key}[{i}]"] = internal_diff
@@ -94,7 +95,9 @@ def _diff_list(val, otherval, outer_result: dict, outer_key: str) -> dict:
                 else:
                     result[i] = diff
             else:
-                internal_diff = _find_diff(v, otherval[i], outer_result=outer_result, out_key=outer_key)
+                internal_diff = _find_diff(
+                    v, otherval[i], outer_result=outer_result, out_key=outer_key
+                )
                 if internal_diff:
                     if outer_key:
                         outer_result[f"{outer_key}[{i}]"] = internal_diff
@@ -105,36 +108,36 @@ def _diff_list(val, otherval, outer_result: dict, outer_key: str) -> dict:
 
 def find_diff(first, second) -> Union[dict, str]:
     """
-        Utility for testing to find the differences between two values that are "supposed"
-        to be equal. This is useful to have more useful assertion error messages,
-        especially with pytest, using pytest_assertrepr_compare.
+    Utility for testing to find the differences between two values that are "supposed"
+    to be equal. This is useful to have more useful assertion error messages,
+    especially with pytest, using pytest_assertrepr_compare.
 
-        Arguments:
-            first:
-                first value. Can be a Structure, list, dict, set
-            second:
-                second value. Can be a Structure, list, dict, set
+    Arguments:
+        first:
+            first value. Can be a Structure, list, dict, set
+        second:
+            second value. Can be a Structure, list, dict, set
 
-        Returns:
-            a dictionary with the differences, or the difference is trivial - a string.
-            Note that this function does not employ any sophisticated algorithm and is meant
-            just as a best-effort utility for testing.
+    Returns:
+        a dictionary with the differences, or the difference is trivial - a string.
+        Note that this function does not employ any sophisticated algorithm and is meant
+        just as a best-effort utility for testing.
 
-        Example of the output (taken from the unit tests):
+    Example of the output (taken from the unit tests):
 
-        .. code-block:: python
+    .. code-block:: python
 
-            actual = find_diff(bar2, bar1)
-            assert actual == {
-                "f": {
-                    "m['aaa']": {"age": "123 vs 12"},
-                    "missing values": ["bbb"],
-                    "additional values": ["ccc"],
-                },
-                "missing values": ["x"],
-            }
+        actual = find_diff(bar2, bar1)
+        assert actual == {
+            "f": {
+                "m['aaa']": {"age": "123 vs 12"},
+                "missing values": ["bbb"],
+                "additional values": ["ccc"],
+            },
+            "missing values": ["x"],
+        }
 
-        """
+    """
     return _find_diff(first, second)
 
 
@@ -143,7 +146,9 @@ def _find_diff(struct, other, outer_result=None, out_key=None) -> Union[dict, st
     if struct.__class__ != other.__class__:
         return {"class": f"{struct.__class__} vs. {other.__class__}"}
     if isinstance(struct, (list, tuple)):
-        res_val = _diff_list(struct, other, outer_result=outer_result, outer_key=out_key)
+        res_val = _diff_list(
+            struct, other, outer_result=outer_result, outer_key=out_key
+        )
         if res_val and out_key:
             outer_result[out_key] = res_val
         return res_val
@@ -175,14 +180,18 @@ def _find_diff(struct, other, outer_result=None, out_key=None) -> Union[dict, st
                         res[k] = _find_diff(val, otherval)
                     elif isinstance(val, (list, tuple, set, dict)):
                         if val.__class__ != otherval.__class__:
-                            res[k] = {"class": f"{val.__class__} vs. {otherval.__class__}"}
+                            res[k] = {
+                                "class": f"{val.__class__} vs. {otherval.__class__}"
+                            }
                         elif len(val) != len(otherval):
                             res[k] = f"length of {len(val)} vs {len(otherval)}"
                         else:
                             if isinstance(val, (list, tuple)):
-                                res_val = _diff_list(val, otherval, outer_result=res, outer_key=k)
+                                res_val = _diff_list(
+                                    val, otherval, outer_result=res, outer_key=k
+                                )
                                 if res_val:
-                                    res[k]=res_val
+                                    res[k] = res_val
                             elif isinstance(val, dict):
                                 res_val = _diff_dict(val, otherval)
                                 if res_val:
@@ -190,7 +199,7 @@ def _find_diff(struct, other, outer_result=None, out_key=None) -> Union[dict, st
                                         if i not in {MISSING_VALUES, ADDITIONAL_VALUES}:
                                             res[f"{k}[{wrap_val(i)}]"] = res_val[i]
                                         else:
-                                           # _add_val(res, ADDITIONAL_VALUES, k)
+                                            # _add_val(res, ADDITIONAL_VALUES, k)
                                             res[i] = res_val[i]
                             elif isinstance(val, set):
                                 res_val = _diff_set(val, otherval)
@@ -212,5 +221,8 @@ def _find_diff(struct, other, outer_result=None, out_key=None) -> Union[dict, st
 
 def pytest_assertrepr_compare(op, left, right):
     if isinstance(left, Structure) and isinstance(right, Structure) and op == "==":
-        res = ["found the following differences between the structures:", json.dumps(_find_diff(left, right))]
+        res = [
+            "found the following differences between the structures:",
+            json.dumps(_find_diff(left, right)),
+        ]
         return res

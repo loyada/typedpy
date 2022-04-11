@@ -2,7 +2,7 @@ import typing
 from typing import Iterable
 from typedpy.structures import REQUIRED_FIELDS, StructMeta, Structure, _init_class_dict
 
-T = typing.TypeVar('T')
+T = typing.TypeVar("T")
 
 
 class PartialMeta(type):

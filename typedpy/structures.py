@@ -1514,6 +1514,10 @@ class ClassReference(TypedField):
     def __str__(self):
         return f"<ClassReference: {self._ty.__name__}>"
 
+    @property
+    def get_type(self):
+        return self._ty
+
 
 class ImmutableField(Field):
     """

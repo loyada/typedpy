@@ -48,19 +48,33 @@ def _get_all_type_info(cls) -> dict:
     return type_by_name
 
 
-def _get_struct_classes(attrs):
+def _get_struct_classes(attrs, only_calling_module=True):
     return {
         k: v
         for k, v in attrs.items()
         if (
             inspect.isclass(v)
             and issubclass(v, Structure)
+            and (v.__module__ == attrs['__name__'] or not only_calling_module)
             and v not in {Deserializer, Serializer, ImmutableStructure, FunctionCall}
         )
     }
 
 
-def create_pyi(calling_source_file, attrs: dict):
+def _get_imported_classes(attrs):
+    return [
+        f"from {v.__module__} import {k}"
+        for k, v in attrs.items()
+        if (
+            inspect.isclass(v)
+            and attrs['__name__'] != v.__module__
+            and not v.__module__.startswith('typing')
+            and not v.__module__.startswith('typedpy')
+        )
+    ]
+
+
+def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = True):
     full_path: Path = Path(calling_source_file)
     pyi_path = (full_path.parent / f"{full_path.stem}.pyi").resolve()
 
@@ -69,7 +83,13 @@ def create_pyi(calling_source_file, attrs: dict):
         "from typing import Union, Optional, Any",
         "",
     ]
-    struct_classes = _get_struct_classes(attrs)
+    if only_current_module:
+        additional_imports = _get_imported_classes(attrs)
+        if additional_imports:
+            additional_imports.append("")
+        out_src += additional_imports
+
+    struct_classes = _get_struct_classes(attrs, only_calling_module=only_current_module)
 
     for cls_name, cls in struct_classes.items():
         info = _get_all_type_info(cls)

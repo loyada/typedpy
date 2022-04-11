@@ -1,22 +1,28 @@
 from typedpy import Structure
 from typing import Union, Optional, Any
 
+from examples.enums import State
+from examples.more_classes import Person
+
 class Blah(Structure):
     def __init__(self, i: int,
         d: Optional[dict[str, int]],
         s: str,
+        person: Person,
         **kw
     ): ...
 
     i: int
     d: Optional[dict[str, int]]
     s: str
+    person: Person
 
 
 class Foo(Structure):
     def __init__(self, i: int,
         d: Optional[dict[str, int]],
         s: str,
+        person: Person,
         union: Union[int,str],
         any: Any,
         a: set,
@@ -27,6 +33,7 @@ class Foo(Structure):
     i: int
     d: Optional[dict[str, int]]
     s: str
+    person: Person
     union: Union[int,str]
     any: Any
     a: set
@@ -37,6 +44,7 @@ class FooPartial(Structure):
     def __init__(self, i: Optional[int],
         d: Optional[dict[str, int]],
         s: Optional[str],
+        person: Optional[Person],
         union: Optional[Union[int,str]],
         any: Optional[Any],
         a: Optional[set],
@@ -48,6 +56,7 @@ class FooPartial(Structure):
     i: Optional[int]
     d: Optional[dict[str, int]]
     s: Optional[str]
+    person: Optional[Person]
     union: Optional[Union[int,str]]
     any: Optional[Any]
     a: Optional[set]
@@ -59,6 +68,7 @@ class FooOmit(Structure):
     def __init__(self, i: int,
         d: Optional[dict[str, int]],
         s: str,
+        person: Person,
         union: Union[int,str],
         any: Any,
         x: int,
@@ -68,6 +78,7 @@ class FooOmit(Structure):
     i: int
     d: Optional[dict[str, int]]
     s: str
+    person: Person
     union: Union[int,str]
     any: Any
     x: int
@@ -89,6 +100,7 @@ class Bar(Structure):
     def __init__(self, i: int,
         d: Optional[dict[str, int]],
         s: str,
+        person: Person,
         union: Union[int,str],
         any: Any,
         x: int,
@@ -100,6 +112,7 @@ class Bar(Structure):
     i: int
     d: Optional[dict[str, int]]
     s: str
+    person: Person
     union: Union[int,str]
     any: Any
     x: int

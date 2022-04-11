@@ -1,6 +1,7 @@
 from typing import Optional
 
 from examples.enums import State
+from examples.more_classes import Person
 from typedpy import (
     AnyOf,
     Anything,
@@ -23,6 +24,7 @@ class Blah(Structure):
     i = Integer
     d: Map[str, int] = dict
     s: str
+    person: Person
 
     _serialization_mapper = mappers.TO_LOWERCASE
 

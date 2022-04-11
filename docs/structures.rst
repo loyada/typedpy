@@ -723,8 +723,8 @@ Just like Partial, Extend can also be used directly:
     # now Bar.__name__ is "Bar", which helps in troubleshooting
 
 
-Allowing the IDE to Resolve Types and Offer Intellisense
-========================================================
+Helping the IDE to Resolve Types and Offer Intellisense
+=======================================================
 (since version 2.14)
 
 Since currently Pycharm does not resolve annotations dynamically, Typedpy offers a way to create a Python Interface file
@@ -779,11 +779,14 @@ For example, suppose you have the following "api.py" file:
 By running this script standalone, Typedpy will generate a file named "api.pyi" in the same directory, which contains
 the interfaces of all the Structures defined in api.py. Pycharm automatically reads this file, and will create correct
 intellisense for these classes.
+
 Note that Python Interface files are ignored during runtime, so if you updated the classes and forgot to rerun the script,
 the only problem will be that the intellisense will not be up-to-date.
 
 Obviously, once you generate the pyi files, you should commit them with your code, so that you don't need to regenerate them
 every time.
+
+
 
 
 Ensuring Field Names Include All Possible Enum Values

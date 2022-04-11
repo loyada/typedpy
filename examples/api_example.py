@@ -6,7 +6,7 @@ from typedpy import (
     AnyOf,
     Anything,
     Enum,
-    Float,
+    Extend, Float,
     ImmutableStructure,
     Integer,
     Map,
@@ -18,6 +18,11 @@ from typedpy import (
     mappers,
 )
 from typedpy import create_pyi
+
+
+# Note that Person will require importing Address in the pyi file
+class Employee(Extend[Person]):
+    ssid: str
 
 
 class Blah(Structure):

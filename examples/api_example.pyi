@@ -1,8 +1,23 @@
-from typedpy import Structure
 from typing import Union, Optional, Any
+from typedpy import Structure
+from examples.more_classes import Address
 
 from examples.enums import State
 from examples.more_classes import Person
+
+class Employee(Structure):
+    def __init__(self, name: str,
+        age: int,
+        address: Address,
+        ssid: str,
+        **kw
+    ): ...
+
+    name: str
+    age: int
+    address: Address
+    ssid: str
+
 
 class Blah(Structure):
     def __init__(self, i: int,

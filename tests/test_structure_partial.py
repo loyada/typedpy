@@ -20,6 +20,8 @@ def test_partial_of_structure():
     class Bar(Partial[Foo]):
         x: str
 
+        _serialization_mapper = Foo.get_aggregated_serialization_mapper()
+
     assert Bar._required == ["x"]
     assert not issubclass(Bar, Foo)
     assert issubclass(Bar, Structure)
@@ -36,7 +38,7 @@ def test_partial_of_structure():
     assert "d_value: Expected <class 'int'>; Got 'y'" in str(excinfo.value)
     assert Serializer(bar).serialize() == {"D": {"x": 1}, "I": 5, "X": "xyz"}
 
-    Bar._serialization_mapper = {"I": "number"}
+    Bar._serialization_mapper.append({"I": "number"})
     assert Serializer(bar).serialize() == {"D": {"x": 1}, "number": 5, "X": "xyz"}
 
 

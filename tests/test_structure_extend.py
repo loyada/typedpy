@@ -30,6 +30,8 @@ def test_extend_structure():
     class Bar(Extend[Foo]):
         x: str
 
+        _serialization_mapper=Foo.get_aggregated_serialization_mapper()
+
     assert set(Bar._required) == {"x", "i", "a"}
     assert not issubclass(Bar, Foo)
     assert issubclass(Bar, Structure)
@@ -50,7 +52,7 @@ def test_extend_structure():
         "X": "xyz",
     }
 
-    Bar._serialization_mapper = {"I": "number"}
+    Bar._serialization_mapper.append({"I": "number"})
     assert Serializer(bar).serialize() == {
         "A": [1, 2, 3],
         "D": {"x": 1},
@@ -100,8 +102,8 @@ def test_extend_serialization_mappers_are_consistent1():
     class Bar(Extend[Foo], Structure):
         y: str
 
-    assert Bar._serialization_mapper == [mappers.TO_LOWERCASE]
-    assert Bar._deserialization_mapper == [mappers.TO_LOWERCASE]
+    assert Bar.get_aggregated_serialization_mapper() == []
+    assert Bar.get_aggregated_deserialization_mapper() == []
 
 
 def test_extend_serialization_mappers_are_consistent2():

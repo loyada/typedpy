@@ -29,6 +29,10 @@ class Foo(Blah, ImmutableStructure):
 
 Example9 = Omit[Foo, ("a", "b", "i", "s")]
 
+Example9._serialization_mapper = Foo.get_aggregated_serialization_mapper()
+
 
 class Example10(Omit[Foo, ("a", "b")]):
     x: int
+
+Example10._serialization_mapper = Foo.get_aggregated_serialization_mapper()

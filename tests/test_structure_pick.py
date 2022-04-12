@@ -31,9 +31,14 @@ class Foo(Blah, ImmutableStructure):
 class Bar1(Foo.pick("a", "b", "d")):
     x: int
 
+    _serialization_mapper=Foo.get_aggregated_serialization_mapper()
+
 
 class Bar2(Pick[Foo, ("a", "b", "d")]):
     x: int
+
+    _serialization_mapper=Foo.get_aggregated_serialization_mapper()
+
 
 
 @pytest.mark.parametrize("Bar", [Bar1, Bar2], ids=["Structure.pick", "Pick[Structure]"])
@@ -54,7 +59,7 @@ def test_pick_and_construct(Bar):
     assert "d_value: Expected <class 'int'>; Got 'y'" in str(excinfo.value)
     assert Serializer(bar).serialize() == {"D": {"x": 1}, "B": 5, "A": "a", "X": 10}
 
-    Bar._serialization_mapper = {"A": "ABC", "X": "xxx"}
+    Bar._serialization_mapper.append({"A": "ABC", "X": "xxx"})
     assert Serializer(bar).serialize() == {"D": {"x": 1}, "ABC": "a", "B": 5, "xxx": 10}
 
 

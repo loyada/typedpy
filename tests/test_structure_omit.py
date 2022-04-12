@@ -38,9 +38,14 @@ class Foo(Blah, ImmutableStructure):
 class Bar1(Foo.omit("a", "b")):
     x: int
 
+    _serialization_mapper = Foo.get_aggregated_serialization_mapper()
+
 
 class Bar2(Omit[Foo, ("a", "b")]):
     x: int
+
+    _serialization_mapper = Foo.get_aggregated_serialization_mapper()
+
 
 
 @pytest.mark.parametrize("Bar", [Bar1, Bar2], ids=["Structure.omit", "Omit[Structure]"])
@@ -66,7 +71,7 @@ def test_omit_and_construct(Bar):
         "X": 10,
     }
 
-    Bar._serialization_mapper = {"I": "number", "X": "xxx"}
+    Bar._serialization_mapper.append({"I": "number", "X": "xxx"})
     assert Serializer(bar).serialize() == {
         "D": {"x": 1},
         "number": 5,

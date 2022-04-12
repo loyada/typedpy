@@ -1383,12 +1383,7 @@ def _init_class_dict(cls):
     for k, v in cls.__dict__.items():
         if k in attributes_to_include:
             cls_dict[k] = v
-    serialization_mapper = cls.get_aggregated_serialization_mapper()
-    deserialization_mapper = cls.get_aggregated_deserialization_mapper()
-    if serialization_mapper:
-        cls_dict[SERIALIZATION_MAPPER] = serialization_mapper
-    if deserialization_mapper:
-        cls_dict[DESERIALIZATION_MAPPER] = deserialization_mapper
+
     return cls_dict
 
 

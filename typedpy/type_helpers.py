@@ -28,6 +28,7 @@ def _get_type_info(field, locals_attrs, additional_classes):
 
     if isinstance(field, Enum):
         if field._is_enum:
+            additional_classes.add(field._enum_class)
             return field._enum_class.__name__
 
     the_type = getattr(field, "get_type", field) if isinstance(field, Field) else field
@@ -111,11 +112,15 @@ def _get_mapped_extra_imports(additional_imports) -> dict:
             if inspect.isclass(c) and issubclass(c, Structure):
                 module_name = c.__module__
             else:
-                module_name = c.get_type.__module__
+                module_name = ( c.get_type.__module__ if
+                               isinstance(c, Field) or (inspect.isclass(c) and issubclass(c, Field))
+                               else c.__module__
+                               )
             mapped[name] = module_name
         except Exception as e:
             print(f"Error: {e}")
     return mapped
+
 
     # [f"from {cls.__module__} import {cls.get_type}" for cls in additional_classes]
 

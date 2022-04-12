@@ -27,6 +27,8 @@ def test_allfieldsrequired_of_structure():
     class Bar(AllFieldsRequired[Foo]):
         x: str
 
+        _serialization_mapper = Foo.get_aggregated_serialization_mapper()
+
     assert set(Bar._required) == {"x", "i", "s", "a"}
     assert not issubclass(Bar, Foo)
     assert issubclass(Bar, Structure)
@@ -48,7 +50,7 @@ def test_allfieldsrequired_of_structure():
         "X": "xyz",
     }
 
-    Bar._serialization_mapper = {"I": "number"}
+    Bar._serialization_mapper.append({"I": "number"})
     assert Serializer(bar).serialize() == {
         "A": [1, 2, 3],
         "D": {"x": 1},

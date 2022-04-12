@@ -5,7 +5,7 @@ from examples.more_classes import Person
 from typedpy import (
     AnyOf,
     Anything,
-    Enum,
+    DateTime, Enum,
     Extend, Float,
     ImmutableStructure,
     Integer,
@@ -30,6 +30,7 @@ class Blah(Structure):
     d: Map[str, int] = dict
     s: str
     person: Person
+    dob: DateTime
 
     _serialization_mapper = mappers.TO_LOWERCASE
 
@@ -42,6 +43,11 @@ class Foo(Blah, ImmutableStructure):
 
     _serialization_mapper = mappers.TO_LOWERCASE
 
+    def get_double_aa(self, x: int, p: Person = None) -> str:
+        return f'{self.a}{x}'
+
+    def doit(self):
+        pass
 
 class FooPartial(Partial[Foo]):
     x: str

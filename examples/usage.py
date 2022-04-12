@@ -1,4 +1,4 @@
-from .api_example import Bar
+from .api_example import Bar, Foo
 
 # i: int
 # d: dict
@@ -24,3 +24,7 @@ bar = Bar(
     xxxxxxx=3,
     state=State.NY,
 )
+
+
+foo = Foo(a={1,2})
+foo.get_double_aa(x=2, p=2)

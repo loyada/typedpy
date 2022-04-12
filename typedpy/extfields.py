@@ -203,3 +203,7 @@ class DateTime(SerializableField):
             raise TypeError(
                 f"{self._name}: Got {wrap_val(value)}; Expected datetime or str"
             )
+
+    @property
+    def get_type(self):
+        return datetime

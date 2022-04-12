@@ -1,7 +1,8 @@
 from typing import Union, Optional, Any
 from typedpy import Structure
-from examples.more_classes import Address
 from datetime import datetime
+from examples.enums import Sex
+from examples.more_classes import Address
 
 from examples.enums import State
 from examples.more_classes import Person
@@ -10,6 +11,7 @@ class Employee(Structure):
     def __init__(self, name: str,
         age: int,
         address: Address,
+        sex: Sex,
         ssid: str,
         **kw
     ): ...
@@ -17,6 +19,7 @@ class Employee(Structure):
     name: str
     age: int
     address: Address
+    sex: Sex
     ssid: str
 
 
@@ -61,7 +64,7 @@ class Foo(Structure):
     
     def doit(self): ...
     
-    def get_double_aa(self, x: int, p: Person = None) -> str: ...
+    def get_double_aa(self, x: Optional[int] = None, p: Person = None) -> str: ...
 
 
 class FooPartial(Structure):

@@ -6,3 +6,8 @@ class State(enum.Enum):
     NJ = 2
     AL = 3
     FL = 4
+
+
+class Sex(enum.Enum):
+    male = 1
+    female = 2

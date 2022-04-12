@@ -1,4 +1,5 @@
-from typedpy import Structure
+from examples.enums import Sex
+from typedpy import Enum, Structure
 
 
 class Address(Structure):
@@ -10,4 +11,6 @@ class Person(Structure):
     name: str
     age: int
     address: Address
+    sex: Enum[Sex]
+
 

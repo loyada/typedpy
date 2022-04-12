@@ -43,7 +43,7 @@ class Foo(Blah, ImmutableStructure):
 
     _serialization_mapper = mappers.TO_LOWERCASE
 
-    def get_double_aa(self, x: int, p: Person = None) -> str:
+    def get_double_aa(self, x: Optional[int], p: Person = None) -> str:
         return f'{self.a}{x}'
 
     def doit(self):

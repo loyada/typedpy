@@ -2,7 +2,8 @@ import inspect
 import typing
 from pathlib import Path
 from . import AnyOf, Deserializer, Enum, FunctionCall, Map, Serializer
-from .structures import ImmutableStructure, NoneField, Structure, Field
+from .structures import ImmutableStructure, NoneField, Structure, Field,get_typing_lib_info
+from .utility import type_is_generic
 
 INDENT = "    "
 
@@ -37,10 +38,13 @@ def _get_type_info(field, locals_attrs, additional_classes):
         not the_type.__module__.startswith("typedpy")
         and the_type.__module__ != "builtins"
         and the_type not in locals_attrs
+        and not type_is_generic(the_type)
     ):
         additional_classes.add(field)
-    return f"{the_type.__name__}"
+    if type_is_generic(the_type):
+          return  _get_type_info(get_typing_lib_info(field),  locals_attrs, additional_classes)
 
+    return f"{the_type.__name__}"
 
 def _get_all_type_info(cls, locals_attrs, additional_classes) -> dict:
     type_by_name = {}

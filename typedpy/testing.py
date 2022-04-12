@@ -54,7 +54,7 @@ def _diff_dict(val, otherval) -> dict:
     return result
 
 
-def _diff_list(val, otherval, outer_result: dict, outer_key: str) -> dict:
+def _diff_list(val, otherval, outer_result: dict, outer_key: str) -> dict:  # pylint: disable=too-many-branches
     result = {}
     for i, v in enumerate(val):
         if v == otherval[i]:
@@ -169,7 +169,7 @@ def _find_diff(struct, other, outer_result=None, out_key=None) -> Union[dict, st
 
     internal_props = ["_instantiated"]
     res = {}
-    if isinstance(struct, Structure):
+    if isinstance(struct, Structure):    #  pylint: disable=too-many-nested-blocks
         for k, val in sorted(struct.__dict__.items()):
             if k not in internal_props:
                 if k not in other.__dict__:

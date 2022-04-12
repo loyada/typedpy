@@ -48,7 +48,6 @@ from .fields import (
     Deque,
     Generator,
 )
-from .enum import Enum
 
 # pylint: disable=too-many-locals, too-many-arguments, too-many-branches
 

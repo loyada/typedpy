@@ -29,9 +29,7 @@ def _get_type_info(field, locals_attrs, additional_classes):
         if field._is_enum:
             return field._enum_class.__name__
 
-
-
-    the_type = getattr(field, 'get_type', field) if isinstance(field, Field) else field
+    the_type = getattr(field, "get_type", field) if isinstance(field, Field) else field
     if the_type is typing.Any:
         return "Any"
 
@@ -57,9 +55,14 @@ def _get_all_type_info(cls, locals_attrs, additional_classes) -> dict:
             type_info_str = f"Optional[{type_info_str}] = None"
         type_by_name[field_name] = type_info_str
 
-    method_list = [attribute for attribute in dir(cls) if
-                   callable(getattr(cls, attribute)) and not attribute.startswith('_') and attribute not in cls.get_all_fields_by_name()
-                   and attribute not in dir(Structure)]
+    method_list = [
+        attribute
+        for attribute in dir(cls)
+        if callable(getattr(cls, attribute))
+        and not attribute.startswith("_")
+        and attribute not in cls.get_all_fields_by_name()
+        and attribute not in dir(Structure)
+    ]
 
     return type_by_name
 
@@ -115,25 +118,37 @@ def _get_mapped_extra_imports(additional_imports) -> dict:
 
 def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
     method_by_name = []
-    method_list = [attribute for attribute in dir(cls) if
-                   callable(getattr(cls, attribute)) and not attribute.startswith('_') and attribute not in cls.get_all_fields_by_name()
-                   and attribute not in dir(Structure)]
+    method_list = [
+        attribute
+        for attribute in dir(cls)
+        if callable(getattr(cls, attribute))
+        and not attribute.startswith("_")
+        and attribute not in cls.get_all_fields_by_name()
+        and attribute not in dir(Structure)
+    ]
 
     for name in method_list:
         func = getattr(cls, name)
         sig = inspect.signature(func)
-        return_annotations = '' if sig.return_annotation==inspect._empty else f" -> {_get_type_info(sig.return_annotation, locals_attrs, additional_classes)}"
+        return_annotations = (
+            ""
+            if sig.return_annotation == inspect._empty
+            else f" -> {_get_type_info(sig.return_annotation, locals_attrs, additional_classes)}"
+        )
         params_by_name = {}
         for p, v in sig.parameters.items():
-            default = '' if v.default==inspect._empty else f" = {v.default}"
-            type_annotation = '' if v.annotation==inspect._empty else f": {_get_type_info(v.annotation, locals_attrs, additional_classes)}"
+            default = "" if v.default == inspect._empty else f" = {v.default}"
+            type_annotation = (
+                ""
+                if v.annotation == inspect._empty
+                else f": {_get_type_info(v.annotation, locals_attrs, additional_classes)}"
+            )
             params_by_name[p] = f"{type_annotation}{default}"
-        params_as_str = ', '.join([f"{k}{v}" for k,v in params_by_name.items()])
+        params_as_str = ", ".join([f"{k}{v}" for k, v in params_by_name.items()])
         method_by_name.append("")
-        method_by_name.append( f"def {name}({params_as_str}){return_annotations}: ...")
+        method_by_name.append(f"def {name}({params_as_str}){return_annotations}: ...")
 
     return method_by_name
-
 
 
 def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = True):
@@ -158,7 +173,9 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
         fields_info = _get_all_type_info(
             cls, locals_attrs=attrs, additional_classes=additional_classes
         )
-        method_info = _get_methods_info(cls,  locals_attrs=attrs, additional_classes=additional_classes)
+        method_info = _get_methods_info(
+            cls, locals_attrs=attrs, additional_classes=additional_classes
+        )
 
         if not fields_info and not method_info:
             continue

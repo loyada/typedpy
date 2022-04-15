@@ -33,6 +33,7 @@ def test_create_pyi():
     create_pyi(str(pyi_path), the_module.__dict__)
 
     actual_filename = get_abs_path_from_here("types_for_test_create_pyi.pyi", __file__)
-    expected_filename = get_abs_path_from_here("../examples/api_example.pyi", __file__)
+    expected_filename = get_abs_path_from_here("../stubs/examples/api_example.pyi", __file__)
     with open(str(actual_filename), encoding="UTF-8") as actual, open(str(expected_filename), encoding="UTF-8") as expected:
-        assert actual.readline() == expected.readline()
+        for a, e in zip(actual.readlines(), expected.readlines()):
+            assert a==e

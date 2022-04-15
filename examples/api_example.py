@@ -1,3 +1,4 @@
+import enum
 from typing import Optional
 
 from examples.enums import State
@@ -49,6 +50,11 @@ class Foo(Blah, ImmutableStructure):
     def doit(self):
         pass
 
+    @staticmethod
+    def aaa() -> str:
+        return "aaaaa"
+
+
 class FooPartial(Partial[Foo]):
     x: str
 
@@ -65,6 +71,13 @@ class Bar(Foo.omit("a", "b")):
     x: int
     opt: Optional[Float]
     state: Enum[State]
+
+
+class State1(enum.Enum):
+    NY = 1
+    NJ = 2
+    AL = 3
+    FL = 4
 
 
 if __name__ == "__main__":

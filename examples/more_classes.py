@@ -1,5 +1,5 @@
 from examples.enums import Sex
-from typedpy import Enum, Structure
+from typedpy import Enum, Structure, create_pyi
 
 
 class Address(Structure):
@@ -12,5 +12,11 @@ class Person(Structure):
     age: int
     address: Address
     sex: Enum[Sex]
+
+
+
+if __name__ == "__main__":
+    create_pyi(__file__, locals())
+
 
 

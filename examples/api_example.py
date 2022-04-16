@@ -26,6 +26,10 @@ class Employee(Extend[Person]):
     ssid: str
 
 
+def func(x=5, e: Employee = None) -> State:
+    return State.FL
+
+
 class Blah(Structure):
     i = Integer
     d: Map[str, int] = dict

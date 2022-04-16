@@ -1,4 +1,3 @@
-from .api_example import Bar, Foo
 
 # i: int
 # d: dict
@@ -11,7 +10,7 @@ from .api_example import Bar, Foo
 # append is invalid
 # bar = Bar(i=5, d={}, s="xyz", union="union", any=[1,2,"xxx"], x="xxxx", opt="opt", asdasd=234234)
 # bar.i.append(4)
-from .enums import State
+from examples.api_example import Bar, Foo
 
 bar = Bar(
     i=5,
@@ -22,9 +21,9 @@ bar = Bar(
     x="xxxx",
     opt=11,
     xxxxxxx=3,
-    state=State.NY,
+    state=4
 )
 
 
-foo = Foo(a={1,2})
+foo = Foo()
 foo.get_double_aa(x=2, p=2)

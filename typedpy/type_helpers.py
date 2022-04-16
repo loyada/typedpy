@@ -1,6 +1,9 @@
 import enum
+import importlib.util
 import inspect
+import os
 import typing
+from os.path import relpath
 from pathlib import Path
 from . import AnyOf, Deserializer, Enum, FunctionCall, Map, Serializer
 from .structures import (
@@ -10,7 +13,7 @@ from .structures import (
     Field,
     get_typing_lib_info,
 )
-from .utility import type_is_generic
+from .utility import get_abs_path_from_here, type_is_generic
 
 INDENT = "    "
 
@@ -237,7 +240,7 @@ def get_stubs_of_enums(
 
         out_src.append(f"class {cls_name}(enum.Enum):")
         for v in cls:
-            out_src.append(f"{INDENT}{v} = enum.auto()")
+            out_src.append(f"{INDENT}{v.name} = enum.auto()")
         out_src.append("")
 
         out_src.append("")
@@ -289,6 +292,42 @@ def _get_other_classes(attrs, only_calling_module):
     }
 
 
+def _get_functions(attrs, only_calling_module):
+    return {
+        k: v
+        for k, v in attrs.items()
+        if (
+                inspect.isfunction(v)
+                and (v.__module__ == attrs["__name__"] or not only_calling_module)
+        )
+    }
+
+
+def get_stubs_of_functions(func_by_name, local_attrs, additional_classes)-> list:
+    out_src = []
+    for name, func in func_by_name.items():
+        sig = inspect.signature(func)
+        return_annotations = (
+            ""
+            if sig.return_annotation == inspect._empty
+            else f" -> {_get_type_info(sig.return_annotation, local_attrs, additional_classes)}"
+        )
+        params_by_name = {}
+        for p, v in sig.parameters.items():
+            default = "" if v.default == inspect._empty else f" = {v.default}"
+            type_annotation = (
+                ""
+                if v.annotation == inspect._empty
+                else f": {_get_type_info(v.annotation, local_attrs, additional_classes)}"
+            )
+            params_by_name[p] = f"{type_annotation}{default}"
+        params_as_str = ", ".join([f"{k}{v}" for k, v in params_by_name.items()])
+
+        out_src.append(f"def {name}({params_as_str}){return_annotations}: ...")
+        out_src.append("\n")
+    return out_src
+
+
 def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = True):
     full_path: Path = Path(calling_source_file)
     pyi_path = (full_path.parent / f"{full_path.stem}.pyi").resolve()
@@ -302,6 +341,7 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
 
     enum_classes = _get_enum_classes(attrs, only_calling_module=only_current_module)
     struct_classes = _get_struct_classes(attrs, only_calling_module=only_current_module)
+    functions = _get_functions(attrs, only_calling_module=only_current_module)
 
     additional_classes = set()
     out_src += get_stubs_of_enums(
@@ -311,6 +351,8 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
         struct_classes, local_attrs=attrs, additional_classes=additional_classes
     )
 
+    out_src += get_stubs_of_functions(functions, local_attrs=attrs, additional_classes=additional_classes)
+
     out_src = (
         add_imports(local_attrs=attrs, additional_classes=additional_classes) + out_src
     )
@@ -319,3 +361,22 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
     out_s = "\n".join(out_src)
     with open(pyi_path, "w", encoding="UTF-8") as f:
         f.write(out_s)
+
+
+def create_stub_for_file(abs_module_path: str, src_root:str,  stubs_root: str = None):
+    ext = os.path.splitext(abs_module_path)[-1].lower()
+    if ext!='.py':
+        return
+    module_name = Path(abs_module_path).stem
+    relative_dir = relpath(str(Path(abs_module_path).parent), src_root)
+    spec = importlib.util.spec_from_file_location(module_name, abs_module_path)
+    the_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(the_module)
+
+    pyi_dir = Path(stubs_root) / Path(relative_dir) if stubs_root else  Path(abs_module_path).parent
+    pyi_dir.mkdir(parents=True, exist_ok=True)
+    (pyi_dir / Path("__init__.py")).touch(exist_ok=True)
+
+    pyi_path = (pyi_dir / f"{module_name}.pyi").resolve()
+    create_pyi(str(pyi_path), the_module.__dict__)
+

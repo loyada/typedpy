@@ -1,5 +1,6 @@
 import typing
 from collections import deque
+from pathlib import Path
 
 from .commons import python_ver_36, python_ver_atleast_39, python_ver_atleast_than_37
 
@@ -53,3 +54,15 @@ def maybe(func, default_val=None):
         return func()
     except AttributeError:
         return default_val
+
+
+def get_abs_path_from_here(relative_path: str, calling_file_name: str) -> Path:
+    """
+    return absolute path to file, based on path from the calling location
+    :param calling_file_name: optional name of the calling script that will serce as reference
+    :param relative_path: relative path from the loading source file
+    :return: absolute path with resolved symlinks
+    """
+    calling_source_file = calling_file_name
+    full_path: Path = Path(calling_source_file).parent / relative_path
+    return full_path.resolve()

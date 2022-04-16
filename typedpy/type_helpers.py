@@ -13,7 +13,7 @@ from .structures import (
     Field,
     get_typing_lib_info,
 )
-from .utility import get_abs_path_from_here, type_is_generic
+from .utility import type_is_generic
 
 INDENT = "    "
 
@@ -26,17 +26,20 @@ AUTOGEN_NOTE = [
 ]
 
 
+def _get_anyof_typing(field, locals_attrs, additional_classes):
+    union_fields = getattr(field, "_fields", [])
+    if len(union_fields) == 2 and isinstance(union_fields[1], NoneField):
+        info = _get_type_info(union_fields[0], locals_attrs, additional_classes)
+        return f"Optional[{info}] = None"
+
+    fields = ",".join(
+        [_get_type_info(f, locals_attrs, additional_classes) for f in union_fields]
+    )
+    return f"Union[{fields}]"
+
 def _get_type_info(field, locals_attrs, additional_classes):
-
     if isinstance(field, AnyOf):
-        union_fields = getattr(field, "_fields", [])
-        if len(union_fields) == 2 and isinstance(union_fields[1], NoneField):
-            return f"Optional[{_get_type_info(union_fields[0],locals_attrs, additional_classes)}] = None"
-
-        fields = ",".join(
-            [_get_type_info(f, locals_attrs, additional_classes) for f in union_fields]
-        )
-        return f"Union[{fields}]"
+       return _get_anyof_typing(field, locals_attrs, additional_classes)
 
     if isinstance(field, Map):
         sub_types = ", ".join(
@@ -134,8 +137,6 @@ def _get_mapped_extra_imports(additional_imports) -> dict:
         except Exception as e:
             print(f"Error: {e}")
     return mapped
-
-    # [f"from {cls.__module__} import {cls.get_type}" for cls in additional_classes]
 
 
 def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
@@ -297,13 +298,13 @@ def _get_functions(attrs, only_calling_module):
         k: v
         for k, v in attrs.items()
         if (
-                inspect.isfunction(v)
-                and (v.__module__ == attrs["__name__"] or not only_calling_module)
+            inspect.isfunction(v)
+            and (v.__module__ == attrs["__name__"] or not only_calling_module)
         )
     }
 
 
-def get_stubs_of_functions(func_by_name, local_attrs, additional_classes)-> list:
+def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> list:
     out_src = []
     for name, func in func_by_name.items():
         sig = inspect.signature(func)
@@ -351,7 +352,9 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
         struct_classes, local_attrs=attrs, additional_classes=additional_classes
     )
 
-    out_src += get_stubs_of_functions(functions, local_attrs=attrs, additional_classes=additional_classes)
+    out_src += get_stubs_of_functions(
+        functions, local_attrs=attrs, additional_classes=additional_classes
+    )
 
     out_src = (
         add_imports(local_attrs=attrs, additional_classes=additional_classes) + out_src
@@ -363,9 +366,9 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
         f.write(out_s)
 
 
-def create_stub_for_file(abs_module_path: str, src_root:str,  stubs_root: str = None):
+def create_stub_for_file(abs_module_path: str, src_root: str, stubs_root: str = None):
     ext = os.path.splitext(abs_module_path)[-1].lower()
-    if ext!='.py':
+    if ext != ".py":
         return
     module_name = Path(abs_module_path).stem
     relative_dir = relpath(str(Path(abs_module_path).parent), src_root)
@@ -373,10 +376,13 @@ def create_stub_for_file(abs_module_path: str, src_root:str,  stubs_root: str = 
     the_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(the_module)
 
-    pyi_dir = Path(stubs_root) / Path(relative_dir) if stubs_root else  Path(abs_module_path).parent
+    pyi_dir = (
+        Path(stubs_root) / Path(relative_dir)
+        if stubs_root
+        else Path(abs_module_path).parent
+    )
     pyi_dir.mkdir(parents=True, exist_ok=True)
-    (pyi_dir / Path("__init__.py")).touch(exist_ok=True)
+    (pyi_dir / Path("__init__.pyi")).touch(exist_ok=True)
 
     pyi_path = (pyi_dir / f"{module_name}.pyi").resolve()
     create_pyi(str(pyi_path), the_module.__dict__)
-

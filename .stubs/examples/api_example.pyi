@@ -22,7 +22,7 @@ class State1(enum.Enum):
 
 
 class Employee(Structure):
-    def __init__(,
+    def __init__(
         self,
         name: str,
         age: int,
@@ -40,12 +40,13 @@ class Employee(Structure):
 
 
 class Blah(Structure):
-    def __init__(,
+    def __init__(
         self,
         i: int,
         s: str,
         person: Person,
         dob: datetime,
+        arr: list[str],
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
@@ -54,16 +55,18 @@ class Blah(Structure):
     s: str
     person: Person
     dob: datetime
+    arr: list[str]
     d: Optional[dict[str, int]] = None
 
 
 class Foo(Structure):
-    def __init__(,
+    def __init__(
         self,
         i: int,
         s: str,
         person: Person,
         dob: datetime,
+        arr: list[str],
         union: Union[int,str],
         any: Any,
         a: set,
@@ -76,6 +79,7 @@ class Foo(Structure):
     s: str
     person: Person
     dob: datetime
+    arr: list[str]
     union: Union[int,str]
     any: Any
     a: set
@@ -91,7 +95,7 @@ class Foo(Structure):
 
 
 class FooPartial(Structure):
-    def __init__(,
+    def __init__(
         self,
         x: str,
         i: Optional[int] = None,
@@ -99,6 +103,7 @@ class FooPartial(Structure):
         s: Optional[str] = None,
         person: Optional[Person] = None,
         dob: Optional[datetime] = None,
+        arr: Optional[list[str]] = None,
         union: Optional[Union[int,str]] = None,
         any: Optional[Any] = None,
         a: Optional[set] = None,
@@ -112,6 +117,7 @@ class FooPartial(Structure):
     s: Optional[str] = None
     person: Optional[Person] = None
     dob: Optional[datetime] = None
+    arr: Optional[list[str]] = None
     union: Optional[Union[int,str]] = None
     any: Optional[Any] = None
     a: Optional[set] = None
@@ -119,12 +125,13 @@ class FooPartial(Structure):
 
 
 class FooOmit(Structure):
-    def __init__(,
+    def __init__(
         self,
         i: int,
         s: str,
         person: Person,
         dob: datetime,
+        arr: list[str],
         union: Union[int,str],
         any: Any,
         x: int,
@@ -136,6 +143,7 @@ class FooOmit(Structure):
     s: str
     person: Person
     dob: datetime
+    arr: list[str]
     union: Union[int,str]
     any: Any
     x: int
@@ -143,7 +151,7 @@ class FooOmit(Structure):
 
 
 class FooPick(Structure):
-    def __init__(,
+    def __init__(
         self,
         a: set,
         xyz: float,
@@ -157,12 +165,13 @@ class FooPick(Structure):
 
 
 class Bar(Structure):
-    def __init__(,
+    def __init__(
         self,
         i: int,
         s: str,
         person: Person,
         dob: datetime,
+        arr: list[str],
         union: Union[int,str],
         any: Any,
         x: int,
@@ -176,6 +185,7 @@ class Bar(Structure):
     s: str
     person: Person
     dob: datetime
+    arr: list[str]
     union: Union[int,str]
     any: Any
     x: int

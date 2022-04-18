@@ -19,6 +19,9 @@ class State(enum.Enum):
     
     @classmethod
     def cls_method(cls, i: int) -> int: ...
+    
+    @property
+    def aaa(self): ...
 
 
 class Sex(enum.Enum):

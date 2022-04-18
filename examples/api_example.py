@@ -37,7 +37,7 @@ class Blah(Structure):
     s: str
     person: Person
     dob: DateTime
-
+    arr: list[str]
     _serialization_mapper = mappers.TO_LOWERCASE
 
 

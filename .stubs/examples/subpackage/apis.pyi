@@ -9,7 +9,7 @@ import enum
 from examples.enums import State
 
 class Vehicle(Structure):
-    def __init__(,
+    def __init__(
         self,
         license_plate_state: State,
         odometer: int,
@@ -25,7 +25,7 @@ class Vehicle(Structure):
 
 
 class Vehicle2(Structure):
-    def __init__(,
+    def __init__(
         self,
         license_plate_state: Optional[State] = None,
         odometer: Optional[int] = None,

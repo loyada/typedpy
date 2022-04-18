@@ -9,7 +9,7 @@ import enum
 from examples.enums import Sex
 
 class Address(Structure):
-    def __init__(,
+    def __init__(
         self,
         city: str,
         zip: str,
@@ -21,7 +21,7 @@ class Address(Structure):
 
 
 class Person(Structure):
-    def __init__(,
+    def __init__(
         self,
         name: str,
         age: int,

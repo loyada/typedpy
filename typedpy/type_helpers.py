@@ -44,6 +44,8 @@ def _get_type_info(field, locals_attrs, additional_classes):
         return _get_anyof_typing(field, locals_attrs, additional_classes)
 
     if isinstance(field, Map):
+        if not field.items:
+            return "dict"
         sub_types = ", ".join(
             [_get_type_info(f, locals_attrs, additional_classes) for f in field.items]
         )
@@ -57,7 +59,6 @@ def _get_type_info(field, locals_attrs, additional_classes):
     the_type = getattr(field, "get_type", field) if isinstance(field, Field) else field
     if the_type is typing.Any:
         return "Any"
-
     if (
             not the_type.__module__.startswith("typedpy")
             and the_type.__module__ != "builtins"
@@ -66,6 +67,12 @@ def _get_type_info(field, locals_attrs, additional_classes):
     ):
         additional_classes.add(field)
     if type_is_generic(the_type):
+        origin = getattr(the_type, "__origin__", None)
+        if origin in {list, set, tuple}:
+            args = getattr(the_type, "__args__", None)
+            if len(args)!=1:
+                return str(origin)
+            return f"{origin.__name__}[{_get_type_info(args[0], locals_attrs, additional_classes)}]"
         return _get_type_info(
             get_typing_lib_info(field), locals_attrs, additional_classes
         )
@@ -153,19 +160,28 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
         if issubclass(cls, enum.Enum)
         else {}
     )
+    mros = list(reversed(inspect.getmro(cls)))[1:]
+    members = {}
+    for c in mros:
+        members.update(dict(c.__dict__))
     method_list = [
         attribute
-        for attribute in cls.__dict__
-        if callable(getattr(cls, attribute))
+        for attribute in members
+        if (callable(getattr(cls, attribute, None)) or isinstance(getattr(cls, attribute, None), property))
            and not attribute.startswith("_")
            and attribute not in all_fields
            and attribute not in ignored_methods
     ]
+    if not issubclass(cls, Structure) and not issubclass(cls, enum.Enum) and "__init__" in members:
+        method_list = ["__init__"] + method_list
 
     for name in method_list:
-        method_cls = cls.__dict__[name].__class__
-
+        method_cls = members[name].__class__
+        is_property = False
         func = getattr(cls, name)
+        if isinstance(func, property):
+            is_property = True
+            func = func.__get__
         sig = inspect.signature(func)
         return_annotations = (
             ""
@@ -176,19 +192,27 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
         if method_cls is classmethod:
             params_by_name["cls"] = ""
         for p, v in sig.parameters.items():
+            optional_globe = "**" if v.kind==inspect.Parameter.VAR_KEYWORD else "*" if v.kind==inspect.Parameter.VAR_POSITIONAL else ""
             default = "" if v.default == inspect._empty else f" = {v.default}"
             type_annotation = (
                 ""
                 if v.annotation == inspect._empty
                 else f": {_get_type_info(v.annotation, locals_attrs, additional_classes)}"
             )
-            params_by_name[p] = f"{type_annotation}{default}"
+            p_name = f"{optional_globe}{p}"
+            params_by_name[p_name] = f"{type_annotation}{default}"
+        if is_property:
+            params_by_name.pop("owner")
+            params_by_name.pop("instance")
+            params_by_name["self"] = ""
         params_as_str = ", ".join([f"{k}{v}" for k, v in params_by_name.items()])
         method_by_name.append("")
         if method_cls is staticmethod:
             method_by_name.append("@staticmethod")
         elif method_cls is classmethod:
             method_by_name.append("@classmethod")
+        elif is_property:
+            method_by_name.append("@property")
         method_by_name.append(f"def {name}({params_as_str}){return_annotations}: ...")
 
     return method_by_name
@@ -196,12 +220,12 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
 
 def _get_init(cls, ordered_args: dict) -> str:
     init_params = f",\n{INDENT * 2}".join(
-        ["", "self"] + [f"{k}: {v}" for k, v in ordered_args.items()]
+        [f"{INDENT * 2}self"] + [f"{k}: {v}" for k, v in ordered_args.items()]
     )
     kw_opt = (
         f",\n{INDENT * 2}**kw" if getattr(cls, "_additionalProperties", True) else ""
     )
-    return f"    def __init__({init_params}{kw_opt}\n{INDENT}): ..."
+    return f"    def __init__(\n{init_params}{kw_opt}\n{INDENT}): ..."
 
 
 def get_stubs_of_structures(
@@ -331,6 +355,23 @@ def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> lis
     return out_src
 
 
+def get_stubs_of_other_classes(other_classes, local_attrs, additional_classes):
+    out_src = []
+    for cls_name, cls in other_classes.items():
+        method_info = _get_methods_info(
+            cls, locals_attrs=local_attrs, additional_classes=additional_classes
+        )
+
+        if not method_info:
+            continue
+
+        out_src.append(f"class {cls_name}:")
+        out_src.append("")
+        out_src += [f"{INDENT}{m}" for m in method_info]
+        out_src.append("\n")
+    return out_src
+
+
 def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = True):
     full_path: Path = Path(calling_source_file)
     pyi_path = (full_path.parent / f"{full_path.stem}.pyi").resolve()
@@ -344,11 +385,15 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
 
     enum_classes = _get_enum_classes(attrs, only_calling_module=only_current_module)
     struct_classes = _get_struct_classes(attrs, only_calling_module=only_current_module)
+    other_classes = _get_other_classes(attrs, only_calling_module=only_current_module)
     functions = _get_functions(attrs, only_calling_module=only_current_module)
 
     additional_classes = set()
     out_src += get_stubs_of_enums(
         enum_classes, local_attrs=attrs, additional_classes=additional_classes
+    )
+    out_src += get_stubs_of_other_classes(
+        other_classes, local_attrs=attrs, additional_classes=additional_classes
     )
     out_src += get_stubs_of_structures(
         struct_classes, local_attrs=attrs, additional_classes=additional_classes

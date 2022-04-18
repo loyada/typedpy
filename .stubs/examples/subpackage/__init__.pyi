@@ -12,12 +12,13 @@ from examples.api_example import Foo
 from examples.subpackage.apis import Vehicle
 
 class FooOmitSubPackage(Structure):
-    def __init__(,
+    def __init__(
         self,
         i: int,
         s: str,
         person: Person,
         dob: datetime,
+        arr: list[str],
         union: Union[int,str],
         any: Any,
         x: int,
@@ -29,6 +30,7 @@ class FooOmitSubPackage(Structure):
     s: str
     person: Person
     dob: datetime
+    arr: list[str]
     union: Union[int,str]
     any: Any
     x: int

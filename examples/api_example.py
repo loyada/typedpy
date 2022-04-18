@@ -27,6 +27,7 @@ class Employee(Extend[Person]):
 
 
 def func(x=5, e: Employee = None) -> State:
+    print(f"{x}, {e}")
     return State.FL
 
 

@@ -5,7 +5,9 @@ import os
 import typing
 from os.path import relpath
 from pathlib import Path
-from . import AnyOf, Deserializer, Enum, FunctionCall, Map, Serializer
+from .fields import AnyOf, FunctionCall, Map
+from .enum import Enum
+from .serialization_wrappers import Deserializer, Serializer
 from .structures import (
     ImmutableStructure,
     NoneField,
@@ -15,8 +17,7 @@ from .structures import (
 )
 from .utility import type_is_generic
 
-INDENT = "    "
-
+INDENT = " " * 4
 
 AUTOGEN_NOTE = [
     "",
@@ -37,9 +38,10 @@ def _get_anyof_typing(field, locals_attrs, additional_classes):
     )
     return f"Union[{fields}]"
 
+
 def _get_type_info(field, locals_attrs, additional_classes):
     if isinstance(field, AnyOf):
-       return _get_anyof_typing(field, locals_attrs, additional_classes)
+        return _get_anyof_typing(field, locals_attrs, additional_classes)
 
     if isinstance(field, Map):
         sub_types = ", ".join(
@@ -57,10 +59,10 @@ def _get_type_info(field, locals_attrs, additional_classes):
         return "Any"
 
     if (
-        not the_type.__module__.startswith("typedpy")
-        and the_type.__module__ != "builtins"
-        and the_type not in locals_attrs
-        and not type_is_generic(the_type)
+            not the_type.__module__.startswith("typedpy")
+            and the_type.__module__ != "builtins"
+            and the_type not in locals_attrs
+            and not type_is_generic(the_type)
     ):
         additional_classes.add(field)
     if type_is_generic(the_type):
@@ -77,9 +79,9 @@ def _get_all_type_info(cls, locals_attrs, additional_classes) -> dict:
     for field_name, field in cls.get_all_fields_by_name().items():
         type_info_str: str = _get_type_info(field, locals_attrs, additional_classes)
         if (
-            field_name not in required
-            and required is not None
-            and not type_info_str.startswith("Optional[")
+                field_name not in required
+                and required is not None
+                and not type_info_str.startswith("Optional[")
         ):
             type_info_str = f"Optional[{type_info_str}] = None"
         type_by_name[field_name] = type_info_str
@@ -92,10 +94,10 @@ def _get_struct_classes(attrs, only_calling_module=True):
         k: v
         for k, v in attrs.items()
         if (
-            inspect.isclass(v)
-            and issubclass(v, Structure)
-            and (v.__module__ == attrs["__name__"] or not only_calling_module)
-            and v not in {Deserializer, Serializer, ImmutableStructure, FunctionCall}
+                inspect.isclass(v)
+                and issubclass(v, Structure)
+                and (v.__module__ == attrs["__name__"] or not only_calling_module)
+                and v not in {Deserializer, Serializer, ImmutableStructure, FunctionCall}
         )
     }
 
@@ -105,10 +107,10 @@ def _get_imported_classes(attrs):
         f"from {v.__module__} import {k}"
         for k, v in attrs.items()
         if (
-            inspect.isclass(v)
-            and attrs["__name__"] != v.__module__
-            and not v.__module__.startswith("typing")
-            and not v.__module__.startswith("typedpy")
+                inspect.isclass(v)
+                and attrs["__name__"] != v.__module__
+                and not v.__module__.startswith("typing")
+                and not v.__module__.startswith("typedpy")
         )
     ]
 
@@ -130,7 +132,7 @@ def _get_mapped_extra_imports(additional_imports) -> dict:
                 module_name = (
                     c.get_type.__module__
                     if isinstance(c, Field)
-                    or (inspect.isclass(c) and issubclass(c, Field))
+                       or (inspect.isclass(c) and issubclass(c, Field))
                     else c.__module__
                 )
             mapped[name] = module_name
@@ -155,9 +157,9 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
         attribute
         for attribute in cls.__dict__
         if callable(getattr(cls, attribute))
-        and not attribute.startswith("_")
-        and attribute not in all_fields
-        and attribute not in ignored_methods
+           and not attribute.startswith("_")
+           and attribute not in all_fields
+           and attribute not in ignored_methods
     ]
 
     for name in method_list:
@@ -194,16 +196,16 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
 
 def _get_init(cls, ordered_args: dict) -> str:
     init_params = f",\n{INDENT * 2}".join(
-        [f"{k}: {v}" for k, v in ordered_args.items()]
+        ["", "self"] + [f"{k}: {v}" for k, v in ordered_args.items()]
     )
     kw_opt = (
         f",\n{INDENT * 2}**kw" if getattr(cls, "_additionalProperties", True) else ""
     )
-    return f"    def __init__(self, {init_params}{kw_opt}\n{INDENT}): ..."
+    return f"    def __init__({init_params}{kw_opt}\n{INDENT}): ..."
 
 
 def get_stubs_of_structures(
-    struct_classe_by_name: dict, local_attrs, additional_classes
+        struct_classe_by_name: dict, local_attrs, additional_classes
 ) -> list:
     out_src = []
     for cls_name, cls in struct_classe_by_name.items():
@@ -230,7 +232,7 @@ def get_stubs_of_structures(
 
 
 def get_stubs_of_enums(
-    enum_classes_by_name: dict, local_attrs, additional_classes
+        enum_classes_by_name: dict, local_attrs, additional_classes
 ) -> list:
     out_src = []
     for cls_name, cls in enum_classes_by_name.items():
@@ -273,9 +275,9 @@ def _get_enum_classes(attrs, only_calling_module):
         k: v
         for k, v in attrs.items()
         if (
-            inspect.isclass(v)
-            and issubclass(v, enum.Enum)
-            and (v.__module__ == attrs["__name__"] or not only_calling_module)
+                inspect.isclass(v)
+                and issubclass(v, enum.Enum)
+                and (v.__module__ == attrs["__name__"] or not only_calling_module)
         )
     }
 
@@ -285,10 +287,10 @@ def _get_other_classes(attrs, only_calling_module):
         k: v
         for k, v in attrs.items()
         if (
-            inspect.isclass(v)
-            and not issubclass(v, enum.Enum)
-            and not issubclass(v, Structure)
-            and (v.__module__ == attrs["__name__"] or not only_calling_module)
+                inspect.isclass(v)
+                and not issubclass(v, enum.Enum)
+                and not issubclass(v, Structure)
+                and (v.__module__ == attrs["__name__"] or not only_calling_module)
         )
     }
 
@@ -298,8 +300,8 @@ def _get_functions(attrs, only_calling_module):
         k: v
         for k, v in attrs.items()
         if (
-            inspect.isfunction(v)
-            and (v.__module__ == attrs["__name__"] or not only_calling_module)
+                inspect.isfunction(v)
+                and (v.__module__ == attrs["__name__"] or not only_calling_module)
         )
     }
 
@@ -357,7 +359,7 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
     )
 
     out_src = (
-        add_imports(local_attrs=attrs, additional_classes=additional_classes) + out_src
+            add_imports(local_attrs=attrs, additional_classes=additional_classes) + out_src
     )
 
     out_src = AUTOGEN_NOTE + out_src

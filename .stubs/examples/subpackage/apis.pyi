@@ -23,3 +23,19 @@ class Vehicle(Structure):
     alias: str
     license_plate: str
 
+
+class Vehicle2(Structure):
+    def __init__(,
+        self,
+        license_plate_state: Optional[State] = None,
+        odometer: Optional[int] = None,
+        alias: Optional[str] = None,
+        license_plate: Optional[str] = None,
+        **kw
+    ): ...
+
+    license_plate_state: Optional[State] = None
+    odometer: Optional[int] = None
+    alias: Optional[str] = None
+    license_plate: Optional[str] = None
+

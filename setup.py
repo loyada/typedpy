@@ -20,6 +20,11 @@ classifiers = [
 setup(
     name="typedpy",
     packages=["typedpy"],
+    entry_points={
+        'console_scripts': [
+            'create-stub=typedpy.scripts.create_stub:main',
+        ],
+    },
     install_requires=[],
     author="Danny Loya",
     author_email="dan.loya@gmail.com",

@@ -21,7 +21,9 @@ bar = Bar(
     x="xxxx",
     opt=11,
     xxxxxxx=3,
-    state=4
+    state=4,
+    dob=None,
+    person=1
 )
 
 

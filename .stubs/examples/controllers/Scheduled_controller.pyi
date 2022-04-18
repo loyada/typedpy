@@ -7,12 +7,13 @@ from typedpy import Structure
 import enum
 
 from datetime import datetime
+from examples.subpackage.apis import Vehicle
 from examples.controllers.job_controller import JobController
 
 class ScheduledController:
 
     
-    def __init__(self, *args, d: datetime, **kw): ...
+    def __init__(self, *args, d: datetime, job_controller: JobController, vehicle: Vehicle, **kw): ...
     
     def execute(self, id): ...
     

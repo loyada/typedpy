@@ -1,11 +1,12 @@
 from datetime import datetime
 
+from examples.subpackage.apis import Vehicle
 from typedpy import create_pyi
 from examples.controllers.job_controller import JobController
 
 
 class ScheduledController(JobController):
-    def __init__(self, *args, d: datetime, **kw):
+    def __init__(self, *args, d: datetime, job_controller: JobController, vehicle: Vehicle, **kw):
         self.d=d
         super().__init__(*args, **kw)
 

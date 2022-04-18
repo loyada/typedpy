@@ -118,3 +118,34 @@ def test_create_stub_for_file_subpackage(test_case: PYI_TEST_CASE):
     actual_filename = str(
         get_abs_path_from_here(f"../stubs_for_tests/examples/subpackage/{test_case.source_path.stem}.pyi", __file__))
     _verify_file_are_same(actual_filename, str(test_case.reference_path))
+
+
+
+test_cases_for_regular_classes = [
+    PYI_TEST_CASE(
+        source_path=get_abs_path_from_here("../examples/controllers/job_controller.py", __file__),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/controllers/job_controller.pyi", __file__
+        )
+    ),
+    PYI_TEST_CASE(
+        source_path=get_abs_path_from_here("../examples/controllers/Scheduled_controller.py", __file__),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/controllers/Scheduled_controller.pyi", __file__
+        )
+    )
+]
+
+
+@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+@pytest.mark.parametrize("test_case", test_cases_for_regular_classes,
+                         ids=[str(s.source_path) for s in test_cases_for_subpackage])
+def test_create_stub_for_file_regular_classes(test_case: PYI_TEST_CASE):
+    src_root = str(get_abs_path_from_here("../", __file__))
+    create_stub_for_file(
+        str(test_case.source_path), src_root, str(get_abs_path_from_here("../stubs_for_tests", __file__))
+    )
+
+    actual_filename = str(
+        get_abs_path_from_here(f"../stubs_for_tests/examples/controllers/{test_case.source_path.stem}.pyi", __file__))
+    _verify_file_are_same(actual_filename, str(test_case.reference_path))

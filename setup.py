@@ -1,6 +1,6 @@
 import os
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 with open(os.path.join(os.path.dirname(__file__), "README.md")) as readme:
     long_description = readme.read()
@@ -15,11 +15,12 @@ classifiers = [
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
 ]
 
 setup(
     name="typedpy",
-    packages=["typedpy"],
+    packages=find_packages(),
     entry_points={
         'console_scripts': [
             'create-stub=typedpy.scripts.create_stub:main',
@@ -34,9 +35,9 @@ setup(
     license="MIT",
     long_description=long_description,
     url="http://github.com/loyada/typedpy",
-    download_url ="https://github.com/loyada/typedpy/archive/v2.15.1.tar.gz",
+    download_url ="https://github.com/loyada/typedpy/archive/v2.15.2.tar.gz",
     keywords=['testing', 'type-safe', 'strict', 'schema', 'validation'],
-    version='2.15.1'
+    version='2.15.2'
 )
 
 # coverage run --source=typedpy/ setup.py test

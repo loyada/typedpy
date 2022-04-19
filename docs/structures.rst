@@ -787,6 +787,16 @@ Obviously, once you generate the pyi files, you should commit them with your cod
 every time.
 
 
+Configuring a File Watcher For Stub Files in Pycharm
+----------------------------------------------------
+1. Create a directory that will be designated for Python stub files in the project. I use ".stubs".
+2. Mark the directory you created as "sources" directory in the "project structure".
+3. Set up a new file watcher, with the following configuration:
+
+.. image:: images/Screenshot1.png
+
+4. Optional - You might want to change the scope to ignore certain files
+
 
 
 Ensuring Field Names Include All Possible Enum Values

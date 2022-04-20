@@ -10,7 +10,7 @@ from copy import deepcopy
 from functools import reduce
 from decimal import Decimal, InvalidOperation
 
-from .commons import wrap_val
+from .commons import python_ver_atleast_than_37, wrap_val
 from .structures import (
     Field,
     Structure,
@@ -916,7 +916,7 @@ class Set(
 
     @property
     def get_type(self):
-        if not isinstance(self.items, (list, tuple)) and self.items:
+        if not isinstance(self.items, (list, tuple)) and self.items and python_ver_atleast_than_37:
             return set[self.items.get_type]
         return set
 
@@ -1078,7 +1078,7 @@ class Array(
 
     @property
     def get_type(self):
-        if not isinstance(self.items, (list, tuple)) and self.items:
+        if not isinstance(self.items, (list, tuple)) and self.items and python_ver_atleast_than_37:
             return list[self.items.get_type]
         return list
 
@@ -1312,7 +1312,7 @@ class Tuple(ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
 
     @property
     def get_type(self):
-        if self.items:
+        if self.items and python_ver_atleast_than_37:
             if not isinstance(self.items, (list, tuple)):
                 return tuple[self.items.get_type]
             if len(self.items) == 2:

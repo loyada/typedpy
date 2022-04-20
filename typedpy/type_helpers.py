@@ -104,6 +104,20 @@ def _get_type_info(field, locals_attrs, additional_classes):
             additional_classes.add(typing.Callable)
             return f"Callable{args_st}"
 
+        if origin is collections.abc.Iterable:
+            additional_classes.add(typing.Iterable)
+            mapped_args = (
+                [_get_type_info(a, locals_attrs, additional_classes) for a in args]
+                if args
+                else []
+            )
+            args_st = (
+                ""
+                if not mapped_args
+                else f"[{mapped_args[0]}]"
+            )
+            return f"Iterable{args_st}"
+
         return _get_type_info(
             get_typing_lib_info(field), locals_attrs, additional_classes
         )

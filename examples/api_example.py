@@ -1,5 +1,5 @@
 import enum
-from typing import Callable, Optional
+from typing import Callable, Iterable, Optional
 
 from examples.enums import State
 from examples.more_classes import Person
@@ -85,7 +85,7 @@ class State1(enum.Enum):
     FL = 4
 
 
-def bbb() -> Callable[[Bar, str], Foo]:
+def bbb() -> Callable[[Bar, str], Iterable[Foo]]:
     return None  # noqa
 
 if __name__ == "__main__":

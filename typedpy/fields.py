@@ -1,7 +1,6 @@
 """
 Definitions of various types of fields. Supports JSON draft4 types.
 """
-import enum
 import re
 import typing
 from collections import OrderedDict, deque

@@ -6,11 +6,12 @@ from typing import Union, Optional, Any
 from typedpy import Structure
 import enum
 
-from datetime import datetime
-from examples.enums import Sex
-from examples.more_classes import Address
-from examples.enums import State
-from examples.more_classes import Person
+from .enums import Sex as Sex
+from .more_classes import Address as Address
+from datetime import datetime as datetime
+from typing import Callable as Callable
+from .enums import State as State
+from .more_classes import Person as Person
 
 class State1(enum.Enum):
     NY = enum.auto()
@@ -195,4 +196,7 @@ class Bar(Structure):
 
 
 def func(x = 5, e: Employee = None) -> State: ...
+
+
+def bbb() -> Callable[[Bar,str], Foo]: ...
 

@@ -20,7 +20,7 @@ classifiers = [
 
 setup(
     name="typedpy",
-    packages=find_packages(),
+    packages=find_packages(include=["typedpy", "typedpy.scripts"]),
     entry_points={
         'console_scripts': [
             'create-stub=typedpy.scripts.create_stub:main',
@@ -35,9 +35,9 @@ setup(
     license="MIT",
     long_description=long_description,
     url="http://github.com/loyada/typedpy",
-    download_url ="https://github.com/loyada/typedpy/archive/v2.15.2.tar.gz",
+    download_url ="https://github.com/loyada/typedpy/archive/v2.15.4.tar.gz",
     keywords=['testing', 'type-safe', 'strict', 'schema', 'validation'],
-    version='2.15.2'
+    version='2.15.4'
 )
 
 # coverage run --source=typedpy/ setup.py test

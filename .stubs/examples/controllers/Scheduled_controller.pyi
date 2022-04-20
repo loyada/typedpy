@@ -8,7 +8,7 @@ import enum
 
 from datetime import datetime
 from examples.subpackage.apis import Vehicle
-from examples.controllers.job_controller import JobController
+from .job_controller import JobController
 
 class ScheduledController:
 

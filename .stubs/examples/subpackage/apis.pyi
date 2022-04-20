@@ -6,6 +6,9 @@ from typing import Union, Optional, Any
 from typedpy import Structure
 import enum
 
+from datetime import datetime
+from examples.more_classes import Person
+from examples.api_example import Foo
 from examples.enums import State
 
 class Vehicle(Structure):
@@ -22,6 +25,36 @@ class Vehicle(Structure):
     odometer: int
     alias: str
     license_plate: str
+
+
+class AnotherFoo(Structure):
+    def __init__(
+        self,
+        i: int,
+        s: str,
+        person: Person,
+        dob: datetime,
+        arr: list[str],
+        union: Union[int,str],
+        any: Any,
+        a: set,
+        b: set,
+        another: str,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
+    i: int
+    s: str
+    person: Person
+    dob: datetime
+    arr: list[str]
+    union: Union[int,str]
+    any: Any
+    a: set
+    b: set
+    another: str
+    d: Optional[dict[str, int]] = None
 
 
 class Vehicle2(Structure):

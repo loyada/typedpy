@@ -15,6 +15,10 @@ def _verify_file_are_same(actual_filename, expected_filename):
     with open(str(actual_filename), encoding="UTF-8") as actual, open(
             str(expected_filename), encoding="UTF-8"
     ) as expected:
+        actual_lines = actual.readlines()
+        expected_lines = expected.readlines()
+        assert len(actual_lines) == len(expected_lines)
+
         for a, e in zip(actual.readlines(), expected.readlines()):
             assert a == e
 
@@ -26,6 +30,12 @@ class PYI_TEST_CASE:
 
 
 test_cases = [
+    PYI_TEST_CASE(
+        source_path=get_abs_path_from_here("../examples/__init__.py", __file__),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/__init__.pyi", __file__
+        )
+    ),
     PYI_TEST_CASE(
         source_path=get_abs_path_from_here("../examples/api_example.py", __file__),
         reference_path=get_abs_path_from_here(
@@ -48,7 +58,7 @@ test_cases = [
 
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
-@pytest.mark.parametrize("test_case", test_cases, ids=[str(s.source_path) for s in test_cases])
+@pytest.mark.parametrize("test_case", test_cases[1:], ids=[str(s.source_path) for s in test_cases[1:]])
 def test_create_pyi_low_level(test_case: PYI_TEST_CASE):
     spec = importlib.util.spec_from_file_location("examples_pyi", test_case.source_path)
     the_module = importlib.util.module_from_spec(spec)

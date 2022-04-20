@@ -6,7 +6,7 @@ from typing import Union, Optional, Any
 from typedpy import Structure
 import enum
 
-from examples.enums import Sex
+from .enums import Sex
 
 class Address(Structure):
     def __init__(

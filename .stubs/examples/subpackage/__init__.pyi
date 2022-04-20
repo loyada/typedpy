@@ -8,8 +8,8 @@ import enum
 
 from datetime import datetime
 from examples.more_classes import Person
-from examples.api_example import Foo
-from examples.subpackage.apis import Vehicle
+from examples import Foo
+from .apis import Vehicle
 
 class FooOmitSubPackage(Structure):
     def __init__(

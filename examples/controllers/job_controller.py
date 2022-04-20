@@ -5,7 +5,7 @@ class JobController:
     def __init__(self, urls: dict[str, dict]):
         self.urls =urls
 
-    def execute(self, id):
+    def execute(self, job_id:str):
         pass
 
 

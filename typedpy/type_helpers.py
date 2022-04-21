@@ -8,7 +8,7 @@ import sys
 import typing
 from os.path import relpath
 from pathlib import Path
-from .fields import AnyOf, FunctionCall, Map
+from .fields import AllOf, AnyOf, FunctionCall, Map, OneOf
 from .enum import Enum
 from .serialization_wrappers import Deserializer, Serializer
 from .structures import (
@@ -101,7 +101,7 @@ def _get_type_info_for_typing_generic(
 
 
 def _get_type_info(field, locals_attrs, additional_classes):
-    if isinstance(field, AnyOf):
+    if isinstance(field, (AnyOf, OneOf, AllOf)):
         return _get_anyof_typing(field, locals_attrs, additional_classes)
 
     if isinstance(field, Map):

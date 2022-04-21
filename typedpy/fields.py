@@ -213,6 +213,10 @@ class DecimalNumber(Number, SerializableField):
     def serialize(self, value):
         return float(value)
 
+    @property
+    def get_type(self):
+        return Decimal
+
 
 class StructureClass(TypedField):
     _ty = StructMeta
@@ -1518,6 +1522,7 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         return _str_for_multioption_field(self)
 
 
+
 class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     """
     Content *must not* adhere to any of the requirements in the fields arguments.
@@ -1667,3 +1672,4 @@ class FunctionCall(Structure):
     func = Function
     args = Array[String]
     _required = ["func"]
+

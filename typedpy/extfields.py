@@ -154,6 +154,10 @@ class DateField(SerializableField):
                 f"{self._name}: Got {wrap_val(value)}; Expected date, datetime, or str"
             )
 
+    @property
+    def get_type(self):
+        return date
+
 
 class DateTime(SerializableField):
     """

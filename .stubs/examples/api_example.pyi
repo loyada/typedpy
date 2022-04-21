@@ -11,6 +11,7 @@ from .more_classes import Address
 from datetime import datetime
 from typing import Callable
 from typing import Iterable
+from typing import Mapping
 from .enums import State
 from .more_classes import Person
 
@@ -196,7 +197,10 @@ class Bar(Structure):
     opt: Optional[float] = None
 
 
-def func(x = 5, e: Employee = None) -> State: ...
+def func(x = 5, e: Employee = None) -> Mapping[str, str]: ...
+
+
+def func2() -> list[int]: ...
 
 
 def bbb() -> Callable[[Bar,str], Iterable[Foo]]: ...

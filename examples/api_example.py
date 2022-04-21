@@ -1,5 +1,5 @@
 import enum
-from typing import Callable, Iterable, Optional
+from typing import Callable, Iterable, Mapping, Optional
 
 from .enums import State
 from .more_classes import Person
@@ -26,9 +26,13 @@ class Employee(Extend[Person]):
     ssid: str
 
 
-def func(x=5, e: Employee = None) -> State:
+def func(x=5, e: Employee = None) -> Mapping[str, str]:
     print(f"{x}, {e}")
     return State.FL
+
+
+def func2() -> list[int]:
+    pass
 
 
 class Blah(Structure):

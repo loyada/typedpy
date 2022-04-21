@@ -21,7 +21,11 @@ from .structures import (
 from .utility import type_is_generic
 import builtins
 
-builtins_types = {getattr(builtins, k) for k in dir(builtins) if isinstance(getattr(builtins, k), type)}
+builtins_types = {
+    getattr(builtins, k)
+    for k in dir(builtins)
+    if isinstance(getattr(builtins, k), type)
+}
 
 INDENT = " " * 4
 
@@ -36,7 +40,7 @@ AUTOGEN_NOTE = [
 def _get_package(v, attrs):
     pkg_name = attrs.get("__package__") or "%^$%^$%^#"
     if v.startswith(pkg_name):
-        return v[len(pkg_name):]
+        return v[len(pkg_name) :]
     return v
 
 
@@ -54,6 +58,46 @@ def _get_anyof_typing(field, locals_attrs, additional_classes):
         [_get_type_info(f, locals_attrs, additional_classes) for f in union_fields]
     )
     return f"Union[{fields}]"
+
+
+def _get_type_info_for_typing_generic(
+    the_type, locals_attrs, additional_classes
+) -> typing.Optional[str]:
+    origin = getattr(the_type, "__origin__", None)
+    args = getattr(the_type, "__args__", None)
+    if origin in {list, set, tuple}:
+        if len(args) != 1:
+            return str(origin)
+        return f"{origin.__name__}[{_get_type_info(args[0], locals_attrs, additional_classes)}]"
+    mapped_args = (
+        [_get_type_info(a, locals_attrs, additional_classes) for a in args]
+        if args
+        else []
+    )
+
+    if origin is collections.abc.Callable:
+        args_st = (
+            ""
+            if not mapped_args
+            else f"[{mapped_args[0]}]"
+            if len(mapped_args) == 1
+            else f"[[{','.join(mapped_args[:-1])}], {mapped_args[-1]}]"
+        )
+        # args_st = "" if not mapped_args else f"[{','.join(mapped_args)}]"
+        additional_classes.add(typing.Callable)
+        return f"Callable{args_st}"
+
+    if origin is collections.abc.Iterable:
+        additional_classes.add(typing.Iterable)
+        args_st = "" if not mapped_args else f"[{mapped_args[0]}]"
+        return f"Iterable{args_st}"
+
+    if origin is collections.abc.Mapping:
+        additional_classes.add(typing.Mapping)
+        args_st = "" if not mapped_args else f"[{', '.join(mapped_args)}]"
+        return f"Mapping{args_st}"
+
+    return None
 
 
 def _get_type_info(field, locals_attrs, additional_classes):
@@ -86,44 +130,13 @@ def _get_type_info(field, locals_attrs, additional_classes):
         and not type_is_generic(the_type)
     ):
         additional_classes.add(field)
+
     if type_is_generic(the_type):
-        origin = getattr(the_type, "__origin__", None)
-        args = getattr(the_type, "__args__", None)
-        if origin in {list, set, tuple}:
-            if len(args) != 1:
-                return str(origin)
-            return f"{origin.__name__}[{_get_type_info(args[0], locals_attrs, additional_classes)}]"
-
-        if origin is collections.abc.Callable:
-            mapped_args = (
-                [_get_type_info(a, locals_attrs, additional_classes) for a in args]
-                if args
-                else []
-            )
-            args_st = (
-                ""
-                if not mapped_args
-                else f"[{mapped_args[0]}]"
-                if len(mapped_args) == 1
-                else f"[[{','.join(mapped_args[:-1])}], {mapped_args[-1]}]"
-            )
-            # args_st = "" if not mapped_args else f"[{','.join(mapped_args)}]"
-            additional_classes.add(typing.Callable)
-            return f"Callable{args_st}"
-
-        if origin is collections.abc.Iterable:
-            additional_classes.add(typing.Iterable)
-            mapped_args = (
-                [_get_type_info(a, locals_attrs, additional_classes) for a in args]
-                if args
-                else []
-            )
-            args_st = (
-                ""
-                if not mapped_args
-                else f"[{mapped_args[0]}]"
-            )
-            return f"Iterable{args_st}"
+        res = _get_type_info_for_typing_generic(
+            the_type, locals_attrs, additional_classes
+        )
+        if res:
+            return res
 
         return _get_type_info(
             get_typing_lib_info(field), locals_attrs, additional_classes
@@ -503,7 +516,7 @@ def create_stub_for_file(abs_module_path: str, src_root: str, stubs_root: str = 
     dir_name = str(Path(abs_module_path).parent)
     relative_dir = relpath(dir_name, src_root)
     package_name = ".".join(Path(relative_dir).parts)
-    module_name = stem if stem!="__init__" else package_name
+    module_name = stem if stem != "__init__" else package_name
     sys.path.append(str(Path(dir_name).parent))
     spec = importlib.util.spec_from_file_location(module_name, abs_module_path)
     the_module = importlib.util.module_from_spec(spec)

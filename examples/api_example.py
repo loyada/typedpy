@@ -1,8 +1,8 @@
 import enum
 from typing import Callable, Iterable, Optional
 
-from examples.enums import State
-from examples.more_classes import Person
+from .enums import State
+from .more_classes import Person
 from typedpy import (
     AnyOf,
     Anything,

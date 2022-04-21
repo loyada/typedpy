@@ -3,7 +3,7 @@ import sys
 from collections.abc import Iterable, Mapping, Generator
 from functools import reduce, wraps
 from inspect import signature
-from typing import Optional, TypeVar, Union
+from typing import Optional, Union
 
 py_version = sys.version_info[0:2]
 python_ver_36 = py_version == (3, 6)

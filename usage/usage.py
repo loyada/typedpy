@@ -30,7 +30,8 @@ bar = Bar(
     xxxxxxx=3,
     state=State.NY,
     dob=234,
-    person = 3
+    person = 3,
+    arr=123,
 )
 
 foo = Foo(a={1, 2})

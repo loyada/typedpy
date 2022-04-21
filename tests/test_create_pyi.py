@@ -62,6 +62,7 @@ test_cases = [
 def test_create_pyi_low_level(test_case: PYI_TEST_CASE):
     spec = importlib.util.spec_from_file_location("examples_pyi", test_case.source_path)
     the_module = importlib.util.module_from_spec(spec)
+    the_module.__package__ = "examples"
     spec.loader.exec_module(the_module)
 
     results_dir: Path = get_abs_path_from_here("stubs_tests_results", __file__)

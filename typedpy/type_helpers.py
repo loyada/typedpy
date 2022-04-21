@@ -4,6 +4,7 @@ import importlib.util
 import inspect
 import logging
 import os
+import sys
 import typing
 from os.path import relpath
 from pathlib import Path
@@ -18,6 +19,9 @@ from .structures import (
     get_typing_lib_info,
 )
 from .utility import type_is_generic
+import builtins
+
+builtins_types = {getattr(builtins, k) for k in dir(builtins) if isinstance(getattr(builtins, k), type)}
 
 INDENT = " " * 4
 
@@ -70,6 +74,9 @@ def _get_type_info(field, locals_attrs, additional_classes):
             return field._enum_class.__name__
 
     the_type = getattr(field, "get_type", field) if isinstance(field, Field) else field
+    if the_type in builtins_types:
+        return the_type.__name__
+
     if the_type is typing.Any:
         return "Any"
     if (
@@ -493,10 +500,15 @@ def create_stub_for_file(abs_module_path: str, src_root: str, stubs_root: str = 
     if ext != ".py":
         return
     stem = Path(abs_module_path).stem
-    relative_dir = relpath(str(Path(abs_module_path).parent), src_root)
-    module_name = stem if stem!="__init__" else ".".join(Path(relative_dir).parts)
+    dir_name = str(Path(abs_module_path).parent)
+    relative_dir = relpath(dir_name, src_root)
+    package_name = ".".join(Path(relative_dir).parts)
+    module_name = stem if stem!="__init__" else package_name
+    sys.path.append(str(Path(dir_name).parent))
     spec = importlib.util.spec_from_file_location(module_name, abs_module_path)
     the_module = importlib.util.module_from_spec(spec)
+    if not the_module.__package__:
+        the_module.__package__ = package_name
     spec.loader.exec_module(the_module)
 
     pyi_dir = (

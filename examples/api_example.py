@@ -99,5 +99,9 @@ def ccc() -> Callable[[T], None]:
     pass
 
 
+def ddd() -> [int, str, ...]:
+    return [1,"xx"]
+
+
 if __name__ == "__main__":
     create_pyi(__file__, locals())

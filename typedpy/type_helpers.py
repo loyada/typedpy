@@ -289,44 +289,49 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
         if isinstance(func, property):
             is_property = True
             func = func.__get__
-        sig = inspect.signature(func)
-        return_annotations = (
-            ""
-            if sig.return_annotation == inspect._empty
-            else f" -> {_get_type_info(sig.return_annotation, locals_attrs, additional_classes)}"
-        )
-        params_by_name = {}
-        if method_cls is classmethod:
-            params_by_name["cls"] = ""
-        for p, v in sig.parameters.items():
-            optional_globe = (
-                "**"
-                if v.kind == inspect.Parameter.VAR_KEYWORD
-                else "*"
-                if v.kind == inspect.Parameter.VAR_POSITIONAL
-                else ""
-            )
-            default = "" if v.default == inspect._empty else f" = {v.default}"
-            type_annotation = (
+        try:
+            sig = inspect.signature(func)
+            return_annotations = (
                 ""
-                if v.annotation == inspect._empty
-                else f": {_get_type_info(v.annotation, locals_attrs, additional_classes)}"
+                if sig.return_annotation == inspect._empty
+                else f" -> {_get_type_info(sig.return_annotation, locals_attrs, additional_classes)}"
             )
-            p_name = f"{optional_globe}{p}"
-            params_by_name[p_name] = f"{type_annotation}{default}"
-        if is_property:
-            params_by_name.pop("owner")
-            params_by_name.pop("instance")
-            params_by_name["self"] = ""
-        params_as_str = ", ".join([f"{k}{v}" for k, v in params_by_name.items()])
-        method_by_name.append("")
-        if method_cls is staticmethod:
-            method_by_name.append("@staticmethod")
-        elif method_cls is classmethod:
-            method_by_name.append("@classmethod")
-        elif is_property:
-            method_by_name.append("@property")
-        method_by_name.append(f"def {name}({params_as_str}){return_annotations}: ...")
+            params_by_name = {}
+            if method_cls is classmethod:
+                params_by_name["cls"] = ""
+            for p, v in sig.parameters.items():
+                optional_globe = (
+                    "**"
+                    if v.kind == inspect.Parameter.VAR_KEYWORD
+                    else "*"
+                    if v.kind == inspect.Parameter.VAR_POSITIONAL
+                    else ""
+                )
+                default = "" if v.default == inspect._empty else f" = {v.default}"
+                type_annotation = (
+                    ""
+                    if v.annotation == inspect._empty
+                    else f": {_get_type_info(v.annotation, locals_attrs, additional_classes)}"
+                )
+                p_name = f"{optional_globe}{p}"
+                params_by_name[p_name] = f"{type_annotation}{default}"
+
+            if is_property:
+                params_by_name.pop("owner")
+                params_by_name.pop("instance")
+                params_by_name["self"] = ""
+            params_as_str = ", ".join([f"{k}{v}" for k, v in params_by_name.items()])
+            method_by_name.append("")
+            if method_cls is staticmethod:
+                method_by_name.append("@staticmethod")
+            elif method_cls is classmethod:
+                method_by_name.append("@classmethod")
+            elif is_property:
+                method_by_name.append("@property")
+            method_by_name.append(f"def {name}({params_as_str}){return_annotations}: ...")
+        except Exception as e:
+            logging.warning(e)
+            method_by_name.append(f"def {name}(self): ...")
 
     return method_by_name
 

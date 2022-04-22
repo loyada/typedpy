@@ -450,7 +450,7 @@ def _get_functions(attrs, only_calling_module):
 
 def _get_type_annotation(prefix: str, annotation, local_attrs, additional_classes):
     def _correct_for_return_annotation(res: str):
-        return res[:-7] if "->" in prefix and res.endswith("= None") else res
+        return res[:-7] if ("->" in prefix and res.endswith("= None")) or res.endswith("= None = None") else res
     try:
         res = (
             ""

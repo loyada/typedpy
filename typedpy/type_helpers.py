@@ -107,7 +107,7 @@ def _get_type_info_for_typing_generic(
 
 def _get_type_info(field, locals_attrs, additional_classes):
     try:
-        if field in {None, NoneType}:
+        if field in {None, type(None)}:
             return "None"
         if isinstance(field, (AnyOf, OneOf, AllOf)):
             return _get_anyof_typing(field, locals_attrs, additional_classes)

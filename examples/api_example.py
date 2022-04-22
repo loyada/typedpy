@@ -1,5 +1,5 @@
 import enum
-from typing import Callable, Iterable, Mapping, Optional
+from typing import Callable, Iterable, Mapping, Optional, TypeVar
 
 from .enums import State
 from .more_classes import Person
@@ -31,7 +31,9 @@ def func(x=5, e: Employee = None) -> Mapping[str, str]:
     return State.FL
 
 
-def func2() -> list[int]:
+T = TypeVar("T")
+
+def func2(t: T) -> list[T]:
     pass
 
 

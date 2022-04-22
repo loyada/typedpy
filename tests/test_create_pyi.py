@@ -54,6 +54,12 @@ test_cases = [
             "../.stubs/examples/more_classes.pyi", __file__
         )
     ),
+PYI_TEST_CASE(
+        source_path=get_abs_path_from_here("../examples/future_annotations.py", __file__),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/future_annotations.pyi", __file__
+        )
+    ),
 ]
 
 

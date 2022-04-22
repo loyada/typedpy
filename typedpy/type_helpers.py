@@ -8,7 +8,6 @@ import sys
 import typing
 from os.path import relpath
 from pathlib import Path
-from types import NoneType
 
 from .fields import AllOf, AnyOf, FunctionCall, Map, OneOf
 from .enum import Enum

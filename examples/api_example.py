@@ -94,5 +94,10 @@ class State1(enum.Enum):
 def bbb() -> Callable[[Bar, str], Iterable[Foo]]:
     return None  # noqa
 
+
+def ccc() -> Callable[[T], None]:
+    pass
+
+
 if __name__ == "__main__":
     create_pyi(__file__, locals())

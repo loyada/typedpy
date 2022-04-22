@@ -8,6 +8,8 @@ import sys
 import typing
 from os.path import relpath
 from pathlib import Path
+from types import NoneType
+
 from .fields import AllOf, AnyOf, FunctionCall, Map, OneOf
 from .enum import Enum
 from .serialization_wrappers import Deserializer, Serializer
@@ -105,6 +107,8 @@ def _get_type_info_for_typing_generic(
 
 def _get_type_info(field, locals_attrs, additional_classes):
     try:
+        if field in {None, NoneType}:
+            return "None"
         if isinstance(field, (AnyOf, OneOf, AllOf)):
             return _get_anyof_typing(field, locals_attrs, additional_classes)
 

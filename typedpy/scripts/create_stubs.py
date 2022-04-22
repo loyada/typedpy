@@ -1,32 +1,53 @@
 import fnmatch
 import logging
-import sys
+import subprocess
 from os import walk
 from pathlib import Path
-
-from typedpy.type_helpers import create_stub_for_file
+import argparse
 
 
 def main():
-    if len(sys.argv)>4 or len(sys.argv)<3:
-        print(f"Usage: {sys.argv[0]} <src-root-dir> <directory> [stubs-dir]")
-        sys.exit(1)
-    src_root_abs_path = str(Path(sys.argv[1]).resolve())
-    input_dir = str(Path(sys.argv[2]).resolve())
-    stub_dir = sys.argv[3] if len(sys.argv)==4 else ".stubs"
-    stub_dir_abs_path = str(Path(src_root_abs_path) / Path(stub_dir))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("src_root_dir", help="source root directory")
+    parser.add_argument("directory", help="directory to process")
+    parser.add_argument("-s", "--stubs-dir", type=str, default=".stubs",
+                        help="source directory of stubs. Default is .stubs")
+    parser.add_argument("-x", "--exclude", type=str,
+                        help="exclude patterns in the form path1:path2:path3")
+    args = parser.parse_args()
+    src_root_abs_path = str(Path(args.src_root_dir).resolve())
+    input_dir = str(Path(args.directory).resolve())
+    stub_dir_abs_path = str(Path(src_root_abs_path) / Path(args.stubs_dir))
+    exclude = args.exclude.split(":") if args.exclude else []
 
     for (dirpath, _, filenames) in walk(input_dir):
         if dirpath.startswith("__"):
             continue
-        python_scripts = [name for name in filenames if fnmatch.fnmatch(name, '*.py')]
+        python_scripts = [name for name in filenames if fnmatch.fnmatch(name, "*.py")]
         for name in python_scripts:
+            exclude_it = False
             abs_file_path = str(Path(dirpath) / name)
+            for x in exclude:
+                if fnmatch.fnmatch(abs_file_path, x):
+                    exclude_it = True
+                    continue
+            if exclude_it:
+                continue
             print(f"processing {abs_file_path}")
             try:
-                create_stub_for_file(
-                    abs_file_path, src_root_abs_path, stub_dir_abs_path
-                )
+                with subprocess.Popen(
+                    [
+                        "create-stub",
+                        src_root_abs_path,
+                        abs_file_path,
+                        stub_dir_abs_path,
+                    ],
+                    stdout=subprocess.PIPE,
+                ) as proc:
+                    res = proc.stdout.read().decode("UTF-8")
+                    if res:
+                        print(res)
+                print(f"done with {name}")
             except Exception as e:
                 logging.exception(e)
 

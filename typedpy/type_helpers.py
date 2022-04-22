@@ -449,12 +449,15 @@ def _get_functions(attrs, only_calling_module):
 
 
 def _get_type_annotation(prefix: str, annotation, local_attrs, additional_classes):
+    def _correct_for_return_annotation(res: str):
+        return res[:-7] if "->" in prefix and res.endswith("= None") else res
     try:
-        return (
+        res = (
             ""
             if annotation == inspect._empty
             else f"{prefix}{_get_type_info(annotation, local_attrs, additional_classes)}"
         )
+        return _correct_for_return_annotation(res)
     except Exception as e:
         logging.exception(e)
         return ""

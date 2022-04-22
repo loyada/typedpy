@@ -1,4 +1,5 @@
 import fnmatch
+import logging
 import sys
 from os import walk
 from pathlib import Path
@@ -22,9 +23,12 @@ def main():
         for name in python_scripts:
             abs_file_path = str(Path(dirpath) / name)
             print(f"processing {abs_file_path}")
-            create_stub_for_file(
-                 abs_file_path, src_root_abs_path, stub_dir_abs_path
-             )
+            try:
+                create_stub_for_file(
+                    abs_file_path, src_root_abs_path, stub_dir_abs_path
+                )
+            except Exception as e:
+                logging.exception(e)
 
 
 if __name__ == "__main__":

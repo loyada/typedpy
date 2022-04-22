@@ -108,12 +108,13 @@ def _get_type_info(field, locals_attrs, additional_classes):
     try:
         if field is ...:
             return "..."
-        if isinstance(field, list):
+        if isinstance(field, (list, dict)):
+            cls_name = field.__class__.__name__
             mapped_args = [
                 _get_type_info(a, locals_attrs, additional_classes) for a in field
             ]
             args_st = "" if not mapped_args else f"[{', '.join(mapped_args)}]"
-            return f"list{args_st}"
+            return f"{cls_name}{args_st}"
 
         if field in [None, type(None)]:
             return "None"

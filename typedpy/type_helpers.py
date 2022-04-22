@@ -130,6 +130,7 @@ def _get_type_info(field, locals_attrs, additional_classes):
         # deal with from __future__ import annotations
         if isinstance(the_type, str):
             the_type = eval(the_type, locals_attrs)
+            field = the_type
         if the_type in builtins_types:
             return the_type.__name__
 
@@ -223,9 +224,11 @@ def _get_mapped_extra_imports(additional_imports) -> dict:
                     c.get_type.__module__
                     if isinstance(c, Field)
                        or (inspect.isclass(c) and issubclass(c, Field))
-                    else c.__module__
+                    else c.__module__ if name!="Any"
+                    else None
                 )
-            mapped[name] = module_name
+            if module_name:
+                mapped[name] = module_name
         except Exception as e:
             logging.exception(e)
     return mapped

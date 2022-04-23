@@ -6,6 +6,7 @@ from typing import Union, Optional, Any, TypeVar, Type
 from typedpy import Structure
 import enum
 
+from datetime import datetime
 from .enums import Sex
 
 
@@ -36,4 +37,7 @@ class Person(Structure):
     age: int
     address: Address
     sex: Sex
+
+
+def aaa(a: dict[str, list[datetime]]): ...
 

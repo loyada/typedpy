@@ -87,7 +87,10 @@ def _get_type_info_for_typing_generic(
         # args_st = "" if not mapped_args else f"[{','.join(mapped_args)}]"
         additional_classes.add(typing.Callable)
         return f"Callable{args_st}"
-
+    if origin is dict:
+        if mapped_args:
+            return f"dict[{', '.join(mapped_args)}]"
+        return "dict"
     if origin is collections.abc.Iterable:
         additional_classes.add(typing.Iterable)
         args_st = "" if not mapped_args else f"[{mapped_args[0]}]"

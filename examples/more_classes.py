@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from examples.enums import Sex
 from typedpy import Enum, Structure, create_pyi
 
@@ -13,6 +15,9 @@ class Person(Structure):
     address: Address
     sex: Enum[Sex]
 
+
+def aaa(a: dict[str, list[datetime]]):
+    pass
 
 if __name__ == "__main__":
     create_pyi(__file__, locals())

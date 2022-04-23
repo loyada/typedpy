@@ -47,6 +47,7 @@ Contents:
    tutorial_dataclass_comparison
    limitations
    common_utilities
+   stubs
    faq
 
 

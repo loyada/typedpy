@@ -328,7 +328,9 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
                 method_by_name.append("@classmethod")
             elif is_property:
                 method_by_name.append("@property")
-            method_by_name.append(f"def {name}({params_as_str}){return_annotations}: ...")
+            method_by_name.append(
+                f"def {name}({params_as_str}){return_annotations}: ..."
+            )
         except Exception as e:
             logging.warning(e)
             method_by_name.append(f"def {name}(self): ...")
@@ -396,7 +398,7 @@ def get_stubs_of_enums(
 
 def add_imports(local_attrs: dict, additional_classes, existing_imports: set) -> list:
     base_import_statements = [
-        "from typing import Union, Optional, Any, TypeVar",
+        "from typing import Union, Optional, Any, TypeVar, Type",
         "from typedpy import Structure",
         "import enum",
         "",
@@ -448,9 +450,17 @@ def _get_functions(attrs, only_calling_module):
     }
 
 
-def _get_type_annotation(prefix: str, annotation, local_attrs, additional_classes):
+def _get_type_annotation(
+    prefix: str, annotation, default: str, local_attrs, additional_classes
+):
     def _correct_for_return_annotation(res: str):
-        return res[:-7] if ("->" in prefix and res.endswith("= None")) or res.endswith("= None = None") else res
+        if "->" in prefix:
+            return res[:-7] if res.endswith("= None") else res
+        if default:
+            cleaned_res = res[: -len(" = None")] if res.endswith("= None") else res
+            return f"{cleaned_res}{default}"
+        return res
+
     try:
         res = (
             ""
@@ -464,19 +474,26 @@ def _get_type_annotation(prefix: str, annotation, local_attrs, additional_classe
 
 
 def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> list:
+    def _convert_default(d):
+        return d.__name__ if inspect.isclass(d) else d
+
     out_src = []
     for name, func in func_by_name.items():
         sig = inspect.signature(func)
         return_annotations = _get_type_annotation(
-            " -> ", sig.return_annotation, local_attrs, additional_classes
+            " -> ", sig.return_annotation, "", local_attrs, additional_classes
         )
         params_by_name = {}
         for p, v in sig.parameters.items():
-            default = "" if v.default == inspect._empty else f" = {v.default}"
-            type_annotation = _get_type_annotation(
-                ": ", v.annotation, local_attrs, additional_classes
+            default = (
+                ""
+                if v.default == inspect._empty
+                else f" = {_convert_default(v.default)}"
             )
-            params_by_name[p] = f"{type_annotation}{default}"
+            type_annotation = _get_type_annotation(
+                ": ", v.annotation, default, local_attrs, additional_classes
+            )
+            params_by_name[p] = type_annotation
         params_as_str = ", ".join([f"{k}{v}" for k, v in params_by_name.items()])
 
         out_src.append(f"def {name}({params_as_str}){return_annotations}: ...")

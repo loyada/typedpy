@@ -4,6 +4,6 @@ from .more_classes import Address
 
 
 class FA:
-    def xyzz(self, address: Address) -> FA:
+    def xyz(self, address: Address) -> FA:
         pass
 

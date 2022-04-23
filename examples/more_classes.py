@@ -14,7 +14,6 @@ class Person(Structure):
     sex: Enum[Sex]
 
 
-
 if __name__ == "__main__":
     create_pyi(__file__, locals())
 

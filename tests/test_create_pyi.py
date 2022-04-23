@@ -15,12 +15,13 @@ def _verify_file_are_same(actual_filename, expected_filename):
     with open(str(actual_filename), encoding="UTF-8") as actual, open(
             str(expected_filename), encoding="UTF-8"
     ) as expected:
-        actual_lines = actual.readlines()
-        expected_lines = expected.readlines()
+        actual_lines = [line for line in actual.readlines() if line.strip()]
+        expected_lines = [line for line in expected.readlines()  if line.strip()]
         assert len(actual_lines) == len(expected_lines)
 
-        for a, e in zip(actual.readlines(), expected.readlines()):
-            assert a == e
+        for a, e in zip(actual_lines, expected_lines):
+            if a.strip() or e.strip():
+                assert a == e
 
 
 @dataclasses.dataclass

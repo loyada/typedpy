@@ -267,6 +267,8 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
     members = {}
     for c in mros:
         members.update(dict(c.__dict__))
+
+    private_prefix = "_" if issubclass(cls, enum.Enum) else "__"
     method_list = [
         attribute
         for attribute in members
@@ -274,7 +276,7 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
             callable(getattr(cls, attribute, None))
             or isinstance(getattr(cls, attribute, None), property)
         )
-        and not attribute.startswith("_")
+        and not attribute.startswith(private_prefix)
         and attribute not in all_fields
         and attribute not in ignored_methods
     ]

@@ -10,7 +10,7 @@ class ScheduledController(JobController):
         self.d=d
         super().__init__(*args, **kw)
 
-    def is_it_time(self) -> bool:
+    def is_it_time(self, *, a=1) -> bool:
         return False
 
 

@@ -157,7 +157,7 @@ test_cases_for_regular_classes = [
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 @pytest.mark.parametrize("test_case", test_cases_for_regular_classes,
-                         ids=[str(s.source_path) for s in test_cases_for_subpackage])
+                         ids=[str(s.source_path) for s in test_cases_for_regular_classes])
 def test_create_stub_for_file_regular_classes(test_case: PYI_TEST_CASE):
     src_root = str(get_abs_path_from_here("../", __file__))
     create_stub_for_file(

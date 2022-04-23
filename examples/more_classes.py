@@ -16,7 +16,7 @@ class Person(Structure):
     sex: Enum[Sex]
 
 
-def aaa(a: dict[str, list[datetime]]):
+def aaa(*, a: dict[str, list[datetime]]):
     pass
 
 if __name__ == "__main__":

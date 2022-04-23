@@ -301,10 +301,15 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
                 if sig.return_annotation == inspect._empty
                 else f" -> {_get_type_info(sig.return_annotation, locals_attrs, additional_classes)}"
             )
-            params_by_name = {}
+            params_by_name = []
             if method_cls is classmethod:
-                params_by_name["cls"] = ""
+                params_by_name.append(("cls", ""))
+            if is_property:
+                params_by_name.append(("self", ""))
+            found_last_positional = False
             for p, v in sig.parameters.items():
+                if is_property and p in {"owner", "instance"}:
+                    continue
                 optional_globe = (
                     "**"
                     if v.kind == inspect.Parameter.VAR_KEYWORD
@@ -312,6 +317,11 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
                     if v.kind == inspect.Parameter.VAR_POSITIONAL
                     else ""
                 )
+                if v.kind == inspect.Parameter.VAR_POSITIONAL:
+                    found_last_positional = True
+                if v.kind==inspect.Parameter.KEYWORD_ONLY and not found_last_positional:
+                    params_by_name.append(("*", ""))
+                    found_last_positional = True
                 default = (
                     ""
                     if v.default == inspect._empty
@@ -325,14 +335,14 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
                     else f": {_get_type_info(v.annotation, locals_attrs, additional_classes)}"
                 )
                 p_name = f"{optional_globe}{p}"
-                type_annotation = type_annotation[: -len(" = None")] if (type_annotation.endswith("= None") and default) else type_annotation
-                params_by_name[p_name] = f"{type_annotation}{default}"
+                type_annotation = (
+                    type_annotation[: -len(" = None")]
+                    if (type_annotation.endswith("= None") and default)
+                    else type_annotation
+                )
+                params_by_name.append((p_name, f"{type_annotation}{default}"))
 
-            if is_property:
-                params_by_name.pop("owner")
-                params_by_name.pop("instance")
-                params_by_name["self"] = ""
-            params_as_str = ", ".join([f"{k}{v}" for k, v in params_by_name.items()])
+            params_as_str = ", ".join([f"{k}{v}" for (k, v) in params_by_name])
             method_by_name.append("")
             if method_cls is staticmethod:
                 method_by_name.append("@staticmethod")
@@ -495,8 +505,12 @@ def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> lis
         return_annotations = _get_type_annotation(
             " -> ", sig.return_annotation, "", local_attrs, additional_classes
         )
-        params_by_name = {}
+        params_by_name = []
+        found_keyword_only = False
         for p, v in sig.parameters.items():
+            if not found_keyword_only and v.kind == inspect.Parameter.KEYWORD_ONLY:
+                found_keyword_only = True
+                params_by_name.append(("*", ""))
             default = (
                 ""
                 if v.default == inspect._empty
@@ -505,8 +519,8 @@ def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> lis
             type_annotation = _get_type_annotation(
                 ": ", v.annotation, default, local_attrs, additional_classes
             )
-            params_by_name[p] = type_annotation
-        params_as_str = ", ".join([f"{k}{v}" for k, v in params_by_name.items()])
+            params_by_name.append((p, type_annotation))
+        params_as_str = ", ".join([f"{k}{v}" for (k, v) in params_by_name])
 
         out_src.append(f"def {name}({params_as_str}){return_annotations}: ...")
         out_src.append("\n")

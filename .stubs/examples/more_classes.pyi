@@ -39,5 +39,5 @@ class Person(Structure):
     sex: Sex
 
 
-def aaa(a: dict[str, list[datetime]]): ...
+def aaa(*, a: dict[str, list[datetime]]): ...
 

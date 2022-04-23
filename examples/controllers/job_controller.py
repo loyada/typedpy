@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import Optional
+
 from typedpy import create_pyi
 
 
@@ -6,6 +9,9 @@ class JobController:
         self.urls =urls
 
     def execute(self, job_id:str):
+        pass
+
+    def aaa(self, a: list[datetime] = list, o: Optional[str] = None):
         pass
 
 

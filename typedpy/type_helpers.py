@@ -312,13 +312,20 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
                     if v.kind == inspect.Parameter.VAR_POSITIONAL
                     else ""
                 )
-                default = "" if v.default == inspect._empty else f" = {v.default}"
+                default = (
+                    ""
+                    if v.default == inspect._empty
+                    else f" = {v.default}"
+                    if not inspect.isclass(v.default)
+                    else f" = {v.default.__name__}"
+                )
                 type_annotation = (
                     ""
                     if v.annotation == inspect._empty
                     else f": {_get_type_info(v.annotation, locals_attrs, additional_classes)}"
                 )
                 p_name = f"{optional_globe}{p}"
+                type_annotation = type_annotation[: -len(" = None")] if (type_annotation.endswith("= None") and default) else type_annotation
                 params_by_name[p_name] = f"{type_annotation}{default}"
 
             if is_property:

@@ -5,6 +5,7 @@ import inspect
 import logging
 import os
 import sys
+import builtins
 import typing
 from os.path import relpath
 from pathlib import Path
@@ -20,13 +21,12 @@ from .structures import (
     get_typing_lib_info,
 )
 from .utility import type_is_generic
-import builtins
 
-builtins_types = {
+builtins_types = [
     getattr(builtins, k)
     for k in dir(builtins)
     if isinstance(getattr(builtins, k), type)
-}
+]
 
 INDENT = " " * 4
 
@@ -104,6 +104,11 @@ def _get_type_info_for_typing_generic(
     if origin is type:
         args_st = "" if not mapped_args else f"[{', '.join(mapped_args)}]"
         return f"Type{args_st}"
+
+    if origin is collections.abc.Iterator:
+        additional_classes.add(typing.Iterator)
+        args_st = "" if not mapped_args else f"[{mapped_args[0]}]"
+        return f"Iterator{args_st}"
 
     if origin is typing.Union:
         if 'None' in mapped_args:

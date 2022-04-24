@@ -1,5 +1,5 @@
 import enum
-from typing import Callable, Iterable, Mapping, Optional, TypeVar
+from typing import Callable, Iterable, Iterator, Mapping, Optional, TypeVar
 
 from .enums import State
 from .more_classes import Person
@@ -107,7 +107,7 @@ def eee(x: Optional[int] = 4, arr: list[str] = list) -> Optional[int]:
     return 3
 
 
-def fff(c: Optional[Callable]):
+def fff(c: Optional[Callable]) -> Iterator[str]:
     pass
 
 if __name__ == "__main__":

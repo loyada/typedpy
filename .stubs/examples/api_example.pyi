@@ -11,6 +11,7 @@ from .more_classes import Address
 from datetime import datetime
 from typing import Callable
 from typing import Iterable
+from typing import Iterator
 from typing import Mapping
 from .enums import State
 from .more_classes import Person
@@ -218,6 +219,7 @@ def ddd() -> list[int, str, ...]: ...
 def eee(x: Optional[int] = 4, arr: list[str] = list) -> Optional[int]: ...
 
 
-def fff(c: Optional[Callable]): ...
+def fff(c: Optional[Callable]) -> Iterator[str]: ...
+
 
 

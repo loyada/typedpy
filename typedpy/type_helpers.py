@@ -104,6 +104,16 @@ def _get_type_info_for_typing_generic(
     if origin is type:
         args_st = "" if not mapped_args else f"[{', '.join(mapped_args)}]"
         return f"Type{args_st}"
+
+    if origin is typing.Union:
+        if 'None' in mapped_args:
+            mapped_args = [a for a in mapped_args if str(a)!="None"]
+            the_type = "Optional"
+        else:
+            the_type = "Type"
+        args_st = "" if not mapped_args else f"[{', '.join(mapped_args)}]"
+        return f"{the_type}{args_st}"
+
     return None
 
 
@@ -147,13 +157,17 @@ def _get_type_info(field, locals_attrs, additional_classes):
         if isinstance(the_type, str):
             the_type = eval(the_type, locals_attrs)
             field = the_type
+            if isinstance(the_type, str):
+                return the_type
+
         if the_type in builtins_types:
             return the_type.__name__
 
         if the_type is typing.Any:
             return "Any"
         if (
-            not the_type.__module__.startswith("typedpy")
+            getattr(the_type, "__module__", None)
+            and not the_type.__module__.startswith("typedpy")
             and the_type.__module__ != "builtins"
             and the_type not in locals_attrs
             and not type_is_generic(the_type)
@@ -175,6 +189,7 @@ def _get_type_info(field, locals_attrs, additional_classes):
     except Exception as e:
         logging.exception(e)
         return "Any"
+
 
 
 def _get_all_type_info(cls, locals_attrs, additional_classes) -> dict:

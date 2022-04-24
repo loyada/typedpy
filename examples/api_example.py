@@ -106,5 +106,9 @@ def ddd() -> [int, str, ...]:
 def eee(x: Optional[int] = 4, arr: list[str] = list) -> Optional[int]:
     return 3
 
+
+def fff(c: Optional[Callable]):
+    pass
+
 if __name__ == "__main__":
     create_pyi(__file__, locals())

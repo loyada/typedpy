@@ -38,9 +38,10 @@ def main():
                 with subprocess.Popen(
                     [
                         "create-stub",
+                        "-s",
+                        stub_dir_abs_path,
                         src_root_abs_path,
                         abs_file_path,
-                        stub_dir_abs_path,
                     ],
                     stdout=subprocess.PIPE,
                 ) as proc:

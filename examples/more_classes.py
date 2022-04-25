@@ -1,3 +1,4 @@
+import typing
 from datetime import datetime
 
 from examples.enums import Sex
@@ -16,7 +17,7 @@ class Person(Structure):
     sex: Enum[Sex]
 
 
-def aaa(*, a: dict[str, list[datetime]]):
+def aaa(*, a: dict[str, list[datetime]]) -> typing.Optional:
     pass
 
 if __name__ == "__main__":

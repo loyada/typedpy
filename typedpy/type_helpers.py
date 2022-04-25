@@ -168,8 +168,8 @@ def _get_type_info(field, locals_attrs, additional_classes):
         if the_type in builtins_types:
             return the_type.__name__
 
-        if the_type is typing.Any:
-            return "Any"
+        if the_type in [typing.Any, typing.Optional, typing.Union, typing.NoReturn]:
+            return getattr(the_type, '_name')
         if (
             getattr(the_type, "__module__", None)
             and not the_type.__module__.startswith("typedpy")
@@ -190,7 +190,7 @@ def _get_type_info(field, locals_attrs, additional_classes):
                 get_typing_lib_info(field), locals_attrs, additional_classes
             )
 
-        return f"{the_type.__name__}"
+        return the_type.__name__
     except Exception as e:
         logging.exception(e)
         return "Any"
@@ -293,7 +293,8 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
         attribute
         for attribute in members
         if (
-            callable(getattr(cls, attribute, None))
+            not inspect.isclass(getattr(cls, attribute, None))
+            and callable(getattr(cls, attribute, None))
             or isinstance(getattr(cls, attribute, None), property)
         )
         and not attribute.startswith(private_prefix)
@@ -375,7 +376,7 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
             )
         except Exception as e:
             logging.warning(e)
-            method_by_name.append(f"def {name}(self): ...")
+            method_by_name.append(f"def {name}(self, *args, **kw): ...")
 
     return method_by_name
 
@@ -440,7 +441,7 @@ def get_stubs_of_enums(
 
 def add_imports(local_attrs: dict, additional_classes, existing_imports: set) -> list:
     base_import_statements = [
-        "from typing import Union, Optional, Any, TypeVar, Type",
+        "from typing import Union, Optional, Any, TypeVar, Type, NoReturn",
         "from typedpy import Structure",
         "import enum",
         "",

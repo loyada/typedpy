@@ -1,4 +1,5 @@
 import enum
+import typing
 from typing import Callable, Iterable, Iterator, Mapping, Optional, TypeVar
 
 from .enums import State
@@ -109,6 +110,10 @@ def eee(x: Optional[int] = 4, arr: list[str] = list) -> Optional[int]:
 
 def fff(c: Optional[Callable]) -> Iterator[str]:
     pass
+
+def ggg() -> typing.Tuple:
+    return (1,2,3)
+
 
 if __name__ == "__main__":
     create_pyi(__file__, locals())

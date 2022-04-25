@@ -65,10 +65,10 @@ def _get_type_info_for_typing_generic(
     the_type, locals_attrs, additional_classes
 ) -> typing.Optional[str]:
     origin = getattr(the_type, "__origin__", None)
-    args = getattr(the_type, "__args__", None)
+    args = getattr(the_type, "__args__", [])
     if origin in {list, set, tuple}:
         if len(args) != 1:
-            return str(origin)
+            return origin.__name__
         return f"{origin.__name__}[{_get_type_info(args[0], locals_attrs, additional_classes)}]"
     mapped_args = (
         [_get_type_info(a, locals_attrs, additional_classes) for a in args]

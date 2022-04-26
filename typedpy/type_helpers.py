@@ -111,8 +111,8 @@ def _get_type_info_for_typing_generic(
         return f"Iterator{args_st}"
 
     if origin is typing.Union:
-        if 'None' in mapped_args:
-            mapped_args = [a for a in mapped_args if str(a)!="None"]
+        if "None" in mapped_args:
+            mapped_args = [a for a in mapped_args if str(a) != "None"]
             the_type = "Optional"
         else:
             the_type = "Type"
@@ -169,7 +169,7 @@ def _get_type_info(field, locals_attrs, additional_classes):
             return the_type.__name__
 
         if the_type in [typing.Any, typing.Optional, typing.Union, typing.NoReturn]:
-            return getattr(the_type, '_name')
+            return getattr(the_type, "_name")
         if (
             getattr(the_type, "__module__", None)
             and not the_type.__module__.startswith("typedpy")
@@ -194,7 +194,6 @@ def _get_type_info(field, locals_attrs, additional_classes):
     except Exception as e:
         logging.exception(e)
         return "Any"
-
 
 
 def _get_all_type_info(cls, locals_attrs, additional_classes) -> dict:
@@ -271,7 +270,6 @@ def _get_mapped_extra_imports(additional_imports) -> dict:
     return mapped
 
 
-
 def _get_method_and_attr_list(cls, members):
     all_fields = cls.get_all_fields_by_name() if issubclass(cls, Structure) else {}
     ignored_methods = (
@@ -288,22 +286,33 @@ def _get_method_and_attr_list(cls, members):
     orm_attrs = []
     cls_dict = cls.__dict__
     for attribute in members:
-        attr = cls_dict.get(attribute) if attribute in cls_dict else getattr(cls, attribute, None)
-        if getattr(attr, '__module__', '') == 'sqlalchemy.orm.attributes':
+        attr = (
+            cls_dict.get(attribute)
+            if attribute in cls_dict
+            else getattr(cls, attribute, None)
+        )
+        if getattr(attr, "__module__", "") == "sqlalchemy.orm.attributes":
             orm_attrs.append(attribute)
-        is_func = not inspect.isclass(attr) and callable(attr) or isinstance(attr, property)
-        if is_func and not attribute.startswith(private_prefix) and attribute not in all_fields and attribute not in ignored_methods:
+        is_func = not inspect.isclass(attr) and (
+            callable(attr) or isinstance(attr, (property, classmethod, staticmethod))
+        )
+
+        if (
+            is_func
+            and not attribute.startswith(private_prefix)
+            and attribute not in all_fields
+            and attribute not in ignored_methods
+        ):
             method_list.append(attribute)
 
     if (
-            not issubclass(cls, Structure)
-            and not issubclass(cls, enum.Enum)
-            and "__init__" in members
+        not issubclass(cls, Structure)
+        and not issubclass(cls, enum.Enum)
+        and "__init__" in members
     ):
         method_list = ["__init__"] + method_list
 
     return method_list, orm_attrs
-
 
 
 def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
@@ -322,6 +331,7 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
         method_cls = members[name].__class__
         is_property = False
         func = cls_dict.get(name) if name in cls_dict else getattr(cls, name, None)
+        func = getattr(cls, name) if isinstance(func, classmethod) else func
         if isinstance(func, property):
             is_property = True
             func = func.__get__
@@ -340,7 +350,7 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
             found_last_positional = False
             arg_position = 0
             for p, v in sig.parameters.items():
-                if is_property and arg_position<2:
+                if is_property and arg_position < 2:
                     continue
                 arg_position += 1
                 optional_globe = (
@@ -352,7 +362,10 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
                 )
                 if v.kind == inspect.Parameter.VAR_POSITIONAL:
                     found_last_positional = True
-                if v.kind==inspect.Parameter.KEYWORD_ONLY and not found_last_positional:
+                if (
+                    v.kind == inspect.Parameter.KEYWORD_ONLY
+                    and not found_last_positional
+                ):
                     params_by_name.append(("*", ""))
                     found_last_positional = True
                 default = (
@@ -391,8 +404,6 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
             method_by_name.append(f"def {name}(self, *args, **kw): ...")
 
     return method_by_name
-
-
 
 
 def _get_init(cls, ordered_args: dict) -> str:

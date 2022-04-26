@@ -53,7 +53,7 @@ class Partial(metaclass=PartialMeta):
             x: str
 
     "Bar" has all the fields of Foo as optional, and in addition "x" as required. Note that Bar does not extend Foo, but
-    it is a Structure class. It does copy attributes like serialization mappers, _ignore_none,
+    it is a Structure class. It does not copy the serialization mappers. It does copy other attributes, such as _ignore_none,
     but Bar can override any of them.
 
     Another valid usage:
@@ -126,8 +126,9 @@ class AllFieldsRequired(metaclass=AllFieldsRequiredMeta):
 
     "Bar" has all the fields of Foo as required with the exception of "d" (since it has a default value), and in
      addition "x" as required.
-     Note that Bar does not extend Foo, but it is a Structure class. It does copy attributes like serialization
-      mappers, _ignore_none, but Bar can override any of them.
+     Note that Bar does not extend Foo, but it is a Structure class. It does not copy the serialization mappers. 
+     It does copy other attributes, such as _ignore_none,
+     but Bar can override any of them.
 
     Another valid usage:
 
@@ -193,8 +194,8 @@ class Extend(metaclass=ExtendMeta):
     "Bar" has all the fields of Foo, and in addition "x". So the required fields in this case are i, s, a, x
     (since d has a default value).
     Note that Bar does not extend Foo, but it is a Structure class.
-    It does copy attributes like serialization mappers, _ignore_none, but Bar can override
-    any of them.
+    It does not copy the serialization mappers. It does copy other attributes, such as _ignore_none,
+    but Bar can override any of them.
 
     Another valid usage:
 
@@ -251,7 +252,7 @@ class Omit(metaclass=OmitMeta):
             x: int
 
     "Bar" has the fields: i, d, s, x. Note that Bar does not extend Foo, but it is a Structure class.
-     It does copy attributes like serialization mappers, _ignore_none,
+    It does not copy the serialization mappers. It does copy other attributes, such as _ignore_none,
     but Bar can override any of them.
 
     Another valid usage:
@@ -306,7 +307,7 @@ class Pick(metaclass=PickMeta):
             x: int
 
     "Bar" has the fields: a, b, x. Note that Bar does not extend Foo, but it is a Structure class.
-     It does copy attributes like serialization mappers, _ignore_none,
+     It does not copy the serialization mappers. It does copy other attributes, such as _ignore_none,
     but Bar can override any of them.
 
     Another valid usage:

@@ -331,7 +331,7 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
         method_cls = members[name].__class__
         is_property = False
         func = cls_dict.get(name) if name in cls_dict else getattr(cls, name, None)
-        func = getattr(cls, name) if isinstance(func, classmethod) else func
+        func = getattr(cls, name) if isinstance(func, (classmethod, staticmethod, property)) else func
         if isinstance(func, property):
             is_property = True
             func = func.__get__

@@ -271,8 +271,8 @@ def _get_mapped_extra_imports(additional_imports) -> dict:
     return mapped
 
 
-def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
-    method_by_name = []
+
+def _get_method_and_attr_list(cls, members):
     all_fields = cls.get_all_fields_by_name() if issubclass(cls, Structure) else {}
     ignored_methods = (
         dir(Structure)
@@ -283,35 +283,45 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
         if issubclass(cls, enum.Enum)
         else {}
     )
+    private_prefix = "_" if issubclass(cls, enum.Enum) else "__"
+    method_list = []
+    orm_attrs = []
+    cls_dict = cls.__dict__
+    for attribute in members:
+        attr = cls_dict.get(attribute) if attribute in cls_dict else getattr(cls, attribute, None)
+        if getattr(attr, '__module__', '') == 'sqlalchemy.orm.attributes':
+            orm_attrs.append(attribute)
+        is_func = not inspect.isclass(attr) and callable(attr) or isinstance(attr, property)
+        if is_func and not attribute.startswith(private_prefix) and attribute not in all_fields and attribute not in ignored_methods:
+            method_list.append(attribute)
+
+    if (
+            not issubclass(cls, Structure)
+            and not issubclass(cls, enum.Enum)
+            and "__init__" in members
+    ):
+        method_list = ["__init__"] + method_list
+
+    return method_list, orm_attrs
+
+
+
+def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
+    method_by_name = []
     mros = list(reversed(inspect.getmro(cls)))[1:]
     members = {}
     for c in mros:
         members.update(dict(c.__dict__))
 
-    private_prefix = "_" if issubclass(cls, enum.Enum) else "__"
-    method_list = [
-        attribute
-        for attribute in members
-        if (
-            not inspect.isclass(getattr(cls, attribute, None))
-            and callable(getattr(cls, attribute, None))
-            or isinstance(getattr(cls, attribute, None), property)
-        )
-        and not attribute.startswith(private_prefix)
-        and attribute not in all_fields
-        and attribute not in ignored_methods
-    ]
-    if (
-        not issubclass(cls, Structure)
-        and not issubclass(cls, enum.Enum)
-        and "__init__" in members
-    ):
-        method_list = ["__init__"] + method_list
+    method_list, orm_attrs = _get_method_and_attr_list(cls, members)
+    for attr in orm_attrs:
+        method_by_name.append(f"{attr}: Any")
+    cls_dict = cls.__dict__
 
     for name in method_list:
         method_cls = members[name].__class__
         is_property = False
-        func = getattr(cls, name)
+        func = cls_dict.get(name) if name in cls_dict else getattr(cls, name, None)
         if isinstance(func, property):
             is_property = True
             func = func.__get__
@@ -328,9 +338,11 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
             if is_property:
                 params_by_name.append(("self", ""))
             found_last_positional = False
+            arg_position = 0
             for p, v in sig.parameters.items():
-                if is_property and p in {"owner", "instance"}:
+                if is_property and arg_position<2:
                     continue
+                arg_position += 1
                 optional_globe = (
                     "**"
                     if v.kind == inspect.Parameter.VAR_KEYWORD
@@ -379,6 +391,8 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
             method_by_name.append(f"def {name}(self, *args, **kw): ...")
 
     return method_by_name
+
+
 
 
 def _get_init(cls, ordered_args: dict) -> str:

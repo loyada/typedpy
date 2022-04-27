@@ -407,9 +407,9 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
                 default = (
                     ""
                     if v.default == inspect._empty
-                    else f" = {v.default}"
-                    if not inspect.isclass(v.default)
                     else f" = {v.default.__name__}"
+                    if  inspect.isclass(v.default)
+                    else " = None"
                 )
                 type_annotation = (
                     ""
@@ -579,7 +579,7 @@ def _get_type_annotation(
 
 def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> list:
     def _convert_default(d):
-        return d.__name__ if inspect.isclass(d) else d
+        return d.__name__ if inspect.isclass(d) else None
 
     out_src = []
     for name, func in func_by_name.items():
@@ -601,7 +601,23 @@ def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> lis
             type_annotation = _get_type_annotation(
                 ": ", v.annotation, default, local_attrs, additional_classes
             )
-            params_by_name.append((p, type_annotation))
+            optional_globe = (
+                "**"
+                if v.kind == inspect.Parameter.VAR_KEYWORD
+                else "*"
+                if v.kind == inspect.Parameter.VAR_POSITIONAL
+                else ""
+            )
+            if v.kind == inspect.Parameter.VAR_POSITIONAL:
+                found_last_positional = True
+            if (
+                    v.kind == inspect.Parameter.KEYWORD_ONLY
+                    and not found_last_positional
+            ):
+                params_by_name.append(("*", ""))
+                found_last_positional = True
+            p_name = f"{optional_globe}{p}"
+            params_by_name.append((p_name, type_annotation))
         params_as_str = ", ".join([f"{k}{v}" for (k, v) in params_by_name])
 
         out_src.append(f"def {name}({params_as_str}){return_annotations}: ...")
@@ -661,7 +677,13 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
     struct_classes = _get_struct_classes(attrs, only_calling_module=only_current_module)
     other_classes = _get_other_classes(attrs, only_calling_module=only_current_module)
     functions = _get_functions(attrs, only_calling_module=only_current_module)
+
     out_src += get_typevars(attrs)
+
+    constants = {k: v for (k,v) in attrs.items() if (isinstance(v, (int, float, str, dict, list, set, complex, bool)) or v is None) and not k.startswith("__")}
+    for c in constants:
+        out_src.append(f"{c} = None")
+        out_src.append("")
 
     additional_classes = set()
     out_src += get_stubs_of_enums(

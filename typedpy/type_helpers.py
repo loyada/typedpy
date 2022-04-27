@@ -84,7 +84,6 @@ def _get_type_info_for_typing_generic(
             if len(mapped_args) == 1
             else f"[[{','.join(mapped_args[:-1])}], {mapped_args[-1]}]"
         )
-        # args_st = "" if not mapped_args else f"[{','.join(mapped_args)}]"
         additional_classes.add(typing.Callable)
         return f"Callable{args_st}"
     if origin is dict:
@@ -172,7 +171,6 @@ def _get_type_info(field, locals_attrs, additional_classes):
             return getattr(the_type, "_name")
         if (
             getattr(the_type, "__module__", None)
-         #   and not the_type.__module__.startswith("typedpy")
             and the_type.__module__ != "builtins"
             and the_type not in locals_attrs
             and not type_is_generic(the_type)
@@ -258,7 +256,6 @@ def _get_mapped_extra_imports(additional_imports) -> dict:
                 module_name = (
                     c.get_type.__module__
                     if isinstance(c, Field)
-                #    or (inspect.isclass(c) and issubclass(c, Field))
                     else c.__module__
                     if name != "Any"
                     else None

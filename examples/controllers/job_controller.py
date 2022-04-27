@@ -7,7 +7,7 @@ from typedpy import create_pyi
 class Base:
     base1: int = 5
     base2: list
-
+    base3 = {"x": 1}
 
 class JobController(Base):
     CONST_ID  = 5

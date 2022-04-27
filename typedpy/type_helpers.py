@@ -299,15 +299,19 @@ def _get_method_and_attr_list(cls, members):
         is_func = not inspect.isclass(attr) and (
             callable(attr) or isinstance(attr, (property, classmethod, staticmethod))
         )
-        if not any([attr is None, inspect.isclass(attr), is_func, isinstance(attr, cls), issubclass(cls, Structure)]):
+        if not any(
+            [
+                attr is None,
+                inspect.isclass(attr),
+                is_func,
+                isinstance(attr, cls),
+                issubclass(cls, Structure),
+            ]
+        ):
             attrs.append(attribute)
             continue
 
-        if (
-            is_func
-            and attribute not in all_fields
-            and attribute not in ignored_methods
-        ):
+        if is_func and attribute not in all_fields and attribute not in ignored_methods:
             method_list.append(attribute)
 
     if (
@@ -317,7 +321,7 @@ def _get_method_and_attr_list(cls, members):
     ):
         method_list = ["__init__"] + method_list
 
-    for name in cls_dict.get("__annotations__",{}):
+    for name in cls_dict.get("__annotations__", {}):
         if name not in attrs and not issubclass(cls, Structure):
             attrs.append(name)
     return method_list, attrs
@@ -338,8 +342,18 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
 
     for attr in cls_attrs:
         the_type = members.get(attr, None)
-        resolved_type = _get_type_info(the_type, locals_attrs, additional_classes) if the_type else "Any"
-
+        if inspect.isclass(the_type) or type_is_generic(the_type):
+            resolved_type = (
+                _get_type_info(the_type, locals_attrs, additional_classes)
+                if the_type
+                else "Any"
+            )
+        else:
+            resolved_type = (
+                _get_type_info(the_type.__class__, locals_attrs, additional_classes)
+                if the_type is not None
+                else "Any"
+            )
         method_by_name.append(f"{attr}: {resolved_type}")
     cls_dict = cls.__dict__
 
@@ -347,7 +361,11 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
         method_cls = members[name].__class__
         is_property = False
         func = cls_dict.get(name) if name in cls_dict else getattr(cls, name, None)
-        func = getattr(cls, name) if isinstance(func, (classmethod, staticmethod, property)) else func
+        func = (
+            getattr(cls, name)
+            if isinstance(func, (classmethod, staticmethod, property))
+            else func
+        )
         if isinstance(func, property):
             is_property = True
             func = func.__get__
@@ -595,7 +613,7 @@ def _get_bases(cls, local_attrs, additional_classes) -> list:
         if b is object:
             continue
         the_type = _get_type_info(b, local_attrs, additional_classes)
-        if the_type!="Any":
+        if the_type != "Any":
             res.append(the_type)
     return res
 

@@ -172,7 +172,7 @@ def _get_type_info(field, locals_attrs, additional_classes):
             return getattr(the_type, "_name")
         if (
             getattr(the_type, "__module__", None)
-            and not the_type.__module__.startswith("typedpy")
+         #   and not the_type.__module__.startswith("typedpy")
             and the_type.__module__ != "builtins"
             and the_type not in locals_attrs
             and not type_is_generic(the_type)
@@ -258,7 +258,7 @@ def _get_mapped_extra_imports(additional_imports) -> dict:
                 module_name = (
                     c.get_type.__module__
                     if isinstance(c, Field)
-                    or (inspect.isclass(c) and issubclass(c, Field))
+                #    or (inspect.isclass(c) and issubclass(c, Field))
                     else c.__module__
                     if name != "Any"
                     else None
@@ -268,6 +268,11 @@ def _get_mapped_extra_imports(additional_imports) -> dict:
         except Exception as e:
             logging.exception(e)
     return mapped
+
+
+def _is_sqlalchemy(attr):
+    module_name = getattr(attr, "__module__", "")
+    return module_name and module_name.startswith("sqlalchemy.orm")
 
 
 def _get_method_and_attr_list(cls, members):
@@ -293,7 +298,7 @@ def _get_method_and_attr_list(cls, members):
             if attribute in cls_dict
             else getattr(cls, attribute, None)
         )
-        if getattr(attr, "__module__", "") == "sqlalchemy.orm.attributes":
+        if _is_sqlalchemy(attr):
             attrs.append(attribute)
             continue
         is_func = not inspect.isclass(attr) and (
@@ -363,7 +368,7 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
         func = cls_dict.get(name) if name in cls_dict else getattr(cls, name, None)
         func = (
             getattr(cls, name)
-            if isinstance(func, (classmethod, staticmethod, property))
+            if isinstance(func, (classmethod, staticmethod, property)) and not _is_sqlalchemy(func)
             else func
         )
         if isinstance(func, property):

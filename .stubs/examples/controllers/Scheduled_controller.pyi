@@ -12,9 +12,11 @@ from .job_controller import JobController
 
 
 
-class ScheduledController:
+class ScheduledController(JobController):
 
-    
+    base1: int
+    CONST_ID: Any
+
     def __init__(self, *args, d: datetime, job_controller: JobController, vehicle: Vehicle, **kw): ...
     
     def execute(self, job_id: str): ...

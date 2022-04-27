@@ -283,23 +283,28 @@ def _get_method_and_attr_list(cls, members):
     )
     private_prefix = "_" if issubclass(cls, enum.Enum) else "__"
     method_list = []
-    orm_attrs = []
+    attrs = []
     cls_dict = cls.__dict__
     for attribute in members:
+        if attribute.startswith(private_prefix):
+            continue
         attr = (
             cls_dict.get(attribute)
             if attribute in cls_dict
             else getattr(cls, attribute, None)
         )
         if getattr(attr, "__module__", "") == "sqlalchemy.orm.attributes":
-            orm_attrs.append(attribute)
+            attrs.append(attribute)
+            continue
         is_func = not inspect.isclass(attr) and (
             callable(attr) or isinstance(attr, (property, classmethod, staticmethod))
         )
+        if not any([attr is None, inspect.isclass(attr), is_func, isinstance(attr, cls), issubclass(cls, Structure)]):
+            attrs.append(attribute)
+            continue
 
         if (
             is_func
-            and not attribute.startswith(private_prefix)
             and attribute not in all_fields
             and attribute not in ignored_methods
         ):
@@ -312,7 +317,10 @@ def _get_method_and_attr_list(cls, members):
     ):
         method_list = ["__init__"] + method_list
 
-    return method_list, orm_attrs
+    for name in cls_dict.get("__annotations__",{}):
+        if name not in attrs and not issubclass(cls, Structure):
+            attrs.append(name)
+    return method_list, attrs
 
 
 def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
@@ -321,10 +329,18 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
     members = {}
     for c in mros:
         members.update(dict(c.__dict__))
+        annotations = c.__dict__.get("__annotations__", {})
+        for a in annotations:
+            members[a] = annotations[a]
+        members.update(annotations)
 
-    method_list, orm_attrs = _get_method_and_attr_list(cls, members)
-    for attr in orm_attrs:
-        method_by_name.append(f"{attr}: Any")
+    method_list, cls_attrs = _get_method_and_attr_list(cls, members)
+
+    for attr in cls_attrs:
+        the_type = members.get(attr, None)
+        resolved_type = _get_type_info(the_type, locals_attrs, additional_classes) if the_type else "Any"
+
+        method_by_name.append(f"{attr}: {resolved_type}")
     cls_dict = cls.__dict__
 
     for name in method_list:
@@ -573,17 +589,29 @@ def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> lis
     return out_src
 
 
+def _get_bases(cls, local_attrs, additional_classes) -> list[str]:
+    res = []
+    for b in cls.__bases__:
+        if b is object:
+            continue
+        the_type = _get_type_info(b, local_attrs, additional_classes)
+        if the_type!="Any":
+            res.append(the_type)
+    return res
+
+
 def get_stubs_of_other_classes(other_classes, local_attrs, additional_classes):
     out_src = []
     for cls_name, cls in other_classes.items():
+        bases = _get_bases(cls, local_attrs, additional_classes)
         method_info = _get_methods_info(
             cls, locals_attrs=local_attrs, additional_classes=additional_classes
         )
 
         if not method_info:
             continue
-
-        out_src.append(f"class {cls_name}:")
+        bases_str = f"({', '.join(bases)})" if bases else ""
+        out_src.append(f"class {cls_name}{bases_str}:")
         out_src.append("")
         out_src += [f"{INDENT}{m}" for m in method_info]
         out_src.append("\n")

@@ -4,7 +4,15 @@ from typing import Optional
 from typedpy import create_pyi
 
 
-class JobController:
+class Base:
+    base1: int = 5
+    base2: list
+
+
+class JobController(Base):
+    CONST_ID  = 5
+    CONST_ID_WITH_ANNOTATION: str
+
     def __init__(self, urls: dict[str, dict]):
         self.urls =urls
 

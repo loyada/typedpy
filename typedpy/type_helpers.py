@@ -589,7 +589,7 @@ def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> lis
     return out_src
 
 
-def _get_bases(cls, local_attrs, additional_classes) -> list[str]:
+def _get_bases(cls, local_attrs, additional_classes) -> list:
     res = []
     for b in cls.__bases__:
         if b is object:

@@ -27,7 +27,7 @@ class Employee(Extend[Person]):
     ssid: str
 
 
-def func(x=5, e: Employee = None) -> Mapping[str, str]:
+def func(x=5, *, e: Employee = None, **kw) -> Mapping[str, str]:
     print(f"{x}, {e}")
     return State.FL
 

@@ -11,6 +11,10 @@ from .enums import Sex
 
 
 
+CONSTANT1 = None
+
+CONSTANT2 = None
+
 class Address(Structure):
     def __init__(
         self,

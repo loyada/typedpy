@@ -4,6 +4,8 @@ from datetime import datetime
 from examples.enums import Sex
 from typedpy import Enum, Structure, create_pyi
 
+CONSTANT1 = "234234"
+CONSTANT2 = {}
 
 class Address(Structure):
     city: str

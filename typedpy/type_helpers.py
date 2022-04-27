@@ -588,11 +588,8 @@ def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> lis
             " -> ", sig.return_annotation, "", local_attrs, additional_classes
         )
         params_by_name = []
-        found_keyword_only = False
+        found_last_positional = False
         for p, v in sig.parameters.items():
-            if not found_keyword_only and v.kind == inspect.Parameter.KEYWORD_ONLY:
-                found_keyword_only = True
-                params_by_name.append(("*", ""))
             default = (
                 ""
                 if v.default == inspect._empty

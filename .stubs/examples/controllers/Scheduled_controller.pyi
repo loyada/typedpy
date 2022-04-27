@@ -15,7 +15,8 @@ from .job_controller import JobController
 class ScheduledController(JobController):
 
     base1: int
-    CONST_ID: Any
+    base3: dict
+    CONST_ID: int
 
     def __init__(self, *args, d: datetime, job_controller: JobController, vehicle: Vehicle, **kw): ...
     

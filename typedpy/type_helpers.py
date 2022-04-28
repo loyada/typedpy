@@ -227,16 +227,16 @@ def _get_struct_classes(attrs, only_calling_module=True):
 
 
 def _get_imported_classes(attrs):
-    return [
-        f"from {_get_package(v.__module__, attrs)} import {k}{_as_something(k, attrs)}"
-        for k, v in attrs.items()
+    res = []
+    for k, v in attrs.items():
         if (
-            inspect.isclass(v)
-            and attrs["__name__"] != v.__module__
-            and not v.__module__.startswith("typing")
-            and not v.__module__.startswith("typedpy")
-        )
-    ]
+                not k.startswith("__")
+                and attrs["__name__"] != v.__module__
+                and not v.__module__.startswith("typing")
+                and not v.__module__.startswith("typedpy")
+        ):
+            res.append(f"from {_get_package(v.__module__, attrs)} import {k}{_as_something(k, attrs)}")
+    return res
 
 
 def _get_ordered_args(unordered_args: dict):

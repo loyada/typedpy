@@ -28,6 +28,9 @@ builtins_types = [
     if isinstance(getattr(builtins, k), type)
 ]
 
+module = inspect.__class__
+
+
 INDENT = " " * 4
 
 AUTOGEN_NOTE = [
@@ -226,17 +229,24 @@ def _get_struct_classes(attrs, only_calling_module=True):
     }
 
 
+
 def _get_imported_classes(attrs):
     res = []
     for k, v in attrs.items():
         if (
                 not k.startswith("__")
-                and attrs["__name__"] != v.__module__
-                and not v.__module__.startswith("typing")
-                and not v.__module__.startswith("typedpy")
+                and (isinstance(v, module) or (
+                    attrs["__name__"] != v.__module__
+                    and not v.__module__.startswith("typing")
+                    and not v.__module__.startswith("typedpy")
+                ))
         ):
-            res.append(f"from {_get_package(v.__module__, attrs)} import {k}{_as_something(k, attrs)}")
+            if isinstance(v, module):
+                res.append(f"import {k}")
+            else:
+                res.append(f"from {_get_package(v.__module__, attrs)} import {k}{_as_something(k, attrs)}")
     return res
+
 
 
 def _get_ordered_args(unordered_args: dict):

@@ -22,6 +22,15 @@ class Vehicle(Structure):
         **kw
     ): ...
 
+    def shallow_clone_with_overrides(
+        self,
+        license_plate_state: State = None,
+        odometer: int = None,
+        alias: str = None,
+        license_plate: str = None,
+        **kw
+    ): ...
+
     license_plate_state: State
     odometer: int
     alias: str
@@ -45,6 +54,22 @@ class AnotherFoo(Structure):
         **kw
     ): ...
 
+    def shallow_clone_with_overrides(
+        self,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
+        union: Union[int,str] = None,
+        any: Any = None,
+        a: set = None,
+        b: set = None,
+        another: str = None,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
     i: int
     s: str
     person: Person
@@ -60,6 +85,15 @@ class AnotherFoo(Structure):
 
 class Vehicle2(Structure):
     def __init__(
+        self,
+        license_plate_state: Optional[State] = None,
+        odometer: Optional[int] = None,
+        alias: Optional[str] = None,
+        license_plate: Optional[str] = None,
+        **kw
+    ): ...
+
+    def shallow_clone_with_overrides(
         self,
         license_plate_state: Optional[State] = None,
         odometer: Optional[int] = None,

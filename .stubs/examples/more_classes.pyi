@@ -23,6 +23,13 @@ class Address(Structure):
         **kw
     ): ...
 
+    def shallow_clone_with_overrides(
+        self,
+        city: str = None,
+        zip: str = None,
+        **kw
+    ): ...
+
     city: str
     zip: str
 
@@ -34,6 +41,15 @@ class Person(Structure):
         age: int,
         address: Address,
         sex: Sex,
+        **kw
+    ): ...
+
+    def shallow_clone_with_overrides(
+        self,
+        name: str = None,
+        age: int = None,
+        address: Address = None,
+        sex: Sex = None,
         **kw
     ): ...
 

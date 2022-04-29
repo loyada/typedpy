@@ -27,6 +27,20 @@ class FooOmitSubPackage(Structure):
         **kw
     ): ...
 
+    def shallow_clone_with_overrides(
+        self,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
+        union: Union[int,str] = None,
+        any: Any = None,
+        x: int = None,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
     i: int
     s: str
     person: Person

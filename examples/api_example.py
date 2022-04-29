@@ -85,6 +85,8 @@ class Bar(Foo.omit("a", "b")):
     opt: Optional[Float]
     state: Enum[State]
 
+    _additionalProperties = False
+
 
 class State1(enum.Enum):
     NY = 1

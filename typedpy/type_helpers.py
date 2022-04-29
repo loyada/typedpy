@@ -480,6 +480,19 @@ def _get_init(cls, ordered_args: dict) -> str:
     return f"    def __init__(\n{init_params}{kw_opt}\n{INDENT}): ..."
 
 
+def _get_shallow_clone(cls, ordered_args: dict) -> str:
+    ordered_args_with_none = {}
+    for k, v in ordered_args.items():
+        ordered_args_with_none[k] = v if v.endswith("= None") else f"{v} = None"
+    params = f",\n{INDENT * 2}".join(
+        [f"{INDENT * 2}self"] + [f"{k}: {v}" for k, v in ordered_args_with_none.items()]
+    )
+    kw_opt = (
+        f",\n{INDENT * 2}**kw" if getattr(cls, "_additionalProperties", True) else ""
+    )
+    return f"    def shallow_clone_with_overrides(\n{params}{kw_opt}\n{INDENT}): ..."
+
+
 def get_stubs_of_structures(
     struct_classe_by_name: dict, local_attrs, additional_classes
 ) -> list:
@@ -498,6 +511,8 @@ def get_stubs_of_structures(
         ordered_args = _get_ordered_args(fields_info)
         out_src.append(f"class {cls_name}(Structure):")
         out_src.append(_get_init(cls, ordered_args))
+        out_src.append("")
+        out_src.append(_get_shallow_clone(cls, ordered_args))
         out_src.append("")
 
         for field_name, type_name in ordered_args.items():

@@ -44,6 +44,16 @@ class Employee(Structure):
         **kw
     ): ...
 
+    def shallow_clone_with_overrides(
+        self,
+        name: str = None,
+        age: int = None,
+        address: Address = None,
+        sex: Sex = None,
+        ssid: str = None,
+        **kw
+    ): ...
+
     name: str
     age: int
     address: Address
@@ -59,6 +69,17 @@ class Blah(Structure):
         person: Person,
         dob: datetime,
         arr: list[str],
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
+    def shallow_clone_with_overrides(
+        self,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
@@ -87,6 +108,21 @@ class Foo(Structure):
         **kw
     ): ...
 
+    def shallow_clone_with_overrides(
+        self,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
+        union: Union[int,str] = None,
+        any: Any = None,
+        a: set = None,
+        b: set = None,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
     i: int
     s: str
     person: Person
@@ -110,6 +146,22 @@ class FooPartial(Structure):
     def __init__(
         self,
         x: str,
+        i: Optional[int] = None,
+        d: Optional[dict[str, int]] = None,
+        s: Optional[str] = None,
+        person: Optional[Person] = None,
+        dob: Optional[datetime] = None,
+        arr: Optional[list[str]] = None,
+        union: Optional[Union[int,str]] = None,
+        any: Optional[Any] = None,
+        a: Optional[set] = None,
+        b: Optional[set] = None,
+        **kw
+    ): ...
+
+    def shallow_clone_with_overrides(
+        self,
+        x: str = None,
         i: Optional[int] = None,
         d: Optional[dict[str, int]] = None,
         s: Optional[str] = None,
@@ -151,6 +203,20 @@ class FooOmit(Structure):
         **kw
     ): ...
 
+    def shallow_clone_with_overrides(
+        self,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
+        union: Union[int,str] = None,
+        any: Any = None,
+        x: int = None,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
     i: int
     s: str
     person: Person
@@ -167,6 +233,14 @@ class FooPick(Structure):
         self,
         a: set,
         xyz: float,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
+    def shallow_clone_with_overrides(
+        self,
+        a: set = None,
+        xyz: float = None,
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
@@ -189,8 +263,22 @@ class Bar(Structure):
         x: int,
         state: State,
         d: Optional[dict[str, int]] = None,
-        opt: Optional[float] = None,
-        **kw
+        opt: Optional[float] = None
+    ): ...
+
+    def shallow_clone_with_overrides(
+        self,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
+        union: Union[int,str] = None,
+        any: Any = None,
+        x: int = None,
+        state: State = None,
+        d: Optional[dict[str, int]] = None,
+        opt: Optional[float] = None
     ): ...
 
     i: int

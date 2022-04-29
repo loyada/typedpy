@@ -4,8 +4,8 @@
 
 from typing import Union, Optional, Any, TypeVar, Type, NoReturn
 from typedpy import Structure
-import enum
 
+from __future__ import annotations
 from .more_classes import Address
 
 

@@ -10,6 +10,7 @@ import typing
 from os.path import relpath
 from pathlib import Path
 
+from .commons import wrap_val
 from .fields import AllOf, AnyOf, FunctionCall, Map, OneOf
 from .enum import Enum
 from .serialization_wrappers import Deserializer, Serializer
@@ -29,7 +30,6 @@ builtins_types = [
 ]
 
 module = inspect.__class__
-
 
 INDENT = " " * 4
 
@@ -229,24 +229,31 @@ def _get_struct_classes(attrs, only_calling_module=True):
     }
 
 
-
 def _get_imported_classes(attrs):
+    def _valid_module(v):
+        return (
+                hasattr(v, "__module__")
+                and attrs["__name__"] != v.__module__
+                and not v.__module__.startswith("typing")
+                and not v.__module__.startswith("typedpy")
+        )
+
     res = []
     for k, v in attrs.items():
-        if (
-                not k.startswith("__")
-                and (isinstance(v, module) or (
-                    attrs["__name__"] != v.__module__
-                    and not v.__module__.startswith("typing")
-                    and not v.__module__.startswith("typedpy")
-                ))
+        if not k.startswith("__") and (
+            isinstance(v, module)
+            or _valid_module(v)
         ):
             if isinstance(v, module):
                 res.append(f"import {k}")
             else:
-                res.append(f"from {_get_package(v.__module__, attrs)} import {k}{_as_something(k, attrs)}")
+                pkg = _get_package(v.__module__, attrs)
+                import_stmt = f"from {pkg} import {k}{_as_something(k, attrs)}"
+                if pkg == "__future__":
+                    res = [import_stmt] + res
+                else:
+                    res.append(import_stmt)
     return res
-
 
 
 def _get_ordered_args(unordered_args: dict):
@@ -375,7 +382,8 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
         func = cls_dict.get(name) if name in cls_dict else getattr(cls, name, None)
         func = (
             getattr(cls, name)
-            if isinstance(func, (classmethod, staticmethod, property)) and not _is_sqlalchemy(func)
+            if isinstance(func, (classmethod, staticmethod, property))
+            and not _is_sqlalchemy(func)
             else func
         )
         if isinstance(func, property):
@@ -418,7 +426,7 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
                     ""
                     if v.default == inspect._empty
                     else f" = {v.default.__name__}"
-                    if  inspect.isclass(v.default)
+                    if inspect.isclass(v.default)
                     else " = None"
                 )
                 type_annotation = (
@@ -514,7 +522,6 @@ def add_imports(local_attrs: dict, additional_classes, existing_imports: set) ->
     base_import_statements = [
         "from typing import Union, Optional, Any, TypeVar, Type, NoReturn",
         "from typedpy import Structure",
-        "import enum",
         "",
     ]
     extra_imports_by_name = _get_mapped_extra_imports(additional_classes)
@@ -617,10 +624,7 @@ def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> lis
             )
             if v.kind == inspect.Parameter.VAR_POSITIONAL:
                 found_last_positional = True
-            if (
-                    v.kind == inspect.Parameter.KEYWORD_ONLY
-                    and not found_last_positional
-            ):
+            if v.kind == inspect.Parameter.KEYWORD_ONLY and not found_last_positional:
                 params_by_name.append(("*", ""))
                 found_last_positional = True
             p_name = f"{optional_globe}{p}"
@@ -687,12 +691,9 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
 
     out_src += get_typevars(attrs)
 
-    constants = {k: v for (k,v) in attrs.items() if (isinstance(v, (int, float, str, dict, list, set, complex, bool)) or v is None) and not k.startswith("__")}
-    for c in constants:
-        out_src.append(f"{c} = None")
-        out_src.append("")
-
     additional_classes = set()
+    out_src += _get_consts(attrs, additional_classes=additional_classes)
+
     out_src += get_stubs_of_enums(
         enum_classes, local_attrs=attrs, additional_classes=additional_classes
     )
@@ -720,6 +721,37 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
     out_s = "\n".join(out_src)
     with open(pyi_path, "w", encoding="UTF-8") as f:
         f.write(out_s)
+
+
+def _get_consts(attrs, additional_classes):
+    def _is_of_builtin(v) -> bool:
+        return isinstance(v, (int, float, str, dict, list, set, complex, bool))
+
+    res = []
+    annotations = attrs.get("__annotations__", None) or {}
+    constants = {
+        k: v
+        for (k, v) in attrs.items()
+        if (_is_of_builtin(v) or v is None) and not k.startswith("__")
+    }
+    for c in constants:
+        the_type = (
+            _get_type_info(annotations[c], attrs, additional_classes)
+            if c in annotations
+            else None
+        )
+        type_str = f": {the_type}" if the_type else ""
+        val = (
+            str(wrap_val(attrs[c]))
+            if _is_of_builtin(attrs[c])
+            else "None"
+            if attrs[c] is None
+            else ""
+        )
+        val_st = f" = {val}" if val else ""
+        res.append(f"{c}{type_str}{val_st}")
+        res.append("")
+    return res
 
 
 def create_stub_for_file(abs_module_path: str, src_root: str, stubs_root: str = None):

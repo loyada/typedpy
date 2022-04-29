@@ -3,7 +3,7 @@ import typing
 from typing import Callable, Iterable, Iterator, Mapping, Optional, TypeVar
 
 from .enums import State
-from .more_classes import Person
+from .more_classes import CONSTANT1, Person
 from typedpy import (
     AnyOf,
     Anything,
@@ -37,6 +37,7 @@ T = TypeVar("T")
 def func2(t: T) -> list[T]:
     pass
 
+IMPORTED_CONST: str = CONSTANT1
 
 class Blah(Structure):
     i = Integer

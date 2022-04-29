@@ -4,7 +4,6 @@
 
 from typing import Union, Optional, Any, TypeVar, Type, NoReturn
 from typedpy import Structure
-import enum
 
 from .api_example import Foo as Foo
 from .api_example import Bar as Bar

@@ -4,16 +4,16 @@
 
 from typing import Union, Optional, Any, TypeVar, Type, NoReturn
 from typedpy import Structure
-import enum
 
+import typing
 from datetime import datetime
 from .enums import Sex
 
 
 
-CONSTANT1 = None
+CONSTANT1 = 'some_name'
 
-CONSTANT2 = None
+CONSTANT2 = {}
 
 class Address(Structure):
     def __init__(

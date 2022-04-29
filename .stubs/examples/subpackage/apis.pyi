@@ -4,7 +4,6 @@
 
 from typing import Union, Optional, Any, TypeVar, Type, NoReturn
 from typedpy import Structure
-import enum
 
 from datetime import datetime
 from examples.more_classes import Person

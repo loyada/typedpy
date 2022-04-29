@@ -4,7 +4,6 @@
 
 from typing import Union, Optional, Any, TypeVar, Type, NoReturn
 from typedpy import Structure
-import enum
 
 from .enums import Sex
 from .more_classes import Address
@@ -13,11 +12,17 @@ from typing import Callable
 from typing import Iterable
 from typing import Iterator
 from typing import Mapping
+import enum
+import typing
 from .enums import State
 from .more_classes import Person
 
 
 T = TypeVar("T")
+
+CONSTANT1 = 'some_name'
+
+IMPORTED_CONST: str = 'some_name'
 
 class State1(enum.Enum):
     NY = enum.auto()

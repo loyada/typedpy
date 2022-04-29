@@ -5,11 +5,13 @@ from examples.enums import Sex
 from typedpy import Enum, Structure, create_pyi
 
 CONSTANT1 = "some_name"
-CONSTANT2 = {}
 
 class Address(Structure):
     city: str
     zip: str
+
+
+CONSTANT2 = {Address: 123}
 
 
 class Person(Structure):

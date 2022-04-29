@@ -13,15 +13,8 @@ from .job_controller import JobController
 
 class ScheduledController(JobController):
 
-    base1: int
-    base3: dict
-    CONST_ID: int
 
     def __init__(self, *args, d: datetime, job_controller: JobController, vehicle: Vehicle, **kw): ...
-    
-    def execute(self, job_id: str): ...
-    
-    def aaa(self, a: list[datetime] = list, o: Optional[str] = None): ...
-    
+
     def is_it_time(self, *, a = None) -> bool: ...
 

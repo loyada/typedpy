@@ -297,6 +297,7 @@ def _try_extract_column_type(attr):
 def _skip_sqlalchemy_attribute(attribute):
     return attribute.startswith("_") or attribute in {"registry", "metadata"}
 
+
 def _get_method_and_attr_list(cls, members):
     all_fields = cls.get_all_fields_by_name() if issubclass(cls, Structure) else {}
     ignored_methods = (
@@ -358,14 +359,12 @@ def _get_method_and_attr_list(cls, members):
 
 def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
     method_by_name = []
-    mros = list(reversed(inspect.getmro(cls)))[1:]
     members = {}
-    for c in mros:
-        members.update(dict(c.__dict__))
-        annotations = c.__dict__.get("__annotations__", {})
-        for a in annotations:
-            members[a] = annotations[a]
-        members.update(annotations)
+    members.update(dict(cls.__dict__))
+    annotations = cls.__dict__.get("__annotations__", {})
+    for a in annotations:
+        members[a] = annotations[a]
+    members.update(annotations)
 
     method_list, cls_attrs = _get_method_and_attr_list(cls, members)
 
@@ -753,6 +752,10 @@ def _get_consts(attrs, additional_classes):
     def _is_of_builtin(v) -> bool:
         return isinstance(v, (int, float, str, dict, list, set, complex, bool))
 
+    def _as_builtin(v) -> str:
+        return v if isinstance(v, (int, float, str, complex, bool)) else  v.__class__()
+
+
     res = []
     annotations = attrs.get("__annotations__", None) or {}
     constants = {
@@ -768,7 +771,7 @@ def _get_consts(attrs, additional_classes):
         )
         type_str = f": {the_type}" if the_type else ""
         val = (
-            str(wrap_val(attrs[c]))
+            str(wrap_val(_as_builtin(attrs[c])))
             if _is_of_builtin(attrs[c])
             else "None"
             if attrs[c] is None

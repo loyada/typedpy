@@ -17,8 +17,6 @@ class Base:
 
 class JobController(Base):
 
-    base1: int
-    base3: dict
     CONST_ID: int
     CONST_ID_WITH_ANNOTATION: str
 

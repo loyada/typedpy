@@ -243,7 +243,7 @@ def _get_imported_classes(attrs):
         if not k.startswith("__") and (
             isinstance(v, module)
             or _valid_module(v)
-        ):
+        ) and not _is_sqlalchemy(v):
             if isinstance(v, module):
                 res.append(f"import {k}")
             else:
@@ -286,8 +286,16 @@ def _get_mapped_extra_imports(additional_imports) -> dict:
 
 def _is_sqlalchemy(attr):
     module_name = getattr(attr, "__module__", "")
-    return module_name and module_name.startswith("sqlalchemy.orm")
+    return module_name and (module_name.startswith("sqlalchemy.orm") or module_name.startswith("sqlalchemy.sql"))
 
+
+def _try_extract_column_type(attr):
+    if attr.__class__.__name__ == "InstrumentedAttribute":
+        return next(iter(attr.expression.base_columns)).type.python_type
+
+
+def _skip_sqlalchemy_attribute(attribute):
+    return attribute.startswith("_") or attribute in {"registry", "metadata"}
 
 def _get_method_and_attr_list(cls, members):
     all_fields = cls.get_all_fields_by_name() if issubclass(cls, Structure) else {}
@@ -313,7 +321,9 @@ def _get_method_and_attr_list(cls, members):
             else getattr(cls, attribute, None)
         )
         if _is_sqlalchemy(attr):
-            attrs.append(attribute)
+            if not _skip_sqlalchemy_attribute(attribute):
+                members[attribute] = _try_extract_column_type(attr)
+                attrs.append(attribute)
             continue
         is_func = not inspect.isclass(attr) and (
             callable(attr) or isinstance(attr, (property, classmethod, staticmethod))
@@ -641,9 +651,10 @@ def _get_bases(cls, local_attrs, additional_classes) -> list:
     for b in cls.__bases__:
         if b is object:
             continue
-        the_type = _get_type_info(b, local_attrs, additional_classes)
-        if the_type != "Any":
-            res.append(the_type)
+        if not _is_sqlalchemy(b):
+            the_type = _get_type_info(b, local_attrs, additional_classes)
+            if the_type != "Any":
+                res.append(the_type)
     return res
 
 

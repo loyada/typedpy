@@ -703,11 +703,10 @@ def get_stubs_of_other_classes(other_classes, local_attrs, additional_classes):
         method_info = _get_methods_info(
             cls, locals_attrs=local_attrs, additional_classes=additional_classes
         )
-
-        if not method_info:
-            continue
         bases_str = f"({', '.join(bases)})" if bases else ""
         out_src.append(f"class {cls_name}{bases_str}:")
+        if not method_info:
+            out_src.append(f"{INDENT}pass")
         out_src.append("")
         out_src += [f"{INDENT}{m}" for m in method_info]
         out_src.append("\n")

@@ -124,10 +124,19 @@ def _get_type_info_for_typing_generic(
     return None
 
 
+def _found_in_local_attrs(field, attrs):
+    for k, v in attrs.items():
+        if v is field:
+            return k
+    return None
+
+
 def _get_type_info(field, locals_attrs, additional_classes):
     try:
         if field is ...:
             return "..."
+        if found_import_key:=_found_in_local_attrs(field, locals_attrs):
+            return found_import_key
         if isinstance(field, (list, dict)):
             cls_name = field.__class__.__name__
             mapped_args = [
@@ -245,7 +254,10 @@ def _get_imported_classes(attrs):
             or _valid_module(v)
         ) and not _is_sqlalchemy(v):
             if isinstance(v, module):
-                res.append(f"import {k}")
+                if nested(lambda:  getattr(v.os, k)) is v:
+                    res.append(f"from os import {k} as {k}")
+                else:
+                    res.append(f"import {k}")
             else:
                 pkg = _get_package(v.__module__, attrs)
                 import_stmt = f"from {pkg} import {k}{_as_something(k, attrs)}"

@@ -253,14 +253,14 @@ def _get_imported_classes(attrs):
             or _valid_module(v)
         ) and not _is_sqlalchemy(v):
             if isinstance(v, module):
-               if v.__name__ != k:
+                if v.__name__ != k:
                     parts = v.__name__.split(".")
                     if len(parts)>1:
                         first_parts = parts[:-1]
                         last_part = parts[-1]
                         res.append(f"from {'.'.join(first_parts)} import {last_part} as {k}")
-                elif nested(lambda:  getattr(v.os, k))==v:
-                    res.append(f"from os import {k} as {k}")
+                    elif nested(lambda:  getattr(v.os, k))==v:
+                        res.append(f"from os import {k} as {k}")
                 else:
                     res.append(f"import {k}")
             else:
@@ -563,7 +563,6 @@ def add_imports(local_attrs: dict, additional_classes, existing_imports: set) ->
     base_import_statements = [
         "from typing import Union, Optional, Any, TypeVar, Type, NoReturn",
         "from typedpy import Structure",
-        "import enum",
         "",
     ]
     extra_imports_by_name = _get_mapped_extra_imports(additional_classes)

@@ -8,12 +8,14 @@ from typedpy import Structure
 from .enums import Sex
 from .more_classes import Address
 from datetime import datetime
+import enum
+import typing
 from typing import Callable
 from typing import Iterable
 from typing import Iterator
 from typing import Mapping
-import enum
-import typing
+from typing import Optional
+from typing import TypeVar
 from .enums import State
 from .more_classes import Person
 

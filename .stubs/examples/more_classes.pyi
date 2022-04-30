@@ -7,6 +7,7 @@ from typedpy import Structure
 
 import typing
 from datetime import datetime
+from os import path as path
 from .enums import Sex
 
 
@@ -60,4 +61,7 @@ class Person(Structure):
 
 
 def aaa(*, a: dict[str, list[datetime]]) -> Optional: ...
+
+
+def bbb(p: path, d: dict): ...
 

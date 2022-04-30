@@ -243,7 +243,6 @@ def _get_imported_classes(attrs):
         return (
                 hasattr(v, "__module__")
                 and attrs["__name__"] != v.__module__
-                and not v.__module__.startswith("typing")
                 and not v.__module__.startswith("typedpy")
         )
 
@@ -254,7 +253,13 @@ def _get_imported_classes(attrs):
             or _valid_module(v)
         ) and not _is_sqlalchemy(v):
             if isinstance(v, module):
-                if nested(lambda:  getattr(v.os, k)) is v:
+               if v.__name__ != k:
+                    parts = v.__name__.split(".")
+                    if len(parts)>1:
+                        first_parts = parts[:-1]
+                        last_part = parts[-1]
+                        res.append(f"from {'.'.join(first_parts)} import {last_part} as {k}")
+                elif nested(lambda:  getattr(v.os, k))==v:
                     res.append(f"from os import {k} as {k}")
                 else:
                     res.append(f"import {k}")
@@ -558,6 +563,7 @@ def add_imports(local_attrs: dict, additional_classes, existing_imports: set) ->
     base_import_statements = [
         "from typing import Union, Optional, Any, TypeVar, Type, NoReturn",
         "from typedpy import Structure",
+        "import enum",
         "",
     ]
     extra_imports_by_name = _get_mapped_extra_imports(additional_classes)
@@ -675,7 +681,7 @@ def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> lis
 def _get_bases(cls, local_attrs, additional_classes) -> list:
     res = []
     for b in cls.__bases__:
-        if b is object:
+        if b is object or b.__module__ == "typing" :
             continue
         if not _is_sqlalchemy(b):
             the_type = _get_type_info(b, local_attrs, additional_classes)

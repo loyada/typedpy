@@ -135,7 +135,8 @@ def _get_type_info(field, locals_attrs, additional_classes):
     try:
         if field is ...:
             return "..."
-        if found_import_key := _found_in_local_attrs(field, locals_attrs):
+        found_import_key = _found_in_local_attrs(field, locals_attrs)
+        if found_import_key:
             return found_import_key
         if isinstance(field, (list, dict)):
             cls_name = field.__class__.__name__

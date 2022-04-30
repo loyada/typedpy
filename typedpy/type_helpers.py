@@ -135,7 +135,7 @@ def _get_type_info(field, locals_attrs, additional_classes):
     try:
         if field is ...:
             return "..."
-        if found_import_key:=_found_in_local_attrs(field, locals_attrs):
+        if found_import_key := _found_in_local_attrs(field, locals_attrs):
             return found_import_key
         if isinstance(field, (list, dict)):
             cls_name = field.__class__.__name__
@@ -241,25 +241,28 @@ def _get_struct_classes(attrs, only_calling_module=True):
 def _get_imported_classes(attrs):
     def _valid_module(v):
         return (
-                hasattr(v, "__module__")
-                and attrs["__name__"] != v.__module__
-                and not v.__module__.startswith("typedpy")
+            hasattr(v, "__module__")
+            and attrs["__name__"] != v.__module__
+            and not v.__module__.startswith("typedpy")
         )
 
     res = []
     for k, v in attrs.items():
-        if not k.startswith("__") and (
-            isinstance(v, module)
-            or _valid_module(v)
-        ) and not _is_sqlalchemy(v):
+        if (
+            not k.startswith("__")
+            and (isinstance(v, module) or _valid_module(v))
+            and not _is_sqlalchemy(v)
+        ):
             if isinstance(v, module):
                 if v.__name__ != k:
                     parts = v.__name__.split(".")
-                    if len(parts)>1:
+                    if len(parts) > 1:
                         first_parts = parts[:-1]
                         last_part = parts[-1]
-                        res.append(f"from {'.'.join(first_parts)} import {last_part} as {k}")
-                    elif nested(lambda:  getattr(v.os, k))==v:
+                        res.append(
+                            f"from {'.'.join(first_parts)} import {last_part} as {k}"
+                        )
+                    elif nested(lambda: getattr(v.os, k)) == v:
                         res.append(f"from os import {k} as {k}")
                 else:
                     res.append(f"import {k}")
@@ -303,7 +306,10 @@ def _get_mapped_extra_imports(additional_imports) -> dict:
 
 def _is_sqlalchemy(attr):
     module_name = getattr(attr, "__module__", "")
-    return module_name and (module_name.startswith("sqlalchemy.orm") or module_name.startswith("sqlalchemy.sql"))
+    return module_name and (
+        module_name.startswith("sqlalchemy.orm")
+        or module_name.startswith("sqlalchemy.sql")
+    )
 
 
 def _try_extract_column_type(attr):
@@ -680,7 +686,7 @@ def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> lis
 def _get_bases(cls, local_attrs, additional_classes) -> list:
     res = []
     for b in cls.__bases__:
-        if b is object or b.__module__ == "typing" :
+        if b is object or b.__module__ == "typing":
             continue
         if not _is_sqlalchemy(b):
             the_type = _get_type_info(b, local_attrs, additional_classes)
@@ -770,8 +776,7 @@ def _get_consts(attrs, additional_classes):
         return isinstance(v, (int, float, str, dict, list, set, complex, bool))
 
     def _as_builtin(v) -> str:
-        return v if isinstance(v, (int, float, str, complex, bool)) else  v.__class__()
-
+        return v if isinstance(v, (int, float, str, complex, bool)) else v.__class__()
 
     res = []
     annotations = attrs.get("__annotations__", None) or {}

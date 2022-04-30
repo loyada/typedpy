@@ -126,7 +126,7 @@ class AllFieldsRequired(metaclass=AllFieldsRequiredMeta):
 
     "Bar" has all the fields of Foo as required with the exception of "d" (since it has a default value), and in
      addition "x" as required.
-     Note that Bar does not extend Foo, but it is a Structure class. It does not copy the serialization mappers. 
+     Note that Bar does not extend Foo, but it is a Structure class. It does not copy the serialization mappers.
      It does copy other attributes, such as _ignore_none,
      but Bar can override any of them.
 

@@ -130,13 +130,13 @@ class Number(Field):
     """
 
     def __init__(
-            self,
-            *args,
-            multiplesOf=None,
-            minimum=None,
-            maximum=None,
-            exclusiveMaximum=None,
-            **kwargs,
+        self,
+        *args,
+        multiplesOf=None,
+        minimum=None,
+        maximum=None,
+        exclusiveMaximum=None,
+        **kwargs,
     ):
         self.multiplesOf = multiplesOf
         self.minimum = minimum
@@ -154,10 +154,10 @@ class Number(Field):
         if not is_number(value):
             raise TypeError(f"{err_prefix()}Expected a number")
         if (
-                isinstance(self.multiplesOf, float)
-                and int(value / self.multiplesOf) != value / self.multiplesOf
-                or isinstance(self.multiplesOf, int)
-                and value % self.multiplesOf
+            isinstance(self.multiplesOf, float)
+            and int(value / self.multiplesOf) != value / self.multiplesOf
+            or isinstance(self.multiplesOf, int)
+            and value % self.multiplesOf
         ):
             raise ValueError(
                 f"{err_prefix()}Expected a a multiple of {self.multiplesOf}"
@@ -589,11 +589,11 @@ class _DequeStruct(deque, ImmutableMixin, _IteratorProxyMixin):
     """
 
     def __init__(
-            self,
-            deq: Field = None,
-            struct_instance: Structure = None,
-            mydeque=None,
-            name: str = None,
+        self,
+        deq: Field = None,
+        struct_instance: Structure = None,
+        mydeque=None,
+        name: str = None,
     ):
         self._field_definition = deq
         self._instance = struct_instance
@@ -910,7 +910,7 @@ class Set(
         self.items = _map_to_field(items)
 
         if isinstance(self.items, TypedField) and not getattr(
-                getattr(self.items, "_ty"), "__hash__"
+            getattr(self.items, "_ty"), "__hash__"
         ):
             raise TypeError(
                 f"Set element of type {getattr(self.items, '_ty')} is not hashable"
@@ -920,7 +920,11 @@ class Set(
 
     @property
     def get_type(self):
-        if not isinstance(self.items, (list, tuple)) and self.items and python_ver_atleast_39:
+        if (
+            not isinstance(self.items, (list, tuple))
+            and self.items
+            and python_ver_atleast_39
+        ):
             return set[self.items.get_type]
         return set
 
@@ -970,7 +974,7 @@ class Map(
 
     def __init__(self, *args, items=None, **kwargs):
         if items is not None and (
-                not isinstance(items, (tuple, list)) or len(items) != 2
+            not isinstance(items, (tuple, list)) or len(items) != 2
         ):
             raise TypeError("items is expected to be a list/tuple of two fields")
         if items is None:
@@ -981,7 +985,7 @@ class Map(
                 self.items.append(_map_to_field(item))
             key_field = self.items[0]
             if isinstance(key_field, TypedField) and not getattr(
-                    getattr(key_field, "_ty"), "__hash__"
+                getattr(key_field, "_ty"), "__hash__"
             ):
                 raise TypeError(
                     f"Key field of type {key_field}, with underlying type of {getattr(key_field, '_ty')} "
@@ -1057,7 +1061,7 @@ class Array(
     _ty = list
 
     def __init__(
-            self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
+        self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
     ):
         """
         Constructor
@@ -1082,7 +1086,11 @@ class Array(
 
     @property
     def get_type(self):
-        if not isinstance(self.items, (list, tuple)) and self.items and python_ver_atleast_39:
+        if (
+            not isinstance(self.items, (list, tuple))
+            and self.items
+            and python_ver_atleast_39
+        ):
             return list[self.items.get_type]
         return list
 
@@ -1104,7 +1112,7 @@ class Array(
 
                 if not getattr(instance, "_skip_validation", False):
                     if len(self.items) > len(value) or (
-                            additional_properties_forbidden and len(self.items) > len(value)
+                        additional_properties_forbidden and len(self.items) > len(value)
                     ):
                         raise ValueError(
                             f"{self._name}: Got {value}; Expected an array of length {len(self.items)}"
@@ -1118,7 +1126,7 @@ class Array(
                     setattr(item, "_name", self._name + f"_{str(ind)}")
                     item.__set__(temp_st, value[ind])
                     res.append(getattr(temp_st, getattr(item, "_name")))
-                res += value[len(self.items):]
+                res += value[len(self.items) :]
                 value = res
 
         super().__set__(instance, _ListStruct(self, instance, value, self._name))
@@ -1167,7 +1175,7 @@ class Deque(
     _ty = deque
 
     def __init__(
-            self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
+        self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
     ):
         """
         Constructor
@@ -1208,7 +1216,7 @@ class Deque(
 
                 if not getattr(instance, "_skip_validation", False):
                     if len(self.items) > len(value) or (
-                            additional_properties_forbidden and len(self.items) > len(value)
+                        additional_properties_forbidden and len(self.items) > len(value)
                     ):
                         raise ValueError(
                             f"{self._name}: Got {value}; Expected an deque of length {len(self.items)}"
@@ -1322,7 +1330,11 @@ class Tuple(ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
             if len(self.items) == 2:
                 return tuple[self.items[0].get_type, self.items[1].get_type]
             if len(self.items) == 3:
-                return tuple[self.items[0].get_type, self.items[1].get_type, self.items[2].get_type]
+                return tuple[
+                    self.items[0].get_type,
+                    self.items[1].get_type,
+                    self.items[2].get_type,
+                ]
         return tuple
 
     def __set__(self, instance, value):
@@ -1339,7 +1351,7 @@ class Tuple(ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
             setattr(item, "_name", self._name + f"_{str(ind)}")
             item.__set__(temp_st, value[ind])
             res.append(getattr(temp_st, getattr(item, "_name")))
-            res += value[len(items):]
+            res += value[len(items) :]
         value = tuple(res)
 
         super().__set__(instance, value)
@@ -1522,7 +1534,6 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         return _str_for_multioption_field(self)
 
 
-
 class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     """
     Content *must not* adhere to any of the requirements in the fields arguments.
@@ -1672,4 +1683,3 @@ class FunctionCall(Structure):
     func = Function
     args = Array[String]
     _required = ["func"]
-

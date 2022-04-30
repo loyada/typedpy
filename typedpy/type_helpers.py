@@ -381,6 +381,19 @@ def _get_method_and_attr_list(cls, members):
     return method_list, attrs
 
 
+def _is_sqlalchemy_orm_model(cls):
+    return nested(lambda: str(cls.__class__.__module__), "").startswith("sqlalchemy.orm")
+
+
+def _get_sqlalchemy_init(attributes_with_type):
+    res = [f"def __init__(self, *,"]
+    for p, p_type in attributes_with_type:
+        res.append(f"{INDENT}{p}: {p_type} = None,")
+    res.append(f"{INDENT}**kw")
+    res.append(f"): ...")
+    return res
+
+
 def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
     method_by_name = []
     members = {}
@@ -391,7 +404,7 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
     members.update(annotations)
 
     method_list, cls_attrs = _get_method_and_attr_list(cls, members)
-
+    attributes_with_type = []
     for attr in cls_attrs:
         the_type = members.get(attr, None)
         if inspect.isclass(the_type) or type_is_generic(the_type):
@@ -406,7 +419,8 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
                 if the_type is not None
                 else "Any"
             )
-        method_by_name.append(f"{attr}: {resolved_type}")
+        attributes_with_type.append((attr, resolved_type))
+    method_by_name = [f"{attr}: {resolved_type}" for (attr, resolved_type) in attributes_with_type]
     cls_dict = cls.__dict__
 
     for name in method_list:
@@ -430,6 +444,10 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
                 else f" -> {_get_type_info(sig.return_annotation, locals_attrs, additional_classes)}"
             )
             params_by_name = []
+            if _is_sqlalchemy_orm_model(cls) and name=="__init__":
+                method_by_name.extend(_get_sqlalchemy_init(attributes_with_type))
+                continue
+
             if method_cls is classmethod:
                 params_by_name.append(("cls", ""))
             if is_property:

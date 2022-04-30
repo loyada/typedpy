@@ -10,7 +10,7 @@ import typing
 from os.path import relpath
 from pathlib import Path
 
-from .commons import wrap_val
+from .commons import wrap_val, nested
 from .fields import AllOf, AnyOf, FunctionCall, Map, OneOf
 from .enum import Enum
 from .serialization_wrappers import Deserializer, Serializer

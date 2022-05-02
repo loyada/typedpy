@@ -50,6 +50,12 @@ test_cases = [
         )
     ),
     PYI_TEST_CASE(
+        source_path=get_abs_path_from_here("../examples/enums2.py", __file__),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/enums2.pyi", __file__
+        )
+    ),
+    PYI_TEST_CASE(
         source_path=get_abs_path_from_here("../examples/more_classes.py", __file__),
         reference_path=get_abs_path_from_here(
             "../.stubs/examples/more_classes.pyi", __file__

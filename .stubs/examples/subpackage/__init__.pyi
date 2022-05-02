@@ -8,8 +8,9 @@ from typedpy import Structure
 from datetime import datetime as datetime
 from examples.more_classes import Person as Person
 from examples.api_example import Foo as Foo
-from .apis import Vehicle as Vehicle
-
+from typedpy import Omit as Omit
+from typedpy import create_pyi as create_pyi
+from examples.subpackage.apis import Vehicle as Vehicle
 
 
 class FooOmitSubPackage(Structure):

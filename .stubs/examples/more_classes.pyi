@@ -6,10 +6,12 @@ from typing import Union, Optional, Any, TypeVar, Type, NoReturn
 from typedpy import Structure
 
 import typing
-from datetime import datetime
+from datetime import datetime as datetime
 from os import path as path
-from .enums import Sex
-
+from examples.enums import Sex as Sex
+from typedpy import Enum as Enum
+from typedpy import Structure as Structure
+from typedpy import create_pyi as create_pyi
 
 
 CONSTANT1 = 'some_name'

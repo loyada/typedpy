@@ -7,9 +7,15 @@ from typedpy import Structure
 
 from datetime import datetime
 from examples.more_classes import Person
-from examples.api_example import Foo
-from examples.enums import State
-
+from examples import Foo as Foo
+from examples.enums import State as State
+from typedpy import Enum as Enum
+from typedpy import Extend as Extend
+from typedpy import ImmutableStructure as ImmutableStructure
+from typedpy import Partial as Partial
+from typedpy import PositiveInt as PositiveInt
+from typedpy import String as String
+from typedpy import create_pyi as create_pyi
 
 
 class Vehicle(Structure):

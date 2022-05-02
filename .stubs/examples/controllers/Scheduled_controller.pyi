@@ -5,10 +5,10 @@
 from typing import Union, Optional, Any, TypeVar, Type, NoReturn
 from typedpy import Structure
 
-from datetime import datetime
-from examples.subpackage.apis import Vehicle
-from .job_controller import JobController
-
+from datetime import datetime as datetime
+from examples.subpackage.apis import Vehicle as Vehicle
+from typedpy import create_pyi as create_pyi
+from examples.controllers.job_controller import JobController as JobController
 
 
 class ScheduledController(JobController):

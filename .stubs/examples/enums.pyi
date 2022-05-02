@@ -4,6 +4,9 @@
 
 from typing import Union, Optional, Any, TypeVar, Type, NoReturn
 from typedpy import Structure
+
+import enum
+from typedpy import create_pyi as create_pyi
 import enum
 
 

@@ -9,6 +9,7 @@ import builtins
 import typing
 from os.path import relpath
 from pathlib import Path
+import ast
 
 from .commons import wrap_val, nested
 from .fields import AllOf, AnyOf, FunctionCall, Map, OneOf
@@ -41,11 +42,13 @@ AUTOGEN_NOTE = [
 ]
 
 
+_private_to_public_pkg = {"werkzeug.localxxx": "flask"}
+
 def _get_package(v, attrs):
     pkg_name = attrs.get("__package__") or "%^$%^$%^#"
     if v.startswith(pkg_name):
         return v[len(pkg_name) :]
-    return v
+    return _private_to_public_pkg.get(v, v)
 
 
 def _as_something(k, attrs):
@@ -244,15 +247,14 @@ def _get_imported_classes(attrs):
         return (
             hasattr(v, "__module__")
             and attrs["__name__"] != v.__module__
-            and not v.__module__.startswith("typedpy")
         )
 
     res = []
     for k, v in attrs.items():
         if (
-            not k.startswith("__")
+            not k.startswith("_")
             and (isinstance(v, module) or _valid_module(v))
-            and not _is_sqlalchemy(v)
+            and not _is_internal_sqlalchemy(v)
         ):
             if isinstance(v, module):
                 if v.__name__ != k:
@@ -261,19 +263,23 @@ def _get_imported_classes(attrs):
                         first_parts = parts[:-1]
                         last_part = parts[-1]
                         res.append(
-                            f"from {'.'.join(first_parts)} import {last_part} as {k}"
+                            (k,  f"from {'.'.join(first_parts)} import {last_part} as {k}")
                         )
                     elif nested(lambda: getattr(v.os, k)) == v:
-                        res.append(f"from os import {k} as {k}")
+                         res.append((k, f"from os import {k} as {k}"))
                 else:
-                    res.append(f"import {k}")
+                    res.append((k, f"import {k}"))
             else:
                 pkg = _get_package(v.__module__, attrs)
-                import_stmt = f"from {pkg} import {k}{_as_something(k, attrs)}"
+
+                name_in_pkg = getattr(v, "__name__", k)
+                name_to_import = name_in_pkg if name_in_pkg and  name_in_pkg!=k else k
+                as_import = _as_something(k, attrs) if name_to_import==k else f" as {k}"
+                import_stmt = f"from {pkg} import {name_to_import}{as_import}"
                 if pkg == "__future__":
-                    res = [import_stmt] + res
+                    res = [(k, import_stmt)] + res
                 else:
-                    res.append(import_stmt)
+                    res.append((k, import_stmt))
     return res
 
 
@@ -311,6 +317,12 @@ def _is_sqlalchemy(attr):
         module_name.startswith("sqlalchemy.orm")
         or module_name.startswith("sqlalchemy.sql")
     )
+
+
+def _is_internal_sqlalchemy(attr):
+    module_name = getattr(attr, "__module__", "")
+    return module_name in {"sqlalchemy.orm.decl_api" , "sqlalchemy.sql.schema"}
+
 
 
 def _try_extract_column_type(attr):
@@ -407,6 +419,9 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
     attributes_with_type = []
     for attr in cls_attrs:
         the_type = members.get(attr, None)
+        if getattr(the_type, "__module", "").startswith("_") or nested(lambda: the_type.__class__.__name__, "").startswith("_"):
+            # private class/module
+            continue
         if inspect.isclass(the_type) or type_is_generic(the_type):
             resolved_type = (
                 _get_type_info(the_type, locals_attrs, additional_classes)
@@ -614,16 +629,17 @@ def _get_enum_classes(attrs, only_calling_module):
 
 
 def _get_other_classes(attrs, only_calling_module):
-    return {
-        k: v
-        for k, v in attrs.items()
+    res  = {}
+    for k, v in attrs.items():
         if (
-            inspect.isclass(v)
-            and not issubclass(v, enum.Enum)
-            and not issubclass(v, Structure)
-            and (v.__module__ == attrs["__name__"] or not only_calling_module)
-        )
-    }
+                inspect.isclass(v)
+                and not issubclass(v, enum.Enum)
+                and not issubclass(v, Structure)
+        ):
+            res[k] = v
+
+    return res
+
 
 
 def _get_functions(attrs, only_calling_module):
@@ -714,9 +730,14 @@ def _get_bases(cls, local_attrs, additional_classes) -> list:
     return res
 
 
-def get_stubs_of_other_classes(other_classes, local_attrs, additional_classes):
+def get_stubs_of_other_classes(*, other_classes, local_attrs, additional_classes, additional_imports):
     out_src = []
     for cls_name, cls in other_classes.items():
+        if cls.__module__ != local_attrs["__name__"]:
+            if  cls_name not in additional_imports:
+                out_src += [f"class {cls_name}:", f"{INDENT}pass", ""]
+            continue
+
         bases = _get_bases(cls, local_attrs, additional_classes)
         method_info = _get_methods_info(
             cls, locals_attrs=local_attrs, additional_classes=additional_classes
@@ -738,19 +759,61 @@ def get_typevars(attrs):
     return [""] + res + [""]
 
 
+
+
+def get_imports(path):
+    with open(path) as fh:
+       root = ast.parse(fh.read(), path)
+
+    for node in ast.iter_child_nodes(root):
+        level = 0
+        if isinstance(node, ast.Import):
+            module = []
+        elif isinstance(node, ast.ImportFrom):
+            module = node.module
+            level = node.level
+        else:
+            continue
+
+        for n in node.names:
+            yield (level, module, n.name.split('.'), n.asname)
+
+
+
 def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = True):
     full_path: Path = Path(calling_source_file)
     pyi_path = (full_path.parent / f"{full_path.stem}.pyi").resolve()
-    out_src = []
+    out_src = [
+        "from typing import Union, Optional, Any, TypeVar, Type, NoReturn",
+        "from typedpy import Structure",
+        "",
+    ]
 
     additional_imports = []
+    imported = list(get_imports(attrs.get("__file__")))
     if only_current_module:
-        additional_imports = _get_imported_classes(attrs)
-        if additional_imports:
-            additional_imports.append("")
-        out_src += additional_imports
+        for level, pkg_name, val_info, alias in imported:
+            level_s = "."* level
+            val = ".".join(val_info)
+            alias =  alias or val
+        #    pkg_name = ".".join(pkg_info)
+            if val and pkg_name:
+                if val != "*":
+                    out_src.append(f"from {level_s}{pkg_name} import {val} as {alias}")
+                    additional_imports.append(alias)
+                else:
+                    out_src.append(f"from {level_s}{pkg_name} import {val}")
+            elif pkg_name:
+                out_src.append(f"import {level_s}{pkg_info}")
+                additional_imports.append(pkg_info)
+            else:
+                out_src.append(f"import {level_s}{alias}")
+                additional_imports.append(alias)
+
 
     enum_classes = _get_enum_classes(attrs, only_calling_module=only_current_module)
+    if enum_classes:
+        out_src += ["import enum", ""]
     struct_classes = _get_struct_classes(attrs, only_calling_module=only_current_module)
     other_classes = _get_other_classes(attrs, only_calling_module=only_current_module)
     functions = _get_functions(attrs, only_calling_module=only_current_module)
@@ -764,7 +827,7 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
         enum_classes, local_attrs=attrs, additional_classes=additional_classes
     )
     out_src += get_stubs_of_other_classes(
-        other_classes, local_attrs=attrs, additional_classes=additional_classes
+        other_classes=other_classes, local_attrs=attrs, additional_classes=additional_classes, additional_imports=additional_imports,
     )
     out_src += get_stubs_of_structures(
         struct_classes, local_attrs=attrs, additional_classes=additional_classes
@@ -774,14 +837,6 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
         functions, local_attrs=attrs, additional_classes=additional_classes
     )
 
-    out_src = (
-        add_imports(
-            local_attrs=attrs,
-            additional_classes=additional_classes,
-            existing_imports=set(additional_imports),
-        )
-        + out_src
-    )
 
     out_src = AUTOGEN_NOTE + out_src
     out_s = "\n".join(out_src)

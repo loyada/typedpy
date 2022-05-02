@@ -30,7 +30,7 @@ builtins_types = [
     if isinstance(getattr(builtins, k), type)
 ]
 
-module = inspect.__class__
+module = getattr(inspect, "__class__")
 
 INDENT = " " * 4
 

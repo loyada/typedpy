@@ -18,6 +18,9 @@ CONSTANT1 = 'some_name'
 
 CONSTANT2 = {}
 
+class EmptyStruct(Structure):
+    pass
+
 class Address(Structure):
     def __init__(
         self,

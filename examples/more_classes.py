@@ -8,6 +8,10 @@ from typedpy import Enum, Structure, create_pyi
 CONSTANT1 = "some_name"
 
 
+class EmptyStruct(Structure):
+    pass
+
+
 class Address(Structure):
     city: str
     zip: str

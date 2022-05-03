@@ -569,11 +569,13 @@ def get_stubs_of_structures(
             cls, locals_attrs=local_attrs, additional_classes=additional_classes
         )
 
-        if not fields_info and not method_info:
-            continue
-
         ordered_args = _get_ordered_args(fields_info)
         out_src.append(f"class {cls_name}(Structure):")
+        if not fields_info and not method_info:
+            out_src.append(f"{INDENT}pass")
+            out_src.append("")
+            continue
+
         out_src.append(_get_init(cls, ordered_args))
         out_src.append("")
         out_src.append(_get_shallow_clone(cls, ordered_args))

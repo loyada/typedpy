@@ -111,7 +111,7 @@ def method_to_src(func: FunctionInfo):
 
 
 
-def models_to_src(models: list[ModelClass]) -> typing.Iterable[str]:
+def models_to_src(models: typing.Iterable[ModelClass]) -> typing.Iterable[str]:
     res = []
     for model in models:
         bases = f"({', '.join(model.bases)})" if model.bases else ""

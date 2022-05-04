@@ -1,7 +1,7 @@
 import ast
 import typing
 
-from typedpy import Structure
+from typedpy import Array, Map, Structure
 
 INDENT = " " * 4
 
@@ -27,21 +27,21 @@ def get_imports(path):
 
 class FunctionInfo(Structure):
     name: str
-    positional_args: list[str]
+    positional_args: Array[str]
     keyword: typing.Optional[str]
-    keyword_only_args: list[str]
+    keyword_only_args: Array[str]
     returns: str
-    decorators: list[str]
+    decorators: Array[str]
 
     _ignore_none = True
 
 
 class ModelClass(Structure):
     name: str
-    bases: list[str]
-    columns: dict[str, str]
-    relationships: dict[str, str]
-    functions: list[FunctionInfo]
+    bases: Array[str]
+    columns: Map[str, str]
+    relationships: Map[str, str]
+    functions: Array[FunctionInfo]
 
     @staticmethod
     def type_by_sqlalchemy_type(sqlalchemy_type: str) -> str:
@@ -111,7 +111,7 @@ def method_to_src(func: FunctionInfo):
 
 
 
-def models_to_src(models: list[ModelClass]) -> list[str]:
+def models_to_src(models: list[ModelClass]) -> typing.Iterable[str]:
     res = []
     for model in models:
         bases = f"({', '.join(model.bases)})" if model.bases else ""
@@ -134,7 +134,7 @@ def models_to_src(models: list[ModelClass]) -> list[str]:
     return res
 
 
-def get_models(path) -> list[ModelClass]:
+def get_models(path) -> typing.Iterable[ModelClass]:
     with open(path) as fh:
         root = ast.parse(fh.read(), path)
 

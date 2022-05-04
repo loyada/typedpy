@@ -22,6 +22,7 @@ from .structures import (
     Field,
     get_typing_lib_info,
 )
+from .types_ast import get_imports, get_models, models_to_src
 from .utility import type_is_generic
 
 builtins_types = [
@@ -780,24 +781,6 @@ def get_typevars(attrs):
     return [""] + res + [""]
 
 
-def get_imports(path):
-    with open(path) as fh:
-        root = ast.parse(fh.read(), path)
-
-    for node in ast.iter_child_nodes(root):
-        level = 0
-        if isinstance(node, ast.Import):
-            module = []
-        elif isinstance(node, ast.ImportFrom):
-            module = node.module
-            level = node.level
-        else:
-            continue
-
-        for n in node.names:
-            yield (level, module, n.name.split("."), n.asname)
-
-
 def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = True):
     full_path: Path = Path(calling_source_file)
     pyi_path = (full_path.parent / f"{full_path.stem}.pyi").resolve()
@@ -816,8 +799,8 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
                 else:
                     out_src.append(f"from {level_s}{pkg_name} import {val}")
             elif pkg_name:
-                out_src.append(f"import {level_s}{pkg_info}")
-                additional_imports.append(pkg_info)
+                out_src.append(f"import {level_s}{pkg_name}")
+                additional_imports.append(pkg_name)
             else:
                 out_src.append(f"import {level_s}{alias}")
                 additional_imports.append(alias)
@@ -855,12 +838,16 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
         functions, local_attrs=attrs, additional_classes=additional_classes
     )
 
-    from_future_import = [(i,s) for i,s in enumerate(out_src) if s.startswith("from __future__")]
+    from_future_import = [
+        (i, s) for i, s in enumerate(out_src) if s.startswith("from __future__")
+    ]
     for number_of_deletions, (i, s) in enumerate(from_future_import):
-        out_src = out_src[:i-number_of_deletions] + out_src[i+1-number_of_deletions:]
+        out_src = (
+            out_src[: i - number_of_deletions] + out_src[i + 1 - number_of_deletions :]
+        )
     out_src = (
-        [x[1] for x in from_future_import] +
-        add_imports(
+        [x[1] for x in from_future_import]
+        + add_imports(
             local_attrs=attrs,
             additional_classes=additional_classes,
             existing_imports=set(additional_imports),
@@ -938,3 +925,63 @@ def create_stub_for_file(abs_module_path: str, src_root: str, stubs_root: str = 
     if not getattr(the_module, "__package__", None):
         the_module.__package__ = ".".join(Path(relative_dir).parts)
     create_pyi(str(pyi_path), the_module.__dict__)
+
+
+def create_pyi_ast(calling_source_file):
+    full_path: Path = Path(calling_source_file)
+    pyi_path = (full_path.parent / f"{full_path.stem}.pyi").resolve()
+    out_src = []
+    additional_imports = []
+    imported = list(get_imports(calling_source_file))
+    found_sqlalchmy = False
+    for level, pkg_name, val_info, alias in imported:
+        level_s = "." * level
+        val = ".".join(val_info)
+        alias = alias or val
+        if pkg_name and pkg_name.startswith("sqlalchemy"):
+            found_sqlalchmy = True
+        if val and pkg_name:
+            if val != "*":
+                out_src.append(f"from {level_s}{pkg_name} import {val} as {alias}")
+                additional_imports.append(alias)
+            else:
+                out_src.append(f"from {level_s}{pkg_name} import {val}")
+        elif pkg_name:
+            out_src.append(f"import {level_s}{pkg_name}")
+            additional_imports.append(pkg_name)
+        else:
+            out_src.append(f"import {level_s}{alias}")
+            additional_imports.append(alias)
+
+    if found_sqlalchmy:
+        out_src.extend([""] * 3)
+        models = get_models(calling_source_file)
+        out_src += models_to_src(models)
+    out_src = AUTOGEN_NOTE + out_src
+    out_s = "\n".join(out_src)
+    with open(pyi_path, "w", encoding="UTF-8") as f:
+        f.write(out_s)
+
+
+def create_stub_for_file_using_ast(
+    abs_module_path: str, src_root: str, stubs_root: str = None
+):
+    ext = os.path.splitext(abs_module_path)[-1].lower()
+    if ext != ".py":
+        return
+    stem = Path(abs_module_path).stem
+    dir_name = str(Path(abs_module_path).parent)
+    relative_dir = relpath(dir_name, src_root)
+    package_name = ".".join(Path(relative_dir).parts)
+    module_name = stem if stem != "__init__" else package_name
+
+    pyi_dir = (
+        Path(stubs_root) / Path(relative_dir)
+        if stubs_root
+        else Path(abs_module_path).parent
+    )
+    pyi_dir.mkdir(parents=True, exist_ok=True)
+    (pyi_dir / Path("__init__.pyi")).touch(exist_ok=True)
+
+    pyi_path = (pyi_dir / f"{stem}.pyi").resolve()
+    create_pyi_ast(abs_module_path)

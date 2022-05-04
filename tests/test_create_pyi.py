@@ -6,7 +6,7 @@ import importlib.util
 import pytest
 from pytest import mark
 
-from typedpy.type_helpers import create_stub_for_file
+from typedpy.type_helpers import create_stub_for_file, create_stub_for_file_using_ast
 from typedpy.utility import get_abs_path_from_here
 from typedpy import create_pyi
 
@@ -99,6 +99,21 @@ def test_create_stub_for_file():
     )
     actual_filename = get_abs_path_from_here("../examples/api_example.pyi", __file__)
     _verify_file_are_same(actual_filename, expected_filename)
+
+
+
+
+@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_create_stub_for_sqlalchemy_model():
+    module_name = str(get_abs_path_from_here("../examples/models.py", __file__))
+    src_root = str(get_abs_path_from_here("../", __file__))
+    create_stub_for_file_using_ast(module_name, src_root)
+    expected_filename = get_abs_path_from_here(
+        "../.stubs/examples/models.pyi", __file__
+    )
+    actual_filename = get_abs_path_from_here("../examples/models.pyi", __file__)
+    _verify_file_are_same(actual_filename, expected_filename)
+
 
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")

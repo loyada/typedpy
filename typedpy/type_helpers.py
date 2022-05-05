@@ -927,9 +927,8 @@ def create_stub_for_file(abs_module_path: str, src_root: str, stubs_root: str = 
     create_pyi(str(pyi_path), the_module.__dict__)
 
 
-def create_pyi_ast(calling_source_file):
-    full_path: Path = Path(calling_source_file)
-    pyi_path = (full_path.parent / f"{full_path.stem}.pyi").resolve()
+
+def create_pyi_ast(calling_source_file, pyi_path):
     out_src = ["import datetime", "from typing import Optional, Any, Iterable"]
     additional_imports = []
     imported = list(get_imports(calling_source_file))
@@ -984,4 +983,4 @@ def create_stub_for_file_using_ast(
     (pyi_dir / Path("__init__.pyi")).touch(exist_ok=True)
 
     pyi_path = (pyi_dir / f"{stem}.pyi").resolve()
-    create_pyi_ast(abs_module_path)
+    create_pyi_ast(abs_module_path, str(pyi_path))

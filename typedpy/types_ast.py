@@ -163,7 +163,8 @@ def get_models(path) -> typing.Iterable[ModelClass]:
                                 ] = ModelClass.type_by_sqlalchemy_type(column_type)
                             if function_name == "relationship":
                                 args = b.value.args
-                                entity_type = args[0].value
+                                first = args[0]
+                                entity_type = first.id if isinstance(first, ast.Name) else first.value
                                 relationships[field_name] = entity_type
                         if isinstance(b, ast.FunctionDef):
                             decorators = [d.id for d in b.decorator_list]

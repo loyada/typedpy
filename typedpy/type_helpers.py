@@ -907,6 +907,7 @@ def create_stub_for_file(abs_module_path: str, src_root: str, stubs_root: str = 
     package_name = ".".join(Path(relative_dir).parts)
     module_name = stem if stem != "__init__" else package_name
     sys.path.append(str(Path(dir_name).parent))
+    sys.path.append(src_root)
     spec = importlib.util.spec_from_file_location(module_name, abs_module_path)
     the_module = importlib.util.module_from_spec(spec)
     if not the_module.__package__:
@@ -972,7 +973,6 @@ def create_stub_for_file_using_ast(
     dir_name = str(Path(abs_module_path).parent)
     relative_dir = relpath(dir_name, src_root)
     package_name = ".".join(Path(relative_dir).parts)
-    module_name = stem if stem != "__init__" else package_name
 
     pyi_dir = (
         Path(stubs_root) / Path(relative_dir)

@@ -23,6 +23,7 @@ class Customer(Mappable):
     address: str
     email: str
     invoices: Any
+    foos: Any
     def __init__(self,
             id: int = None,
             name: str = None,

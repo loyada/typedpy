@@ -23,6 +23,7 @@ class Customer(Base, Mappable):
     address = Column(String)
     email = Column(String)
     invoices = relationship("Invoice", back_populates="customer")
+    foos = relationship(Foo, back_populates="customer")
 
     @staticmethod
     def by_id(session: Session,abc = 5, *, ids: list[int] = [1, 2], foo: str, **kw) -> dict[int, list[str]]:

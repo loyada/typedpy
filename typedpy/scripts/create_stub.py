@@ -24,7 +24,9 @@ def main():
         type=str,
         help="exclude patterns in the form path1:path2:path3",
     )
-    parser.add_argument('--ast', action=argparse.BooleanOptionalAction)
+    parser.add_argument('--ast',
+                        action=argparse.BooleanOptionalAction,
+                        help="use AST instead of reflection(currently implemented only for sqlalchemy ORM)")
 
     args = parser.parse_args()
 

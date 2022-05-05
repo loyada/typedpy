@@ -156,7 +156,8 @@ def get_models(path) -> typing.Iterable[ModelClass]:
                             function_name = b.value.func.id
                             if function_name == "Column":
                                 args = b.value.args
-                                column_type = args[0].id
+                                first = args[0]
+                                column_type = first.id if isinstance(first, ast.Name) else first.func.id
                                 columns[
                                     field_name
                                 ] = ModelClass.type_by_sqlalchemy_type(column_type)

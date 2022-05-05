@@ -19,7 +19,7 @@ class Customer(Base, Mappable):
     __tablename__ = 'customers'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String)
+    name = Column(String(100), nullable=False)
     address = Column(String)
     email = Column(String)
     invoices = relationship("Invoice", back_populates="customer")

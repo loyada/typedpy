@@ -40,7 +40,7 @@ import enum
 
 T = TypeVar("T")
 
-IMPORTED_CONST: str = 'some_name'
+IMPORTED_CONST: str = ""
 
 class State1(enum.Enum):
     NY = enum.auto()

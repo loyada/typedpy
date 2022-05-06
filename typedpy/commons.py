@@ -16,6 +16,10 @@ def wrap_val(v):
     return f"'{v}'" if isinstance(v, str) else v
 
 
+def doublewrap_val(v):
+    return f'"{v}"' if isinstance(v, str) else v
+
+
 def _is_dunder(name):
     """Returns True if a __dunder__ name, False otherwise."""
     return (

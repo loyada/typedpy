@@ -14,7 +14,7 @@ from typedpy import Structure as Structure
 from typedpy import create_pyi as create_pyi
 
 
-CONSTANT1 = 'some_name'
+CONSTANT1 = ""
 
 CONSTANT2 = {}
 

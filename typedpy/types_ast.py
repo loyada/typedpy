@@ -24,7 +24,6 @@ def get_imports(path):
             yield (level, module, n.name.split("."), n.asname)
 
 
-
 class FunctionInfo(Structure):
     name: str
     positional_args: Array[str]
@@ -92,23 +91,31 @@ def _extract_arg(arg):
 def method_to_src(func: FunctionInfo):
     res = []
     for d in func.decorators:
-        res.append(f"{INDENT}@{d}")
+        res.append(f"@{d}")
 
-    res.append(f"{INDENT}def {func.name}(")
+    res.append(f"def {func.name}(")
     for a in func.positional_args:
-        res.append(f"{INDENT*2}{a},")
+        res.append(f"{INDENT}{a},")
     if func.keyword_only_args:
-        res.append(f"{INDENT*2}*,")
+        res.append(f"{INDENT}*,")
         for a in func.keyword_only_args:
-            res.append(f"{INDENT * 2}{a},")
+            res.append(f"{INDENT}{a},")
     if func.keyword:
-        res.append(f"{INDENT * 2}{func.keyword},")
+        res.append(f"{INDENT}{func.keyword},")
     returns_s = f" -> {func.returns}" if func.returns else ""
-    res.append(f"{INDENT}){returns_s}: ...")
+    res.append(f"){returns_s}: ...")
     res.append("")
     return res
 
 
+def functions_to_str(functions: typing.Iterable[FunctionInfo]) -> typing.Iterable[str]:
+    res = []
+    for func in functions:
+        res.extend(method_to_src(func))
+        res.append("")
+        res.append("")
+
+    return res
 
 
 def models_to_src(models: typing.Iterable[ModelClass]) -> typing.Iterable[str]:
@@ -116,38 +123,69 @@ def models_to_src(models: typing.Iterable[ModelClass]) -> typing.Iterable[str]:
     for model in models:
         bases = f"({', '.join(model.bases)})" if model.bases else ""
         res.append(f"class {model.name}{bases}:")
-        fields_with_type = [f"{INDENT}{field}: {the_type}" for (field, the_type) in model.columns.items()]
+        fields_with_type = [
+            f"{INDENT}{field}: {the_type}"
+            for (field, the_type) in model.columns.items()
+        ]
         for field in fields_with_type:
             res.append(field)
         for rel in model.relationships:
             res.append(f"{INDENT}{rel}: Any")
         fields_arg_list = [f"{INDENT * 2}{f} = None," for f in fields_with_type]
+        relationships_arg_list = [
+            f"{INDENT * 3}{f} = None," for f in model.relationships
+        ]
         res.append(f"{INDENT}def __init__(self,")
         res.extend(fields_arg_list)
+        res.extend(relationships_arg_list)
         res.append(f"{INDENT}): ...")
         res.append("")
         for func in model.functions:
-            res.extend(method_to_src(func))
+            res.extend([f"{INDENT}{line}" for line in method_to_src(func)])
             res.append("")
         res.append("")
 
     return res
 
 
-def get_models(path) -> typing.Iterable[ModelClass]:
+def _get_function_info(node) -> FunctionInfo:
+    decorators = [d.id for d in node.decorator_list]
+    return_type = _get_param_type(node.returns) if node.returns else ""
+    args = [_extract_arg(a) for a in node.args.args]
+    keyword_args = _extract_kw_args(node.args)
+    keyword_only_args = [
+        _extract_kwonly_arg(a, d)
+        for a, d in zip(node.args.kwonlyargs, node.args.kw_defaults)
+    ]
+    return FunctionInfo(
+        name=node.name,
+        positional_args=args,
+        keyword=keyword_args,
+        keyword_only_args=keyword_only_args,
+        returns=return_type,
+        decorators=decorators,
+    )
+
+
+def get_models(
+    path,
+) -> typing.Tuple[typing.Iterable[ModelClass], typing.Iterable[FunctionInfo]]:
     with open(path) as fh:
         root = ast.parse(fh.read(), path)
 
-    res = []
+    classes = []
+    functions = []
     for node in ast.iter_child_nodes(root):
-        if isinstance(node, ast.ClassDef):
+        if isinstance(node, ast.FunctionDef):
+            functions.append(_get_function_info(node))
+        elif isinstance(node, ast.ClassDef):
             if node.bases:
                 bases = [x.id for x in node.bases if isinstance(x, ast.Name)]
                 if "Base" in bases:
                     bases.remove("Base")
                     class_name = node.name
                     body = node.body
-                    functions = []
+                    methods = []
                     relationships = {}
                     columns = {}
                     for b in body:
@@ -157,44 +195,32 @@ def get_models(path) -> typing.Iterable[ModelClass]:
                             if function_name == "Column":
                                 args = b.value.args
                                 first = args[0]
-                                column_type = first.id if isinstance(first, ast.Name) else first.func.id
+                                column_type = (
+                                    first.id
+                                    if isinstance(first, ast.Name)
+                                    else first.func.id
+                                )
                                 columns[
                                     field_name
                                 ] = ModelClass.type_by_sqlalchemy_type(column_type)
                             if function_name == "relationship":
                                 args = b.value.args
                                 first = args[0]
-                                entity_type = first.id if isinstance(first, ast.Name) else first.value
+                                entity_type = (
+                                    first.id
+                                    if isinstance(first, ast.Name)
+                                    else first.value
+                                )
                                 relationships[field_name] = entity_type
                         if isinstance(b, ast.FunctionDef):
-                            decorators = [d.id for d in b.decorator_list]
-                            return_type = (
-                                _get_param_type(b.returns) if b.returns else ""
-                            )
-                            args = [_extract_arg(a) for a in b.args.args]
-                            keyword_args = _extract_kw_args(b.args)
-                            keyword_only_args = [
-                                _extract_kwonly_arg(a, d)
-                                for a, d in zip(b.args.kwonlyargs, b.args.kw_defaults)
-                            ]
-                            functions.append(
-                                FunctionInfo(
-                                    name=b.name,
-                                    positional_args=args,
-                                    keyword=keyword_args,
-                                    keyword_only_args=keyword_only_args,
-                                    returns=return_type,
-                                    decorators=decorators,
-                                )
-                            )
-                    res.append(
+                            methods.append(_get_function_info(b))
+                    classes.append(
                         ModelClass(
                             name=class_name,
                             bases=bases,
                             columns=columns,
                             relationships=relationships,
-                            functions=functions,
+                            functions=methods,
                         )
                     )
-    return res
-
+    return classes, functions

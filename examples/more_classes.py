@@ -5,7 +5,7 @@ from os import path
 from examples.enums import Sex
 from typedpy import Enum, Structure, create_pyi
 
-CONSTANT1 = "some_name"
+CONSTANT1 = "'some_name'"
 
 
 class EmptyStruct(Structure):

@@ -9,9 +9,8 @@ import builtins
 import typing
 from os.path import relpath
 from pathlib import Path
-import ast
 
-from .commons import wrap_val, nested
+from .commons import doublewrap_val, nested
 from .fields import AllOf, AnyOf, FunctionCall, Map, OneOf
 from .enum import Enum
 from .serialization_wrappers import Deserializer, Serializer
@@ -22,7 +21,7 @@ from .structures import (
     Field,
     get_typing_lib_info,
 )
-from .types_ast import get_imports, get_models, models_to_src
+from .types_ast import functions_to_str, get_imports, get_models, models_to_src
 from .utility import type_is_generic
 
 builtins_types = [
@@ -866,7 +865,9 @@ def _get_consts(attrs, additional_classes, additional_imports):
         return isinstance(v, (int, float, str, dict, list, set, complex, bool))
 
     def _as_builtin(v) -> str:
-        return v if isinstance(v, (int, float, str, complex, bool)) else v.__class__()
+        if isinstance(v, str):
+            return ""
+        return v if isinstance(v, (int, float, complex, bool)) else v.__class__()
 
     res = []
     annotations = attrs.get("__annotations__", None) or {}
@@ -885,7 +886,7 @@ def _get_consts(attrs, additional_classes, additional_imports):
         )
         type_str = f": {the_type}" if the_type else ""
         val = (
-            str(wrap_val(_as_builtin(attrs[c])))
+            str(doublewrap_val(_as_builtin(attrs[c])))
             if _is_of_builtin(attrs[c])
             else "None"
             if attrs[c] is None
@@ -928,7 +929,6 @@ def create_stub_for_file(abs_module_path: str, src_root: str, stubs_root: str = 
     create_pyi(str(pyi_path), the_module.__dict__)
 
 
-
 def create_pyi_ast(calling_source_file, pyi_path):
     out_src = ["import datetime", "from typing import Optional, Any, Iterable"]
     additional_imports = []
@@ -955,8 +955,9 @@ def create_pyi_ast(calling_source_file, pyi_path):
 
     if found_sqlalchmy:
         out_src.extend([""] * 3)
-        models = get_models(calling_source_file)
+        models, functions = get_models(calling_source_file)
         out_src += models_to_src(models)
+        out_src += functions_to_str(functions)
     out_src = AUTOGEN_NOTE + out_src
     out_s = "\n".join(out_src)
     with open(pyi_path, "w", encoding="UTF-8") as f:

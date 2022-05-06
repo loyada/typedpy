@@ -22,9 +22,9 @@ setup(
     name="typedpy",
     packages=find_packages(include=["typedpy", "typedpy.scripts"]),
     entry_points={
-        'console_scripts': [
-            'create-stub=typedpy.scripts.create_stub:main',
-            'create-stubs-for-dir=typedpy.scripts.create_stubs:main',
+        "console_scripts": [
+            "create-stub=typedpy.scripts.create_stub:main",
+            "create-stubs-for-dir=typedpy.scripts.create_stubs:main",
         ],
     },
     install_requires=[],
@@ -36,9 +36,9 @@ setup(
     license="MIT",
     long_description=long_description,
     url="http://github.com/loyada/typedpy",
-    download_url ="https://github.com/loyada/typedpy/archive/v2.15.40.tar.gz",
-    keywords=['testing', 'type-safe', 'strict', 'schema', 'validation'],
-    version='2.15.40'
+    download_url="https://github.com/loyada/typedpy/archive/v2.15.41.tar.gz",
+    keywords=["testing", "type-safe", "strict", "schema", "validation"],
+    version="2.15.41",
 )
 
 # coverage run --source=typedpy/ setup.py test

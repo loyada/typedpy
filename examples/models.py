@@ -9,9 +9,6 @@ def func(
     pass
 
 
-abc = 1
-
-
 class Column:
     def __init__(self, *args, **kw):
         pass

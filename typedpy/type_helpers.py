@@ -410,6 +410,14 @@ def _get_sqlalchemy_init(attributes_with_type):
     return res
 
 
+def _is_not_generic_and_private_class_or_module(the_type):
+    if type_is_generic(the_type):
+        return False
+    return getattr(the_type, "__module__", "").startswith("_") or nested(
+        lambda: the_type.__class__.__name__, ""
+    ).startswith("_")
+
+
 def _get_methods_info(
     cls, locals_attrs, additional_classes, ignore_attributes=None
 ) -> list:
@@ -427,10 +435,7 @@ def _get_methods_info(
     attributes_with_type = []
     for attr in cls_attrs:
         the_type = members.get(attr, None)
-        if getattr(the_type, "__module__", "").startswith("_") or nested(
-            lambda: the_type.__class__.__name__, ""
-        ).startswith("_"):
-            # private class/module
+        if _is_not_generic_and_private_class_or_module(the_type):
             continue
         if inspect.isclass(the_type) or type_is_generic(the_type):
             resolved_type = (
@@ -468,6 +473,8 @@ def _get_methods_info(
             return_annotations = (
                 ""
                 if sig.return_annotation == inspect._empty
+                else f" -> None"
+                if sig.return_annotation is None
                 else f" -> {_get_type_info(sig.return_annotation, locals_attrs, additional_classes)}"
             )
             params_by_name = []

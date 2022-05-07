@@ -12,7 +12,7 @@ Stub files - Helping the IDE to Resolve Types and Offer Intellisense
 (since version 2.15)
 
 Since currently Pycharm does not resolve annotations dynamically, Typedpy offers a way to create a Python Interface file
-(pyi file). There are two executables that you get with Typedpy:
+(pyi file). There are two executables included with Typedpy:
 
 1. create-stubs-for-dir - creates stubs for an entire directory recursively:
    Usage:
@@ -43,8 +43,8 @@ that do not contain any Typedpy classes.
 
 .. code-block:: bash
 
-    $create_stub.py --help
-    usage: create_stub.py [-h] [-s STUBS_DIR] [-x EXCLUDE]
+    $create-stub --help
+    usage: create_stub [-h] [-s STUBS_DIR] [-x EXCLUDE]
                           src_root_dir src_script_path
 
     positional arguments:
@@ -57,12 +57,29 @@ that do not contain any Typedpy classes.
                             source directory of stubs. Default is .stubs
       -x EXCLUDE, --exclude EXCLUDE
                             exclude patterns in the form path1:path2:path3
+      --ast, --no-ast       use AST instead of reflection(currently implemented only for sqlalchemy ORM)
 
 
+
+As can be seen, there are two flavors for the create-stub utility:
+
+1. no-ast - this is the default mode, and should be used for most cases. It uses reflection to analyze the code.
+3. ast - uses Abstract Syntax Tree analysis. Should be used for SQLAlcemy models.
 
 
 Note that Python Interface files are ignored during runtime, so if for some reason they are out-of-sync, the only
 problem will be that the intellisense will not be up-to-date.
+
+
+
+Creating Stubs For Elements That Are Not Structures
+---------------------------------------------------
+The above utilities support the following beyond Typedpy Structures:
+1. module attributes/ constants
+2. functions
+3. Standard classes, dataclasses
+4. Enums
+5. SQLAlchemy ORM models (Use AST mode)
 
 
 
@@ -74,7 +91,7 @@ Configuring a File Watcher For Stub Files in Pycharm
 
 .. image:: images/Screenshot1.png
 
-4. Optional - You might want to change the scope to ignore certain files, although you can achieve
+4. Optional - You might want to change the scope to include/exclude certain files, although you can achieve
    the same with the "-x" command line option.
 
 

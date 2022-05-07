@@ -126,6 +126,18 @@ def test_create_stub_for_sqlalchemy_model():
 
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_create_stub_for_dataclass():
+    module_name = str(get_abs_path_from_here("../examples/some_data.py", __file__))
+    src_root = str(get_abs_path_from_here("../", __file__))
+    create_stub_for_file(module_name, src_root)
+    expected_filename = get_abs_path_from_here(
+        "../.stubs/examples/some_data.pyi", __file__
+    )
+    actual_filename = get_abs_path_from_here("../examples/some_data.pyi", __file__)
+    _verify_file_are_same(actual_filename, expected_filename)
+
+
+@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 @pytest.mark.parametrize(
     "test_case", test_cases, ids=[str(s.source_path) for s in test_cases]
 )

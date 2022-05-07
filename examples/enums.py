@@ -14,16 +14,21 @@ class State(enum.Enum):
         pass
 
     @classmethod
-    def cls_method(cls, i: int) ->int:
-       return i if cls else i-1
+    def cls_method(cls, i: int) -> int:
+        return i if cls else i - 1
 
     @property
     def aaa(self):
         "aaa"
 
+
 class Sex(enum.Enum):
     male = 1
     female = 2
+
+
+class NamedEnum(enum.Enum):
+    pass
 
 
 if __name__ == "__main__":

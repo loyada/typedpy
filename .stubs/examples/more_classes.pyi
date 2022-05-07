@@ -18,6 +18,11 @@ CONSTANT1 = ""
 
 CONSTANT2 = {}
 
+class NotStructure:
+    pass
+
+
+
 class EmptyStruct(Structure):
     pass
 
@@ -63,6 +68,8 @@ class Person(Structure):
     age: int
     address: Address
     sex: Sex
+    some_const: int
+    not_struct: NotStructure
 
 
 def aaa(*, a: dict[str, list[datetime]]) -> Optional: ...

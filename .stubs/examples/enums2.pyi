@@ -6,15 +6,24 @@ from typing import Union, Optional, Any, TypeVar, Type, NoReturn
 from typedpy import Structure
 
 from enum import Enum as Enum
+from .enums import NamedEnum as NamedEnum
 from typedpy import create_pyi as create_pyi
 import enum
 
 
 
-class Status(enum.Enum):
+class Status(Enum):
     status1 = enum.auto()
     status2 = enum.auto()
     status3 = enum.auto()
+
+
+
+
+class Names(NamedEnum):
+    aaa = enum.auto()
+    bbb = enum.auto()
+    ccc = enum.auto()
 
 
 

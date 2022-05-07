@@ -367,13 +367,13 @@ def _get_method_and_attr_list(cls, members):
         is_func = not inspect.isclass(attr) and (
             callable(attr) or isinstance(attr, (property, classmethod, staticmethod))
         )
-        if not any(
+        if all(
             [
-                attr is None,
-                inspect.isclass(attr),
-                is_func,
-                isinstance(attr, cls),
-                issubclass(cls, Structure),
+                attr is not None,
+                not inspect.isclass(attr),
+                not is_func,
+                not isinstance(attr, cls),
+                not (issubclass(cls, Structure) and attribute.startswith("_")),
             ]
         ):
             attrs.append(attribute)
@@ -390,7 +390,7 @@ def _get_method_and_attr_list(cls, members):
         method_list = ["__init__"] + method_list
 
     for name in cls_dict.get("__annotations__", {}):
-        if name not in attrs and not issubclass(cls, Structure):
+        if name not in attrs:
             attrs.append(name)
     return method_list, attrs
 
@@ -410,8 +410,11 @@ def _get_sqlalchemy_init(attributes_with_type):
     return res
 
 
-def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
+def _get_methods_info(
+    cls, locals_attrs, additional_classes, ignore_attributes=None
+) -> list:
     method_by_name = []
+    ignore_attributes = ignore_attributes or set()
     members = {}
     members.update(dict(cls.__dict__))
     annotations = cls.__dict__.get("__annotations__", {})
@@ -419,7 +422,8 @@ def _get_methods_info(cls, locals_attrs, additional_classes) -> list:
         members[a] = annotations[a]
     members.update(annotations)
 
-    method_list, cls_attrs = _get_method_and_attr_list(cls, members)
+    method_list, cls_attrs_draft = _get_method_and_attr_list(cls, members)
+    cls_attrs = [a for a in cls_attrs_draft if a not in ignore_attributes]
     attributes_with_type = []
     for attr in cls_attrs:
         the_type = members.get(attr, None)
@@ -566,11 +570,16 @@ def get_stubs_of_structures(
             cls, locals_attrs=local_attrs, additional_classes=additional_classes
         )
         method_info = _get_methods_info(
-            cls, locals_attrs=local_attrs, additional_classes=additional_classes
+            cls,
+            locals_attrs=local_attrs,
+            additional_classes=additional_classes,
+            ignore_attributes=set(fields_info.keys()),
         )
 
         ordered_args = _get_ordered_args(fields_info)
-        out_src.append(f"class {cls_name}(Structure):")
+        bases = _get_bases_for_structure(cls, local_attrs, additional_classes)
+        bases_str = f"({', '.join(bases)})" if bases else ""
+        out_src.append(f"class {cls_name}{bases_str}:")
         if not fields_info and not method_info:
             out_src.append(f"{INDENT}pass")
             out_src.append("")
@@ -597,10 +606,14 @@ def get_stubs_of_enums(
         method_info = _get_methods_info(
             cls, locals_attrs=local_attrs, additional_classes=additional_classes
         )
+        bases = _get_bases(cls, local_attrs, additional_classes)
+        bases_str = f"({', '.join(bases)})" if bases else ""
+        out_src.append(f"class {cls_name}{bases_str}:")
 
-        out_src.append(f"class {cls_name}(enum.Enum):")
-        for v in cls:
-            out_src.append(f"{INDENT}{v.name} = enum.auto()")
+        enum_values = [f"{INDENT}{v.name} = enum.auto()" for v in cls] or [
+            f"{INDENT}pass"
+        ]
+        out_src.extend(enum_values)
         out_src.append("")
 
         out_src.append("")
@@ -637,15 +650,16 @@ def add_imports(local_attrs: dict, additional_classes, existing_imports: set) ->
 
 
 def _get_enum_classes(attrs, only_calling_module):
-    return {
-        k: v
-        for k, v in attrs.items()
+    res = {}
+    for k, v in attrs.items():
         if (
             inspect.isclass(v)
             and issubclass(v, enum.Enum)
             and (v.__module__ == attrs["__name__"] or not only_calling_module)
-        )
-    }
+        ):
+            res[k] = v
+
+    return res
 
 
 def _get_other_classes(attrs, only_calling_module):
@@ -746,6 +760,20 @@ def _get_bases(cls, local_attrs, additional_classes) -> list:
             the_type = _get_type_info(b, local_attrs, additional_classes)
             if the_type != "Any":
                 res.append(the_type)
+    return res
+
+
+def _get_bases_for_structure(cls, local_attrs, additional_classes) -> list:
+    res = []
+    for b in cls.__bases__:
+        if b is object or b.__module__ == "typing":
+            continue
+        if b.__module__.startswith("typedpy"):
+            continue
+        the_type = _get_type_info(b, local_attrs, additional_classes)
+        if the_type != "Any":
+            res.append(the_type)
+    res.append("Structure")
     return res
 
 
@@ -973,7 +1001,6 @@ def create_stub_for_file_using_ast(
     stem = Path(abs_module_path).stem
     dir_name = str(Path(abs_module_path).parent)
     relative_dir = relpath(dir_name, src_root)
-    package_name = ".".join(Path(relative_dir).parts)
 
     pyi_dir = (
         Path(stubs_root) / Path(relative_dir)

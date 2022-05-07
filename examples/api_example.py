@@ -7,8 +7,10 @@ from .more_classes import CONSTANT1, Person
 from typedpy import (
     AnyOf,
     Anything,
-    DateTime, Enum,
-    Extend, Float,
+    DateTime,
+    Enum,
+    Extend,
+    Float,
     ImmutableStructure,
     Integer,
     Map,
@@ -34,10 +36,13 @@ def func(x=5, *, e: Employee = None, **kw) -> Mapping[str, str]:
 
 T = TypeVar("T")
 
+
 def func2(t: T) -> list[T]:
     pass
 
+
 IMPORTED_CONST: str = CONSTANT1
+
 
 class Blah(Structure):
     i = Integer
@@ -58,7 +63,7 @@ class Foo(Blah, ImmutableStructure):
     _serialization_mapper = mappers.TO_LOWERCASE
 
     def get_double_aa(self, x: Optional[int], p: Person = None) -> str:
-        return f'{self.a}{x}'
+        return f"{self.a}{x}"
 
     def doit(self):
         pass
@@ -104,7 +109,7 @@ def ccc() -> Callable[[T], None]:
 
 
 def ddd() -> [int, str, ...]:
-    return [1,"xx"]
+    return [1, "xx"]
 
 
 def eee(x: Optional[int] = 4, arr: list[str] = list) -> Optional[int]:
@@ -114,8 +119,9 @@ def eee(x: Optional[int] = 4, arr: list[str] = list) -> Optional[int]:
 def fff(c: Optional[Callable]) -> Iterator[str]:
     pass
 
+
 def ggg() -> typing.Tuple:
-    return (1,2,3)
+    return (1, 2, 3)
 
 
 if __name__ == "__main__":

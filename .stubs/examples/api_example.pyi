@@ -42,7 +42,7 @@ T = TypeVar("T")
 
 IMPORTED_CONST: str = ""
 
-class State1(enum.Enum):
+class State1(Enum):
     NY = enum.auto()
     NJ = enum.auto()
     AL = enum.auto()
@@ -110,7 +110,7 @@ class Blah(Structure):
     d: Optional[dict[str, int]] = None
 
 
-class Foo(Structure):
+class Foo(Blah, Structure):
     def __init__(
         self,
         i: int,

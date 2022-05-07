@@ -5,13 +5,14 @@
 from typing import Union, Optional, Any, TypeVar, Type, NoReturn
 from typedpy import Structure
 
+from enum import Enum
 import enum
 from typedpy import create_pyi as create_pyi
 import enum
 
 
 
-class State(enum.Enum):
+class State(Enum):
     NY = enum.auto()
     NJ = enum.auto()
     AL = enum.auto()
@@ -29,9 +30,15 @@ class State(enum.Enum):
     def aaa(self): ...
 
 
-class Sex(enum.Enum):
+class Sex(Enum):
     male = enum.auto()
     female = enum.auto()
+
+
+
+
+class NamedEnum(Enum):
+    pass
 
 
 

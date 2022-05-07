@@ -20,11 +20,18 @@ class Address(Structure):
 CONSTANT2 = {Address: 123}
 
 
+class NotStructure:
+    pass
+
+
 class Person(Structure):
     name: str
     age: int
     address: Address
     sex: Enum[Sex]
+
+    not_struct: NotStructure
+    some_const = 1111
 
 
 def aaa(*, a: dict[str, list[datetime]]) -> typing.Optional:

@@ -34,7 +34,7 @@ def func(x=5, *, e: Employee = None, **kw) -> Mapping[str, str]:
     return State.FL
 
 
-T = TypeVar("T")
+T = TypeVar("T", int, str)
 
 
 def func2(t: T) -> list[T]:

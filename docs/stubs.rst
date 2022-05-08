@@ -91,6 +91,15 @@ The above utilities support the following beyond Typedpy Structures:
 5. SQLAlchemy ORM models (Use AST mode)
 
 
+Limitations
+-----------
+
+1. Some of the newer constructs in the "typing" module are not supported. Most notably: Generic
+2. Any library that manipulates the classes or the modules dynamically is not supported, with the exception of SQLAlchemy.
+3. Any class that adds attribute dynamically to the instances - these attributes will obviously not
+   be discovered by Typedpy.
+
+
 
 Configuring a File Watcher For Stub Files in Pycharm
 ----------------------------------------------------

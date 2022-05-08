@@ -808,10 +808,18 @@ def get_stubs_of_other_classes(
     return out_src
 
 
-def get_typevars(attrs):
-    res = [
-        f'{k} = TypeVar("{k}")' for k in attrs if isinstance(attrs[k], typing.TypeVar)
-    ]
+def get_typevars(attrs, additional_classes):
+    res = []
+    for k, v in attrs.items():
+        if isinstance(v, typing.TypeVar):
+            constraints = ", ".join(
+                [
+                    _get_type_info(x, attrs, additional_classes)
+                    for x in v.__constraints__
+                ]
+            )
+            constraints_s = f", {constraints}" if constraints else ""
+            res.append(f'{k} = TypeVar("{k}"{constraints_s})')
     return [""] + res + [""]
 
 
@@ -846,9 +854,9 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
     other_classes = _get_other_classes(attrs, only_calling_module=only_current_module)
     functions = _get_functions(attrs, only_calling_module=only_current_module)
 
-    out_src += get_typevars(attrs)
-
     additional_classes = set()
+    out_src += get_typevars(attrs, additional_classes=additional_classes)
+
     out_src += _get_consts(
         attrs,
         additional_classes=additional_classes,

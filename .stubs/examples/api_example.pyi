@@ -38,7 +38,7 @@ from typedpy import create_pyi as create_pyi
 import enum
 
 
-T = TypeVar("T")
+T = TypeVar("T", int, str)
 
 IMPORTED_CONST: str = ""
 

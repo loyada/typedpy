@@ -98,11 +98,11 @@ Configuring a File Watcher For Stub Files in Pycharm
 1. Create a directory that will be designated for Python stub files in the project. I use ".stubs".
 2. Mark the directory you created as "sources" directory in the "project structure".
 3. Add the stubs directory to your .gitignore file.
-3. Set up a new file watcher, with the following configuration:
+4. Set up a new file watcher, with the following configuration:
 
 .. image:: images/Screenshot1.png
 
-4. Recommended option - change the scope to include/exclude certain files/directories, although you can achieve
+5. Recommended option - change the scope to include/exclude certain files/directories, although you can achieve
    the same with the "-x" command line option.
 
 

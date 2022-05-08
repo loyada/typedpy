@@ -72,7 +72,7 @@ to Alembic or database persistence. If we are at the top level of our Python cod
 As can be seen, there are two flavors for the create-stub utility:
 
 1. no-ast - this is the default mode, and should be used for most cases. It uses reflection to analyze the code.
-3. ast - uses Abstract Syntax Tree analysis. Should be used for SQLAlcemy models.
+2. ast - uses Abstract Syntax Tree analysis. Should be used for SQLAlcemy models.
 
 
 Note that Python Interface files are ignored during runtime, so if for some reason they are out-of-sync, the only
@@ -83,6 +83,7 @@ problem will be that the intellisense will not be up-to-date.
 Creating Stubs For Elements That Are Not Structures
 ---------------------------------------------------
 The above utilities support the following beyond Typedpy Structures:
+
 1. module attributes/ constants
 2. functions
 3. Standard classes, dataclasses
@@ -93,6 +94,7 @@ The above utilities support the following beyond Typedpy Structures:
 
 Configuring a File Watcher For Stub Files in Pycharm
 ----------------------------------------------------
+
 1. Create a directory that will be designated for Python stub files in the project. I use ".stubs".
 2. Mark the directory you created as "sources" directory in the "project structure".
 3. Add the stubs directory to your .gitignore file.

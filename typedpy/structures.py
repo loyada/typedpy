@@ -728,9 +728,11 @@ def add_annotations_to_class_dict(cls_dict, previous_frame):
         for k, v in annotations.items():
             if isinstance(v, str) and len(v) < 50:
                 # The evil eval is to accommodate "from __future__ import annotations".
+                module_name = cls_dict["__module__"]
+                globals = sys.modules[module_name].__dict__ if module_name in sys.modules else None
                 v = eval(
                     v,
-                    sys.modules[cls_dict["__module__"]].__dict__,
+                    globals,
                     previous_frame.f_locals,
                 )
             first_arg = getattr(v, "__args__", [0])[0]

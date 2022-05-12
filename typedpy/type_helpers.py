@@ -124,7 +124,11 @@ def _get_type_info_for_typing_generic(
             the_type = "Type"
         args_st = "" if not mapped_args else f"[{', '.join(mapped_args)}]"
         return f"{the_type}{args_st}"
-
+    
+    if origin and mapped_args:
+        mapped_origin =  _get_type_info(args[0], locals_attrs, additional_classes)
+        args_st = "" if not mapped_args else f"[{', '.join(mapped_args)}]"
+        return f"{mapped_origin}{args_st}"
     return None
 
 

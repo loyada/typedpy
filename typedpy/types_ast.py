@@ -140,6 +140,16 @@ def models_to_src(models: typing.Iterable[ModelClass]) -> typing.Iterable[str]:
         res.extend(relationships_arg_list)
         res.append(f"{INDENT}): ...")
         res.append("")
+        if "Mappable" in bases:
+            res.append(f"{INDENT}@classmethod")
+            res.append(f"{INDENT}def from_structure(cls,")
+            res.append(f"{INDENT*3}structure: Structure,")
+            res.append(f"{INDENT*3}*,")
+            res.append(f"{INDENT*3}ignore_props: list[str] = None,")
+            res.extend(fields_arg_list)
+            res.extend(relationships_arg_list)
+            res.append(f"{INDENT}): ...")
+            res.append("")
         for func in model.functions:
             res.extend([f"{INDENT}{line}" for line in method_to_src(func)])
             res.append("")

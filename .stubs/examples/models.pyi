@@ -4,6 +4,7 @@
 
 import datetime
 from typing import Optional, Any, Iterable
+from typedpy import Structure
 from sqlalchemy import ForeignKey as ForeignKey
 from sqlalchemy import Column as Column
 from sqlalchemy import Integer as Integer
@@ -22,6 +23,19 @@ class Customer(Mappable):
     invoices: Any
     foos: Any
     def __init__(self,
+            id: int = None,
+            name: str = None,
+            address: str = None,
+            email: str = None,
+            invoices = None,
+            foos = None,
+    ): ...
+
+    @classmethod
+    def from_structure(cls,
+            structure: Structure,
+            *,
+            ignore_props: list[str] = None,
             id: int = None,
             name: str = None,
             address: str = None,

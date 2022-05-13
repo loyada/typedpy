@@ -41,6 +41,18 @@ class Address(Structure):
         **kw
     ): ...
 
+
+    @classmethod
+    def from_other_class(
+        cls,
+        source_object: Any,
+        *,
+        city: str = None,
+        zip: str = None,
+        **kw
+    ): ...
+
+
     city: str
     zip: str
 
@@ -63,6 +75,20 @@ class Person(Structure):
         sex: Sex = None,
         **kw
     ): ...
+
+
+    @classmethod
+    def from_other_class(
+        cls,
+        source_object: Any,
+        *,
+        name: str = None,
+        age: int = None,
+        address: Address = None,
+        sex: Sex = None,
+        **kw
+    ): ...
+
 
     name: str
     age: int

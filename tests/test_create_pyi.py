@@ -75,6 +75,13 @@ test_cases = [
         ),
         module_name="examples.future_annotations",
     ),
+    PYI_TEST_CASE(
+        source_path=get_abs_path_from_here("../examples/generic_stuff.py", __file__),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/generic_stuff.pyi", __file__
+        ),
+        module_name="examples.generic_stuff",
+    ),
 ]
 
 

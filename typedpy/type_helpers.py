@@ -124,9 +124,9 @@ def _get_type_info_for_typing_generic(
             the_type = "Type"
         args_st = "" if not mapped_args else f"[{', '.join(mapped_args)}]"
         return f"{the_type}{args_st}"
-    
+
     if origin and mapped_args:
-        mapped_origin =  _get_type_info(args[0], locals_attrs, additional_classes)
+        mapped_origin = _get_type_info(origin, locals_attrs, additional_classes)
         args_st = "" if not mapped_args else f"[{', '.join(mapped_args)}]"
         return f"{mapped_origin}{args_st}"
     return None
@@ -559,17 +559,30 @@ def _get_init(cls, ordered_args: dict) -> str:
     return f"    def __init__(\n{init_params}{kw_opt}\n{INDENT}): ..."
 
 
-def _get_shallow_clone(cls, ordered_args: dict) -> str:
+def _get_additional_structure_methods(cls, ordered_args: dict) -> str:
     ordered_args_with_none = {}
     for k, v in ordered_args.items():
         ordered_args_with_none[k] = v if v.endswith("= None") else f"{v} = None"
-    params = f",\n{INDENT * 2}".join(
-        [f"{INDENT * 2}self"] + [f"{k}: {v}" for k, v in ordered_args_with_none.items()]
-    )
+    params = [f"{k}: {v}" for k, v in ordered_args_with_none.items()]
+    params_with_self = f",\n{INDENT * 2}".join([f"{INDENT * 2}self"] + params)
     kw_opt = (
         f",\n{INDENT * 2}**kw" if getattr(cls, "_additionalProperties", True) else ""
     )
-    return f"    def shallow_clone_with_overrides(\n{params}{kw_opt}\n{INDENT}): ..."
+    shallow_clone = f"    def shallow_clone_with_overrides(\n{params_with_self}{kw_opt}\n{INDENT}): ..."
+
+    params_with_cls = f",\n{INDENT*2}".join(
+        [f"{INDENT}cls", f"source_object: Any", "*"] + params
+    )
+
+    from_other_class = f"\n{INDENT}".join(
+        [
+            "",
+            "@classmethod",
+            "def from_other_class(",
+            f"{params_with_cls}{kw_opt}\n{INDENT}): ...",
+        ]
+    )
+    return "\n".join([shallow_clone, "", from_other_class])
 
 
 def get_stubs_of_structures(
@@ -598,7 +611,8 @@ def get_stubs_of_structures(
 
         out_src.append(_get_init(cls, ordered_args))
         out_src.append("")
-        out_src.append(_get_shallow_clone(cls, ordered_args))
+        out_src.append(_get_additional_structure_methods(cls, ordered_args))
+        out_src.append("")
         out_src.append("")
 
         for field_name, type_name in ordered_args.items():
@@ -765,11 +779,16 @@ def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> lis
 def _get_bases(cls, local_attrs, additional_classes) -> list:
     res = []
     for b in cls.__bases__:
-        if b is object or b.__module__ == "typing":
+        if b is object or b.__module__ == "typing" and b is not typing.Generic:
             continue
         if not _is_sqlalchemy(b):
             the_type = _get_type_info(b, local_attrs, additional_classes)
-            if the_type != "Any":
+            if b is typing.Generic and the_type == "Generic":
+                params = [p.__name__ for p in cls.__parameters__]
+                params_st = f"[{', '.join(params)}]" if params else ""
+                res.append(f"{the_type}{params_st}")
+
+            elif the_type != "Any":
                 res.append(the_type)
     return res
 

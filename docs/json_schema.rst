@@ -164,7 +164,9 @@ a single property 'arr', as usual.
 Limitations and Comments
 ------------------------
 #. JSON schema's String formatters are unsupported
-#. Only JSON Schema Draft 4 is supported. Draft 3/6 are unsupported
+#. Only JSON Schema Draft 4 is supported. Draft 3/6/7 are unsupported
+#. Only the Field types that map to JSON Schema Draft 4 are supported. This means that if you add a new custom Field
+   class, it is currently unsupported, since the API does not include additional custom mappers.
 #. Set and Tuple fields are mapped to array types when converting code to schema
 #. Regarding JSON pointers(i.e. "$ref") - only pointers that point to an object under "#/definitions/" are supported
 

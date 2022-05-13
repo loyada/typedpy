@@ -72,6 +72,21 @@ class Employee(Structure):
         **kw
     ): ...
 
+
+    @classmethod
+    def from_other_class(
+        cls,
+        source_object: Any,
+        *,
+        name: str = None,
+        age: int = None,
+        address: Address = None,
+        sex: Sex = None,
+        ssid: str = None,
+        **kw
+    ): ...
+
+
     name: str
     age: int
     address: Address
@@ -101,6 +116,22 @@ class Blah(Structure):
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
+
+
+    @classmethod
+    def from_other_class(
+        cls,
+        source_object: Any,
+        *,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
 
     i: int
     s: str
@@ -140,6 +171,26 @@ class Foo(Blah, Structure):
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
+
+
+    @classmethod
+    def from_other_class(
+        cls,
+        source_object: Any,
+        *,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
+        union: Union[int,str] = None,
+        any: Any = None,
+        a: set = None,
+        b: set = None,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
 
     i: int
     s: str
@@ -193,6 +244,27 @@ class FooPartial(Structure):
         **kw
     ): ...
 
+
+    @classmethod
+    def from_other_class(
+        cls,
+        source_object: Any,
+        *,
+        x: str = None,
+        i: Optional[int] = None,
+        d: Optional[dict[str, int]] = None,
+        s: Optional[str] = None,
+        person: Optional[Person] = None,
+        dob: Optional[datetime] = None,
+        arr: Optional[list[str]] = None,
+        union: Optional[Union[int,str]] = None,
+        any: Optional[Any] = None,
+        a: Optional[set] = None,
+        b: Optional[set] = None,
+        **kw
+    ): ...
+
+
     x: str
     i: Optional[int] = None
     d: Optional[dict[str, int]] = None
@@ -235,6 +307,25 @@ class FooOmit(Structure):
         **kw
     ): ...
 
+
+    @classmethod
+    def from_other_class(
+        cls,
+        source_object: Any,
+        *,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
+        union: Union[int,str] = None,
+        any: Any = None,
+        x: int = None,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
+
     i: int
     s: str
     person: Person
@@ -262,6 +353,19 @@ class FooPick(Structure):
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
+
+
+    @classmethod
+    def from_other_class(
+        cls,
+        source_object: Any,
+        *,
+        a: set = None,
+        xyz: float = None,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
 
     a: set
     xyz: float
@@ -298,6 +402,26 @@ class Bar(Structure):
         d: Optional[dict[str, int]] = None,
         opt: Optional[float] = None
     ): ...
+
+
+    @classmethod
+    def from_other_class(
+        cls,
+        source_object: Any,
+        *,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
+        union: Union[int,str] = None,
+        any: Any = None,
+        x: int = None,
+        state: State = None,
+        d: Optional[dict[str, int]] = None,
+        opt: Optional[float] = None
+    ): ...
+
 
     i: int
     s: str

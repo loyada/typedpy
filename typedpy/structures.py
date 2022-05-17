@@ -11,6 +11,7 @@ from inspect import Signature, Parameter, signature, currentframe
 import sys
 import typing
 import hashlib
+from json import JSONDecodeError
 
 from typing import get_type_hints, Iterable
 
@@ -729,7 +730,11 @@ def add_annotations_to_class_dict(cls_dict, previous_frame):
             if isinstance(v, str) and len(v) < 50:
                 # The evil eval is to accommodate "from __future__ import annotations".
                 module_name = cls_dict["__module__"]
-                globals = sys.modules[module_name].__dict__ if module_name in sys.modules else None
+                globals = (
+                    sys.modules[module_name].__dict__
+                    if module_name in sys.modules
+                    else None
+                )
                 v = eval(
                     v,
                     globals,
@@ -899,7 +904,13 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
         if Structure.failing_fast():
             for name, val in bound.arguments.items():
-                setattr(self, name, val)
+                try:
+                    setattr(self, name, val)
+                except Exception as e:
+                    if isinstance(e, JSONDecodeError):
+                        raise e
+                    cls_name = self.__class__.__name__
+                    raise e.__class__(f"{cls_name}.{e}") from e
         else:
             errors = []
             for name, val in bound.arguments.items():
@@ -907,7 +918,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                     setattr(self, name, val)
                 except (TypeError, ValueError) as ex:
                     errors.append(ex)
-            raise_errs_if_needed(errors)
+            raise_errs_if_needed(self.__class__, errors)
 
         self.__validate__()
         self._instantiated = True

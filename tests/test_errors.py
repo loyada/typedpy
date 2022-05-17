@@ -44,7 +44,7 @@ def test_error_1():
     with raises(Exception) as ex:
         Foo(a=1, b=10, c=1.1, arr=["abc", 1])
     assert standard_readable_error_for_typedpy_exception(ex.value) == ErrorInfo(
-        field="arr_1", problem="Expected a string", value="1"
+        field="Foo.arr_1", problem="Expected a string", value="1"
     )
 
 
@@ -52,7 +52,7 @@ def test_error_2():
     with raises(Exception) as ex:
         Foo(a=1, b=10, c=1.1, arr=2)
     assert standard_readable_error_for_typedpy_exception(ex.value) == ErrorInfo(
-        field="arr", problem="Expected an array", value="2"
+        field="Foo.arr", problem="Expected an array", value="2"
     )
 
 
@@ -68,7 +68,7 @@ def test_error_4():
     with raises(Exception) as ex:
         Foo(a=1, b=10, c=1.1, arr=[])
     assert standard_readable_error_for_typedpy_exception(ex.value) == ErrorInfo(
-        field="arr", problem="Expected length of at least 1", value="[]"
+        field="Foo.arr", problem="Expected length of at least 1", value="[]"
     )
 
 
@@ -76,7 +76,7 @@ def test_error_5():
     with raises(Exception) as ex:
         Foo(a=1, b=1000, c=1.1, arr=["a"])
     assert standard_readable_error_for_typedpy_exception(ex.value) == ErrorInfo(
-        field="b", problem="Expected a maximum of 100", value="1000"
+        field="Foo.b", problem="Expected a maximum of 100", value="1000"
     )
 
 
@@ -85,7 +85,7 @@ def test_error_6():
         Foo(a=1, b=100, c=1.1, arr=["a"], d="xyz")
     print(standard_readable_error_for_typedpy_exception(ex.value))
     assert standard_readable_error_for_typedpy_exception(ex.value) == ErrorInfo(
-        field="d",
+        field="Foo.d",
         problem="time data 'xyz' does not match format '%Y-%m-%d'",
         value="'xyz'",
     )
@@ -104,7 +104,7 @@ def test_real_world_usage():
         Foo(a=1, b=10, c=1.1, arr=["abc", 1])
     except Exception as ex:
         assert standard_readable_error_for_typedpy_exception(ex) == ErrorInfo(
-            field="arr_1", problem="Expected a string", value="1"
+            field="Foo.arr_1", problem="Expected a string", value="1"
         )
 
 
@@ -120,17 +120,19 @@ def test_multiple_errors_not_fail_fast(all_errors):
         Foo(a=1, b=1000, c=-5, arr=[1])
     errs = standard_readable_error_for_typedpy_exception(ex.value)
     assert (
-        ErrorInfo(field="b", problem="Expected a maximum of 100", value="1000") in errs
+        ErrorInfo(field="Foo.b", problem="Expected a maximum of 100", value="1000")
+        in errs
     )
-    assert ErrorInfo(field="arr_0", problem="Expected a string", value="1") in errs
+    assert ErrorInfo(field="Foo.arr_0", problem="Expected a string", value="1") in errs
     assert (
-        ErrorInfo(field="c", problem="Expected a positive number", value="-5") in errs
+        ErrorInfo(field="Foo.c", problem="Expected a positive number", value="-5")
+        in errs
     )
     simple_form = json.loads(str(ex.value))
     assert set(simple_form) == {
-        "b: Got 1000; Expected a maximum of 100",
-        "arr_0: Got 1; Expected a string",
-        "c: Got -5; Expected a positive number",
+        "Foo.b: Got 1000; Expected a maximum of 100",
+        "Foo.arr_0: Got 1; Expected a string",
+        "Foo.c: Got -5; Expected a positive number",
     }
 
 
@@ -204,10 +206,10 @@ def test_unsuccessful_deserialization_with_many_types(all_errors):
         deserialize_structure(Example, data)
     errs = standard_readable_error_for_typedpy_exception(ex.value)
     expected_errors = [
-        ErrorInfo(field="i", problem="Expected a maximum of 10", value="50"),
-        ErrorInfo(field="s", problem="Expected a string", value="[]"),
+        ErrorInfo(field="Example.i", problem="Expected a maximum of 10", value="50"),
+        ErrorInfo(field="Example.s", problem="Expected a string", value="[]"),
         ErrorInfo(
-            field="any",
+            field="Example.any",
             problem="Does not match any field option:"
             " (1) Does not match <Array. Properties: items = <ClassReference: Person>>. reason: any_1: Expected "
             "a dictionary; Got 'xxx'. (2) Does not match <ClassReference: Person>."
@@ -215,33 +217,36 @@ def test_unsuccessful_deserialization_with_many_types(all_errors):
             " [{'name': 'john', 'ssid': '123'}, 'xxx']",
             value="[{'name': 'john', 'ssid': '123'}, 'xxx']",
         ),
-        ErrorInfo(field="enum", problem="Expected one of 1, 2, 3", value="4"),
+        ErrorInfo(field="Example.enum", problem="Expected one of 1, 2, 3", value="4"),
         ErrorInfo(
-            field="people_0",
+            field="Example.people_0",
             problem=[
                 ErrorInfo(
-                    field="ssid", problem="Expected a minimum length of 3", value="'13'"
+                    field="Person.ssid",
+                    problem="Expected a minimum length of 3",
+                    value="'13'",
                 )
             ],
         ),
         ErrorInfo(
-            field="embedded",
+            field="Example.embedded",
             problem="StructureReference_1: missing a required argument: 'a2'",
             value="{'a1': 8}",
         ),
     ]
     for e in expected_errors[:-1]:
+        print(e)
         assert e in errs
     simple_form = get_simplified_error(str(ex.value))
     for e in simple_form:
         if "StructureReference" not in e:
             assert e in {
-                "i: Got 50; Expected a maximum of 10",
-                "s: Got []; Expected a string",
-                "any: Got [{'name': 'john', 'ssid': '123'}, 'xxx']; Does not match any field option: (1) Does not match <Array. Properties: items = <ClassReference: Person>>. reason: any_1: Expected a dictionary; Got 'xxx'. (2) Does not match <ClassReference: Person>. reason: any: Expected a dictionary; Got [{'name': 'john', 'ssid': '123'}, 'xxx']",
-                "people_0: ssid: Got '13'; Expected a minimum length of 3",
-                "embedded: Got {'a1': 8}; StructureReference_1: missing a required argument: 'a2'",
-                "enum: Got 4; Expected one of 1, 2, 3",
+                "Example.i: Got 50; Expected a maximum of 10",
+                "Example.s: Got []; Expected a string",
+                "Example.any: Got [{'name': 'john', 'ssid': '123'}, 'xxx']; Does not match any field option: (1) Does not match <Array. Properties: items = <ClassReference: Person>>. reason: any_1: Expected a dictionary; Got 'xxx'. (2) Does not match <ClassReference: Person>. reason: any: Expected a dictionary; Got [{'name': 'john', 'ssid': '123'}, 'xxx']",
+                "Example.people_0: Person.ssid: Got '13'; Expected a minimum length of 3",
+                "Example.embedded: Got {'a1': 8}; StructureReference_1: missing a required argument: 'a2'",
+                "Example.enum: Got 4; Expected one of 1, 2, 3",
             }
 
     expected = expected_errors[-1]
@@ -287,5 +292,5 @@ def test_string_err_wrapper(all_errors):
         Bar(foos=[Foo(a="a")])
     simple_form = get_simplified_error(str(ex.value))
     assert simple_form == [
-        """a: Got 'a'; Does not match regular expression: '[\d]{3}'"""
+        """Foo.a: Got 'a'; Does not match regular expression: '[\d]{3}'"""
     ]

@@ -39,9 +39,10 @@ class InvalidStructureErr(ValueError, TypeError):
     pass
 
 
-def raise_errs_if_needed(errors):
+def raise_errs_if_needed(cls, errors):
     if errors:
-        messages = [str(e) for e in errors]
+        cls_name = cls.__name__
+        messages = [f"{cls_name}.{e}" for e in errors]
         raise InvalidStructureErr(json.dumps(messages)) from errors[0]
 
 

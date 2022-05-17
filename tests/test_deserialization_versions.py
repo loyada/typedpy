@@ -1,6 +1,7 @@
 import sys
 from typing import Optional
 
+import pytest
 from pytest import mark
 from typedpy import (
     Array,
@@ -9,7 +10,6 @@ from typedpy import (
     ImmutableStructure,
     Integer,
     Map,
-    PositiveInt,
     String,
     Structure,
     Versioned,
@@ -215,3 +215,16 @@ def test_deleted_and_missing_field():
     assert Deserializer(Example).deserialize(
         {"foo": "xyz", "bar": 1}, keep_undefined=False
     ) == Example(foo="xyz", bar=1)
+
+
+def test_error_includes_structure():
+    class Employee(Structure):
+        id: int
+        name: str
+
+    with pytest.raises(TypeError) as excinfo:
+        Employee(id=None, name=None)
+    assert str(excinfo.value) in {
+        "Employee.id: Expected <class 'int'>; Got None",
+        "Employee.name: Got None; Expected a string",
+    }

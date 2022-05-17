@@ -92,8 +92,8 @@ def test_invalid_numbers(all_errors):
     assert len(errs) == 12
     err_fields = {err.field for err in errs}
     assert {
-        "non_positive_2",
-        "positive_2",
-        "non_negative_2",
-        "negative_1",
+        "Foo.non_positive_2",
+        "Foo.positive_2",
+        "Foo.non_negative_2",
+        "Foo.negative_1",
     } <= err_fields

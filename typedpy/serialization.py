@@ -394,6 +394,7 @@ def deserialize_structure_reference(
             keep_undefined,
             mapper,
             the_dict,
+            cls=cls,
             camel_case_convert=camel_case_convert,
         )
     )
@@ -406,6 +407,7 @@ def construct_fields_map(
     keep_undefined,
     mapper,
     input_dict,
+    cls,
     camel_case_convert=False,
     ignore_none=False,
 ):
@@ -452,7 +454,7 @@ def construct_fields_map(
                 except (TypeError, ValueError) as ex:
                     errors.append(ex)
 
-    raise_errs_if_needed(errors)
+    raise_errs_if_needed(cls, errors)
     return result
 
 
@@ -537,6 +539,7 @@ def deserialize_structure_internal(
             keep_undefined,
             mapper,
             input_dict,
+            cls=cls,
             camel_case_convert=camel_case_convert,
             ignore_none=ignore_none,
         )

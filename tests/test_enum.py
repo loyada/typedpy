@@ -76,7 +76,7 @@ def test_enum_using_enum_error():
 
     with raises(ValueError) as excinfo:
         Example(arr=["ABC", Values.DEF, 3])
-    assert "arr_2: Got 3; Expected one of: ABC, DEF, GHI" == str(excinfo.value)
+    assert "Example.arr_2: Got 3; Expected one of: ABC, DEF, GHI" == str(excinfo.value)
 
 
 def test_enum_using_enum_with_many_values_error():

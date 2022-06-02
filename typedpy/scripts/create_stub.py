@@ -24,9 +24,16 @@ def main():
         type=str,
         help="exclude patterns in the form path1:path2:path3",
     )
-    parser.add_argument('--ast',
-                        action=argparse.BooleanOptionalAction,
-                        help="use AST instead of reflection(currently implemented only for sqlalchemy ORM)")
+    parser.add_argument(
+        "--ast",
+        action=argparse.BooleanOptionalAction,
+        help="use AST instead of reflection(currently implemented only for sqlalchemy ORM)",
+    )
+    parser.add_argument(
+        "--best-effort",
+        action=argparse.BooleanOptionalAction,
+        help="try using reflection and if failed, try using AST",
+    )
 
     args = parser.parse_args()
 
@@ -34,6 +41,7 @@ def main():
     input_file_abs_path = str(Path(args.src_script_path).resolve())
     stub_dir_abs_path = str(Path(src_root_abs_path) / Path(args.stubs_dir))
     use_ast = args.ast
+    best_effort = args.best_effort
 
     exclude = args.exclude.split(":") if args.exclude else []
     for x in exclude:
@@ -41,7 +49,15 @@ def main():
             return
 
     func = create_stub_for_file_using_ast if use_ast else create_stub_for_file
-    func(input_file_abs_path, src_root_abs_path, stub_dir_abs_path)
+    try:
+        func(input_file_abs_path, src_root_abs_path, stub_dir_abs_path)
+    except Exception as e:
+        if best_effort and not use_ast:
+            create_stub_for_file_using_ast(
+                input_file_abs_path, src_root_abs_path, stub_dir_abs_path
+            )
+        else:
+            raise e
 
 
 if __name__ == "__main__":

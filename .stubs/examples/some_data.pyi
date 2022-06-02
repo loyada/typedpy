@@ -9,6 +9,8 @@ from dataclasses import dataclass as dataclass
 from typing import Optional as Optional
 
 
+FROZEN: frozenset = frozenset()
+
 class SomeData:
 
     a: int

@@ -928,7 +928,9 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
 
 def _get_consts(attrs, additional_classes, additional_imports):
     def _is_of_builtin(v) -> bool:
-        return isinstance(v, (int, float, str, dict, list, set, complex, bool))
+        return isinstance(
+            v, (int, float, str, dict, list, set, complex, bool, frozenset)
+        )
 
     def _as_builtin(v) -> str:
         if isinstance(v, str):
@@ -948,6 +950,8 @@ def _get_consts(attrs, additional_classes, additional_imports):
         the_type = (
             _get_type_info(annotations[c], attrs, additional_classes)
             if c in annotations
+            else _get_type_info(attrs[c].__class__, attrs, additional_classes)
+            if not inspect.isclass(attrs[c]) and attrs[c] is not None
             else None
         )
         type_str = f": {the_type}" if the_type else ""

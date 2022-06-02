@@ -14,9 +14,9 @@ from typedpy import Structure as Structure
 from typedpy import create_pyi as create_pyi
 
 
-CONSTANT1 = ""
+CONSTANT1: str = ""
 
-CONSTANT2 = {}
+CONSTANT2: dict = {}
 
 class NotStructure:
     pass

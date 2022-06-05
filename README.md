@@ -23,6 +23,8 @@
 
 * Full featured, sophisticated, class-based type system
 
+* Includes Python stubs generator that provides static type checking within the IDE
+
 * Supports JSON schema draft4 features, including mapping schema-to-code and code-to-schema
 
 * Serialization, deserialization between JSON-like dict and typedpy objects, including custom mapping. Support for pickling.

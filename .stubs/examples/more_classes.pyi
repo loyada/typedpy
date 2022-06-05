@@ -23,6 +23,16 @@ class NotStructure:
 
 
 
+class MyException(Exception):
+    pass
+
+
+
+class FooException(MyException):
+    pass
+
+
+
 class EmptyStruct(Structure):
     pass
 

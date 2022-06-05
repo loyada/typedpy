@@ -34,9 +34,6 @@ class Person(Structure):
     some_const = 1111
 
 
-
-
-
 def aaa(*, a: dict[str, list[datetime]]) -> typing.Optional:
     pass
 
@@ -44,6 +41,14 @@ def aaa(*, a: dict[str, list[datetime]]) -> typing.Optional:
 def bbb(p: path, d: typing.Dict):
     print(p)
     print(d)
+
+
+class MyException(Exception):
+    pass
+
+
+class FooException(MyException):
+    pass
 
 
 if __name__ == "__main__":

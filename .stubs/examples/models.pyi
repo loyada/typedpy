@@ -42,7 +42,7 @@ class Customer(Mappable):
             email: str = None,
             invoices = None,
             foos = None,
-    ): ...
+    ) -> Customer: ...
 
     @staticmethod
     def by_id(

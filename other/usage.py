@@ -1,4 +1,3 @@
-
 # i: int
 # d: dict
 # s: str
@@ -15,9 +14,7 @@ from typing import Optional
 
 from examples.api_example import Bar, Foo
 from examples.enums import State
-from examples.more_classes import Person
-
-
+from examples.more_classes import FooException, Person
 
 
 bar = Bar(
@@ -31,7 +28,7 @@ bar = Bar(
     state=State.NY,
     dob=datetime.now(),
     person=Person(),
-    arr = []
+    arr=[],
 )
 
 bar.shallow_clone_with_overrides(i="xyz", state="NY")
@@ -42,3 +39,5 @@ foo.get_double_aa(x=2, p=2)
 from examples.more_classes import Person, aaa
 
 aaa(a={"vvv": [datetime.now()]})
+
+raise FooException("asdasdd")

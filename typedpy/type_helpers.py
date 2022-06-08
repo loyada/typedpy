@@ -1002,7 +1002,7 @@ def create_stub_for_file(abs_module_path: str, src_root: str, stubs_root: str = 
 def create_pyi_ast(calling_source_file, pyi_path):
     out_src = [
         "import datetime",
-        "from typing import Optional, Any, Iterable",
+        "from typing import Optional, Any, Iterable, Union",
         "from typedpy import Structure",
     ]
     additional_imports = []
@@ -1028,6 +1028,7 @@ def create_pyi_ast(calling_source_file, pyi_path):
             additional_imports.append(alias)
 
     if found_sqlalchmy:
+        out_src.extend(["from sqlalchemy import Column"])
         out_src.extend([""] * 3)
         models, functions = get_models(calling_source_file)
         out_src += models_to_src(models)

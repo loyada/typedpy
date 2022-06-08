@@ -123,11 +123,15 @@ def models_to_src(models: typing.Iterable[ModelClass]) -> typing.Iterable[str]:
     for model in models:
         bases = f"({', '.join(model.bases)})" if model.bases else ""
         res.append(f"class {model.name}{bases}:")
+        column_with_type = [
+            f"{INDENT}{field}: Union[Column, {the_type}]"
+            for (field, the_type) in model.columns.items()
+        ]
         fields_with_type = [
             f"{INDENT}{field}: {the_type}"
             for (field, the_type) in model.columns.items()
         ]
-        for field in fields_with_type:
+        for field in column_with_type:
             res.append(field)
         for rel in model.relationships:
             res.append(f"{INDENT}{rel}: Any")

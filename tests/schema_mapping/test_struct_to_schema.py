@@ -188,7 +188,7 @@ def test_datestring_field():
         "properties": {
             "a": {
                 "type": "string",
-                "pattern": "^([12]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01]))$",
+                "format": "date",
             }
         },
         "required": ["a"],

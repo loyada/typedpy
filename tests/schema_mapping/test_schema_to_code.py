@@ -25,6 +25,7 @@ definitions = {
 }
 
 schema = {
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
     "description": "This is a test of schema mapping",
     "properties": {

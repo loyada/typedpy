@@ -50,7 +50,7 @@ def _diff_dict(val, otherval) -> dict:
             if diff:
                 result[key] = diff
         else:
-            result[key] = f"{v} vs {otherval[key]}"
+            result[key] = f"{v} vs {val[key]}"
     return result
 
 

@@ -40,6 +40,14 @@ class IPV4(String):
                 f"{self._name}: Got {wrap_val(value)}; wrong format for IP version 4"
             )
 
+    @classmethod
+    def to_json_schema(cls) -> dict:
+        return {"type": "string", "format": "ipv4"}
+
+    @classmethod
+    def from_json_schema(cls, schema: dict):
+        return "IPV4()" if schema == IPV4.to_json_schema() else None
+
 
 class HostName(String):
     """
@@ -60,6 +68,14 @@ class HostName(String):
                     f"{self._name}: Got {wrap_val(value)}; wrong format for hostname"
                 )
         super().__set__(instance, value)
+
+    @classmethod
+    def to_json_schema(cls) -> dict:
+        return {"type": "string", "format": "hostname"}
+
+    @classmethod
+    def from_json_schema(cls, schema: dict):
+        return "HostName()" if schema == HostName.to_json_schema() else None
 
 
 class DateString(String):
@@ -87,6 +103,14 @@ class DateString(String):
                 f"{self._name}: Got {wrap_val(value)}; {ex.args[0]}"
             ) from ex
 
+    @classmethod
+    def to_json_schema(cls) -> dict:
+        return {"type": "string", "format": "date"}
+
+    @classmethod
+    def from_json_schema(cls, schema: dict):
+        return "DateString()" if schema == DateString.to_json_schema() else None
+
 
 class TimeString(TypedField):
     """
@@ -103,6 +127,14 @@ class TimeString(TypedField):
             raise ValueError(
                 f"{self._name}: Got {wrap_val(value)}; {ex.args[0]}"
             ) from ex
+
+    @classmethod
+    def to_json_schema(cls) -> dict:
+        return {"type": "string", "format": "time"}
+
+    @classmethod
+    def from_json_schema(cls, schema: dict):
+        return "TimeString()" if schema == TimeString.to_json_schema() else None
 
 
 class DateField(SerializableField):
@@ -157,6 +189,14 @@ class DateField(SerializableField):
     @property
     def get_type(self):
         return date
+
+    @classmethod
+    def to_json_schema(cls) -> dict:
+        return {"type": "string", "format": "date"}
+
+    @classmethod
+    def from_json_schema(cls, schema: dict):
+        return "DateField()" if schema == DateField.to_json_schema() else None
 
 
 class DateTime(SerializableField):

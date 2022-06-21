@@ -3,7 +3,7 @@ import logging
 from collections import OrderedDict
 from typing import Union
 
-from .commons import first_in, wrap_val
+from .commons import default_factories, first_in, wrap_val
 from .fields import (
     FunctionCall,
     Map,
@@ -87,6 +87,9 @@ def convert_to_schema(field, definitions_schema, serialization_mapper: dict = No
             )
             for f in field
         ]
+    custom = field.__class__.to_json_schema()
+    if custom:
+        return custom
     mapper = get_mapper(field.__class__)(field)
     return mapper.to_schema(
         definitions_schema, serialization_mapper=serialization_mapper
@@ -193,7 +196,8 @@ def structure_to_schema(structure, definitions_schema, serialization_mapper=None
     return fields_schema, definitions_schema
 
 
-def convert_to_field_code(schema, definitions):
+@default_factories
+def convert_to_field_code(schema, definitions, additional_fields=list):
     """
     In case schema is None, should return None.
     Should deal with a schema that is a dict, as well as one that is a list
@@ -235,6 +239,10 @@ def convert_to_field_code(schema, definitions):
             else:
                 cls = Map
         else:
+            for c in additional_fields:
+                custom_mapping = c.from_json_schema(schema)
+                if custom_mapping:
+                    return custom_mapping
             cls = type_name_to_field[schema.get("type", "object")]
         mapper = get_mapper(cls)
     params_list = mapper.get_paramlist_from_schema(schema, definitions)
@@ -247,7 +255,10 @@ def convert_to_field_code(schema, definitions):
     return f"{cls.__name__}({params_as_string})"
 
 
-def schema_to_struct_code(struct_name, schema, definitions_schema):
+@default_factories
+def schema_to_struct_code(
+    struct_name, schema, definitions_schema, additional_fields=list
+):
     """
     Generate code for the main class that maps to the given JSON schema.
     The main struct_name can include references to structures defined in
@@ -290,16 +301,21 @@ def schema_to_struct_code(struct_name, schema, definitions_schema):
     if the_type == "object":
         properties = schema.get("properties", {})
         for (name, sch) in properties.items():
-            body += [f"    {name} = {convert_to_field_code(sch, definitions_schema)}"]
+            body += [
+                f"    {name} = {convert_to_field_code(sch, definitions_schema, additional_fields=additional_fields)}"
+            ]
     else:
-        body += [f"    wrapped = {convert_to_field_code(schema, definitions_schema)}"]
+        body += [
+            f"    wrapped = {convert_to_field_code(schema, definitions_schema, additional_fields=additional_fields)}"
+        ]
 
     body += ["", f"    _required = {required}"] if required is not None else []
 
     return "\n".join(body)
 
 
-def schema_definitions_to_code(schema):
+@default_factories
+def schema_definitions_to_code(schema, additional_fields=list):
     """
     Generate code for the classes in the definitions that maps to the given JSON schema.
     `See working example in test_schema_to_code.py. <https://github.com/loyada/typedpy/tree/master/tests/test_schema_to_code.py>`_
@@ -313,11 +329,18 @@ def schema_definitions_to_code(schema):
     """
     code = []
     for (name, sch) in schema.items():
-        code.append(schema_to_struct_code(name, sch, schema))
+        code.append(
+            schema_to_struct_code(
+                name, sch, schema, additional_fields=additional_fields
+            )
+        )
     return "\n\n\n".join(code)
 
 
-def write_code_from_schema(schema, definitions_schema, filename, class_name):
+@default_factories
+def write_code_from_schema(
+    schema, definitions_schema, filename, class_name, additional_fields=list
+):
     """
     Generate code from schema and write it to a file.
 
@@ -338,9 +361,14 @@ def write_code_from_schema(schema, definitions_schema, filename, class_name):
             the file name for the output. Typically should be end with ".py".
         class_name(str):
             the main Structure name
+        additional_fields(list[Type[Field]]) - additional field classes with custom mapping
     """
-    supporting_classes = schema_definitions_to_code(definitions_schema)
-    structure_code = schema_to_struct_code(class_name, schema, definitions_schema)
+    supporting_classes = schema_definitions_to_code(
+        definitions_schema, additional_fields=additional_fields
+    )
+    structure_code = schema_to_struct_code(
+        class_name, schema, definitions_schema, additional_fields=additional_fields
+    )
     with open(filename, "w", encoding="utf-8") as fout:
         fout.write("from typedpy import *\n\n\n")
         if definitions_schema:

@@ -451,6 +451,14 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
     def get_type(self):
         return typing.Any
 
+    @classmethod
+    def to_json_schema(cls) -> dict:
+        ...
+
+    @classmethod
+    def from_json_schema(cls, schema: dict):
+        return None
+
 
 class TypedField(Field):
     """

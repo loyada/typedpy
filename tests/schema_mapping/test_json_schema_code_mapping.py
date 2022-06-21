@@ -6,7 +6,14 @@ from unittest.mock import patch
 
 import pytest
 
-from typedpy import Structure, structure_to_schema, write_code_from_schema
+from typedpy import (
+    DateField,
+    DateString,
+    IPV4,
+    Structure,
+    structure_to_schema,
+    write_code_from_schema,
+)
 
 
 def get_abs_path_from_here(relative_path: str) -> Path:
@@ -53,6 +60,7 @@ def fixture_code_load():
         ("Example10", "example10_schema.json", "generated_example10.py"),
         ("Example11", "example11_schema.json", "generated_example11.py"),
         ("Example12", "example12_schema.json", "generated_example12.py"),
+        ("Example13", "example13_schema.json", "generated_example13.py"),
     ],
 )
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
@@ -77,7 +85,13 @@ def test_example_code_to_schema_and_back(
     generated_file_name = str(get_abs_path_from_here("generated") / generated_filename)
     expected_file_name = str(get_abs_path_from_here("expected") / generated_filename)
 
-    write_code_from_schema(schema, definitions, generated_file_name, "Example1")
+    write_code_from_schema(
+        schema,
+        definitions,
+        generated_file_name,
+        "Example1",
+        additional_fields=[IPV4, DateField],
+    )
     generated_code = code_load(generated_file_name).strip()
     expected_code = code_load(expected_file_name).strip()
     assert generated_code == expected_code

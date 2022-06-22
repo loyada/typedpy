@@ -352,7 +352,7 @@ def write_code_from_schema(
 
     .. code-block:: python
 
-        write_code_from_schema(schema, definitions, "generated_sample.py", "Poo")
+        write_code_from_schema(schema, definitions, "generated_sample.py", "Poo", additional_fields=[CustomField1, CustomField2])
 
 
     Arguments:

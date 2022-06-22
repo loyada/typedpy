@@ -7,6 +7,7 @@ from typedpy import Structure
 
 import typing
 from datetime import datetime as datetime
+from functools import partial as partial
 from os import path as path
 from examples.enums import Sex as Sex
 from typedpy import Enum as Enum
@@ -17,6 +18,8 @@ from typedpy import create_pyi as create_pyi
 CONSTANT1: str = ""
 
 CONSTANT2: dict = {}
+
+BBB: partial
 
 class NotStructure:
     pass

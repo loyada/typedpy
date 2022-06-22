@@ -942,7 +942,16 @@ def _get_consts(attrs, additional_classes, additional_imports):
     constants = {
         k: v
         for (k, v) in attrs.items()
-        if (_is_of_builtin(v) or v is None)
+        if (
+            _is_of_builtin(v)
+            or v is None
+            or k in annotations
+            or (
+                not inspect.isclass(v)
+                and not inspect.isfunction(v)
+                and not isinstance(v, typing.TypeVar)
+            )
+        )
         and not k.startswith("__")
         and k not in additional_imports
     }

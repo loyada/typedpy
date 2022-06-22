@@ -116,7 +116,7 @@ def _validated_mapped_value(mapper, key):
 def structure_to_schema(structure, definitions_schema, serialization_mapper=None):
     """
     Generate JSON schema from :class:`Structure`
-    `See working examples in test. <https://github.com/loyada/typedpy/tree/master/tests/schema_mapping>`_
+    `See working examples in tests. <https://github.com/loyada/typedpy/tree/master/tests/schema_mapping>`_
 
     Arguments:
         structure( subclass of :class:`Structure` ):

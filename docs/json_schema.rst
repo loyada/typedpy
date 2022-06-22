@@ -160,16 +160,47 @@ For example:
 In the example above, if '_required' was [], or _additionalProperties was True, then the schema was an object with
 a single property 'arr', as usual.
 
+Schema mapping beyond the "basic" Types
+---------------------------------------
+To support custom Field types mapping, you need to implement 2 methods in the Field class: to_json_schema, and
+from_json_schema. Here is an example from Typedpy:
+
+
+.. code-block:: py
+
+    class IPV4(String):
+
+    # skipping some code....
+
+    @classmethod
+    def to_json_schema(cls) -> dict:
+        return {"type": "string", "format": "ipv4"}
+
+    @classmethod
+    def from_json_schema(cls, schema: dict):
+        return "IPV4()" if schema == IPV4.to_json_schema() else None
+
+
+
+#.  to_json_schema - returns the schema for this field.
+#.  from_json_schema - accepts the schema and returns the string for the code needed to instantiate the Field. If it
+    does not match, it should return None.
+
+
 
 Limitations and Comments
 ------------------------
 #. JSON schema's String formatters are unsupported
-#. Only JSON Schema Draft 4 is supported. Draft 3/6/7 are unsupported
-#. Only the Field types that map to JSON Schema Draft 4 are supported. This means that if you add a new custom Field
-   class, it is currently unsupported, since the API does not include additional custom mappers.
+#. Not all the details of JSON schema are supported - but most of the common ones are.
+#. Only the Field types that map to JSON Schema Draft 4 are inherently supported. This means that if you add a new
+   custom Field class, you need to use the method described above.
 #. Set and Tuple fields are mapped to array types when converting code to schema
 #. Regarding JSON pointers(i.e. "$ref") - only pointers that point to an object under "#/definitions/" are supported
 
+
+Examples
+--------
+Take a look at the many tests `here <https://github.com/loyada/typedpy/blob/e0505f40fefcb1c49e5e65563d4739ae1ea2c5b3/tests/schema_mapping/test_json_schema_code_mapping.py#L67>`_ .
 
 Functions
 =========

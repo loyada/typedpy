@@ -1,5 +1,6 @@
 import typing
 from datetime import datetime
+from functools import partial
 from os import path
 
 from examples.enums import Sex
@@ -49,6 +50,9 @@ class MyException(Exception):
 
 class FooException(MyException):
     pass
+
+
+BBB = partial(bbb, 123)
 
 
 if __name__ == "__main__":

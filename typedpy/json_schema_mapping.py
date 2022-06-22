@@ -272,6 +272,10 @@ def schema_to_struct_code(
         definitions_schema(dict):
             schema for definitions of objects that can be referred to in the main schema. If non exist,
             just use an empty dict.
+        additional_fields(list):
+            additional Types of Fields with custom schema mapping that can appear in the schema. These
+            have to implement the class method from_json_schema(), which should return a string of the code
+            the Schema is mapping to.
     Returns:
         A string with the code of the class. This can either be executed directly,
         using exec(), or written to a file.

@@ -169,28 +169,27 @@ from_json_schema. Here is an example from Typedpy:
 .. code-block:: py
 
     class IPV4(String):
+        # skipping some code....
 
-    # skipping some code....
+        @classmethod
+        def to_json_schema(cls) -> dict:
+            return {"type": "string", "format": "ipv4"}
 
-    @classmethod
-    def to_json_schema(cls) -> dict:
-        return {"type": "string", "format": "ipv4"}
-
-    @classmethod
-    def from_json_schema(cls, schema: dict):
-        return "IPV4()" if schema == IPV4.to_json_schema() else None
+        @classmethod
+        def from_json_schema(cls, schema: dict):
+            return "IPV4()" if schema == IPV4.to_json_schema() else None
 
 
 
 #.  to_json_schema - returns the schema for this field.
 #.  from_json_schema - accepts the schema and returns the string for the code needed to instantiate the Field. If it
     does not match, it should return None.
-
+#.  When converting from schema to code, the optional parameter "additional_fields" should have a list of all the classes
+    with custom mapping
 
 
 Limitations and Comments
 ------------------------
-#. JSON schema's String formatters are unsupported
 #. Not all the details of JSON schema are supported - but most of the common ones are.
 #. Only the Field types that map to JSON Schema Draft 4 are inherently supported. This means that if you add a new
    custom Field class, you need to use the method described above.

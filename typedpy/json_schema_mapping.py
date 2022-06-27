@@ -352,7 +352,7 @@ def write_code_from_schema(
 
     .. code-block:: python
 
-        write_code_from_schema(schema, definitions, "generated_sample.py", "Poo")
+        write_code_from_schema(schema, definitions, "generated_sample.py", "Poo", additional_fields=[CustomField1, CustomField2])
 
 
     Arguments:
@@ -365,7 +365,8 @@ def write_code_from_schema(
             the file name for the output. Typically should be end with ".py".
         class_name(str):
             the main Structure name
-        additional_fields(list[Type[Field]]) - additional field classes with custom mapping
+        additional_fields(list[Type[Field]]):
+            additional field classes with custom mapping
     """
     supporting_classes = schema_definitions_to_code(
         definitions_schema, additional_fields=additional_fields

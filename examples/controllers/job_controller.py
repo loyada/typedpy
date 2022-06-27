@@ -9,14 +9,15 @@ class Base:
     base2: list
     base3 = {"x": 1}
 
+
 class JobController(Base):
-    CONST_ID  = 5
+    CONST_ID = 5
     CONST_ID_WITH_ANNOTATION: str
 
     def __init__(self, urls: dict[str, dict]):
-        self.urls =urls
+        self.urls = urls
 
-    def execute(self, job_id:str):
+    def execute(self, job_id: str):
         pass
 
     def aaa(self, a: list[datetime] = list, o: Optional[str] = None):

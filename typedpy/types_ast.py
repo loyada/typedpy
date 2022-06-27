@@ -1,5 +1,6 @@
 import ast
 import typing
+import re
 
 from typedpy import Array, Map, Structure
 
@@ -238,3 +239,38 @@ def get_models(
                         )
                     )
     return classes, functions
+
+
+def extract_attributes_from_init(source):
+    root = ast.parse(source.strip())
+    info = _get_function_info(root.body[0])
+    self_name = info.positional_args[0]
+    positional_args = [x.split(":") for x in info.positional_args[1:]]
+    normalized_positional_args = dict(
+        [x if len(x) == 2 else x + ["Any"] for x in positional_args]
+    )
+    keyword_only_args_without_default = [
+        x.split("=")[0] for x in info.keyword_only_args
+    ]
+    keyword_only_args = [x.split(":") for x in keyword_only_args_without_default]
+    normalized_keyword_only_args = dict(
+        [x if len(x) == 2 else x + ["Any"] for x in keyword_only_args]
+    )
+    type_by_param = {**normalized_positional_args, **normalized_keyword_only_args}
+
+    func_body = root.body[0].body
+
+    res = {}
+    for node in func_body:
+        if isinstance(node, ast.Assign):
+            if (
+                isinstance(node.targets[0], ast.Attribute)
+                and isinstance(node.targets[0].value, ast.Name)
+                and node.targets[0].value.id == self_name
+            ):
+                # assignment to attribute
+                attribute_name = node.targets[0].attr
+                if isinstance(node.value, ast.Name) and node.value.id in type_by_param:
+                    res[attribute_name] = type_by_param[node.value.id]
+
+    return res

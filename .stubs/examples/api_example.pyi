@@ -51,6 +51,33 @@ class State1(Enum):
 
 
 
+class WithCustomInit(Structure):
+
+    def shallow_clone_with_overrides(
+        self,
+        i: int = None,
+        s: str = None,
+        **kw
+    ): ...
+
+
+    @classmethod
+    def from_other_class(
+        cls,
+        source_object: Any,
+        *,
+        i: int = None,
+        s: str = None,
+        **kw
+    ): ...
+
+
+    i: int
+    s: str
+    
+    def __init__(self): ...
+
+
 class Employee(Structure):
     def __init__(
         self,

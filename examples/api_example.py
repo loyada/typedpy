@@ -24,6 +24,14 @@ from typedpy import (
 from typedpy import create_pyi
 
 
+class WithCustomInit(Structure):
+    i: int
+    s: str
+
+    def __init__(self):
+        super().__init__(i=5, s="x")
+
+
 # Note that Person will require importing Address in the pyi file
 class Employee(Extend[Person]):
     ssid: str

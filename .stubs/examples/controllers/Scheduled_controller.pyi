@@ -13,6 +13,7 @@ from examples.controllers.job_controller import JobController as JobController
 
 class ScheduledController(JobController):
 
+    d:  datetime
 
     def __init__(self, *args, d: datetime, job_controller: JobController, vehicle: Vehicle, **kw): ...
 

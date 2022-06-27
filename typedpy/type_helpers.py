@@ -1,27 +1,26 @@
-import collections.abc
+import builtins
 import enum
 import importlib.util
 import inspect
 import logging
 import os
 import sys
-import builtins
 import typing
 from os.path import relpath
 from pathlib import Path
 
 from .commons import doublewrap_val, nested
-from .fields import AllOf, AnyOf, FunctionCall, Map, OneOf
-from .enum import Enum
+from .fields import FunctionCall
 from .serialization_wrappers import Deserializer, Serializer
-from .structures import (
-    ImmutableStructure,
-    NoneField,
-    Structure,
-    Field,
-    get_typing_lib_info,
+from .structures import Field, ImmutableStructure, Structure
+from .type_info_getter import get_all_type_info, get_type_info, is_typeddict
+from .types_ast import (
+    extract_attributes_from_init,
+    functions_to_str,
+    get_imports,
+    get_models,
+    models_to_src,
 )
-from .types_ast import functions_to_str, get_imports, get_models, models_to_src
 from .utility import type_is_generic
 
 builtins_types = [
@@ -54,184 +53,6 @@ def _get_package(v, attrs):
 
 def _as_something(k, attrs):
     return f" as {k}" if attrs.get("__file__", "").endswith("__init__.py") else ""
-
-
-def _get_anyof_typing(field, locals_attrs, additional_classes):
-    union_fields = getattr(field, "_fields", [])
-    if len(union_fields) == 2 and isinstance(union_fields[1], NoneField):
-        info = _get_type_info(union_fields[0], locals_attrs, additional_classes)
-        return f"Optional[{info}] = None"
-
-    fields = ",".join(
-        [_get_type_info(f, locals_attrs, additional_classes) for f in union_fields]
-    )
-    return f"Union[{fields}]"
-
-
-def _get_type_info_for_typing_generic(
-    the_type, locals_attrs, additional_classes
-) -> typing.Optional[str]:
-    origin = getattr(the_type, "__origin__", None)
-    args = getattr(the_type, "__args__", [])
-    if origin in {list, set, tuple}:
-        if len(args) != 1:
-            return origin.__name__
-        return f"{origin.__name__}[{_get_type_info(args[0], locals_attrs, additional_classes)}]"
-    mapped_args = (
-        [_get_type_info(a, locals_attrs, additional_classes) for a in args]
-        if args
-        else []
-    )
-
-    if origin is collections.abc.Callable:
-        args_st = (
-            ""
-            if not mapped_args
-            else f"[{mapped_args[0]}]"
-            if len(mapped_args) == 1
-            else f"[[{','.join(mapped_args[:-1])}], {mapped_args[-1]}]"
-        )
-        additional_classes.add(typing.Callable)
-        return f"Callable{args_st}"
-    if origin is dict:
-        if mapped_args:
-            return f"dict[{', '.join(mapped_args)}]"
-        return "dict"
-    if origin is collections.abc.Iterable:
-        additional_classes.add(typing.Iterable)
-        args_st = "" if not mapped_args else f"[{mapped_args[0]}]"
-        return f"Iterable{args_st}"
-
-    if origin is collections.abc.Mapping:
-        additional_classes.add(typing.Mapping)
-        args_st = "" if not mapped_args else f"[{', '.join(mapped_args)}]"
-        return f"Mapping{args_st}"
-
-    if origin is type:
-        args_st = "" if not mapped_args else f"[{', '.join(mapped_args)}]"
-        return f"Type{args_st}"
-
-    if origin is collections.abc.Iterator:
-        additional_classes.add(typing.Iterator)
-        args_st = "" if not mapped_args else f"[{mapped_args[0]}]"
-        return f"Iterator{args_st}"
-
-    if origin is typing.Union:
-        if "None" in mapped_args:
-            mapped_args = [a for a in mapped_args if str(a) != "None"]
-            the_type = "Optional"
-        else:
-            the_type = "Type"
-        args_st = "" if not mapped_args else f"[{', '.join(mapped_args)}]"
-        return f"{the_type}{args_st}"
-
-    if origin and mapped_args:
-        mapped_origin = _get_type_info(origin, locals_attrs, additional_classes)
-        args_st = "" if not mapped_args else f"[{', '.join(mapped_args)}]"
-        return f"{mapped_origin}{args_st}"
-    return None
-
-
-def _found_in_local_attrs(field, attrs):
-    for k, v in attrs.items():
-        if v is field:
-            return k
-    return None
-
-
-def _get_type_info(field, locals_attrs, additional_classes):
-    try:
-        if field is ...:
-            return "..."
-        found_import_key = _found_in_local_attrs(field, locals_attrs)
-        if found_import_key:
-            return found_import_key
-        if isinstance(field, (list, dict)):
-            cls_name = field.__class__.__name__
-            mapped_args = [
-                _get_type_info(a, locals_attrs, additional_classes) for a in field
-            ]
-            args_st = "" if not mapped_args else f"[{', '.join(mapped_args)}]"
-            return f"{cls_name}{args_st}"
-
-        if field in [None, type(None)]:
-            return "None"
-        if isinstance(field, (AnyOf, OneOf, AllOf)):
-            return _get_anyof_typing(field, locals_attrs, additional_classes)
-
-        if isinstance(field, Map):
-            if not field.items:
-                return "dict"
-            sub_types = ", ".join(
-                [
-                    _get_type_info(f, locals_attrs, additional_classes)
-                    for f in field.items
-                ]
-            )
-            return f"dict[{sub_types}]"
-
-        if isinstance(field, Enum):
-            if field._is_enum:
-                additional_classes.add(field._enum_class)
-                return field._enum_class.__name__
-
-        the_type = (
-            getattr(field, "get_type", field) if isinstance(field, Field) else field
-        )
-        # deal with from __future__ import annotations
-        if isinstance(the_type, str):
-            the_type = eval(the_type, locals_attrs)
-            field = the_type
-            if isinstance(the_type, str):
-                return the_type
-
-        if the_type in builtins_types:
-            return the_type.__name__
-
-        if the_type in [typing.Any, typing.Optional, typing.Union, typing.NoReturn]:
-            return getattr(the_type, "_name")
-        if (
-            getattr(the_type, "__module__", None)
-            and the_type.__module__ != "builtins"
-            and the_type not in locals_attrs
-            and not type_is_generic(the_type)
-        ):
-            additional_classes.add(field)
-
-        if type_is_generic(the_type):
-            res = _get_type_info_for_typing_generic(
-                the_type, locals_attrs, additional_classes
-            )
-            if res:
-                return res
-
-            return _get_type_info(
-                get_typing_lib_info(field), locals_attrs, additional_classes
-            )
-
-        return the_type.__name__
-    except Exception as e:
-        logging.exception(e)
-        return "Any"
-
-
-def _get_all_type_info(cls, locals_attrs, additional_classes) -> dict:
-    type_by_name = {}
-    required = getattr(cls, "_required", None)
-    for field_name, field in cls.get_all_fields_by_name().items():
-        try:
-            type_info_str: str = _get_type_info(field, locals_attrs, additional_classes)
-            if (
-                field_name not in required
-                and required is not None
-                and not type_info_str.startswith("Optional[")
-            ):
-                type_info_str = f"Optional[{type_info_str}] = None"
-            type_by_name[field_name] = type_info_str
-        except Exception as e:
-            logging.exception(e)
-
-    return type_by_name
 
 
 def _get_struct_classes(attrs, only_calling_module=True):
@@ -300,7 +121,7 @@ def _get_mapped_extra_imports(additional_imports) -> dict:
     mapped = {}
     for c in additional_imports:
         try:
-            name = _get_type_info(c, {}, set())
+            name = get_type_info(c, {}, set())
             if inspect.isclass(c) and issubclass(c, Structure):
                 module_name = c.__module__
             else:
@@ -356,7 +177,7 @@ def _get_method_and_attr_list(cls, members):
     attrs = []
     cls_dict = cls.__dict__
     for attribute in members:
-        if attribute.startswith(private_prefix):
+        if attribute.startswith(private_prefix) and attribute != "__init__":
             continue
         attr = (
             cls_dict.get(attribute)
@@ -376,20 +197,28 @@ def _get_method_and_attr_list(cls, members):
                 attr is not None,
                 not inspect.isclass(attr),
                 not is_func,
-                not isinstance(attr, cls),
+                not (is_typeddict(cls) or isinstance(attr, cls)),
                 not (issubclass(cls, Structure) and attribute.startswith("_")),
             ]
         ):
             attrs.append(attribute)
             continue
 
-        if is_func and attribute not in all_fields and attribute not in ignored_methods:
+        if (
+            is_func
+            and attribute not in all_fields
+            and (
+                attribute not in ignored_methods
+                or (issubclass(cls, Structure) and attribute == "__init__")
+            )
+        ):
             method_list.append(attribute)
 
     if (
         not issubclass(cls, Structure)
         and not issubclass(cls, enum.Enum)
         and "__init__" in members
+        and "__init__" not in method_list
     ):
         method_list = ["__init__"] + method_list
 
@@ -425,7 +254,6 @@ def _is_not_generic_and_private_class_or_module(the_type):
 def _get_methods_info(
     cls, locals_attrs, additional_classes, ignore_attributes=None
 ) -> list:
-    method_by_name = []
     ignore_attributes = ignore_attributes or set()
     members = {}
     members.update(dict(cls.__dict__))
@@ -443,13 +271,13 @@ def _get_methods_info(
             continue
         if inspect.isclass(the_type) or type_is_generic(the_type):
             resolved_type = (
-                _get_type_info(the_type, locals_attrs, additional_classes)
+                get_type_info(the_type, locals_attrs, additional_classes)
                 if the_type
                 else "Any"
             )
         else:
             resolved_type = (
-                _get_type_info(the_type.__class__, locals_attrs, additional_classes)
+                get_type_info(the_type.__class__, locals_attrs, additional_classes)
                 if the_type is not None
                 else "Any"
             )
@@ -479,7 +307,7 @@ def _get_methods_info(
                 if sig.return_annotation == inspect._empty
                 else f" -> None"
                 if sig.return_annotation is None
-                else f" -> {_get_type_info(sig.return_annotation, locals_attrs, additional_classes)}"
+                else f" -> {get_type_info(sig.return_annotation, locals_attrs, additional_classes)}"
             )
             params_by_name = []
             if _is_sqlalchemy_orm_model(cls) and name == "__init__":
@@ -521,7 +349,7 @@ def _get_methods_info(
                 type_annotation = (
                     ""
                     if v.annotation == inspect._empty
-                    else f": {_get_type_info(v.annotation, locals_attrs, additional_classes)}"
+                    else f": {get_type_info(v.annotation, locals_attrs, additional_classes)}"
                 )
                 p_name = f"{optional_globe}{p}"
                 type_annotation = (
@@ -542,6 +370,17 @@ def _get_methods_info(
             method_by_name.append(
                 f"def {name}({params_as_str}){return_annotations}: ..."
             )
+            if name == "__init__" and not issubclass(cls, Structure):
+                try:
+                    source = inspect.getsource(members[name])
+                    init_type_by_attr = extract_attributes_from_init(source)
+                    for attr_name, attr_type in init_type_by_attr.items():
+                        if attr_name not in dict(attributes_with_type):
+                            method_by_name = [
+                                f"{attr_name}: {attr_type}"
+                            ] + method_by_name
+                except:
+                    logging.info("not __init__ implementation found")
         except Exception as e:
             logging.warning(e)
             method_by_name.append(f"def {name}(self, *args, **kw): ...")
@@ -571,7 +410,7 @@ def _get_additional_structure_methods(cls, ordered_args: dict) -> str:
     shallow_clone = f"    def shallow_clone_with_overrides(\n{params_with_self}{kw_opt}\n{INDENT}): ..."
 
     params_with_cls = f",\n{INDENT*2}".join(
-        [f"{INDENT}cls", f"source_object: Any", "*"] + params
+        [f"{INDENT}cls", "source_object: Any", "*"] + params
     )
 
     from_other_class = f"\n{INDENT}".join(
@@ -590,7 +429,7 @@ def get_stubs_of_structures(
 ) -> list:
     out_src = []
     for cls_name, cls in struct_classe_by_name.items():
-        fields_info = _get_all_type_info(
+        fields_info = get_all_type_info(
             cls, locals_attrs=local_attrs, additional_classes=additional_classes
         )
         method_info = _get_methods_info(
@@ -609,7 +448,8 @@ def get_stubs_of_structures(
             out_src.append("")
             continue
 
-        out_src.append(_get_init(cls, ordered_args))
+        if not [m for m in method_info if m.startswith("def __init__(self")]:
+            out_src.append(_get_init(cls, ordered_args))
         out_src.append("")
         out_src.append(_get_additional_structure_methods(cls, ordered_args))
         out_src.append("")
@@ -726,7 +566,7 @@ def _get_type_annotation(
         res = (
             ""
             if annotation == inspect._empty
-            else f"{prefix}{_get_type_info(annotation, local_attrs, additional_classes)}"
+            else f"{prefix}{get_type_info(annotation, local_attrs, additional_classes)}"
         )
         return _correct_for_return_annotation(res)
     except Exception as e:
@@ -782,7 +622,7 @@ def _get_bases(cls, local_attrs, additional_classes) -> list:
         if b is object or b.__module__ == "typing" and b is not typing.Generic:
             continue
         if not _is_sqlalchemy(b):
-            the_type = _get_type_info(b, local_attrs, additional_classes)
+            the_type = get_type_info(b, local_attrs, additional_classes)
             if b is typing.Generic and the_type == "Generic":
                 params = [p.__name__ for p in cls.__parameters__]
                 params_st = f"[{', '.join(params)}]" if params else ""
@@ -800,7 +640,7 @@ def _get_bases_for_structure(cls, local_attrs, additional_classes) -> list:
             continue
         if b.__module__.startswith("typedpy"):
             continue
-        the_type = _get_type_info(b, local_attrs, additional_classes)
+        the_type = get_type_info(b, local_attrs, additional_classes)
         if the_type != "Any":
             res.append(the_type)
     res.append("Structure")
@@ -836,10 +676,7 @@ def get_typevars(attrs, additional_classes):
     for k, v in attrs.items():
         if isinstance(v, typing.TypeVar):
             constraints = ", ".join(
-                [
-                    _get_type_info(x, attrs, additional_classes)
-                    for x in v.__constraints__
-                ]
+                [get_type_info(x, attrs, additional_classes) for x in v.__constraints__]
             )
             constraints_s = f", {constraints}" if constraints else ""
             res.append(f'{k} = TypeVar("{k}"{constraints_s})')
@@ -957,9 +794,9 @@ def _get_consts(attrs, additional_classes, additional_imports):
     }
     for c in constants:
         the_type = (
-            _get_type_info(annotations[c], attrs, additional_classes)
+            get_type_info(annotations[c], attrs, additional_classes)
             if c in annotations
-            else _get_type_info(attrs[c].__class__, attrs, additional_classes)
+            else get_type_info(attrs[c].__class__, attrs, additional_classes)
             if not inspect.isclass(attrs[c]) and attrs[c] is not None
             else None
         )

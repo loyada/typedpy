@@ -373,7 +373,9 @@ def _get_methods_info(
             if name == "__init__" and not issubclass(cls, Structure):
                 try:
                     source = inspect.getsource(members[name])
-                    init_type_by_attr = extract_attributes_from_init(source)
+                    init_type_by_attr = extract_attributes_from_init(
+                        source, locals_attrs, additional_classes
+                    )
                     for attr_name, attr_type in init_type_by_attr.items():
                         if attr_name not in dict(attributes_with_type):
                             method_by_name = [

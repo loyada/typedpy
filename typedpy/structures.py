@@ -451,8 +451,7 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
     def get_type(self):
         return typing.Any
 
-    @classmethod
-    def to_json_schema(cls) -> dict:
+    def to_json_schema(self) -> dict:
         ...
 
     @classmethod

@@ -40,13 +40,12 @@ class IPV4(String):
                 f"{self._name}: Got {wrap_val(value)}; wrong format for IP version 4"
             )
 
-    @classmethod
-    def to_json_schema(cls) -> dict:
+    def to_json_schema(self) -> dict:
         return {"type": "string", "format": "ipv4"}
 
     @classmethod
     def from_json_schema(cls, schema: dict):
-        return "IPV4()" if schema == IPV4.to_json_schema() else None
+        return "IPV4()" if schema == {"type": "string", "format": "ipv4"} else None
 
 
 class HostName(String):
@@ -69,13 +68,14 @@ class HostName(String):
                 )
         super().__set__(instance, value)
 
-    @classmethod
-    def to_json_schema(cls) -> dict:
+    def to_json_schema(self) -> dict:
         return {"type": "string", "format": "hostname"}
 
     @classmethod
     def from_json_schema(cls, schema: dict):
-        return "HostName()" if schema == HostName.to_json_schema() else None
+        return (
+            "HostName()" if schema == {"type": "string", "format": "hostname"} else None
+        )
 
 
 class DateString(String):
@@ -103,13 +103,14 @@ class DateString(String):
                 f"{self._name}: Got {wrap_val(value)}; {ex.args[0]}"
             ) from ex
 
-    @classmethod
-    def to_json_schema(cls) -> dict:
+    def to_json_schema(self) -> dict:
         return {"type": "string", "format": "date"}
 
     @classmethod
     def from_json_schema(cls, schema: dict):
-        return "DateString()" if schema == DateString.to_json_schema() else None
+        return (
+            "DateString()" if schema == {"type": "string", "format": "date"} else None
+        )
 
 
 class TimeString(TypedField):
@@ -128,13 +129,14 @@ class TimeString(TypedField):
                 f"{self._name}: Got {wrap_val(value)}; {ex.args[0]}"
             ) from ex
 
-    @classmethod
-    def to_json_schema(cls) -> dict:
+    def to_json_schema(self) -> dict:
         return {"type": "string", "format": "time"}
 
     @classmethod
     def from_json_schema(cls, schema: dict):
-        return "TimeString()" if schema == TimeString.to_json_schema() else None
+        return (
+            "TimeString()" if schema == {"type": "string", "format": "time"} else None
+        )
 
 
 class DateField(SerializableField):
@@ -190,13 +192,12 @@ class DateField(SerializableField):
     def get_type(self):
         return date
 
-    @classmethod
-    def to_json_schema(cls) -> dict:
+    def to_json_schema(self) -> dict:
         return {"type": "string", "format": "date"}
 
     @classmethod
     def from_json_schema(cls, schema: dict):
-        return "DateField()" if schema == DateField.to_json_schema() else None
+        return "DateField()" if schema == {"type": "string", "format": "date"} else None
 
 
 class DateTime(SerializableField):

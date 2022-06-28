@@ -87,7 +87,7 @@ def convert_to_schema(field, definitions_schema, serialization_mapper: dict = No
             )
             for f in field
         ]
-    custom = field.__class__.to_json_schema()
+    custom = field.to_json_schema()
     if custom:
         return custom
     mapper = get_mapper(field.__class__)(field)

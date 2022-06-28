@@ -1,8 +1,8 @@
 import ast
 import typing
-import re
 
 from typedpy import Array, Map, Structure
+from typedpy.type_info_getter import get_type_info
 
 INDENT = " " * 4
 
@@ -241,7 +241,7 @@ def get_models(
     return classes, functions
 
 
-def extract_attributes_from_init(source):
+def extract_attributes_from_init(source, locals_attrs, additional_classes):
     def _get_normalized_dict(args):
         return dict([x if len(x) == 2 else x + ["Any"] for x in args])
 
@@ -271,5 +271,19 @@ def extract_attributes_from_init(source):
                 attribute_name = node.targets[0].attr
                 if isinstance(node.value, ast.Name) and node.value.id in type_by_param:
                     res[attribute_name] = type_by_param[node.value.id]
+                else:
+                    try:
+                        value = eval(ast.unparse(node.value), locals_attrs)
+                        the_type = get_type_info(
+                            value.__class__, locals_attrs, additional_classes
+                        )
+                        res[attribute_name] = the_type
+                    except:
+                        pass
+
+        elif isinstance(node, ast.AnnAssign):
+            annotation = ast.unparse(node.annotation)
+            attribute_name = node.target.attr
+            res[attribute_name] = annotation
 
     return res

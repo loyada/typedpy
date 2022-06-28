@@ -5,11 +5,16 @@
 from typing import Union, Optional, Any, TypeVar, Type, NoReturn
 from typedpy import Structure
 
+from datetime import datetime as datetime
+from datetime import date as date
 from .job_controller import JobController as JobController
 
 
 class AController:
 
+    today: date
+    numbers: list[int]
+    now: datetime
     _job_controller:  JobController
     value:  int
     _urls:  dict[str, dict] 

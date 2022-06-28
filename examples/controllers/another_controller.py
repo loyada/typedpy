@@ -1,3 +1,4 @@
+from datetime import datetime, date
 from .job_controller import JobController
 
 
@@ -18,3 +19,6 @@ class AController:
         self._name = name
         self.value = val
         self._job_controller = job_controller
+        self.now: datetime = datetime.now()
+        self.numbers: list[int] = [1, 2, 3]
+        self.today = date.today()

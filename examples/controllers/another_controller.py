@@ -22,3 +22,6 @@ class AController:
         self.now: datetime = datetime.now()
         self.numbers: list[int] = [1, 2, 3]
         self.today = date.today()
+
+    def __call__(self, i: int, s: str = "xxx"):
+        pass

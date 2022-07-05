@@ -279,7 +279,7 @@ def extract_attributes_from_init(source, locals_attrs, additional_classes):
                         )
                         res[attribute_name] = the_type
                     except:
-                        pass
+                        res[attribute_name] = "Any"
 
         elif isinstance(node, ast.AnnAssign):
             annotation = ast.unparse(node.annotation)

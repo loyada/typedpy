@@ -177,7 +177,10 @@ def _get_method_and_attr_list(cls, members):
     attrs = []
     cls_dict = cls.__dict__
     for attribute in members:
-        if attribute.startswith(private_prefix) and attribute != "__init__":
+        if attribute.startswith(private_prefix) and attribute not in {
+            "__init__",
+            "__call__",
+        }:
             continue
         attr = (
             cls_dict.get(attribute)

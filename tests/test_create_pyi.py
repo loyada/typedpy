@@ -206,14 +206,14 @@ def test_create_stub_for_file_subpackage(test_case: PYI_TEST_CASE):
 
 
 test_cases_for_regular_classes = [
-    # PYI_TEST_CASE(
-    #     source_path=get_abs_path_from_here(
-    #         "../examples/controllers/__init__.py", __file__
-    #     ),
-    #     reference_path=get_abs_path_from_here(
-    #         "../.stubs/examples/controllers/__init__.pyi", __file__
-    #     ),
-    # ),
+    PYI_TEST_CASE(
+        source_path=get_abs_path_from_here(
+            "../examples/controllers/__init__.py", __file__
+        ),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/controllers/__init__.pyi", __file__
+        ),
+    ),
     PYI_TEST_CASE(
         source_path=get_abs_path_from_here(
             "../examples/controllers/another_controller.py", __file__
@@ -222,22 +222,22 @@ test_cases_for_regular_classes = [
             "../.stubs/examples/controllers/another_controller.pyi", __file__
         ),
     ),
-    # PYI_TEST_CASE(
-    #     source_path=get_abs_path_from_here(
-    #         "../examples/controllers/job_controller.py", __file__
-    #     ),
-    #     reference_path=get_abs_path_from_here(
-    #         "../.stubs/examples/controllers/job_controller.pyi", __file__
-    #     ),
-    # ),
-    # PYI_TEST_CASE(
-    #     source_path=get_abs_path_from_here(
-    #         "../examples/controllers/Scheduled_controller.py", __file__
-    #     ),
-    #     reference_path=get_abs_path_from_here(
-    #         "../.stubs/examples/controllers/Scheduled_controller.pyi", __file__
-    #     ),
-    # ),
+    PYI_TEST_CASE(
+        source_path=get_abs_path_from_here(
+            "../examples/controllers/job_controller.py", __file__
+        ),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/controllers/job_controller.pyi", __file__
+        ),
+    ),
+    PYI_TEST_CASE(
+        source_path=get_abs_path_from_here(
+            "../examples/controllers/Scheduled_controller.py", __file__
+        ),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/controllers/Scheduled_controller.pyi", __file__
+        ),
+    ),
 ]
 
 

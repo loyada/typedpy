@@ -43,6 +43,10 @@ MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS = 100000
 T = typing.TypeVar("T")
 
 
+class TypedPyDefaults:
+    additional_properties_default = True
+
+
 class ImmutableMixin:
     """
     Helper for making a field immutable
@@ -144,7 +148,9 @@ def get_base_info(bases):
                 if param.default is not None and param.kind != Parameter.VAR_KEYWORD:
                     bases_required.append(k)
                 bases_params[k] = param
-        additional_props = base.__dict__.get(ADDITIONAL_PROPERTIES, True)
+        additional_props = base.__dict__.get(
+            ADDITIONAL_PROPERTIES, TypedPyDefaults.additional_properties_default
+        )
         if additional_props and bases_params["kwargs"].kind == Parameter.VAR_KEYWORD:
             del bases_params["kwargs"]
 
@@ -627,7 +633,10 @@ class StructMeta(type):
                 raise ValueError(
                     "optional cannot override prior required in the class or in a base class"
                 )
-        additional_props = cls_dict.get(ADDITIONAL_PROPERTIES, True)
+
+        additional_props = cls_dict.get(
+            ADDITIONAL_PROPERTIES, TypedPyDefaults.additional_properties_default
+        )
 
         sig = make_signature(
             clsobj._fields,
@@ -957,9 +966,14 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                     ),
                 )
                 value = deepcopy(value) if needs_defensive_copy else value
+
         if not any(
             [
-                getattr(self, ADDITIONAL_PROPERTIES, True),
+                getattr(
+                    self,
+                    ADDITIONAL_PROPERTIES,
+                    TypedPyDefaults.additional_properties_default,
+                ),
                 key in self.get_all_fields_by_name(),
                 _is_sunder(key),
                 _is_dunder(key),
@@ -1131,7 +1145,9 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         field_names = list(field_by_name.keys())
         props = self.__class__.__dict__
         required = props.get(REQUIRED_FIELDS, field_names)
-        additional_props = props.get(ADDITIONAL_PROPERTIES, True)
+        additional_props = props.get(
+            ADDITIONAL_PROPERTIES, TypedPyDefaults.additional_properties_default
+        )
         return (
             len(field_names) == 1
             and required == field_names
@@ -1295,6 +1311,10 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     @staticmethod
     def failing_fast():
         return Structure._fail_fast
+
+    @staticmethod
+    def set_additional_properties_default(additional_props: bool = True):
+        TypedPyDefaults.additional_properties_default = additional_props
 
     @staticmethod
     def set_block_non_typedpy_field_assignment(flag=True):

@@ -709,3 +709,13 @@ def test_abstract_structure():
     with pytest.raises(TypeError) as excinfo:
         Base(i=1)
     assert "Not allowed to instantiate an abstract Structure" in str(excinfo.value)
+
+
+def test_additional_props_default_false(additional_props_default_is_false):
+    class Foo(Structure):
+        a: str
+
+    with pytest.raises(TypeError) as excinfo:
+        Foo(a="x", b=1)
+    assert "Foo: got an unexpected keyword argument 'b'" in str(excinfo.value)
+    assert Foo(a="x").a == "x"

@@ -54,9 +54,24 @@ def _diff_dict(val, otherval) -> dict:
     return result
 
 
-def _diff_list(
-    val, otherval, outer_result: dict, outer_key: str
-) -> dict:  # pylint: disable=too-many-branches
+def _diff_list(val, otherval, outer_result: dict, outer_key: str) -> dict:
+    def _find_missing_vals(i, v, _otherval):
+        diff = _find_diff(v, _otherval[i])
+        if diff:
+            if outer_key:
+                outer_result[f"{outer_key}[{i}]"] = diff
+            else:
+                result[i] = diff
+        else:
+            internal_diff = _find_diff(
+                v, _otherval[i], outer_result=outer_result, out_key=outer_key
+            )
+            if internal_diff:
+                if outer_key:
+                    outer_result[f"{outer_key}[{i}]"] = internal_diff
+                else:
+                    result[i] = internal_diff
+
     result = {}
     for i, v in enumerate(val):
         if v == otherval[i]:
@@ -66,21 +81,7 @@ def _diff_list(
             msg = f"index {i} vs {index}"
             _add_val(result, DIFFERENT_ORDER, msg)
         except ValueError:
-            diff = _find_diff(v, otherval[i])
-            if diff:
-                if outer_key:
-                    outer_result[f"{outer_key}[{i}]"] = diff
-                else:
-                    result[i] = diff
-            else:
-                internal_diff = _find_diff(
-                    v, otherval[i], outer_result=outer_result, out_key=outer_key
-                )
-                if internal_diff:
-                    if outer_key:
-                        outer_result[f"{outer_key}[{i}]"] = internal_diff
-                    else:
-                        result[i] = internal_diff
+            _find_missing_vals(i, v, _otherval=otherval)
     for i, v in enumerate(otherval):
         if v == val[i]:
             continue
@@ -90,21 +91,8 @@ def _diff_list(
         except ValueError:
             if outer_key and f"{outer_key}[{i}]" in outer_result or i in result:
                 continue
-            diff = _find_diff(v, val[i])
-            if diff:
-                if outer_key:
-                    outer_result[f"{outer_key}[{i}]"] = diff
-                else:
-                    result[i] = diff
-            else:
-                internal_diff = _find_diff(
-                    v, otherval[i], outer_result=outer_result, out_key=outer_key
-                )
-                if internal_diff:
-                    if outer_key:
-                        outer_result[f"{outer_key}[{i}]"] = internal_diff
-                    else:
-                        result[i] = internal_diff
+            _find_missing_vals(i, v, _otherval=val)
+
     return result
 
 
@@ -143,7 +131,9 @@ def find_diff(first, second) -> Union[dict, str]:
     return _find_diff(first, second)
 
 
-def _find_diff(struct, other, outer_result=None, out_key=None) -> Union[dict, str]:
+def _find_diff(
+    struct, other, outer_result=None, out_key=None
+) -> Union[dict, str]:  # pylint: disable=too-many-branches, too-many-statements
 
     if struct.__class__ != other.__class__:
         return {"class": f"{struct.__class__} vs. {other.__class__}"}
@@ -157,11 +147,11 @@ def _find_diff(struct, other, outer_result=None, out_key=None) -> Union[dict, st
     elif isinstance(struct, dict):
         res_val = _diff_dict(struct, other)
         if res_val and outer_result:
-            for i in res_val:
+            for i, vv in res_val.items():
                 if i not in {MISSING_VALUES, ADDITIONAL_VALUES}:
-                    outer_result[f"{out_key}[{wrap_val(i)}]"] = res_val[i]
+                    outer_result[f"{out_key}[{wrap_val(i)}]"] = vv
                 else:
-                    outer_result[i] = res_val[i]
+                    outer_result[i] = vv
         return res_val
     elif isinstance(struct, set):
         res_val = _diff_set(struct, other)
@@ -197,12 +187,11 @@ def _find_diff(struct, other, outer_result=None, out_key=None) -> Union[dict, st
                             elif isinstance(val, dict):
                                 res_val = _diff_dict(val, otherval)
                                 if res_val:
-                                    for i in res_val:
+                                    for i, vv in res_val.items():
                                         if i not in {MISSING_VALUES, ADDITIONAL_VALUES}:
-                                            res[f"{k}[{wrap_val(i)}]"] = res_val[i]
+                                            res[f"{k}[{wrap_val(i)}]"] = vv
                                         else:
-                                            # _add_val(res, ADDITIONAL_VALUES, k)
-                                            res[i] = res_val[i]
+                                            res[i] = vv
                             elif isinstance(val, set):
                                 res_val = _diff_set(val, otherval)
                                 if res_val:

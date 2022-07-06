@@ -47,7 +47,6 @@ class Bar2(Omit[Foo, ("a", "b")]):
     _serialization_mapper = Foo.get_aggregated_serialization_mapper()
 
 
-
 @pytest.mark.parametrize("Bar", [Bar1, Bar2], ids=["Structure.omit", "Omit[Structure]"])
 def test_omit_and_construct(Bar):
     assert set(Bar._required) == {"i", "s", "x"}
@@ -120,3 +119,23 @@ def test_omit_immutable():
     with pytest.raises(ValueError) as excinfo:
         bar.d = {}
     assert "Bar: Structure is immutable" in str(excinfo.value)
+
+
+def test_omit_additional_props_default_false(additional_props_default_is_false):
+    class BarImmutable(Foo.omit("a", "b"), ImmutableStructure):
+        x: str
+
+    with pytest.raises(ValueError) as excinfo:
+        BarImmutable(i=5, x="xyz", s={1, 2, 3}, qweasd=1)
+    assert "BarImmutable: trying to set a non-field 'qweasd' is not allowed" in str(
+        excinfo.value
+    )
+
+    class Bar(Foo.omit("a", "b"), Structure):
+        x: str
+
+    with pytest.raises(TypeError) as excinfo:
+        Bar(i=5, x="xyz", s={1, 2, 3}, qweasd=1)
+    assert "Bar: got an unexpected keyword argument 'qweasd'" in str(excinfo.value)
+
+    assert BarImmutable(i=5, x="xyz", s={1, 2, 3}).x == "xyz"

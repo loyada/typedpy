@@ -393,24 +393,30 @@ def _get_methods_info(
     return method_by_name
 
 
-def _get_init(cls, ordered_args: dict) -> str:
+def _get_init(cls, ordered_args: dict, additional_properties_default: bool) -> str:
     init_params = f",\n{INDENT * 2}".join(
         [f"{INDENT * 2}self"] + [f"{k}: {v}" for k, v in ordered_args.items()]
     )
     kw_opt = (
-        f",\n{INDENT * 2}**kw" if getattr(cls, "_additionalProperties", True) else ""
+        f",\n{INDENT * 2}**kw"
+        if getattr(cls, "_additionalProperties", additional_properties_default)
+        else ""
     )
     return f"    def __init__(\n{init_params}{kw_opt}\n{INDENT}): ..."
 
 
-def _get_additional_structure_methods(cls, ordered_args: dict) -> str:
+def _get_additional_structure_methods(
+    cls, ordered_args: dict, additional_properties_default: bool
+) -> str:
     ordered_args_with_none = {}
     for k, v in ordered_args.items():
         ordered_args_with_none[k] = v if v.endswith("= None") else f"{v} = None"
     params = [f"{k}: {v}" for k, v in ordered_args_with_none.items()]
     params_with_self = f",\n{INDENT * 2}".join([f"{INDENT * 2}self"] + params)
     kw_opt = (
-        f",\n{INDENT * 2}**kw" if getattr(cls, "_additionalProperties", True) else ""
+        f",\n{INDENT * 2}**kw"
+        if getattr(cls, "_additionalProperties", additional_properties_default)
+        else ""
     )
     shallow_clone = f"    def shallow_clone_with_overrides(\n{params_with_self}{kw_opt}\n{INDENT}): ..."
 
@@ -430,7 +436,10 @@ def _get_additional_structure_methods(cls, ordered_args: dict) -> str:
 
 
 def get_stubs_of_structures(
-    struct_classe_by_name: dict, local_attrs, additional_classes
+    struct_classe_by_name: dict,
+    local_attrs,
+    additional_classes,
+    additional_properties_default,
 ) -> list:
     out_src = []
     for cls_name, cls in struct_classe_by_name.items():
@@ -454,9 +463,13 @@ def get_stubs_of_structures(
             continue
 
         if not [m for m in method_info if m.startswith("def __init__(self")]:
-            out_src.append(_get_init(cls, ordered_args))
+            out_src.append(_get_init(cls, ordered_args, additional_properties_default))
         out_src.append("")
-        out_src.append(_get_additional_structure_methods(cls, ordered_args))
+        out_src.append(
+            _get_additional_structure_methods(
+                cls, ordered_args, additional_properties_default
+            )
+        )
         out_src.append("")
         out_src.append("")
 
@@ -688,7 +701,12 @@ def get_typevars(attrs, additional_classes):
     return [""] + res + [""]
 
 
-def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = True):
+def create_pyi(
+    calling_source_file,
+    attrs: dict,
+    only_current_module: bool = True,
+    additional_properties_default=True,
+):
     full_path: Path = Path(calling_source_file)
     pyi_path = (full_path.parent / f"{full_path.stem}.pyi").resolve()
     out_src = []
@@ -738,7 +756,10 @@ def create_pyi(calling_source_file, attrs: dict, only_current_module: bool = Tru
         additional_imports=additional_imports,
     )
     out_src += get_stubs_of_structures(
-        struct_classes, local_attrs=attrs, additional_classes=additional_classes
+        struct_classes,
+        local_attrs=attrs,
+        additional_classes=additional_classes,
+        additional_properties_default=additional_properties_default,
     )
 
     out_src += get_stubs_of_functions(
@@ -819,7 +840,13 @@ def _get_consts(attrs, additional_classes, additional_imports):
     return res
 
 
-def create_stub_for_file(abs_module_path: str, src_root: str, stubs_root: str = None):
+def create_stub_for_file(
+    abs_module_path: str,
+    src_root: str,
+    stubs_root: str = None,
+    *,
+    additional_properties_default=True,
+):
     ext = os.path.splitext(abs_module_path)[-1].lower()
     if ext != ".py":
         return
@@ -847,7 +874,11 @@ def create_stub_for_file(abs_module_path: str, src_root: str, stubs_root: str = 
     pyi_path = (pyi_dir / f"{stem}.pyi").resolve()
     if not getattr(the_module, "__package__", None):
         the_module.__package__ = ".".join(Path(relative_dir).parts)
-    create_pyi(str(pyi_path), the_module.__dict__)
+    create_pyi(
+        str(pyi_path),
+        the_module.__dict__,
+        additional_properties_default=additional_properties_default,
+    )
 
 
 def create_pyi_ast(calling_source_file, pyi_path):
@@ -891,7 +922,7 @@ def create_pyi_ast(calling_source_file, pyi_path):
 
 
 def create_stub_for_file_using_ast(
-    abs_module_path: str, src_root: str, stubs_root: str = None
+    abs_module_path: str, src_root: str, stubs_root: str = None, **kw
 ):
     ext = os.path.splitext(abs_module_path)[-1].lower()
     if ext != ".py":

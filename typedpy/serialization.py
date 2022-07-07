@@ -16,6 +16,7 @@ from .mappers import (
 from .structures import (
     TypedField,
     Structure,
+    TypedPyDefaults,
     _get_all_fields_by_name,
     ADDITIONAL_PROPERTIES,
     REQUIRED_FIELDS,
@@ -516,7 +517,9 @@ def deserialize_structure_internal(
         props = cls.__dict__
         fields = list(field_by_name.keys())
         required = props.get(REQUIRED_FIELDS, fields)
-        additional_props = props.get(ADDITIONAL_PROPERTIES, True)
+        additional_props = props.get(
+            ADDITIONAL_PROPERTIES, TypedPyDefaults.additional_properties_default
+        )
         if len(fields) == 1 and required == fields and additional_props is False:
             field_name = fields[0]
             return cls(
@@ -788,7 +791,9 @@ def serialize_internal(structure, mapper=None, compact=False, camel_case_convert
     )
     props = structure.__class__.__dict__
     fields = list(field_by_name.keys())
-    additional_props = props.get(ADDITIONAL_PROPERTIES, True)
+    additional_props = props.get(
+        ADDITIONAL_PROPERTIES, TypedPyDefaults.additional_properties_default
+    )
     if (
         len(fields) == 1
         and props.get(REQUIRED_FIELDS, fields) == fields

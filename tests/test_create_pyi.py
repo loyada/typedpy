@@ -29,6 +29,7 @@ def _verify_file_are_same(actual_filename, expected_filename):
 class PYI_TEST_CASE:
     source_path: Path
     reference_path: Path
+    additional_properties_default: bool = True
     module_name: Optional[str] = ""
 
 
@@ -82,6 +83,61 @@ test_cases = [
         ),
         module_name="examples.generic_stuff",
     ),
+    PYI_TEST_CASE(
+        source_path=get_abs_path_from_here("../examples/__init__.py", __file__),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/__init__.pyi", __file__
+        ),
+        module_name="examples",
+    ),
+    PYI_TEST_CASE(
+        source_path=get_abs_path_from_here("../examples/api_example.py", __file__),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/api_example_1.pyi", __file__
+        ),
+        module_name="examples.api_example",
+        additional_properties_default=False,
+    ),
+    PYI_TEST_CASE(
+        source_path=get_abs_path_from_here("../examples/enums.py", __file__),
+        reference_path=get_abs_path_from_here("../.stubs/examples/enums.pyi", __file__),
+        module_name="examples.enums",
+        additional_properties_default=False,
+    ),
+    PYI_TEST_CASE(
+        source_path=get_abs_path_from_here("../examples/enums2.py", __file__),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/enums2.pyi", __file__
+        ),
+        module_name="examples.enums2",
+        additional_properties_default=False,
+    ),
+    PYI_TEST_CASE(
+        source_path=get_abs_path_from_here("../examples/more_classes.py", __file__),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/more_classes_1.pyi", __file__
+        ),
+        module_name="examples.more_classes",
+        additional_properties_default=False,
+    ),
+    PYI_TEST_CASE(
+        source_path=get_abs_path_from_here(
+            "../examples/future_annotations.py", __file__
+        ),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/future_annotations.pyi", __file__
+        ),
+        module_name="examples.future_annotations",
+        additional_properties_default=False,
+    ),
+    PYI_TEST_CASE(
+        source_path=get_abs_path_from_here("../examples/generic_stuff.py", __file__),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/generic_stuff.pyi", __file__
+        ),
+        module_name="examples.generic_stuff",
+        additional_properties_default=False,
+    ),
 ]
 
 
@@ -96,12 +152,20 @@ def test_create_pyi_low_level(test_case: PYI_TEST_CASE):
     the_module = importlib.util.module_from_spec(spec)
     the_module.__package__ = "examples"
     spec.loader.exec_module(the_module)
-
-    results_dir: Path = get_abs_path_from_here("stubs_tests_results", __file__)
+    out_dir_name = (
+        "stubs_tests_results"
+        if test_case.additional_properties_default
+        else "stubs_tests_results_1"
+    )
+    results_dir: Path = get_abs_path_from_here(out_dir_name, __file__)
     pyi_path = (results_dir / f"{test_case.source_path.stem}.pyi").resolve()
     results_dir.mkdir(parents=True, exist_ok=True)
 
-    create_pyi(str(pyi_path), the_module.__dict__)
+    create_pyi(
+        str(pyi_path),
+        the_module.__dict__,
+        additional_properties_default=test_case.additional_properties_default,
+    )
 
     actual_filename = pyi_path
 
@@ -154,6 +218,7 @@ def test_create_stub_for_file_designated_dir(test_case: PYI_TEST_CASE):
         str(test_case.source_path),
         src_root,
         str(get_abs_path_from_here("../stubs_for_tests", __file__)),
+        additional_properties_default=test_case.additional_properties_default,
     )
 
     actual_filename = str(

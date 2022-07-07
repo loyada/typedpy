@@ -30,6 +30,13 @@ def main():
         help="use AST instead of reflection(currently implemented only for sqlalchemy ORM)",
     )
     parser.add_argument(
+        "-p",
+        "--additional-properties-default",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="default for _additionalProperties flag",
+    )
+    parser.add_argument(
         "--best-effort",
         action=argparse.BooleanOptionalAction,
         help="try using reflection and if failed, try using AST",
@@ -42,6 +49,7 @@ def main():
     stub_dir_abs_path = str(Path(src_root_abs_path) / Path(args.stubs_dir))
     use_ast = args.ast
     best_effort = args.best_effort
+    additional_props_default = args.additional_properties_default
 
     exclude = args.exclude.split(":") if args.exclude else []
     for x in exclude:
@@ -50,7 +58,12 @@ def main():
 
     func = create_stub_for_file_using_ast if use_ast else create_stub_for_file
     try:
-        func(input_file_abs_path, src_root_abs_path, stub_dir_abs_path)
+        func(
+            input_file_abs_path,
+            src_root_abs_path,
+            stub_dir_abs_path,
+            additional_props_default=additional_props_default,
+        )
     except Exception as e:
         if best_effort and not use_ast:
             create_stub_for_file_using_ast(

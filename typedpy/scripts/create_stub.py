@@ -61,7 +61,7 @@ def main():
             input_file_abs_path,
             src_root_abs_path,
             stub_dir_abs_path,
-            additional_props_default=additional_props_default,
+            additional_properties_default=additional_props_default,
         )
     except Exception as e:
         if best_effort and not use_ast:

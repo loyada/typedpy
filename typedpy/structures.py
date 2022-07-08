@@ -45,6 +45,7 @@ T = typing.TypeVar("T")
 
 class TypedPyDefaults:
     additional_properties_default = True
+    compact_serialization_default = False
 
 
 class ImmutableMixin:
@@ -1315,6 +1316,10 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     @staticmethod
     def set_additional_properties_default(additional_props: bool = True):
         TypedPyDefaults.additional_properties_default = additional_props
+
+    @staticmethod
+    def set_compact_serialization_default(compact_serialization_default: bool = False):
+        TypedPyDefaults.compact_serialization_default = compact_serialization_default
 
     @staticmethod
     def set_block_non_typedpy_field_assignment(flag=True):

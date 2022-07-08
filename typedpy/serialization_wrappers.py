@@ -1,5 +1,5 @@
 from .commons import wrap_val
-from .structures import Structure, _get_all_fields_by_name
+from .structures import Structure, TypedPyDefaults, _get_all_fields_by_name
 from .fields import StructureClass, Map, String, OneOf, Boolean
 from .serialization import FunctionCall, deserialize_structure, serialize
 
@@ -160,7 +160,11 @@ class Serializer(Structure):
             for key in self.mapper:
                 verify_key_in_mapper(key, valid_keys, source_class)
 
-    def serialize(self, compact: bool = True, camel_case_convert: bool = False):
+    def serialize(
+        self,
+        compact: bool = None,
+        camel_case_convert: bool = False,
+    ):
         """
 
         Arguments:
@@ -175,6 +179,11 @@ class Serializer(Structure):
                     attribute.
                     Default is False.
         """
+        compact = (
+            TypedPyDefaults.compact_serialization_default
+            if compact is None
+            else compact
+        )
         return serialize(
             self.source,
             mapper=self.mapper,

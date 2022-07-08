@@ -841,7 +841,13 @@ def serialize_internal(structure, mapper=None, compact=False, camel_case_convert
     return result
 
 
-def serialize(value, *, mapper: Dict = None, compact=False, camel_case_convert=False):
+def serialize(
+    value,
+    *,
+    mapper: Dict = None,
+    compact=None,
+    camel_case_convert=False,
+):
     """
     Serialize an instance of :class:`Structure` to a JSON-like dict.
 
@@ -867,6 +873,9 @@ def serialize(value, *, mapper: Dict = None, compact=False, camel_case_convert=F
         :param mapper: a dict with the new key, by the attribute name
 
     """
+    compact = (
+        TypedPyDefaults.compact_serialization_default if compact is None else compact
+    )
     if not isinstance(value, (Structure, StructureReference)):
         if value is None or isinstance(value, (int, str, bool, float)):
             return value

@@ -794,6 +794,15 @@ For example:
     Base(i=1)
 
 
+Global Defaults
+===============
+
+Typedpy exposes several global defaults. These can be views as the Typedpy configuration:
+
+1. Structure.set_additional_properties_default - override the default for _additionalProperties field
+   in a Structure. The default is True.
+2. Structure.set_compact_serialization_default - override the default for "compact" serialization
+   of Structures, where applicable. The default is False.
 
 Structure Documentation
 =======================

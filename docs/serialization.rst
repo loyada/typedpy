@@ -885,3 +885,31 @@ Typedpy supports it, by defining "Constant" in the serialization mapper (similar
 
 This means that the field "maker" will ignore the input to the deserializer, and always set to the value defined
 in the mapper.
+
+
+Enums Serialization/Deserialization
+===================================
+Consider the example:
+
+.. code-block:: python
+
+   class Foo(enum.Enum):
+        A = 1
+        B = 2
+        C = 3
+
+    class Bar(Structure):
+        e: Enum[Foo]
+        e_value: Enum(values=Foo, serialization_by_value=True)
+
+        _required = []
+
+    assert Serializer(Bar(e_value=Foo.A)).serialize() == {"e_value": 1}
+    assert Serializer(Bar(e=Foo.A)).serialize() == {"e": "A"}
+
+By default, an enum field is serialized to a string with the *name* of the enum entry. This is why when we serialized
+"e" in the example above, the resulting value is "A".
+Serialization by the *value* of the enum is achieved by setting the serialization_by_value flag, as in the field
+"e_value" above.
+
+The same is true for deserialization.

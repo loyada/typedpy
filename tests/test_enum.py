@@ -239,3 +239,19 @@ def test_serialize_optional_given_a_string():
     foo = Foo(pref="aaa")
 
     assert Serializer(foo).serialize() == {"pref": "aaa"}
+
+
+def test_serialize_by_value():
+    class Foo(enum.Enum):
+        A = 1
+        B = 2
+        C = 3
+
+    class Bar(Structure):
+        e: Enum[Foo]
+        e_value: Enum(values=Foo, serialization_by_value=True)
+
+        _required = []
+
+    assert Serializer(Bar(e_value=Foo.A)).serialize() == {"e_value": 1}
+    assert Serializer(Bar(e=Foo.A)).serialize() == {"e": "A"}

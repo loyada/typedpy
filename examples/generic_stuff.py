@@ -1,11 +1,14 @@
 from typing import TypeVar, Generic
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 class Stack(Generic[T]):
-    def __init__(self) -> None:
+    def __init__(self, i: int, t: T) -> None:
         # Create an empty list with items of type T
         self.items: list[T] = []
+        self.i = i
+        self._t = t
 
     def push(self, item: T) -> None:
         self.items.append(item)
@@ -19,4 +22,3 @@ class Stack(Generic[T]):
 
 def func(stack: Stack[int]):
     pass
-

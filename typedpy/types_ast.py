@@ -30,7 +30,7 @@ class FunctionInfo(Structure):
     positional_args: Array[str]
     keyword: typing.Optional[str]
     keyword_only_args: Array[str]
-    returns: str
+    returns: typing.Optional[str]
     decorators: Array[str]
 
     _ignore_none = True

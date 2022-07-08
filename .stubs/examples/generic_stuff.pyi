@@ -9,10 +9,13 @@ from typing import Generic as Generic
 
 T = TypeVar("T")
 
-
 class Stack(Generic[T]):
 
-    def __init__(self) -> None: ...
+    _t:  T
+    i:  int
+    items: list[T]
+
+    def __init__(self, i: int, t: T) -> None: ...
 
     def push(self, item: T) -> None: ...
 

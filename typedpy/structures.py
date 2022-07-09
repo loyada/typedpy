@@ -20,7 +20,8 @@ from .utility import type_is_generic
 
 REQUIRED_FIELDS = "_required"
 DEFAULTS = "_defaults"
-ADDITIONAL_PROPERTIES = "_additionalProperties"
+ADDITIONAL_PROPERTIES = "_additional_properties"
+OLD_ADDITIONAL_PROPERTIES = "_additionalProperties"
 IS_IMMUTABLE = "_immutable"
 OPTIONAL_FIELDS = "_optional"
 MUST_BE_UNIQUE = "_must_be_unique"
@@ -149,8 +150,11 @@ def get_base_info(bases):
                 if param.default is not None and param.kind != Parameter.VAR_KEYWORD:
                     bases_required.append(k)
                 bases_params[k] = param
+        additional_props_fallback = base.__dict__.get(
+            OLD_ADDITIONAL_PROPERTIES, TypedPyDefaults.additional_properties_default
+        )
         additional_props = base.__dict__.get(
-            ADDITIONAL_PROPERTIES, TypedPyDefaults.additional_properties_default
+            ADDITIONAL_PROPERTIES, additional_props_fallback
         )
         if additional_props and bases_params["kwargs"].kind == Parameter.VAR_KEYWORD:
             del bases_params["kwargs"]
@@ -635,6 +639,10 @@ class StructMeta(type):
                     "optional cannot override prior required in the class or in a base class"
                 )
 
+        if OLD_ADDITIONAL_PROPERTIES in cls_dict:
+            cls_dict[ADDITIONAL_PROPERTIES] = cls_dict[OLD_ADDITIONAL_PROPERTIES]
+            setattr(clsobj, ADDITIONAL_PROPERTIES, cls_dict[ADDITIONAL_PROPERTIES])
+            delattr(clsobj, OLD_ADDITIONAL_PROPERTIES)
         additional_props = cls_dict.get(
             ADDITIONAL_PROPERTIES, TypedPyDefaults.additional_properties_default
         )
@@ -843,15 +851,15 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                     _optional = ['name']
 
 
-        _additionalProperties(bool): optional
+        _additiona_properties(bool): optional
             Is it allowed to add additional properties that are not defined in the class definition?
-            the default is True.
+            the default is True. This replaces the old _additionalProperties setting, which is still supported.
             Example:
 
             .. code-block:: python
 
                 class Foo(Structure):
-                    _additionalProperties = False
+                    _additional_properties = False
 
                     id = Integer
 

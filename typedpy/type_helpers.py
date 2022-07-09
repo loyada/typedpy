@@ -12,7 +12,7 @@ from pathlib import Path
 from .commons import doublewrap_val, nested
 from .fields import FunctionCall
 from .serialization_wrappers import Deserializer, Serializer
-from .structures import Field, ImmutableStructure, Structure
+from .structures import ADDITIONAL_PROPERTIES, Field, ImmutableStructure, Structure
 from .type_info_getter import get_all_type_info, get_type_info, is_typeddict
 from .types_ast import (
     extract_attributes_from_init,
@@ -399,7 +399,7 @@ def _get_init(cls, ordered_args: dict, additional_properties_default: bool) -> s
     )
     kw_opt = (
         f",\n{INDENT * 2}**kw"
-        if getattr(cls, "_additionalProperties", additional_properties_default)
+        if getattr(cls, ADDITIONAL_PROPERTIES, additional_properties_default)
         else ""
     )
     return f"    def __init__(\n{init_params}{kw_opt}\n{INDENT}): ..."
@@ -415,7 +415,7 @@ def _get_additional_structure_methods(
     params_with_self = f",\n{INDENT * 2}".join([f"{INDENT * 2}self"] + params)
     kw_opt = (
         f",\n{INDENT * 2}**kw"
-        if getattr(cls, "_additionalProperties", additional_properties_default)
+        if getattr(cls, ADDITIONAL_PROPERTIES, additional_properties_default)
         else ""
     )
     shallow_clone = f"    def shallow_clone_with_overrides(\n{params_with_self}{kw_opt}\n{INDENT}): ..."

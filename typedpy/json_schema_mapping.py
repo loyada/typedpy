@@ -31,7 +31,7 @@ from .enum import Enum
 
 from .extfields import DateString
 from .mappers import Constant, DoNotSerialize, aggregate_serialization_mappers
-from .structures import ADDITIONAL_PROPERTIES, NoneField, Structure
+from .structures import ADDITIONAL_PROPERTIES, NoneField, Structure, TypedPyDefaults
 
 SCHEMA_PATTERN_PROPERTIES = "patternProperties"
 SCHEMA_ADDITIONAL_PROPERTIES = "additionalProperties"
@@ -137,7 +137,10 @@ def structure_to_schema(structure, definitions_schema, serialization_mapper=None
         raise TypeError("Expected a Structure subclass")
     field_by_name = structure.get_all_fields_by_name()
     required = getattr(structure, "_required", list(field_by_name.keys()))
-    additional_props = getattr(structure, ADDITIONAL_PROPERTIES, True)
+
+    additional_props = getattr(
+        structure, ADDITIONAL_PROPERTIES, TypedPyDefaults.additional_properties_default
+    )
     mapper = aggregate_serialization_mappers(structure, serialization_mapper) or {}
     if getattr(structure, "_additional_serialization") != getattr(
         Structure, "_additional_serialization"
@@ -291,7 +294,7 @@ def schema_to_struct_code(
         else []
     )
     body += (
-        ["    _additionalProperties = False"]
+        ["    _additional_properties = False"]
         if not schema.get("additionalProperties", True)
         else []
     )
@@ -394,7 +397,7 @@ class StructureReferenceMapper(Mapper):
         body = []
         body += (
             [(ADDITIONAL_PROPERTIES, False)]
-            if not schema.get("additionalProperties", True)
+            if not schema.get(SCHEMA_ADDITIONAL_PROPERTIES, True)
             else []
         )
         required = schema.get("required", None)

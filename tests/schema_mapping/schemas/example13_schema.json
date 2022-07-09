@@ -9,7 +9,7 @@
             "i": {"type":  "integer", "minimum":  5}
         },
         "required": [],
-        "additionalProperties": true
+        "additionalProperties": false
     }
 }
 

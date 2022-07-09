@@ -135,6 +135,15 @@ def test_string_field_wrapper_compact():
     assert serialize(foo, compact=True) == "abcde"
 
 
+def test_string_field_wrapper_compact1():
+    class Foo(Structure):
+        st = String
+        _additional_properties = False
+
+    foo = Foo(st="abcde")
+    assert serialize(foo, compact=True) == "abcde"
+
+
 def test_string_field_wrapper_compact_defaults(compact_serialization):
     class Foo(Structure):
         st = String

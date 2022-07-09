@@ -7,3 +7,4 @@ class Example13(Structure):
     i: Integer(minimum=5)
 
     _required = []
+    _additional_properties = False

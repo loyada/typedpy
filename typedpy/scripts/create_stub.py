@@ -33,7 +33,7 @@ def main():
         "-p",
         "--additional-properties-default",
         action=argparse.BooleanOptionalAction,
-        help="default for _additionalProperties flag",
+        help="default for _additional_properties flag is True. Otherwise it is False.",
     )
     parser.add_argument(
         "--best-effort",

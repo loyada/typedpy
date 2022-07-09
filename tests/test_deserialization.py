@@ -452,6 +452,17 @@ def test_single_int_deserialization():
     assert example.i == 5
 
 
+def test_single_int_deserialization1():
+    class Foo(Structure):
+        i = Integer
+        _additional_properties = False
+
+    data = 5
+
+    example = deserialize_structure(Foo, data)
+    assert example.i == 5
+
+
 def test_single_array_deserialization():
     class Foo(Structure):
         arr = Array[String]
@@ -1369,6 +1380,24 @@ def test_deserialize_camel_case_additional_properties_defect():
         the_name: String
         the_value: String
         _additionalProperties = False
+
+    class PairTwo(ImmutableStructure):
+        the_name: String
+        the_value: String
+
+    data: dict = {"theName": "name", "theValue": "value"}
+
+    Deserializer(PairOne, camel_case_convert=True).deserialize(data)
+    Deserializer(PairTwo, camel_case_convert=True).deserialize(data)
+
+
+def test_deserialize_camel_case_additional_properties_defect1():
+    from typedpy import ImmutableStructure, String, Deserializer
+
+    class PairOne(ImmutableStructure):
+        the_name: String
+        the_value: String
+        _additional_properties = False
 
     class PairTwo(ImmutableStructure):
         the_name: String

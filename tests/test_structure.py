@@ -676,6 +676,17 @@ def test_additional_properties_blocks_additional_properties_even_after_instantia
     assert "Foo: trying to set a non-field 'x' is not allowed" in str(excinfo.value)
 
 
+def test_additional_properties_blocks_additional_properties_even_after_instantiation1():
+    class Foo(Structure):
+        i: int
+        _additional_properties = False
+
+    foo = Foo(i=5)
+    with raises(ValueError) as excinfo:
+        foo.x = []
+    assert "Foo: trying to set a non-field 'x' is not allowed" in str(excinfo.value)
+
+
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_find_fields_with_function_returning_field():
     def Name() -> Field:

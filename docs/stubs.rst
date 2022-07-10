@@ -65,6 +65,9 @@ to Alembic or database persistence. If we are at the top level of our Python cod
                             source directory of stubs. Default is .stubs
       -x EXCLUDE, --exclude EXCLUDE
                             exclude patterns in the form path1:path2:path3
+      -p, --additional-properties-default, --no-additional-properties-default
+                            default for _additional_properties flag is True. Otherwise it is False.
+
       --ast, --no-ast       use AST instead of reflection(currently implemented only for sqlalchemy ORM)
 
 

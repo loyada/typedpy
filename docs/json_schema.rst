@@ -142,7 +142,7 @@ For example:
     class Foo(Structure):
         arr = Array(minItems=2)
         _required = ['arr']
-        _additionalProperties = False
+        _additional_properties = False
 
     schema, definitions = structure_to_schema(Foo, {})
     assert schema == {
@@ -157,7 +157,7 @@ For example:
     bar = Bar([1,2,3])
     assert bar.wrapped[2] == 3
 
-In the example above, if '_required' was [], or _additionalProperties was True, then the schema was an object with
+In the example above, if '_required' was [], or _additional_properties was True, then the schema was an object with
 a single property 'arr', as usual.
 
 Schema mapping beyond the "basic" Types

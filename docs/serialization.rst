@@ -94,7 +94,7 @@ JSON representing only that field, using the "compact" flag. For example:
 
     class Foo(Structure):
         s = Array[AnyOf[String, Number]]
-        _additionalProperties = False
+        _additional_properties = False
 
     foo = Foo(s=['abcde', 234])
     assert serialize(foo, compact=True)==['abcde', 234]
@@ -109,7 +109,7 @@ tries to deserialize directly to that field. For example:
 
     class Foo(Structure):
         i = Integer
-        _additionalProperties = False
+        _additional_properties = False
 
     data = 5
 

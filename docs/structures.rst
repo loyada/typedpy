@@ -273,7 +273,7 @@ Typepy supports the following operations for structure instances:
 
     class Foo(Structure):
         s = Map[String, Anything]
-        _additionalProperties = False
+        _additional_properties = False
 
     foo = Foo(s={'xxx': 123, 'yyy': 234, 'zzz': 'zzz'})
     assert 'xxx' in foo
@@ -318,7 +318,7 @@ Here is an example of how it works:
         i = Integer
         s = String
         f = Float
-        _additionalProperties = False
+        _additional_properties = False
 
     first = Foo(i=5, s="xyz", f = 0.5)
     second = first.shallow_clone_with_overrides(i = 6)
@@ -799,7 +799,7 @@ Global Defaults
 
 Typedpy exposes several global defaults. These can be views as the Typedpy configuration:
 
-1. Structure.set_additional_properties_default - override the default for _additionalProperties field
+1. Structure.set_additional_properties_default - override the default for _additional_properties field
    in a Structure. The default is True.
 2. Structure.set_compact_serialization_default - override the default for "compact" serialization
    of Structures, where applicable. The default is False.

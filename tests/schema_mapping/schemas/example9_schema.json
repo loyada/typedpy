@@ -12,7 +12,7 @@
                 "default": {"abc": 0}
             }
         },
-        "required": [],
+        "required": ["D"],
         "additionalProperties": true
     }
 }

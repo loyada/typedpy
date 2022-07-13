@@ -33,6 +33,7 @@ from typedpy import Partial as Partial
 from typedpy import Pick as Pick
 from typedpy import Set as Set
 from typedpy import Structure as Structure
+from typedpy import default_factories as default_factories
 from typedpy import mappers as mappers
 from typedpy import create_pyi as create_pyi
 import enum
@@ -51,6 +52,12 @@ class State1(Enum):
 
 
 
+class FooFoo:
+
+
+    def __init__(self, *, mapper: dict[str, Any] = dict, camel_case_convert: bool = None): ...
+
+
 class WithCustomInit(Structure):
 
     def shallow_clone_with_overrides(
@@ -59,12 +66,12 @@ class WithCustomInit(Structure):
         s: str = None
     ): ...
 
-
     @classmethod
     def from_other_class(
         cls,
         source_object: Any,
         *,
+        ignore_props: Iterable[str] = None,
         i: int = None,
         s: str = None
     ): ...
@@ -95,12 +102,12 @@ class Employee(Structure):
         ssid: str = None
     ): ...
 
-
     @classmethod
     def from_other_class(
         cls,
         source_object: Any,
         *,
+        ignore_props: Iterable[str] = None,
         name: str = None,
         age: int = None,
         address: Address = None,
@@ -137,12 +144,12 @@ class Blah(Structure):
         d: Optional[dict[str, int]] = None
     ): ...
 
-
     @classmethod
     def from_other_class(
         cls,
         source_object: Any,
         *,
+        ignore_props: Iterable[str] = None,
         i: int = None,
         s: str = None,
         person: Person = None,
@@ -189,12 +196,12 @@ class Foo(Blah, Structure):
         d: Optional[dict[str, int]] = None
     ): ...
 
-
     @classmethod
     def from_other_class(
         cls,
         source_object: Any,
         *,
+        ignore_props: Iterable[str] = None,
         i: int = None,
         s: str = None,
         person: Person = None,
@@ -258,12 +265,12 @@ class FooPartial(Structure):
         b: Optional[set] = None
     ): ...
 
-
     @classmethod
     def from_other_class(
         cls,
         source_object: Any,
         *,
+        ignore_props: Iterable[str] = None,
         x: str = None,
         i: Optional[int] = None,
         d: Optional[dict[str, int]] = None,
@@ -318,12 +325,12 @@ class FooOmit(Structure):
         d: Optional[dict[str, int]] = None
     ): ...
 
-
     @classmethod
     def from_other_class(
         cls,
         source_object: Any,
         *,
+        ignore_props: Iterable[str] = None,
         i: int = None,
         s: str = None,
         person: Person = None,
@@ -362,12 +369,12 @@ class FooPick(Structure):
         d: Optional[dict[str, int]] = None
     ): ...
 
-
     @classmethod
     def from_other_class(
         cls,
         source_object: Any,
         *,
+        ignore_props: Iterable[str] = None,
         a: set = None,
         xyz: float = None,
         d: Optional[dict[str, int]] = None
@@ -410,12 +417,12 @@ class Bar(Structure):
         opt: Optional[float] = None
     ): ...
 
-
     @classmethod
     def from_other_class(
         cls,
         source_object: Any,
         *,
+        ignore_props: Iterable[str] = None,
         i: int = None,
         s: str = None,
         person: Person = None,

@@ -421,7 +421,9 @@ def _get_additional_structure_methods(
     shallow_clone = f"    def shallow_clone_with_overrides(\n{params_with_self}{kw_opt}\n{INDENT}): ..."
 
     params_with_cls = f",\n{INDENT*2}".join(
-        [f"{INDENT}cls", "source_object: Any", "*"] + params
+        [f"{INDENT}cls", "source_object: Any", "*"]
+        + ["ignore_props: Iterable[str] = None"]
+        + params
     )
 
     from_other_class = f"\n{INDENT}".join(
@@ -432,7 +434,7 @@ def _get_additional_structure_methods(
             f"{params_with_cls}{kw_opt}\n{INDENT}): ...",
         ]
     )
-    return "\n".join([shallow_clone, "", from_other_class])
+    return "\n".join([shallow_clone, from_other_class])
 
 
 def get_stubs_of_structures(
@@ -506,7 +508,15 @@ def get_stubs_of_enums(
 
 
 def add_imports(local_attrs: dict, additional_classes, existing_imports: set) -> list:
-    base_typing = ["Union", "Optional", "Any", "TypeVar", "Type", "NoReturn"]
+    base_typing = [
+        "Union",
+        "Optional",
+        "Any",
+        "TypeVar",
+        "Type",
+        "NoReturn",
+        "Iterable",
+    ]
     typing_types_to_import = [t for t in base_typing if t not in existing_imports]
     base_import_statements = []
     if typing_types_to_import:

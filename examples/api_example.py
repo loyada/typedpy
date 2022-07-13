@@ -19,9 +19,19 @@ from typedpy import (
     Pick,
     Set,
     Structure,
+    default_factories,
     mappers,
 )
 from typedpy import create_pyi
+
+
+class FooFoo:
+    @default_factories
+    def __init__(
+        self, *, mapper: dict[str, typing.Any] = dict, camel_case_convert: bool = False
+    ):
+        self._mapper = mapper
+        self._camel_case_convert = camel_case_convert
 
 
 class WithCustomInit(Structure):

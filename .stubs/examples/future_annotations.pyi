@@ -3,7 +3,7 @@
 ###########################################
 
 from __future__ import annotations as annotations
-from typing import Union, Optional, Any, TypeVar, Type, NoReturn
+from typing import Union, Optional, Any, TypeVar, Type, NoReturn, Iterable
 from typedpy import Structure
 
 from .more_classes import Address as Address

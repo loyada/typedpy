@@ -186,6 +186,8 @@ def structure_to_schema(structure, definitions_schema, serialization_mapper=None
                         default_raw() if callable(default_raw) else default_raw
                     )
                     sub_schema["default"] = default_val
+                    if mapped_key not in required:
+                        required.append(mapped_key)
                 properties[mapped_key] = sub_schema
         fields_schema.update(
             OrderedDict(
@@ -308,6 +310,8 @@ def schema_to_struct_code(
     if the_type == "object":
         properties = schema.get("properties", {})
         for (name, sch) in properties.items():
+            if "default" in sch and name in required:
+                required.remove(name)
             body += [
                 f"    {name} = {convert_to_field_code(sch, definitions_schema, additional_fields=additional_fields)}"
             ]

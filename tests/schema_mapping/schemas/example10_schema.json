@@ -12,7 +12,7 @@
             "I": {"type": "integer"},
             "S": {"type": "array", "uniqueItems": true},
             "X": {"type": "integer"}},
-        "required": ["I", "S", "X"],
+        "required": ["D", "I", "S", "X"],
         "additionalProperties": true
     }
 }

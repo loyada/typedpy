@@ -245,7 +245,15 @@ def extract_attributes_from_init(source, locals_attrs, additional_classes):
     def _get_normalized_dict(args):
         return dict([x if len(x) == 2 else x + ["Any"] for x in args])
 
-    root = ast.parse(source.strip())
+    source_lines = source.split("\n")
+    first_line = -1
+    for ind, line in enumerate(source_lines):
+        if first_line > -1:
+            continue
+        if line.lstrip().startswith("def"):
+            first_line = ind
+    cleaned_source = "\n".join(source_lines[first_line:])
+    root = ast.parse(cleaned_source.strip())
     info = _get_function_info(root.body[0])
     self_name = info.positional_args[0]
     positional_args = [x.split(":") for x in info.positional_args[1:]]

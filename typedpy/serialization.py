@@ -4,10 +4,9 @@ import json
 import uuid
 from typing import Dict
 
-from .commons import deep_get, raise_errs_if_needed
+from .commons import Constant, deep_get, raise_errs_if_needed
 from .versioned_mapping import VERSION_MAPPING, Versioned, convert_dict
 from .mappers import (
-    Constant,
     DoNotSerialize,
     aggregate_deserialization_mappers,
     aggregate_serialization_mappers,
@@ -417,6 +416,8 @@ def construct_fields_map(
     mapper = mapper or {}
     for key, field in field_by_name.items():
         mapped_key = mapper.get(key, key)
+        if mapped_key in getattr(cls, "_constants", []):
+            continue
         process = False
         processed_input = None
         if key in mapper:
@@ -533,7 +534,11 @@ def deserialize_structure_internal(
         raise TypeError(f"{name}: Expected a dictionary; Got { wrap_val(input_dict)}")
 
     kwargs = {
-        k: v for k, v in input_dict.items() if k not in field_by_name and keep_undefined
+        k: v
+        for k, v in input_dict.items()
+        if k not in field_by_name
+        and keep_undefined
+        and k not in getattr(cls, "_constants", [])
     }
 
     kwargs.update(

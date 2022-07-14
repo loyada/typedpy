@@ -1,7 +1,7 @@
 import copy
 
-from .commons import deep_get
-from .mappers import Constant, Deleted
+from .commons import Constant, deep_get
+from .mappers import Deleted
 from .structures import Structure
 from .fields import FunctionCall, PositiveInt
 

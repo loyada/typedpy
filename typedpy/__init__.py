@@ -115,7 +115,7 @@ from .errors import (
 
 from .utility import get_list_type, type_is_generic
 
-from .mappers import mappers, Deleted, Constant, DoNotSerialize
+from .mappers import mappers, Deleted, DoNotSerialize
 
 from .versioned_mapping import convert_dict, Versioned
 
@@ -126,6 +126,7 @@ from .commons import (
     flatten,
     default_factories,
     InvalidStructureErr,
+    Constant,
 )
 
 from .keysof import keys_of

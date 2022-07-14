@@ -221,3 +221,17 @@ def default_factories(func):
         return func(*args, **kwargs)
 
     return decorated
+
+
+class Constant:
+    """
+    Mark a value as constant in a versioned mapper.
+    This is useful if an attribute did not exist in a previous version
+    and you want to assign it to a default value in the more recent version.
+    """
+
+    def __init__(self, val):
+        self._val = val
+
+    def __call__(self, *args, **kwargs):
+        return self._val

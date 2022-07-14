@@ -15,7 +15,7 @@ from json import JSONDecodeError
 
 from typing import get_type_hints, Iterable
 
-from .commons import raise_errs_if_needed, wrap_val, _is_sunder, _is_dunder
+from .commons import Constant, raise_errs_if_needed, wrap_val, _is_sunder, _is_dunder
 from .utility import type_is_generic
 
 REQUIRED_FIELDS = "_required"
@@ -73,7 +73,13 @@ class ImmutableMixin:
 
 
 def make_signature(
-    names, required, additional_properties, bases_params_by_name, bases_required
+    names,
+    *,
+    required,
+    additional_properties,
+    bases_params_by_name,
+    bases_required,
+    constants,
 ):
     """
     Make a signature that will be used for the constructor of the Structure
@@ -85,10 +91,11 @@ def make_signature(
     :return: the signature
     """
     all_names = set(names) | set(bases_params_by_name.keys())
+    all_except_consts = all_names - set(constants)
     non_default_args_for_class = OrderedDict(
         [
             (name, Parameter(name, Parameter.POSITIONAL_OR_KEYWORD))
-            for name in all_names
+            for name in all_except_consts
             if name in required
         ]
     )
@@ -96,7 +103,7 @@ def make_signature(
         [
             (name, param)
             for (name, param) in bases_params_by_name.items()
-            if (name in required or name in bases_required)
+            if (name in required or name in bases_required) and name not in constants
         ]
     )
     non_default_args = list(
@@ -107,14 +114,18 @@ def make_signature(
         [
             (name, Parameter(name, Parameter.POSITIONAL_OR_KEYWORD, default=None))
             for name in names
-            if name not in required
+            if (name not in required and name not in constants)
         ]
     )
     default_args_for_bases = OrderedDict(
         [
             (name, param)
             for (name, param) in bases_params_by_name.items()
-            if (name not in required and name not in bases_required)
+            if (
+                name not in required
+                and name not in bases_required
+                and name not in constants
+            )
         ]
     )
     default_args = list({**default_args_for_bases, **default_args_for_class}.values())
@@ -367,7 +378,7 @@ class Field(UniqueMixin, metaclass=_FieldMeta):
             if name in owner.__dict__:
                 return owner.__dict__[name]
             field_by_name = owner.get_all_fields_by_name()
-            return field_by_name[name]
+            return field_by_name.get(name)
 
         if instance is not None and self._name not in instance.__dict__:
             default_value = (
@@ -627,9 +638,14 @@ class StructMeta(type):
                 if key not in clsobj.__annotations__ and isinstance(val, TypedField):
                     clsobj.__annotations__[key] = getattr(val, "_ty")
 
-        default_required = (
-            list(set(bases_required + fields)) if bases_params else fields
-        )
+        all_fields = set(bases_required + fields) if bases_params else fields
+        default_required = list(all_fields)
+
+        clsobj._constants = {}
+        for fname, fval in _get_all_fields_by_name(clsobj).items():
+            if isinstance(getattr(clsobj, fname), Constant):
+                clsobj._constants[fname] = getattr(clsobj, fname)._val
+
         required = cls_dict.get(REQUIRED_FIELDS, default_required)
         setattr(clsobj, REQUIRED_FIELDS, list(set(bases_required + required)))
         optional_fields = cls_dict.get(OPTIONAL_FIELDS, [])
@@ -649,10 +665,11 @@ class StructMeta(type):
 
         sig = make_signature(
             clsobj._fields,
-            required,
-            additional_props,
-            bases_params,
+            required=required,
+            additional_properties=additional_props,
+            bases_params_by_name=bases_params,
             bases_required=bases_required,
+            constants=clsobj._constants.keys(),
         )
         setattr(clsobj, "__signature__", sig)
         setattr(clsobj, "_field_by_name", _get_all_fields_by_name(clsobj))
@@ -922,6 +939,14 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             if getattr(value, "_default", None) is not None
             and key not in bound.arguments
         ]
+
+        for field_name, const_val in self._constants.items():
+            if field_name in kwargs:
+                raise ValueError(
+                    f"{self.__class__.__name__}:  {field_name} is defined as a constant. It cannot be set."
+                )
+            setattr(self, field_name, const_val)
+
         for field_name in defaults_fields:
             default = getattr(field_by_name[field_name], "_default")
             default_value = default() if callable(default) else default
@@ -976,6 +1001,10 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 )
                 value = deepcopy(value) if needs_defensive_copy else value
 
+        if key in self._constants and getattr(self, "_instantiated", False):
+            raise ValueError(
+                f"{self.__class__.__name__}:  {key} is defined as a constant. It cannot be set."
+            )
         if not any(
             [
                 getattr(

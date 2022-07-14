@@ -183,8 +183,11 @@ def get_type_info(field, locals_attrs, additional_classes):
 
 def get_all_type_info(cls, locals_attrs, additional_classes) -> dict:
     type_by_name = {}
+    constants = getattr(cls, "_constants", {})
     required = getattr(cls, "_required", None)
     for field_name, field in cls.get_all_fields_by_name().items():
+        if field_name in constants:
+            continue
         try:
             type_info_str: str = get_type_info(field, locals_attrs, additional_classes)
             if (

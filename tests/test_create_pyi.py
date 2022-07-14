@@ -138,6 +138,16 @@ test_cases = [
         module_name="examples.generic_stuff",
         additional_properties_default=False,
     ),
+    PYI_TEST_CASE(
+        source_path=get_abs_path_from_here(
+            "../examples/struct_with_constants.py", __file__
+        ),
+        reference_path=get_abs_path_from_here(
+            "../.stubs/examples/struct_with_constants_1.pyi", __file__
+        ),
+        module_name="examples.struct_with_constants",
+        additional_properties_default=False,
+    ),
 ]
 
 

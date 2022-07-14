@@ -5,6 +5,7 @@ import pytest
 from pytest import mark
 from typedpy import (
     Array,
+    Constant,
     Deserializer,
     FunctionCall,
     ImmutableStructure,
@@ -15,7 +16,7 @@ from typedpy import (
     Versioned,
     convert_dict,
 )
-from typedpy.mappers import Constant, Deleted
+from typedpy.mappers import Deleted
 
 
 class Bar(ImmutableStructure):

@@ -3,7 +3,7 @@ import logging
 from collections import OrderedDict
 from typing import Union
 
-from .commons import default_factories, first_in, wrap_val
+from .commons import Constant, default_factories, first_in, wrap_val
 from .fields import (
     FunctionCall,
     Map,
@@ -30,7 +30,7 @@ from .fields import (
 from .enum import Enum
 
 from .extfields import DateString
-from .mappers import Constant, DoNotSerialize, aggregate_serialization_mappers
+from .mappers import DoNotSerialize, aggregate_serialization_mappers
 from .structures import ADDITIONAL_PROPERTIES, NoneField, Structure, TypedPyDefaults
 
 SCHEMA_PATTERN_PROPERTIES = "patternProperties"

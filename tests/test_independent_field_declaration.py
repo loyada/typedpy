@@ -100,9 +100,6 @@ def test_field_declaration_bad_usage():
         i = Integer
         _additionalProperties = False
 
-    with raises(KeyError) as ex:
-        Foo.first_name_foo
-
     # this can cause a lot of weirdness....
 
     bar = Bar(i=1, first_name_bar="jack", last_name_bar="smith")

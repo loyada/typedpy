@@ -9,20 +9,6 @@ from .structures import ClassReference, Field, Structure, SERIALIZATION_MAPPER
 from .fields import Array, FunctionCall, Set, StructureReference
 
 
-class Constant:
-    """
-    Mark a value as constant in a versioned mapper.
-    This is useful if an attribute did not exist in a previous version
-    and you want to assign it to a default value in the more recent version.
-    """
-
-    def __init__(self, val):
-        self._val = val
-
-    def __call__(self, *args, **kwargs):
-        return self._val
-
-
 class Deleted:
     """
     Used to mark an attribute as "removed" in a versioned mapper.

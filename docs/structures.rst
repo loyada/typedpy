@@ -794,6 +794,47 @@ For example:
     Base(i=1)
 
 
+Defining inherited fields as constants
+======================================
+In certain scenarios, a structure may extend a base with some field definition, but for the child class only a specific
+value is valid. This is especially true for Enums.
+Consider the following example:
+
+.. code-block:: python
+
+    class EventSubject(enum.Enum):
+        foo = 1
+        bar = 2
+
+
+    class Event(AbstractStructure):
+        i: int = 5
+        subject: Enum[EventSubject]
+
+        _required = ["subject"]
+
+
+    class FooEvent(Event):
+        subject = Constant(EventSubject.foo) # --> Note the Constant
+        name: str
+
+
+    class BarEvent(Event):
+        subject = Constant(EventSubject.bar)
+        val: int
+
+    assert FooEvent(name="name").subject is EventSubject.foo
+    assert BarEvent(val=5).subject is EventSubject.bar
+
+
+In the example above, FooEvent is defined so that the inherited "subject" always has EventStatus.foo.
+This means that it is not allowed to set the "subject" field of an instance.Trying to do it will result in an exception.
+
+It is also reflected in the generated stub files, so that the IDE knows this field is not part of the signature.
+
+
+
+
 Global Defaults
 ===============
 

@@ -1212,7 +1212,10 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     def shallow_clone_with_overrides(self, **kw):
         fields_names = self.get_all_fields_by_name().keys()
         field_value_by_name = {
-            f: getattr(self, f) for f in fields_names if getattr(self, f) is not None and f not in getattr(self.__class__,"_constants", {})
+            f: getattr(self, f)
+            for f in fields_names
+            if getattr(self, f) is not None
+            and f not in getattr(self.__class__, "_constants", {})
         }
         kw_args = {**field_value_by_name, **kw}
         return self.__class__(**kw_args)
@@ -1289,7 +1292,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         args_from_structure = {
             k: getattr(self, k, None)
             for k in self.get_all_fields_by_name()
-            if k not in ignore_props
+            if k not in ignore_props and k not in getattr(self.__class__, "_constants", {})
         }
         kwargs = {**args_from_structure, **kw}
         return target_class(**kwargs)
@@ -1337,7 +1340,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         args_from_model = {
             k: getattr(source_object, k, None)
             for k in cls.get_all_fields_by_name()
-            if k not in ignore_props
+            if k not in ignore_props and k not in getattr(cls, "_constants", {})
         }
         kwargs = {**args_from_model, **kw}
         return cls(**kwargs)

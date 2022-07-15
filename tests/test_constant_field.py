@@ -78,3 +78,34 @@ def test_deserialization():
     assert Deserializer(FooEvent).deserialize(
         {"name": "name", "subject": "foo", "i": 3}
     ) == FooEvent(name="name", i=3)
+
+
+def test_shallow_clone():
+    foo = FooEvent(name="name")
+    with pytest.raises(ValueError) as excinfo:
+        foo.shallow_clone_with_overrides(subject=EventSubject.bar)
+    assert "FooEvent:  subject is defined as a constant. It cannot be set." in str(
+        excinfo.value
+    )
+    assert foo.shallow_clone_with_overrides().subject is EventSubject.foo
+
+
+
+def test_from_other_class():
+    foo = FooEvent(name="name")
+    with pytest.raises(ValueError) as excinfo:
+        foo.shallow_clone_with_overrides(subject=EventSubject.bar)
+    assert "FooEvent:  subject is defined as a constant. It cannot be set." in str(
+        excinfo.value
+    )
+    assert foo.shallow_clone_with_overrides().subject is EventSubject.foo
+
+
+def test_from_other_class():
+    foo = FooEvent(name="name")
+    with pytest.raises(ValueError) as excinfo:
+        FooEvent.from_other_class(foo, subject=EventSubject.bar)
+    assert "FooEvent:  subject is defined as a constant. It cannot be set." in str(
+        excinfo.value
+    )
+    assert   FooEvent.from_other_class(foo).subject is EventSubject.foo

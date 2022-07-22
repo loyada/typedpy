@@ -47,6 +47,11 @@ class Employee(Extend[Person]):
     ssid: str
 
 
+    @property
+    def prop1(self) -> list[str]:
+        return ["john"]
+
+
 def func(x=5, *, e: Employee = None, **kw) -> Mapping[str, str]:
     print(f"{x}, {e}")
     return State.FL

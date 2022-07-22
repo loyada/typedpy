@@ -122,6 +122,9 @@ class Employee(Structure):
     sex: Sex
     ssid: str
 
+    @property
+    def prop1(self) -> list[str]: ...
+
 
 class Blah(Structure):
     def __init__(

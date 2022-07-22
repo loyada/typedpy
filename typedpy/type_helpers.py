@@ -302,7 +302,7 @@ def _get_methods_info(
         )
         if isinstance(func, property):
             is_property = True
-            func = func.__get__
+            func = func.fget
         try:
             sig = inspect.signature(func)
             return_annotations = (

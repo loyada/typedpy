@@ -18,4 +18,6 @@ class Event(AbstractStructure):
 
 class Example14(Event):
     subject = Constant(EventSubject.foo)
+    other_subject = Constant(EventSubject.bar)
     name: str
+    other = Constant("example")

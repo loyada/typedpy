@@ -81,7 +81,11 @@ def test_example_code_to_schema_and_back(
 
     schema, definitions = structure_to_schema(OriginalClass, {})
     assert definitions == expected_schema.get("definitions", {})
-    assert dict(schema) == expected_schema["example"]
+    assert set(schema.get("required", [])) == set(expected_schema["example"].get("required", []))
+    unordered_schema = dict(schema)
+    unordered_schema.pop("required")
+    expected_schema["example"].pop("required")
+    assert unordered_schema == expected_schema["example"]
 
     generated_file_name = str(get_abs_path_from_here("generated") / generated_filename)
     expected_file_name = str(get_abs_path_from_here("expected") / generated_filename)

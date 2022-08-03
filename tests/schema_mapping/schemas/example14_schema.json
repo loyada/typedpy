@@ -4,11 +4,13 @@
     "example": {
         "type": "object",
         "properties": {
-            "subject": {"enum": ["foo", "bar"]},
+            "subject": {"enum": ["foo"]},
+            "other_subject": {"enum":  ["bar"]},
             "name": {"type": "string"},
-            "i": {"type":  "integer", "default":  5}
+            "i": {"type":  "integer", "default":  5},
+            "other": {"enum":  ["example"]}
         },
-        "required": ["i", "name", "subject"],
+        "required": ["i", "name", "subject", "other_subject", "other"],
         "additionalProperties": true
     }
 }

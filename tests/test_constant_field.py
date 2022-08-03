@@ -2,7 +2,7 @@ import enum
 
 import pytest
 
-from typedpy import AbstractStructure, Constant, Deserializer, Enum, Serializer
+from typedpy import AbstractStructure, Constant, Deserializer, Enum, Serializer, Structure
 
 
 class EventSubject(enum.Enum):
@@ -19,7 +19,9 @@ class Event(AbstractStructure):
 
 class FooEvent(Event):
     subject = Constant(EventSubject.foo)
+    other_subject = Constant(EventSubject.bar)
     name: str
+    foo = Constant("fooooo")
 
 
 class BarEvent(Event):
@@ -27,8 +29,20 @@ class BarEvent(Event):
     val: int
 
 
+def test_block_invalid_constant():
+    with pytest.raises(TypeError) as excinfo:
+        class Example(Structure):
+            foo = Constant([1, 2, 3])
+
+    assert "Constant foo is of an invalid type. Supported types are : None, int, str, bool, enum.Enum, float" in str(
+            excinfo.value
+    )
+
 def test_happy_constant():
-    assert FooEvent(name="name").subject is EventSubject.foo
+    foo_event = FooEvent(name="name")
+    assert foo_event.subject is EventSubject.foo
+    assert foo_event.other_subject is EventSubject.bar
+    assert foo_event.foo == "fooooo"
     assert BarEvent(val=5).subject is EventSubject.bar
 
 
@@ -71,12 +85,19 @@ def test_not_allowed_to_inheritance():
 
 def test_serialization():
     foo = FooEvent(name="name", i=3)
-    assert Serializer(foo).serialize() == {"name": "name", "subject": "foo", "i": 3}
+    assert Serializer(foo).serialize() == {"name": "name", "subject": "foo", "i": 3, "other_subject": "bar", "foo": "fooooo"}
 
 
 def test_deserialization():
     assert Deserializer(FooEvent).deserialize(
         {"name": "name", "subject": "foo", "i": 3}
+    ) == FooEvent(name="name", i=3)
+    assert Deserializer(FooEvent).deserialize(
+        {"name": "name", "subject": "foo", "i": 3, "other_subject": "bar", "foo": "fooooo"}
+    ) == FooEvent(name="name", i=3)
+    # it actually ignores the values in constant fields:
+    assert Deserializer(FooEvent).deserialize(
+        {"name": "name", "subject": "x", "i": 3}
     ) == FooEvent(name="name", i=3)
 
 

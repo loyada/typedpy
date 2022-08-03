@@ -706,7 +706,8 @@ def serialize_val(field_definition, name, val, mapper=None, camel_case_convert=F
         return serialize_internal(
             val, mapper=mapper, camel_case_convert=camel_case_convert
         )
-
+    if isinstance(field_definition, Constant):
+        return val.name if isinstance(val, enum.Enum) else val
     # nothing worked. Not a typedpy field. Last ditch effort.
     try:
         return json.loads(json.dumps(val))

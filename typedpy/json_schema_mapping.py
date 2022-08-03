@@ -71,6 +71,14 @@ def _map_class_reference(reference, definitions_schema):
     return {"$ref": f"#/definitions/{name}"}
 
 
+def _const_to_schema(field: Constant):
+    val = field()
+    return {
+        "enum": [val.name if isinstance(val, enum.Enum) else val]
+    }
+
+
+
 def convert_to_schema(field, definitions_schema, serialization_mapper: dict = None):
     """
     In case field is None, should return None.
@@ -87,6 +95,8 @@ def convert_to_schema(field, definitions_schema, serialization_mapper: dict = No
             )
             for f in field
         ]
+    if isinstance(field, Constant):
+        return _const_to_schema(field)
     custom = field.to_json_schema()
     if custom:
         return custom
@@ -180,7 +190,7 @@ def structure_to_schema(structure, definitions_schema, serialization_mapper=None
                 sub_schema = convert_to_schema(
                     field, definitions_schema, serialization_mapper=sub_mapper
                 )
-                default_raw = getattr(field, "_default")
+                default_raw = getattr(field, "_default", None)
                 if default_raw is not None:
                     default_val = (
                         default_raw() if callable(default_raw) else default_raw

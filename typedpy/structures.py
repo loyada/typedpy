@@ -47,6 +47,7 @@ T = typing.TypeVar("T")
 class TypedPyDefaults:
     additional_properties_default = True
     compact_serialization_default = False
+    support_json_schema_v6 = False
 
 
 class ImmutableMixin:
@@ -611,11 +612,12 @@ class StructMeta(type):
         for key, val in cls_dict.items():
             if isinstance(val, StructMeta) and not isinstance(val, Field):
                 cls_dict[key] = ClassReference(val)
-        fields = [key for key, val in cls_dict.items() if isinstance(val, Field)]
+        fields = [key for key, val in cls_dict.items() if isinstance(val, (Field, Constant))]
         for field_name in fields:
             if field_name.startswith("_") or field_name == "kwargs":
                 raise ValueError(f"{field_name}: invalid field name")
-            setattr(cls_dict[field_name], "_name", field_name)
+            if isinstance(cls_dict[field_name], Field):
+                setattr(cls_dict[field_name], "_name", field_name)
 
         for key, val in cls_dict.items():
             if (
@@ -644,6 +646,10 @@ class StructMeta(type):
         clsobj._constants = {}
         for fname, fval in _get_all_fields_by_name(clsobj).items():
             if isinstance(getattr(clsobj, fname), Constant):
+                const_val = getattr(clsobj, fname)._val
+                if not isinstance(const_val, (int, str, bool, enum.Enum, float)):
+                    raise TypeError(f"Constant {fname} is of an invalid type. Supported "
+                                    "types are : None, int, str, bool, enum.Enum, float")
                 clsobj._constants[fname] = getattr(clsobj, fname)._val
 
         required = cls_dict.get(REQUIRED_FIELDS, default_required)
@@ -978,7 +984,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     def __manage__uniqueness_of_all_fields__(self):
         fields_by_name = self.__class__.get_all_fields_by_name()
         for name, field in fields_by_name.items():
-            if field.defined_as_unique():
+            if not isinstance(field, Constant) and  field.defined_as_unique():
                 field.__manage_uniqueness_for_field__(self, getattr(self, name, None))
 
     def __setattr__(self, key, value):

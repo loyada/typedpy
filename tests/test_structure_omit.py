@@ -1,21 +1,6 @@
-from typing import Type
-
 import pytest
 
-from typedpy import (
-    ImmutableStructure,
-    Integer,
-    Map,
-    Serializer,
-    Structure,
-    mappers,
-    Omit,
-    schema_to_struct_code,
-    structure_to_schema,
-    String,
-    Structure,
-    Integer,
-)
+from typedpy import (ImmutableStructure, Integer, Map, Omit, Serializer, Structure, mappers)
 
 
 def build_default_dict():

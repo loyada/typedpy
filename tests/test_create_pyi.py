@@ -7,9 +7,8 @@ from typing import Optional
 import pytest
 from pytest import mark
 
-from typedpy.type_helpers import create_stub_for_file, create_stub_for_file_using_ast
+from typedpy import create_stub_for_file, create_stub_for_file_using_ast, create_pyi
 from typedpy.utility import get_abs_path_from_here
-from typedpy import create_pyi
 
 
 def _verify_file_are_same(actual_filename, expected_filename):

@@ -5,7 +5,7 @@ from enum import auto
 import pytest
 
 from typedpy import Structure
-from typedpy.keysof import keys_of
+from typedpy.structures.keysof import keys_of
 
 
 class FirstEnum(enum.Enum):

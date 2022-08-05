@@ -1,11 +1,11 @@
 import enum
 
-from .commons import first_in, wrap_val
-from .fields import SerializableField, String
-from .structures import Field, _FieldMeta
+from typedpy.commons import first_in, wrap_val
+from typedpy.fields import SerializableField, String
+from typedpy.structures.structures import FieldMeta
 
 
-class _EnumMeta(_FieldMeta):
+class _EnumMeta(FieldMeta):
     def __getitem__(cls, values):
         if isinstance(values, (type,)) and issubclass(values, (enum.Enum,)):
             return cls(values=values)  # pylint: disable=E1120, E1123

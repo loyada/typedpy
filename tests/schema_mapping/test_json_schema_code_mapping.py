@@ -8,7 +8,6 @@ import pytest
 
 from typedpy import (
     DateField,
-    DateString,
     IPV4,
     Structure,
     structure_to_schema,

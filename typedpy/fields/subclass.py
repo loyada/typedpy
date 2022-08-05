@@ -1,7 +1,7 @@
-from typedpy.structures import TypedField, _FieldMeta
+from typedpy.structures.structures import TypedField, FieldMeta
 
 
-class _SubClassMeta(_FieldMeta):
+class _SubClassMeta(FieldMeta):
     def __getitem__(cls, value):
         return cls(clazz=value)  # pylint: disable=E1120, E1123
 

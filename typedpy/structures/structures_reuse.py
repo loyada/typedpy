@@ -1,6 +1,6 @@
 import typing
 from typing import Iterable
-from typedpy.structures import REQUIRED_FIELDS, StructMeta, Structure, _init_class_dict
+from .structures import REQUIRED_FIELDS, StructMeta, Structure, _init_class_dict
 
 T = typing.TypeVar("T")
 

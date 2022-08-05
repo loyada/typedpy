@@ -1,6 +1,6 @@
 import sys
 
-from pytest import fixture, raises, mark
+from pytest import fixture, raises
 from typedpy import (
     Array,
     Deserializer,

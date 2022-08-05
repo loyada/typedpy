@@ -1,18 +1,9 @@
 import sys
+from typing import Type
 
 from pytest import raises
-from typedpy import (
-    String,
-    Number,
-    Structure,
-    ImmutableField,
-    ImmutableStructure,
-    Array,
-    Map,
-    Integer,
-    Field,
-)
-from typing import get_type_hints, Type
+
+from typedpy import (Array, Field, Integer, String, Structure)
 
 
 def test_field_declaration():

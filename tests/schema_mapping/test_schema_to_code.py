@@ -1,13 +1,6 @@
 from pytest import raises
 
-from typedpy import (
-    schema_definitions_to_code,
-    schema_to_struct_code,
-    write_code_from_schema,
-)
-from typedpy.structures import *
-from typedpy.fields import *
-from typedpy.enum import Enum
+from typedpy import *
 
 definitions = {
     "SimpleStruct": {

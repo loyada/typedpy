@@ -72,7 +72,7 @@ from typedpy.fields import (
     FunctionCall
 )
 
-from typedpy.json_schema_mapping import (
+from typedpy.json_schema.json_schema_mapping import (
     structure_to_schema,
     schema_to_struct_code,
     schema_definitions_to_code,

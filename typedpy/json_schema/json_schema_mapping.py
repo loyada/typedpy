@@ -3,7 +3,7 @@ import logging
 from collections import OrderedDict
 from typing import Union
 
-from .commons import Constant, default_factories, first_in, wrap_val
+from typedpy.commons import Constant, default_factories, first_in, wrap_val
 from typedpy.fields import (
     FunctionCall,
     Map,

@@ -93,7 +93,7 @@ from typedpy.serialization import (
     serialize,
     deserialize_structure,
     deserialize_single_field,
-    HasTypes
+    HasTypes,
 )
 
 from typedpy.extfields import (

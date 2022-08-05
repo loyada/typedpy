@@ -390,6 +390,7 @@ def write_code_from_schema(
         class_name, schema, definitions_schema, additional_fields=additional_fields
     )
     with open(filename, "w", encoding="utf-8") as fout:
+        fout.write("from typedpy import *\n\n\n")
         if definitions_schema:
             fout.write(supporting_classes)
             fout.write("\n\n# ********************\n\n\n")

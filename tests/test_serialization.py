@@ -40,9 +40,9 @@ from typedpy import (
     FunctionCall,
     HasTypes,
     Serializer,
-    Deserializer
+    Deserializer,
+    DateTime
 )
-from typedpy.extfields import DateTime
 
 
 class SimpleStruct(Structure):

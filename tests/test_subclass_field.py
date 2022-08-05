@@ -1,6 +1,5 @@
 import pytest
-from typedpy import Map, Structure
-from typedpy.fields.subclass import SubClass
+from typedpy import Map, Structure, SubClass
 
 
 class Foo(Structure):

@@ -1,6 +1,6 @@
 from pytest import raises
 
-from typedpy import Structure, Tuple, Number, String, Integer, Float, create_typed_field
+from typedpy import Structure, create_typed_field
 
 
 class Foo(object):

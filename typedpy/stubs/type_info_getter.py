@@ -6,7 +6,7 @@ import typing
 from typedpy.fields import AllOf, AnyOf, Map, OneOf, Enum
 from typedpy.structures import Field, NoneField
 from typedpy.structures.structures import get_typing_lib_info
-from .utility import type_is_generic
+from typedpy.utility import type_is_generic
 
 builtins_types = [
     getattr(builtins, k)

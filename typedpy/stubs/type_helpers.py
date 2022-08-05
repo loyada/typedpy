@@ -9,19 +9,19 @@ import typing
 from os.path import relpath
 from pathlib import Path
 
-from .commons import doublewrap_val, nested
-from .fields import FunctionCall
+from typedpy.commons import doublewrap_val, nested
+from typedpy.fields import FunctionCall
 from typedpy.serialization.serialization_wrappers import Deserializer, Serializer
-from .structures import ADDITIONAL_PROPERTIES, Field, ImmutableStructure, Structure
-from .type_info_getter import get_all_type_info, get_type_info, is_typeddict
-from .types_ast import (
+from typedpy.structures import ADDITIONAL_PROPERTIES, Field, ImmutableStructure, Structure
+from typedpy.stubs.type_info_getter import get_all_type_info, get_type_info, is_typeddict
+from typedpy.stubs.types_ast import (
     extract_attributes_from_init,
     functions_to_str,
     get_imports,
     get_models,
     models_to_src,
 )
-from .utility import type_is_generic
+from typedpy.utility import type_is_generic
 
 builtins_types = [
     getattr(builtins, k)

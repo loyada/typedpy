@@ -2,7 +2,7 @@ import argparse
 import fnmatch
 from pathlib import Path
 
-from typedpy.type_helpers import create_stub_for_file, create_stub_for_file_using_ast
+from typedpy.stubs.type_helpers import create_stub_for_file, create_stub_for_file_using_ast
 
 
 def main():

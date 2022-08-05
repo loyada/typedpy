@@ -2,7 +2,7 @@ import ast
 import typing
 
 from typedpy import Array, Map, Structure
-from typedpy.type_info_getter import get_type_info
+from typedpy.stubs.type_info_getter import get_type_info
 
 INDENT = " " * 4
 

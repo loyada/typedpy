@@ -11,7 +11,7 @@ from pathlib import Path
 
 from .commons import doublewrap_val, nested
 from .fields import FunctionCall
-from .serialization_wrappers import Deserializer, Serializer
+from typedpy.serialization.serialization_wrappers import Deserializer, Serializer
 from .structures import ADDITIONAL_PROPERTIES, Field, ImmutableStructure, Structure
 from .type_info_getter import get_all_type_info, get_type_info, is_typeddict
 from .types_ast import (

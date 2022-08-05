@@ -10,15 +10,15 @@ from copy import deepcopy
 from functools import reduce
 from decimal import Decimal, InvalidOperation
 
-from .commons import python_ver_atleast_39, wrap_val
-from .structures import (
+from typedpy.commons import python_ver_atleast_39, wrap_val
+from typedpy.structures import (
     Field,
     Structure,
     TypedField,
     ClassReference,
     StructMeta,
     ImmutableMixin,
-    _FieldMeta,
+    FieldMeta,
     NoneField,
     ImmutableField,
 )
@@ -817,10 +817,10 @@ class _DictStruct(dict, ImmutableMixin):
         super().__init__(state["mydict"])
 
 
-class _CollectionMeta(_FieldMeta):
+class _CollectionMeta(FieldMeta):
     def __getitem__(cls, item):
         def validate_and_get_field(val):
-            return _FieldMeta.__getitem__(cls, val)
+            return FieldMeta.__getitem__(cls, val)
 
         if isinstance(item, tuple):
             items = [validate_and_get_field(it) for it in item]
@@ -828,10 +828,10 @@ class _CollectionMeta(_FieldMeta):
         return cls(items=validate_and_get_field(item))  # pylint: disable=E1120, E1123
 
 
-class _JSONSchemaDraft4ReuseMeta(_FieldMeta):
+class _JSONSchemaDraft4ReuseMeta(FieldMeta):
     def __getitem__(cls, item):
         def validate_and_get_field(val):
-            return _FieldMeta.__getitem__(cls, val)
+            return FieldMeta.__getitem__(cls, val)
 
         if isinstance(item, tuple):
             fields = [validate_and_get_field(it) for it in item]

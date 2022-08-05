@@ -36,11 +36,13 @@ from typedpy import (
     Function,
     PositiveInt,
     DecimalNumber,
+    serialize_field,
+    FunctionCall,
+    HasTypes,
+    Serializer,
+    Deserializer
 )
 from typedpy.extfields import DateTime
-from typedpy import serialize_field
-from typedpy.serialization import FunctionCall, HasTypes
-from typedpy.serialization_wrappers import Serializer, Deserializer
 
 
 class SimpleStruct(Structure):

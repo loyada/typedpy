@@ -3,9 +3,9 @@ import collections.abc
 import logging
 import typing
 
-from .enum import Enum
-from .fields import AllOf, AnyOf, Map, OneOf
-from .structures import Field, NoneField, get_typing_lib_info
+from typedpy.fields import AllOf, AnyOf, Map, OneOf, Enum
+from typedpy.structures import Field, NoneField
+from typedpy.structures.structures import get_typing_lib_info
 from .utility import type_is_generic
 
 builtins_types = [

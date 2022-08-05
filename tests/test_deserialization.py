@@ -37,8 +37,8 @@ from typedpy import (
     PositiveInt,
     DecimalNumber,
 )
-from typedpy.serialization import FunctionCall, deserialize_single_field
-from typedpy.serialization_wrappers import (
+from typedpy import FunctionCall, deserialize_single_field
+from typedpy import (
     Deserializer,
     Serializer,
     deserializer_by_discriminator,

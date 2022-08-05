@@ -20,15 +20,13 @@ from typedpy import (
     NoneField,
     DateField,
     DateTime,
-)
-from typedpy.structures import (
     AbstractStructure,
     FinalStructure,
     ImmutableStructure,
     unique,
-    MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS,
 )
 
+from typedpy.structures.structures import MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
 
 class Venue(enum.Enum):
     NYSE = enum.auto()

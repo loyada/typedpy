@@ -4,7 +4,7 @@ from collections import OrderedDict
 from typing import Union
 
 from .commons import Constant, default_factories, first_in, wrap_val
-from .fields import (
+from typedpy.fields import (
     FunctionCall,
     Map,
     Negative,
@@ -17,8 +17,6 @@ from .fields import (
     Float,
     Array,
     String,
-    ClassReference,
-    Field,
     Boolean,
     AllOf,
     OneOf,
@@ -26,12 +24,12 @@ from .fields import (
     NotField,
     Tuple,
     Set,
+    Enum
 )
-from .enum import Enum
 
-from .extfields import DateString
-from .mappers import DoNotSerialize, aggregate_serialization_mappers
-from .structures import ADDITIONAL_PROPERTIES, NoneField, Structure, TypedPyDefaults
+from typedpy.extfields.extfields import DateString
+from typedpy.serialization.mappers import DoNotSerialize, aggregate_serialization_mappers
+from typedpy.structures import ADDITIONAL_PROPERTIES, NoneField, Structure, TypedPyDefaults, ClassReference, Field
 
 SCHEMA_PATTERN_PROPERTIES = "patternProperties"
 SCHEMA_ADDITIONAL_PROPERTIES = "additionalProperties"
@@ -392,7 +390,6 @@ def write_code_from_schema(
         class_name, schema, definitions_schema, additional_fields=additional_fields
     )
     with open(filename, "w", encoding="utf-8") as fout:
-        fout.write("from typedpy import *\n\n\n")
         if definitions_schema:
             fout.write(supporting_classes)
             fout.write("\n\n# ********************\n\n\n")

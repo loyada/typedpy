@@ -4,9 +4,9 @@ Module for custom deserialization mappers aggregation
 from collections.abc import Mapping
 from enum import Enum, auto
 
-from .commons import deep_get
-from .structures import ClassReference, Field, Structure, SERIALIZATION_MAPPER
-from .fields import Array, FunctionCall, Set, StructureReference
+from typedpy.commons import deep_get
+from typedpy.structures import ClassReference, Field, Structure, SERIALIZATION_MAPPER
+from typedpy.fields import Array, FunctionCall, Set, StructureReference
 
 
 class Deleted:

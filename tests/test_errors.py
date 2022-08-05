@@ -1,8 +1,7 @@
 import json
 
-from typedpy.extfields import DateField
+from typedpy.extfields.extfields import DateField
 from typedpy import (
-    InvalidStructureErr,
     Structure,
     DecimalNumber,
     String,

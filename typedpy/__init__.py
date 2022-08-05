@@ -14,14 +14,12 @@ from typedpy.structures import (
     ImmutableField,
     unique,
     AbstractStructure,
-)
-
-from typedpy.structures_reuse import (
     Partial,
     AllFieldsRequired,
     Omit,
     Pick,
     Extend,
+    keys_of
 )
 
 from typedpy.fields import (
@@ -44,6 +42,8 @@ from typedpy.fields import (
     String,
     SizedString,
     Sized,
+    Enum,
+    EnumString,
     AllOf,
     AnyOf,
     OneOf,
@@ -66,8 +66,10 @@ from typedpy.fields import (
     ImmutableNumber,
     ImmutableDeque,
     Deque,
+    SubClass,
     ExceptionField,
     Generator,
+    FunctionCall
 )
 
 from typedpy.json_schema_mapping import (
@@ -77,24 +79,24 @@ from typedpy.json_schema_mapping import (
     write_code_from_schema,
 )
 
-from .enum import Enum, EnumString
 
-from .serialization import (
-    deserialize_structure,
-    serialize,
-    serialize_field,
-    FunctionCall,
-    deserialize_single_field,
-    HasTypes,
-)
-
-from .serialization_wrappers import (
+from typedpy.serialization import (
     Serializer,
     Deserializer,
     deserializer_by_discriminator,
+    convert_dict,
+    Versioned,
+    mappers,
+    Deleted,
+    DoNotSerialize,
+    serialize_field,
+    serialize,
+    deserialize_structure,
+    deserialize_single_field,
+    HasTypes
 )
 
-from .extfields import (
+from typedpy.extfields import (
     DateString,
     DateField,
     DateTime,
@@ -105,7 +107,6 @@ from .extfields import (
     EmailAddress,
 )
 
-from .subclass import SubClass
 
 from .errors import (
     standard_readable_error_for_typedpy_exception,
@@ -115,9 +116,6 @@ from .errors import (
 
 from .utility import get_list_type, type_is_generic
 
-from .mappers import mappers, Deleted, DoNotSerialize
-
-from .versioned_mapping import convert_dict, Versioned
 
 from .commons import (
     nested,
@@ -129,5 +127,4 @@ from .commons import (
     Constant,
 )
 
-from .keysof import keys_of
 from .type_helpers import create_pyi

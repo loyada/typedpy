@@ -4,26 +4,25 @@ import json
 import uuid
 from typing import Dict
 
-from .commons import Constant, deep_get, raise_errs_if_needed
-from .versioned_mapping import VERSION_MAPPING, Versioned, convert_dict
-from .mappers import (
+from typedpy.commons import Constant, deep_get, raise_errs_if_needed
+from typedpy.serialization.versioned_mapping import VERSION_MAPPING, Versioned, convert_dict
+from typedpy.serialization.mappers import (
     DoNotSerialize,
     aggregate_deserialization_mappers,
     aggregate_serialization_mappers,
     mappers,
 )
-from .structures import (
+from typedpy.structures import (
     TypedField,
     Structure,
     TypedPyDefaults,
-    _get_all_fields_by_name,
     ADDITIONAL_PROPERTIES,
     REQUIRED_FIELDS,
     IGNORE_NONE_VALUES,
     NoneField,
+    Field
 )
-from .fields import (
-    Field,
+from typedpy.fields import (
     FunctionCall,
     Number,
     String,
@@ -42,14 +41,15 @@ from .fields import (
     NotField,
     SerializableField,
     SizedCollection,
-    wrap_val,
     _DictStruct,
     _ListStruct,
     Deque,
     Generator,
 )
+from typedpy.commons import wrap_val
 
 # pylint: disable=too-many-locals, too-many-arguments, too-many-branches
+from typedpy.structures.structures import _get_all_fields_by_name
 
 
 def deserialize_list_like(
@@ -512,7 +512,7 @@ def deserialize_structure_internal(
             keep_undefined = False
 
     ignore_none = getattr(cls, IGNORE_NONE_VALUES, False)
-    field_by_name = _get_all_fields_by_name(cls)
+    field_by_name = cls.get_all_fields_by_name()
 
     if not isinstance(input_dict, dict):
         props = cls.__dict__

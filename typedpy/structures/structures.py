@@ -15,8 +15,8 @@ from json import JSONDecodeError
 
 from typing import get_type_hints, Iterable
 
-from .commons import Constant, raise_errs_if_needed, wrap_val, _is_sunder, _is_dunder
-from .utility import type_is_generic
+from typedpy.commons import Constant, raise_errs_if_needed, wrap_val, _is_sunder, _is_dunder
+from typedpy.utility import type_is_generic
 
 REQUIRED_FIELDS = "_required"
 DEFAULTS = "_defaults"
@@ -192,7 +192,7 @@ def _check_for_final_violations(classes):
                     f"Tried to extend {c.__name__}, which is an ImmutableStructure. This is forbidden"
                 )
 
-        if "_FieldMeta" in globals() and isinstance(c, _FieldMeta):
+        if "FieldMeta" in globals() and isinstance(c, FieldMeta):
             if "ImmutableField" in globals() and is_sub_class(c, ImmutableField):
                 raise TypeError(
                     f"Tried to extend {c.__name__}, which is an ImmutableField. This is forbidden"
@@ -200,10 +200,9 @@ def _check_for_final_violations(classes):
 
 
 def _or_fields(first, other):
-    from .fields import AnyOf
-    from .enum import Enum
+    from typedpy.fields import AnyOf, Enum
 
-    if isinstance(other, (Field, Structure, _FieldMeta, StructMeta)):
+    if isinstance(other, (Field, Structure, FieldMeta, StructMeta)):
         return AnyOf[first, other]
     if isinstance(other, (str, int, float, bool, list, set, dict, tuple)):
         return AnyOf[first, Enum(values=[other])]
@@ -213,7 +212,7 @@ def _or_fields(first, other):
     raise TypeError(f"| is Supported only between field types; Got {first} and {other}")
 
 
-class _FieldMeta(type):
+class FieldMeta(type):
     _registry = {}
 
     def __new__(cls, name, bases, cls_dict):
@@ -240,7 +239,7 @@ class _FieldMeta(type):
                 converted = convert_field_type_if_possible(val)
                 if converted is None:
                     raise TypeError
-                return _FieldMeta.__getitem__(cls, converted)
+                return FieldMeta.__getitem__(cls, converted)
             except TypeError:
 
                 def get_state(value):
@@ -253,13 +252,13 @@ class _FieldMeta(type):
                         f"Unsupported field type in definition: {wrap_val(val)}"
                     )
                 the_class = val.__name__
-                if the_class in _FieldMeta._registry:
-                    return _FieldMeta._registry[the_class]
+                if the_class in FieldMeta._registry:
+                    return FieldMeta._registry[the_class]
                 short_hash = hashlib.sha256(the_class.encode("utf-8")).hexdigest()[:8]
                 new_name = f"Field_{the_class}_{short_hash}"
                 class_as_field = create_typed_field(new_name, val)
                 class_as_field.__getstate__ = get_state
-                _FieldMeta._registry[the_class] = class_as_field
+                FieldMeta._registry[the_class] = class_as_field
                 return class_as_field()
 
 
@@ -313,7 +312,7 @@ class UniqueMixin:
                 instance_by_value_for_current_struct[hash_of_field_val] = instance
 
 
-class Field(UniqueMixin, metaclass=_FieldMeta):
+class Field(UniqueMixin, metaclass=FieldMeta):
     """
     Base class for a field(i.e. property) in a structure.
     Should not be used directly by developers.
@@ -693,7 +692,7 @@ class StructMeta(type):
 
 
 def convert_basic_types(v):
-    from .fields import (
+    from typedpy.fields import (
         Integer,
         Float,
         String,
@@ -726,7 +725,7 @@ def convert_basic_types(v):
 
 
 def get_typing_lib_info(v):
-    from .fields import AnyOf
+    from typedpy.fields import AnyOf
 
     if v == type(None):
         return NoneField()
@@ -803,7 +802,7 @@ def add_annotations_to_class_dict(cls_dict, previous_frame):
             else:
                 the_type = get_typing_lib_info(v)
                 if the_type:
-                    from .fields import AnyOf
+                    from typedpy.fields import AnyOf
 
                     if isinstance(the_type, AnyOf) and getattr(
                         the_type, "_is_optional", False

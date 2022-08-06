@@ -1,6 +1,5 @@
-from typedpy.structures import TypedField
+from typedpy.structures import TypedField, ImmutableField
 from .numbers import Number, Positive, Negative, NonPositive, NonNegative
-from .. import ImmutableField
 
 
 class Float(TypedField, Number):

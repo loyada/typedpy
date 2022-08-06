@@ -52,9 +52,9 @@ class Partial(metaclass=PartialMeta):
          class Bar(Partial[Foo]):
             x: str
 
-    "Bar" has all the fields of Foo as optional, and in addition "x" as required. Note that Bar does not extend Foo, but
-    it is a Structure class. It does not copy the serialization mappers. It does copy other attributes, such as _ignore_none,
-    but Bar can override any of them.
+    "Bar" has all the fields of Foo as optional, and in addition "x" as required. Note that Bar
+    does not extend Foo, but it is a Structure class. It does not copy the serialization mappers.
+    It does copy other attributes, such as _ignore_none, but Bar can override any of them.
 
     Another valid usage:
 
@@ -227,7 +227,8 @@ class OmitMeta(type):
             or not isinstance(params[0], StructMeta)
         ):
             raise TypeError(
-                "Omit accepts the source class name, a list of fields, and an optional name for the new class it creates"
+                "Omit accepts the source class name, a list of fields,"
+                " and an optional name for the new class it creates"
             )
         clazz, fields, *new_name_maybe = params
         class_name = new_name_maybe[0] if new_name_maybe else f"Omit{clazz.__name__}"

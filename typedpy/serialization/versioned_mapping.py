@@ -1,9 +1,9 @@
 import copy
 
 from typedpy.commons import Constant, deep_get
-from .mappers import Deleted
 from typedpy.structures import Structure
 from typedpy.fields import FunctionCall, PositiveInt
+from .mappers import Deleted
 
 
 VERSION_MAPPING = "_versions_mapping"

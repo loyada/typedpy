@@ -62,7 +62,7 @@ class Deserializer(Structure):
     _required = ["target_class"]
 
     def __validate__(self):
-        valid_keys = set(self.target_class.get_all_fields_by_name().keys())
+        valid_keys = set(getattr(self.target_class, "get_all_fields_by_name")().keys())
         if self.mapper:
             for key in self.mapper:
                 if key.split(".")[0] not in valid_keys:

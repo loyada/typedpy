@@ -131,12 +131,7 @@ def find_diff(first, second) -> Union[dict, str]:
     return _find_diff(first, second)
 
 
-def _find_diff(
-    struct, other, outer_result=None, out_key=None
-) -> Union[dict, str]:  # pylint: disable=too-many-branches, too-many-statements
-
-    if struct.__class__ != other.__class__:
-        return {"class": f"{struct.__class__} vs. {other.__class__}"}
+def _find_diff_collection(struct, other, outer_result, out_key):
     if isinstance(struct, (list, tuple)):
         res_val = _diff_list(
             struct, other, outer_result=outer_result, outer_key=out_key
@@ -153,53 +148,29 @@ def _find_diff(
                 else:
                     outer_result[i] = vv
         return res_val
-    elif isinstance(struct, set):
+    else:  # is a set
         res_val = _diff_set(struct, other)
         if res_val and out_key:
             outer_result[out_key] = res_val
         return res_val
 
+
+def _find_diff(
+    struct, other, outer_result=None, out_key=None
+) -> Union[dict, str]:  # pylint: disable=too-many-branches, too-many-statements
+
+    if struct.__class__ != other.__class__:
+        return {"class": f"{struct.__class__} vs. {other.__class__}"}
+    if isinstance(struct, (list, tuple, set, dict)):
+        return _find_diff_collection(
+            struct, other, outer_result=outer_result, out_key=out_key
+        )
+
     internal_props = ["_instantiated"]
     res = {}
     if isinstance(struct, Structure):  #  pylint: disable=too-many-nested-blocks
-        for k, val in sorted(struct.__dict__.items()):
-            if k not in internal_props:
-                if k not in other.__dict__:
-                    _add_val(res, MISSING_VALUES, k)
-                elif val != other.__dict__.get(k):
-                    otherval = other.__dict__.get(k)
-                    if isinstance(val, Structure):
-                        res[k] = _find_diff(val, otherval)
-                    elif isinstance(val, (list, tuple, set, dict)):
-                        if val.__class__ != otherval.__class__:
-                            res[k] = {
-                                "class": f"{val.__class__} vs. {otherval.__class__}"
-                            }
-                        elif len(val) != len(otherval):
-                            res[k] = f"length of {len(val)} vs {len(otherval)}"
-                        else:
-                            if isinstance(val, (list, tuple)):
-                                res_val = _diff_list(
-                                    val, otherval, outer_result=res, outer_key=k
-                                )
-                                if res_val:
-                                    res[k] = res_val
-                            elif isinstance(val, dict):
-                                res_val = _diff_dict(val, otherval)
-                                if res_val:
-                                    for i, vv in res_val.items():
-                                        if i not in {MISSING_VALUES, ADDITIONAL_VALUES}:
-                                            res[f"{k}[{wrap_val(i)}]"] = vv
-                                        else:
-                                            res[i] = vv
-                            elif isinstance(val, set):
-                                res_val = _diff_set(val, otherval)
-                                if res_val:
-                                    res[k] = res_val
-
-                    else:
-                        res[k] = _find_diff(val, otherval)
-        for k, val in sorted(other.__dict__.items()):
+        _diff_structure_internal(internal_props, other, res, struct)
+        for k in sorted(other.__dict__):
             if k not in internal_props:
                 if k not in struct.__dict__:
                     _add_val(res, ADDITIONAL_VALUES, k)
@@ -210,6 +181,46 @@ def _find_diff(
     return res
 
 
+def _diff_structure_internal(internal_props, other, res, struct):
+    for k, val in sorted(struct.__dict__.items()):
+        if k not in internal_props:
+            if k not in other.__dict__:
+                _add_val(res, MISSING_VALUES, k)
+            elif val != other.__dict__.get(k):
+                otherval = other.__dict__.get(k)
+                if isinstance(val, Structure):
+                    res[k] = _find_diff(val, otherval)
+                elif isinstance(val, (list, tuple, set, dict)):
+                    _diff_collecation_val_internal(k, otherval, res, val)
+
+                else:
+                    res[k] = _find_diff(val, otherval)
+
+
+def _diff_collecation_val_internal(k, otherval, res, val):
+    if val.__class__ != otherval.__class__:
+        res[k] = {"class": f"{val.__class__} vs. {otherval.__class__}"}
+    elif len(val) != len(otherval):
+        res[k] = f"length of {len(val)} vs {len(otherval)}"
+    else:
+        if isinstance(val, (list, tuple)):
+            res_val = _diff_list(val, otherval, outer_result=res, outer_key=k)
+            if res_val:
+                res[k] = res_val
+        elif isinstance(val, dict):
+            res_val = _diff_dict(val, otherval)
+            if res_val:
+                for i, vv in res_val.items():
+                    if i not in {MISSING_VALUES, ADDITIONAL_VALUES}:
+                        res[f"{k}[{wrap_val(i)}]"] = vv
+                    else:
+                        res[i] = vv
+        elif isinstance(val, set):
+            res_val = _diff_set(val, otherval)
+            if res_val:
+                res[k] = res_val
+
+
 def pytest_assertrepr_compare(op, left, right):
     if isinstance(left, Structure) and isinstance(right, Structure) and op == "==":
         res = [
@@ -217,3 +228,4 @@ def pytest_assertrepr_compare(op, left, right):
             json.dumps(_find_diff(left, right)),
         ]
         return res
+    return None

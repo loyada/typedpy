@@ -24,12 +24,22 @@ from typedpy.fields import (
     NotField,
     Tuple,
     Set,
-    Enum
+    Enum,
 )
 
 from typedpy.extfields.extfields import DateString
-from typedpy.serialization.mappers import DoNotSerialize, aggregate_serialization_mappers
-from typedpy.structures import ADDITIONAL_PROPERTIES, NoneField, Structure, TypedPyDefaults, ClassReference, Field
+from typedpy.serialization.mappers import (
+    DoNotSerialize,
+    aggregate_serialization_mappers,
+)
+from typedpy.structures import (
+    ADDITIONAL_PROPERTIES,
+    NoneField,
+    Structure,
+    TypedPyDefaults,
+    ClassReference,
+    Field,
+)
 
 SCHEMA_PATTERN_PROPERTIES = "patternProperties"
 SCHEMA_ADDITIONAL_PROPERTIES = "additionalProperties"
@@ -71,10 +81,7 @@ def _map_class_reference(reference, definitions_schema):
 
 def _const_to_schema(field: Constant):
     val = field()
-    return {
-        "enum": [val.name if isinstance(val, enum.Enum) else val]
-    }
-
+    return {"enum": [val.name if isinstance(val, enum.Enum) else val]}
 
 
 def convert_to_schema(field, definitions_schema, serialization_mapper: dict = None):
@@ -140,7 +147,6 @@ def structure_to_schema(structure, definitions_schema, serialization_mapper=None
 
     """
     # json schema draft4 does not support inheritance, so we don't need to worry about that
-    props = structure.__dict__
     if not issubclass(structure, Structure):
         raise TypeError("Expected a Structure subclass")
     field_by_name = structure.get_all_fields_by_name()
@@ -171,32 +177,9 @@ def structure_to_schema(structure, definitions_schema, serialization_mapper=None
         fields_schema = OrderedDict([("type", "object")])
         fields_schema["properties"] = {}
         properties = fields_schema["properties"]
-        for key, field in field_by_name.items():
-            mapped_key = (
-                mapper[key]
-                if key in mapper and isinstance(mapper[key], (str,))
-                else key
-            )
-            mapped_value = _validated_mapped_value(mapper, key)
-            if mapped_value is DoNotSerialize or isinstance(mapped_value, Constant):
-                if mapped_key in required:
-                    required.pop(required.index(mapped_key))
-            else:
-                if key in required:
-                    required[required.index(key)] = mapped_key
-                sub_mapper = mapper.get(f"{key}._mapper", {})
-                sub_schema = convert_to_schema(
-                    field, definitions_schema, serialization_mapper=sub_mapper
-                )
-                default_raw = getattr(field, "_default", None)
-                if default_raw is not None:
-                    default_val = (
-                        default_raw() if callable(default_raw) else default_raw
-                    )
-                    sub_schema["default"] = default_val
-                    if mapped_key not in required:
-                        required.append(mapped_key)
-                properties[mapped_key] = sub_schema
+        _generate_schema_for_fields_internal(
+            definitions_schema, field_by_name, mapper, properties, required
+        )
         fields_schema.update(
             OrderedDict(
                 [
@@ -207,6 +190,45 @@ def structure_to_schema(structure, definitions_schema, serialization_mapper=None
         )
 
     return fields_schema, definitions_schema
+
+
+def _generate_schema_for_fields_internal(
+    definitions_schema, field_by_name, mapper, properties, required
+):
+    for key, field in field_by_name.items():
+        mapped_key = (
+            mapper[key] if key in mapper and isinstance(mapper[key], (str,)) else key
+        )
+        mapped_value = _validated_mapped_value(mapper, key)
+        if mapped_value is DoNotSerialize or isinstance(mapped_value, Constant):
+            if mapped_key in required:
+                required.pop(required.index(mapped_key))
+        else:
+            if key in required:
+                required[required.index(key)] = mapped_key
+            sub_mapper = mapper.get(f"{key}._mapper", {})
+            sub_schema = convert_to_schema(
+                field, definitions_schema, serialization_mapper=sub_mapper
+            )
+            default_raw = getattr(field, "_default", None)
+            if default_raw is not None:
+                default_val = default_raw() if callable(default_raw) else default_raw
+                sub_schema["default"] = default_val
+                if mapped_key not in required:
+                    required.append(mapped_key)
+            properties[mapped_key] = sub_schema
+
+
+type_name_to_field = {
+        "object": StructureReference,
+        "integer": Integer,
+        "number": Number,
+        "float": Float,
+        "array": Array,
+        "string": String,
+        "boolean": Boolean,
+    }
+multivals = {"allOf": AllOf, "anyOf": AnyOf, "oneOf": OneOf, "not": NotField}
 
 
 @default_factories
@@ -225,16 +247,10 @@ def convert_to_field_code(schema, definitions, additional_fields=list):
         def_name = schema["$ref"][len("#/definitions/") :]
         return def_name
 
-    type_name_to_field = {
-        "object": StructureReference,
-        "integer": Integer,
-        "number": Number,
-        "float": Float,
-        "array": Array,
-        "string": String,
-        "boolean": Boolean,
-    }
-    multivals = {"allOf": AllOf, "anyOf": AnyOf, "oneOf": OneOf, "not": NotField}
+    return _convert_field_to_schema_code_internal(additional_fields, definitions, schema)
+
+
+def _convert_field_to_schema_code_internal(additional_fields, definitions, schema):
     if any(multival in schema for multival in multivals):
         for (k, the_class) in multivals.items():
             if k in schema:
@@ -259,13 +275,17 @@ def convert_to_field_code(schema, definitions, additional_fields=list):
             cls = type_name_to_field[schema.get("type", "object")]
         mapper = get_mapper(cls)
     params_list = mapper.get_paramlist_from_schema(schema, definitions)
+    _handle_schema_default_to_code(params_list, schema)
+    params_as_string = ", ".join([f"{name}={val}" for (name, val) in params_list])
+    return f"{cls.__name__}({params_as_string})"
+
+
+def _handle_schema_default_to_code(params_list, schema):
     if "default" in schema:
         default_val = schema["default"]
         if isinstance(default_val, (list, dict)):
             default_val = f"lambda: {default_val}"
         params_list.append(("default", default_val))
-    params_as_string = ", ".join([f"{name}={val}" for (name, val) in params_list])
-    return f"{cls.__name__}({params_as_string})"
 
 
 @default_factories
@@ -337,7 +357,8 @@ def schema_to_struct_code(
 def schema_definitions_to_code(schema, additional_fields=list):
     """
     Generate code for the classes in the definitions that maps to the given JSON schema.
-    `See working example in test_schema_to_code.py. <https://github.com/loyada/typedpy/tree/master/tests/test_schema_to_code.py>`_
+    `See working example in test_schema_to_code.py.
+      <https://github.com/loyada/typedpy/tree/master/tests/test_schema_to_code.py>`_
 
     Arguments:
         schema(dict):
@@ -367,7 +388,13 @@ def write_code_from_schema(
 
     .. code-block:: python
 
-        write_code_from_schema(schema, definitions, "generated_sample.py", "Poo", additional_fields=[CustomField1, CustomField2])
+        write_code_from_schema(
+            schema,
+            definitions,
+            "generated_sample.py",
+            "Poo",
+             additional_fields=[CustomField1, CustomField2]
+        )
 
 
     Arguments:
@@ -476,10 +503,7 @@ class MapMapper(Mapper):
         additional_properties = schema.get(SCHEMA_ADDITIONAL_PROPERTIES, None)
         pattern_properties = schema.get(SCHEMA_PATTERN_PROPERTIES, None)
         property_names = schema.get(SCHEMA_PATTERN_PROPERTIES, {})
-        if (
-            (pattern_properties and len(pattern_properties) > 1)
-            or (pattern_properties and additional_properties)
-            or (pattern_properties and property_names)
+        if (pattern_properties and ( len(pattern_properties) > 1 or additional_properties or property_names)
         ):
             raise NotImplementedError("Conversion for this map is unsupported")
         if not any([additional_properties, property_names, pattern_properties]):
@@ -558,7 +582,7 @@ class BooleanMapper(Mapper):
     def get_paramlist_from_schema(schema, definitions):
         return []
 
-    def to_schema(self, definitions, serialization_mapper):  # pylint: disable=R0201
+    def to_schema(self, definitions, serialization_mapper):  # pylint:disable=no-self-use
         params = {
             "type": "boolean",
         }
@@ -587,9 +611,7 @@ class StringMapper(Mapper):
 
 
 class DateStringMapper(Mapper):
-    def to_schema(
-        self, definitions, serialization_mapper
-    ):  # pylint: disable=no-self-use
+    def to_schema(self, definitions, serialization_mapper):  # pylint: disable=no-self-use
         params = {
             "type": "string",
             "pattern": r"^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$",

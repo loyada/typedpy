@@ -5,7 +5,11 @@ import uuid
 from typing import Dict
 
 from typedpy.commons import Constant, deep_get, raise_errs_if_needed
-from typedpy.serialization.versioned_mapping import VERSION_MAPPING, Versioned, convert_dict
+from typedpy.serialization.versioned_mapping import (
+    VERSION_MAPPING,
+    Versioned,
+    convert_dict,
+)
 from typedpy.serialization.mappers import (
     DoNotSerialize,
     aggregate_deserialization_mappers,
@@ -21,7 +25,7 @@ from typedpy.structures import (
     IGNORE_NONE_VALUES,
     NoneField,
     Field,
-    ClassReference
+    ClassReference,
 )
 from typedpy.fields import (
     FunctionCall,
@@ -42,7 +46,9 @@ from typedpy.fields import (
     NotField,
     SerializableField,
     Deque,
-    Generator, _DictStruct, _ListStruct,
+    Generator,
+    _DictStruct,
+    _ListStruct,
 )
 from typedpy.commons import wrap_val
 

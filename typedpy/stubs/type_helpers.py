@@ -12,8 +12,17 @@ from pathlib import Path
 from typedpy.commons import doublewrap_val, nested
 from typedpy.fields import FunctionCall
 from typedpy.serialization.serialization_wrappers import Deserializer, Serializer
-from typedpy.structures import ADDITIONAL_PROPERTIES, Field, ImmutableStructure, Structure
-from typedpy.stubs.type_info_getter import get_all_type_info, get_type_info, is_typeddict
+from typedpy.structures import (
+    ADDITIONAL_PROPERTIES,
+    Field,
+    ImmutableStructure,
+    Structure,
+)
+from typedpy.stubs.type_info_getter import (
+    get_all_type_info,
+    get_type_info,
+    is_typeddict,
+)
 from typedpy.stubs.types_ast import (
     extract_attributes_from_init,
     functions_to_str,

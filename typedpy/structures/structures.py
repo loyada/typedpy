@@ -972,7 +972,9 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 )
                 value = deepcopy(value) if needs_defensive_copy else value
 
-        if key in getattr(self,"_constants", {}) and getattr(self, "_instantiated", False):
+        if key in getattr(self, "_constants", {}) and getattr(
+            self, "_instantiated", False
+        ):
             raise ValueError(
                 f"{self.__class__.__name__}:  {key} is defined as a constant. It cannot be set."
             )

@@ -19,7 +19,7 @@ from typedpy.structures import (
     Omit,
     Pick,
     Extend,
-    keys_of
+    keys_of,
 )
 
 from typedpy.fields import (
@@ -69,7 +69,7 @@ from typedpy.fields import (
     SubClass,
     ExceptionField,
     Generator,
-    FunctionCall
+    FunctionCall,
 )
 
 from typedpy.json_schema.json_schema_mapping import (
@@ -107,7 +107,11 @@ from typedpy.extfields import (
     EmailAddress,
 )
 
-from typedpy.stubs import create_pyi, create_stub_for_file, create_stub_for_file_using_ast
+from typedpy.stubs import (
+    create_pyi,
+    create_stub_for_file,
+    create_stub_for_file_using_ast,
+)
 
 
 from .errors import (

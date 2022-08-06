@@ -1,6 +1,6 @@
 import enum
 
-from typedpy.structures import StructMeta
+from .structures import StructMeta
 
 
 def keys_of(*enum_classes):

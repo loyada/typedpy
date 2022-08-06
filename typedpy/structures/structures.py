@@ -911,7 +911,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             and key not in bound.arguments
         ]
 
-        for field_name, const_val in self._constants.items():
+        for field_name, const_val in getattr(self, "_constants", {}).items():
             if field_name in kwargs:
                 raise ValueError(
                     f"{self.__class__.__name__}:  {field_name} is defined as a constant. It cannot be set."
@@ -972,7 +972,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 )
                 value = deepcopy(value) if needs_defensive_copy else value
 
-        if key in self._constants and getattr(self, "_instantiated", False):
+        if key in getattr(self,"_constants", {}) and getattr(self, "_instantiated", False):
             raise ValueError(
                 f"{self.__class__.__name__}:  {key} is defined as a constant. It cannot be set."
             )
@@ -1428,50 +1428,6 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         newclass = type(classname, (Structure,), cls_dict)
 
         return newclass
-
-
-def get_typing_lib_info(v):
-    from typedpy.fields import AnyOf
-
-    if v == type(None):
-        return NoneField()
-    if isinstance(v, Field):
-        return v
-    if inspect.isclass(v) and issubclass(v, Field):
-        return v()
-
-    if isinstance(v, StructMeta) and not isinstance(v, Field):
-        return ClassReference(v)
-
-    if not type_is_generic(v):
-        return convert_basic_types(v)
-    origin = getattr(v, "__origin__", None)
-    mapped_type = convert_basic_types(origin)
-    if mapped_type is None:
-        raise TypeError(f"{v} type is not supported")
-    args_raw = getattr(v, "__args__", None)
-    if not args_raw:
-        return mapped_type()
-    mapped_args = [
-        get_typing_lib_info(a) for a in args_raw if not isinstance(a, typing.TypeVar)
-    ]
-    if not all(mapped_args):
-        if mapped_type == AnyOf:
-            for i, arg in enumerate(mapped_args):
-                if arg is None:
-                    if isinstance(args_raw[i], type):
-                        mapped_args[i] = Field[args_raw[i]]
-                    else:
-                        raise TypeError(f"invalid type {v}")
-        else:
-            raise TypeError(f"invalid type {v}")
-    if mapped_args:
-        if mapped_type == AnyOf:
-            return mapped_type(fields=mapped_args)
-        else:
-            mapped_args = mapped_args if len(mapped_args) > 1 else mapped_args[0]
-            return mapped_type(items=mapped_args)
-    return mapped_type()
 
 
 def _init_class_dict(cls):

@@ -65,7 +65,6 @@ from typedpy.fields import (
     ImmutableInteger,
     ImmutableNumber,
     ImmutableDeque,
-    ImmutableString,
     Deque,
     SubClass,
     ExceptionField,
@@ -108,6 +107,8 @@ from typedpy.extfields import (
     EmailAddress,
 )
 
+from typedpy.stubs import create_pyi, create_stub_for_file, create_stub_for_file_using_ast
+
 
 from .errors import (
     standard_readable_error_for_typedpy_exception,
@@ -127,5 +128,3 @@ from .commons import (
     InvalidStructureErr,
     Constant,
 )
-
-from typedpy.stubs import create_pyi, create_stub_for_file, create_stub_for_file_using_ast

@@ -2,6 +2,7 @@ import ast
 import typing
 
 from typedpy import Array, Map, Structure
+from typedpy.commons import python_ver_atleast_39
 from typedpy.stubs.type_info_getter import get_type_info
 
 INDENT = " " * 4
@@ -279,7 +280,7 @@ def extract_attributes_from_init(source, locals_attrs, additional_classes):
                 attribute_name = node.targets[0].attr
                 if isinstance(node.value, ast.Name) and node.value.id in type_by_param:
                     res[attribute_name] = type_by_param[node.value.id]
-                else:
+                elif python_ver_atleast_39:
                     try:
                         value = eval(ast.unparse(node.value), locals_attrs)
                         the_type = get_type_info(
@@ -289,7 +290,7 @@ def extract_attributes_from_init(source, locals_attrs, additional_classes):
                     except:
                         res[attribute_name] = "Any"
 
-        elif isinstance(node, ast.AnnAssign):
+        elif isinstance(node, ast.AnnAssign) and python_ver_atleast_39:
             annotation = ast.unparse(node.annotation)
             attribute_name = node.target.attr
             res[attribute_name] = annotation

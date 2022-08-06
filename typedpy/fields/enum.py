@@ -1,8 +1,9 @@
 import enum
 
 from typedpy.commons import first_in, wrap_val
-from typedpy.fields import SerializableField, String
-from typedpy.structures.structures import FieldMeta
+from typedpy.structures import FieldMeta
+from .strings import String
+from .serializable_field import SerializableField
 
 
 class _EnumMeta(FieldMeta):

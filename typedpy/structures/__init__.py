@@ -9,15 +9,9 @@ from .structures import (
     FinalStructure,
     ImmutableField,
     unique,
-    AbstractStructure,
     StructMeta,
     FieldMeta,
     ImmutableMixin,
-    TypedPyDefaults,
-    SERIALIZATION_MAPPER,
-    ADDITIONAL_PROPERTIES,
-    REQUIRED_FIELDS,
-    IGNORE_NONE_VALUES,
 )
 
 from .structures_reuse import (
@@ -29,3 +23,11 @@ from .structures_reuse import (
 )
 
 from .keysof import keys_of
+from .abstract_structure import AbstractStructure
+from .defaults import TypedPyDefaults
+from .consts import (
+    SERIALIZATION_MAPPER,
+    ADDITIONAL_PROPERTIES,
+    REQUIRED_FIELDS,
+    IGNORE_NONE_VALUES,
+)

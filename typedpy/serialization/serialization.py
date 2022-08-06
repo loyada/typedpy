@@ -20,16 +20,17 @@ from typedpy.structures import (
     REQUIRED_FIELDS,
     IGNORE_NONE_VALUES,
     NoneField,
-    Field
+    Field,
+    ClassReference
 )
 from typedpy.fields import (
     FunctionCall,
     Number,
+    SizedCollection,
     String,
     StructureReference,
     Array,
     Map,
-    ClassReference,
     MultiFieldWrapper,
     Boolean,
     Tuple,
@@ -40,11 +41,8 @@ from typedpy.fields import (
     OneOf,
     NotField,
     SerializableField,
-    SizedCollection,
-    _DictStruct,
-    _ListStruct,
     Deque,
-    Generator,
+    Generator, _DictStruct, _ListStruct,
 )
 from typedpy.commons import wrap_val
 

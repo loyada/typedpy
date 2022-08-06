@@ -15,39 +15,34 @@ from json import JSONDecodeError
 
 from typing import get_type_hints, Iterable
 
-from typedpy.commons import Constant, raise_errs_if_needed, wrap_val, _is_sunder, _is_dunder
+from typedpy.commons import (
+    Constant,
+    raise_errs_if_needed,
+    wrap_val,
+    _is_sunder,
+    _is_dunder,
+)
 from typedpy.utility import type_is_generic
-
-REQUIRED_FIELDS = "_required"
-DEFAULTS = "_defaults"
-ADDITIONAL_PROPERTIES = "_additional_properties"
-OLD_ADDITIONAL_PROPERTIES = "_additionalProperties"
-IS_IMMUTABLE = "_immutable"
-OPTIONAL_FIELDS = "_optional"
-MUST_BE_UNIQUE = "_must_be_unique"
-IGNORE_NONE_VALUES = "_ignore_none"
-SERIALIZATION_MAPPER = "_serialization_mapper"
-DESERIALIZATION_MAPPER = "_deserialization_mapper"
-SPECIAL_ATTRIBUTES = {
-    REQUIRED_FIELDS,
+from .consts import (
     ADDITIONAL_PROPERTIES,
-    IS_IMMUTABLE,
     DEFAULTS,
-    OPTIONAL_FIELDS,
-    SERIALIZATION_MAPPER,
     DESERIALIZATION_MAPPER,
     IGNORE_NONE_VALUES,
-}
+    IS_IMMUTABLE,
+    MUST_BE_UNIQUE,
+    OLD_ADDITIONAL_PROPERTIES,
+    OPTIONAL_FIELDS,
+    REQUIRED_FIELDS,
+    SERIALIZATION_MAPPER,
+    SPECIAL_ATTRIBUTES,
+)
+from .defaults import TypedPyDefaults
+from .type_mapping import convert_basic_types
+
 
 MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS = 100000
 
 T = typing.TypeVar("T")
-
-
-class TypedPyDefaults:
-    additional_properties_default = True
-    compact_serialization_default = False
-    support_json_schema_v6 = False
 
 
 class ImmutableMixin:
@@ -611,7 +606,9 @@ class StructMeta(type):
         for key, val in cls_dict.items():
             if isinstance(val, StructMeta) and not isinstance(val, Field):
                 cls_dict[key] = ClassReference(val)
-        fields = [key for key, val in cls_dict.items() if isinstance(val, (Field, Constant))]
+        fields = [
+            key for key, val in cls_dict.items() if isinstance(val, (Field, Constant))
+        ]
         for field_name in fields:
             if field_name.startswith("_") or field_name == "kwargs":
                 raise ValueError(f"{field_name}: invalid field name")
@@ -647,8 +644,10 @@ class StructMeta(type):
             if isinstance(getattr(clsobj, fname), Constant):
                 const_val = getattr(clsobj, fname)._val
                 if not isinstance(const_val, (int, str, bool, enum.Enum, float)):
-                    raise TypeError(f"Constant {fname} is of an invalid type. Supported "
-                                    "types are : None, int, str, bool, enum.Enum, float")
+                    raise TypeError(
+                        f"Constant {fname} is of an invalid type. Supported "
+                        "types are : None, int, str, bool, enum.Enum, float"
+                    )
                 clsobj._constants[fname] = getattr(clsobj, fname)._val
 
         required = cls_dict.get(REQUIRED_FIELDS, default_required)
@@ -689,39 +688,6 @@ class StructMeta(type):
                 props.append(f"{k} = {strv}")
         props_list = ", ".join(props)
         return f"<Structure: {name}. Properties: {props_list}>"
-
-
-def convert_basic_types(v):
-    from typedpy.fields import (
-        Integer,
-        Float,
-        String,
-        Map,
-        Array,
-        Tuple,
-        Set,
-        Boolean,
-        ImmutableSet,
-        AnyOf,
-        Anything,
-        Deque,
-    )
-
-    type_mapping = {
-        deque: Deque,
-        int: Integer,
-        str: String,
-        float: Float,
-        dict: Map,
-        set: Set,
-        list: Array,
-        tuple: Tuple,
-        bool: Boolean,
-        frozenset: ImmutableSet,
-        typing.Union: AnyOf,
-        typing.Any: Anything,
-    }
-    return type_mapping.get(v, None)
 
 
 def get_typing_lib_info(v):
@@ -983,7 +949,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     def __manage__uniqueness_of_all_fields__(self):
         fields_by_name = self.__class__.get_all_fields_by_name()
         for name, field in fields_by_name.items():
-            if not isinstance(field, Constant) and  field.defined_as_unique():
+            if not isinstance(field, Constant) and field.defined_as_unique():
                 field.__manage_uniqueness_for_field__(self, getattr(self, name, None))
 
     def __setattr__(self, key, value):
@@ -1297,7 +1263,8 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         args_from_structure = {
             k: getattr(self, k, None)
             for k in self.get_all_fields_by_name()
-            if k not in ignore_props and k not in getattr(self.__class__, "_constants", {})
+            if k not in ignore_props
+            and k not in getattr(self.__class__, "_constants", {})
         }
         kwargs = {**args_from_structure, **kw}
         return target_class(**kwargs)
@@ -1463,6 +1430,50 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         return newclass
 
 
+def get_typing_lib_info(v):
+    from typedpy.fields import AnyOf
+
+    if v == type(None):
+        return NoneField()
+    if isinstance(v, Field):
+        return v
+    if inspect.isclass(v) and issubclass(v, Field):
+        return v()
+
+    if isinstance(v, StructMeta) and not isinstance(v, Field):
+        return ClassReference(v)
+
+    if not type_is_generic(v):
+        return convert_basic_types(v)
+    origin = getattr(v, "__origin__", None)
+    mapped_type = convert_basic_types(origin)
+    if mapped_type is None:
+        raise TypeError(f"{v} type is not supported")
+    args_raw = getattr(v, "__args__", None)
+    if not args_raw:
+        return mapped_type()
+    mapped_args = [
+        get_typing_lib_info(a) for a in args_raw if not isinstance(a, typing.TypeVar)
+    ]
+    if not all(mapped_args):
+        if mapped_type == AnyOf:
+            for i, arg in enumerate(mapped_args):
+                if arg is None:
+                    if isinstance(args_raw[i], type):
+                        mapped_args[i] = Field[args_raw[i]]
+                    else:
+                        raise TypeError(f"invalid type {v}")
+        else:
+            raise TypeError(f"invalid type {v}")
+    if mapped_args:
+        if mapped_type == AnyOf:
+            return mapped_type(fields=mapped_args)
+        else:
+            mapped_args = mapped_args if len(mapped_args) > 1 else mapped_args[0]
+            return mapped_type(items=mapped_args)
+    return mapped_type()
+
+
 def _init_class_dict(cls):
     attributes_to_include = {
         "_fields",
@@ -1623,20 +1634,3 @@ class ImmutableField(Field):
     """
 
     _immutable = True
-
-
-class AbstractStructure(Structure):
-    """
-    Defines a Structure class that cannot be instantiated because it is abstract.
-     To instantiate, you are required to extend it.
-    """
-
-    def __init__(self, *args, **kwargs):
-        found = False
-        for clz in self.__class__.__bases__:
-            if clz is AbstractStructure:
-                found = True
-                break
-        if found:
-            raise TypeError("Not allowed to instantiate an abstract Structure")
-        super().__init__(*args, **kwargs)

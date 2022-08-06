@@ -65,6 +65,7 @@ from typedpy.fields import (
     ImmutableInteger,
     ImmutableNumber,
     ImmutableDeque,
+    ImmutableString,
     Deque,
     SubClass,
     ExceptionField,

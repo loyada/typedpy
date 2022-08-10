@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 """
 The Skeleton classes to support strictly defined structures:
 Structure, Field, StructureReference, ClassReference, TypedField
@@ -6,7 +7,7 @@ import enum
 import inspect
 from builtins import issubclass
 from copy import deepcopy
-from collections import OrderedDict, deque, defaultdict
+from collections import OrderedDict, defaultdict
 from inspect import Signature, Parameter, signature, currentframe
 import sys
 import typing
@@ -215,8 +216,8 @@ class FieldMeta(type):
         _check_for_final_violations(clsobj.mro())
         return clsobj
 
-    def __or__(self, other):
-        return _or_fields(self, other)
+    def __or__(cls, other):
+        return _or_fields(cls, other)
 
     def __getitem__(cls, val):
         if isinstance(val, Field):
@@ -386,9 +387,8 @@ class Field(UniqueMixin, metaclass=FieldMeta):
             else get_field_with_inheritance(self._name)
         )
         is_immutable = (
-            instance is not None
-            and getattr(instance, IS_IMMUTABLE, False)
-            or getattr(self, IS_IMMUTABLE, False)
+            getattr(instance, IS_IMMUTABLE, False) if instance is not None
+            else getattr(self, IS_IMMUTABLE, False)
         )
         needs_defensive_copy = (
             not isinstance(
@@ -468,7 +468,7 @@ class Field(UniqueMixin, metaclass=FieldMeta):
     def get_type(self):
         return typing.Any
 
-    def to_json_schema(self) -> dict:
+    def to_json_schema(self) -> dict:   # pylint: disable=no-self-use
         ...
 
     @classmethod
@@ -525,7 +525,7 @@ def _get_all_fields_by_name(cls):
     for the_class in all_classes:
         if isinstance(the_class, StructMeta):
             field_names = getattr(the_class, "_fields", [])
-            field_by_name = dict([(k, getattr(the_class, k)) for k in field_names])
+            field_by_name = {k: getattr(the_class, k) for k in field_names}
             all_fields_by_name.update(field_by_name)
     return all_fields_by_name
 
@@ -597,7 +597,7 @@ class StructMeta(type):
     def __prepare__(cls, name, bases):
         return OrderedDict()
 
-    def __new__(cls, name, bases, cls_dict):
+    def __new__(cls, name, bases, cls_dict):    #  pylint: disable=too-many-locals, too-many-branches
         bases_params, bases_required = get_base_info(bases)
         add_annotations_to_class_dict(cls_dict, previous_frame=currentframe().f_back)
         defaults = cls_dict[DEFAULTS]
@@ -640,7 +640,7 @@ class StructMeta(type):
         default_required = list(all_fields)
 
         clsobj._constants = {}
-        for fname, fval in _get_all_fields_by_name(clsobj).items():
+        for fname in _get_all_fields_by_name(clsobj):
             if isinstance(getattr(clsobj, fname), Constant):
                 const_val = getattr(clsobj, fname)._val
                 if not isinstance(const_val, (int, str, bool, enum.Enum, float)):
@@ -743,14 +743,14 @@ def add_annotations_to_class_dict(cls_dict, previous_frame):
             if isinstance(v, str) and len(v) < 50:
                 # The evil eval is to accommodate "from __future__ import annotations".
                 module_name = cls_dict["__module__"]
-                globals = (
+                globals_from_modules = (
                     sys.modules[module_name].__dict__
                     if module_name in sys.modules
                     else None
                 )
-                v = eval(
+                v = eval(     # pylint: disable=eval-used
                     v,
-                    globals,
+                    globals_from_modules,
                     previous_frame.f_locals,
                 )
             first_arg = getattr(v, "__args__", [0])[0]
@@ -918,10 +918,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 )
             setattr(self, field_name, const_val)
 
-        for field_name in defaults_fields:
-            default = getattr(field_by_name[field_name], "_default")
-            default_value = default() if callable(default) else default
-            setattr(self, field_name, default_value)
+        self._set_defaults(defaults_fields, field_by_name)
 
         if Structure.failing_fast():
             for name, val in bound.arguments.items():
@@ -945,6 +942,12 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         self._instantiated = True
         self.__manage_uniqueness__()
         self.__manage__uniqueness_of_all_fields__()
+
+    def _set_defaults(self, defaults_fields, field_by_name):
+        for field_name in defaults_fields:
+            default = getattr(field_by_name[field_name], "_default")
+            default_value = default() if callable(default) else default
+            setattr(self, field_name, default_value)
 
     def __manage__uniqueness_of_all_fields__(self):
         fields_by_name = self.__class__.get_all_fields_by_name()

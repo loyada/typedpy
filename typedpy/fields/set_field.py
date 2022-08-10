@@ -1,8 +1,8 @@
 from typedpy.structures import Structure, ImmutableField
+from typedpy.commons import python_ver_atleast_39, wrap_val
 
 from .collections_impl import SizedCollection, ContainNestedFieldMixin, _CollectionMeta
 from .fields import TypedField, _map_to_field
-from typedpy.commons import python_ver_atleast_39, wrap_val
 
 
 class Set(

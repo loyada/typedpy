@@ -1,7 +1,7 @@
 from typedpy.structures import Structure, Field
+from typedpy.commons import wrap_val
 from .array import Array
 from .strings import String
-from typedpy.commons import wrap_val
 
 
 class Function(Field):

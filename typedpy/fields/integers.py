@@ -1,6 +1,7 @@
 from typedpy.structures import TypedField
-from .numbers import Number, Positive, Negative, NonPositive, NonNegative
 from typedpy.structures import ImmutableField
+
+from .numbers import Number, Positive, Negative, NonPositive, NonNegative
 
 
 class Integer(TypedField, Number):

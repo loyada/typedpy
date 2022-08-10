@@ -17,7 +17,7 @@ def _all_values_from_single_enum(values):
     clazz = first_in(values).__class__
     if not (isinstance(clazz, (type,)) and issubclass(clazz, enum.Enum)):
         return False
-    return all([v.__class__ is clazz for v in values])
+    return all(v.__class__ is clazz for v in values)
 
 
 class Enum(SerializableField, metaclass=_EnumMeta):
@@ -100,9 +100,8 @@ class Enum(SerializableField, metaclass=_EnumMeta):
         if not values:
             raise ValueError("Enum requires values parameters")
         self._is_enum = (
-            isinstance(values, (type,))
-            and issubclass(values, enum.Enum)
-            or _all_values_from_single_enum(values)
+            issubclass(values, enum.Enum) if isinstance(values, (type,))
+            else _all_values_from_single_enum(values)
         )
         self.serialization_by_value = serialization_by_value
 
@@ -113,7 +112,7 @@ class Enum(SerializableField, metaclass=_EnumMeta):
             if serialization_by_value:
                 self._enum_by_value = {e.value: e for e in self._enum_class}
             self._valid_enum_values = (
-                [v for v in self._enum_class] if isinstance(values, (type,)) else values
+                list(self._enum_class) if isinstance(values, (type,)) else values
             )
             self.values = list(values)
         else:

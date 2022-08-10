@@ -247,11 +247,11 @@ def _is_sqlalchemy_orm_model(cls):
 
 
 def _get_sqlalchemy_init(attributes_with_type):
-    res = [f"def __init__(self, *,"]
+    res = ["def __init__(self, *,"]
     for p, p_type in attributes_with_type:
         res.append(f"{INDENT}{p}: {p_type} = None,")
     res.append(f"{INDENT}**kw")
-    res.append(f"): ...")
+    res.append("): ...")
     return res
 
 
@@ -394,7 +394,7 @@ def _get_methods_info(
                                 f"{attr_name}: {attr_type}"
                             ] + method_by_name
                 except:
-                    logging.info("not __init__ implementation found")
+                    logging.info("no __init__ implementation found")
         except Exception as e:
             logging.warning(e)
             method_by_name.append(f"def {name}(self, *args, **kw): ...")

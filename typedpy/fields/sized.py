@@ -1,5 +1,5 @@
-from .fields import Field
 from typedpy.commons import wrap_val
+from .fields import Field
 
 
 class Sized(Field):

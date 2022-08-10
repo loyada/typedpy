@@ -9,7 +9,7 @@ INDENT = " " * 4
 
 
 def get_imports(path):
-    with open(path) as fh:
+    with open(path, encoding="UTF-8") as fh:
         root = ast.parse(fh.read(), path)
 
     for node in ast.iter_child_nodes(root):

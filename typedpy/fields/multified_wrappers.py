@@ -1,6 +1,6 @@
 from typedpy.commons import wrap_val
-from .fields import _map_to_field
 from typedpy.structures import Field, FieldMeta, NoneField
+from .fields import _map_to_field
 
 
 class _JSONSchemaDraft4ReuseMeta(FieldMeta):

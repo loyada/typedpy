@@ -141,9 +141,9 @@ def get_type_info(field, locals_attrs, additional_classes):
         the_type = (
             getattr(field, "get_type", field) if isinstance(field, Field) else field
         )
-        # deal with from __future__ import annotations
+        # deal with from __future__ import annotations. Using eval is not a proble given it is not in run time.
         if isinstance(the_type, str):
-            the_type = eval(the_type, locals_attrs)
+            the_type = eval(the_type, locals_attrs)  #pylint: disable=eval-used
             field = the_type
             if isinstance(the_type, str):
                 return the_type

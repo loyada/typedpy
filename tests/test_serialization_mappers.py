@@ -16,7 +16,7 @@ from typedpy import (
     mappers,
     DoNotSerialize
 )
-from typedpy.serialization.mappers import (
+from typedpy_libs.serialization.mappers import (
     aggregate_deserialization_mappers,
     aggregate_serialization_mappers,
 )

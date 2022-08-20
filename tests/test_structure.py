@@ -26,7 +26,7 @@ from typedpy import (
     unique,
 )
 
-from typedpy.structures.structures import MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
+from typedpy_libs.structures.structures import MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
 
 class Venue(enum.Enum):
     NYSE = enum.auto()
@@ -728,3 +728,21 @@ def test_additional_props_default_false(additional_props_default_is_false):
         Foo(a="x", b=1)
     assert "Foo: got an unexpected keyword argument 'b'" in str(excinfo.value)
     assert Foo(a="x").a == "x"
+
+
+def test_auto_enum_conversion(auto_conversion_of_enums):
+    class Color(enum.Enum):
+        RED = 1
+        GREEN = 2
+        YELLOW = 3
+
+    class Foo(Structure):
+        color: Color
+
+    foo = Foo(color=Color.RED)
+    assert foo.color is Color.RED
+    foo.color = Color.YELLOW  # no error
+    with pytest.raises(ValueError) as excinfo:
+        foo.color = 1
+    assert "color: Got 1; Expected one of: RED, GREEN, YELLOW" in str(excinfo.value)
+

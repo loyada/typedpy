@@ -164,7 +164,7 @@ def test_extend_err():
 
 
 def test_extend_valid():
-    from typedpy.fields import _ListStruct
+    from typedpy_libs.fields import _ListStruct
 
     e = Example(b=[1, 2, 3])
     e.b.extend([5, 9])

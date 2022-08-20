@@ -1,6 +1,6 @@
 import json
 
-from typedpy.extfields.extfields import DateField
+from typedpy import DateField
 from typedpy import (
     Structure,
     DecimalNumber,

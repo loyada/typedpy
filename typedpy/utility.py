@@ -2,7 +2,7 @@ import typing
 from collections import deque
 from pathlib import Path
 
-from .commons import python_ver_36, python_ver_atleast_39, python_ver_atleast_than_37
+from typedpy.commons import python_ver_36, python_ver_atleast_39, python_ver_atleast_than_37
 
 
 def type_is_generic(v):

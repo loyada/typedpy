@@ -16,7 +16,7 @@ from typedpy import (
     ImmutableInteger,
     Tuple,
 )
-from typedpy.fields import Generator, Deque, ImmutableDeque, ImmutableSet
+from typedpy import Generator, Deque, ImmutableDeque, ImmutableSet
 
 
 class ImmutableString(String, ImmutableField):

@@ -16,7 +16,7 @@ from typedpy import (
     Versioned,
     convert_dict,
 )
-from typedpy.serialization.mappers import Deleted
+from typedpy import Deleted
 
 
 class Bar(ImmutableStructure):

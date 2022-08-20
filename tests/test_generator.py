@@ -3,7 +3,7 @@ import pickle
 from pytest import raises
 
 from typedpy import Structure, serialize
-from typedpy.fields import Generator
+from typedpy import Generator
 
 
 class Foo(Structure):

@@ -2,7 +2,7 @@
 A type-safe strictly defined structures, compatible with JSON draft 4
 but offers significantly more functionality.
 """
-from typedpy.structures import (
+from typedpy_libs.structures import (
     Structure,
     Field,
     TypedField,
@@ -22,7 +22,9 @@ from typedpy.structures import (
     keys_of,
 )
 
-from typedpy.fields import (
+import typedpy_libs.fields as fields
+
+from typedpy_libs.fields import (
     Number,
     Integer,
     PositiveInt,
@@ -72,7 +74,7 @@ from typedpy.fields import (
     FunctionCall,
 )
 
-from typedpy.json_schema.json_schema_mapping import (
+from typedpy_libs.json_schema.json_schema_mapping import (
     structure_to_schema,
     schema_to_struct_code,
     schema_definitions_to_code,
@@ -80,7 +82,7 @@ from typedpy.json_schema.json_schema_mapping import (
 )
 
 
-from typedpy.serialization import (
+from typedpy_libs.serialization import (
     Serializer,
     Deserializer,
     deserializer_by_discriminator,
@@ -96,7 +98,7 @@ from typedpy.serialization import (
     HasTypes,
 )
 
-from typedpy.extfields import (
+from typedpy_libs.extfields import (
     DateString,
     DateField,
     DateTime,
@@ -107,7 +109,7 @@ from typedpy.extfields import (
     EmailAddress,
 )
 
-from typedpy.stubs import (
+from typedpy_libs.stubs import (
     create_pyi,
     create_stub_for_file,
     create_stub_for_file_using_ast,

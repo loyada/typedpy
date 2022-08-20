@@ -1,5 +1,5 @@
 from typedpy import Structure, Serializer
-from typedpy.fields import ExceptionField
+from typedpy import ExceptionField
 
 
 def test_serialize():

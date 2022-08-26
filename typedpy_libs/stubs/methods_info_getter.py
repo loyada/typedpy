@@ -215,10 +215,11 @@ def _append_special_methods_to_code(
         method_code.append("@property")
 
 
-def _handle_constructor_of_external_class(
-    *, source, attributes_with_type, method_code, locals_attrs, additional_classes
+def _handle_init_of_external_class(
+    *, init, attributes_with_type, method_code, locals_attrs, additional_classes
 ):
     try:
+        source = inspect.getsource(init)
         init_type_by_attr = extract_attributes_from_init(
             source, locals_attrs, additional_classes
         )
@@ -257,8 +258,8 @@ def _get_method_code(
         )
         method_code.append(f"def {name}({params_as_str}){return_annotations}: ...")
         if name == "__init__" and not issubclass(cls, Structure):
-            _handle_constructor_of_external_class(
-                source=inspect.getsource(members[name]),
+            _handle_init_of_external_class(
+                init=members[name],
                 attributes_with_type=attributes_with_type,
                 method_code=method_code,
                 locals_attrs=locals_attrs,

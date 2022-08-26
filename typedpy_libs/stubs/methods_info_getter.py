@@ -215,7 +215,7 @@ def _append_special_methods_to_code(
         method_code.append("@property")
 
 
-def _handle_constructor_of_typedpy_structure(
+def _handle_constructor_of_external_class(
     *, source, attributes_with_type, method_code, locals_attrs, additional_classes
 ):
     try:
@@ -257,7 +257,7 @@ def _get_method_code(
         )
         method_code.append(f"def {name}({params_as_str}){return_annotations}: ...")
         if name == "__init__" and not issubclass(cls, Structure):
-            _handle_constructor_of_typedpy_structure(
+            _handle_constructor_of_external_class(
                 source=inspect.getsource(members[name]),
                 attributes_with_type=attributes_with_type,
                 method_code=method_code,

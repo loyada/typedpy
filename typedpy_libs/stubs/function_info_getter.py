@@ -4,6 +4,7 @@ import logging
 from typedpy_libs.stubs.type_info_getter import (
     get_type_info,
 )
+from typedpy_libs.stubs.utils import get_optional_globe
 
 
 def _get_type_annotation(
@@ -42,19 +43,12 @@ def _get_param_by_name(*, sig, local_attrs, additional_classes):
         type_annotation = _get_type_annotation(
             ": ", v.annotation, default, local_attrs, additional_classes
         )
-        optional_globe = (
-            "**"
-            if v.kind == inspect.Parameter.VAR_KEYWORD
-            else "*"
-            if v.kind == inspect.Parameter.VAR_POSITIONAL
-            else ""
-        )
         if v.kind == inspect.Parameter.VAR_POSITIONAL:
             found_last_positional = True
         if v.kind == inspect.Parameter.KEYWORD_ONLY and not found_last_positional:
             params_by_name.append(("*", ""))
             found_last_positional = True
-        p_name = f"{optional_globe}{p}"
+        p_name = f"{get_optional_globe(v)}{p}"
         params_by_name.append((p_name, type_annotation))
 
     return params_by_name

@@ -8,7 +8,7 @@ from typedpy_libs.stubs.type_helpers import (
 )
 
 
-def get_base_parser():
+def get_base_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("src_root_dir", help="source root directory")
     parser.add_argument(

@@ -1,13 +1,14 @@
 from collections import deque
 
 from typedpy_libs.structures import Field, Structure, TypedField, ImmutableField
+from .array import _get_items, extract_field_value
 from .collections_impl import (
     _DequeStruct,
     SizedCollection,
     ContainNestedFieldMixin,
     _CollectionMeta,
 )
-from .fields import _map_to_field, verify_type_and_uniqueness
+from .fields import  verify_type_and_uniqueness
 
 
 class Deque(
@@ -67,28 +68,18 @@ class Deque(
         """
         self.uniqueItems = uniqueItems
         self.additionalItems = additionalItems
-        if isinstance(items, list):
-            self.items = []
-            for item in items:
-                self.items.append(_map_to_field(item))
-        else:
-            self.items = _map_to_field(items)
+        self.items = _get_items(items)
         super().__init__(*args, **kwargs)
         self._set_immutable(getattr(self, "_immutable", False))
+
 
     def __set__(self, instance, value):
         verify_type_and_uniqueness(deque, value, self._name, self.uniqueItems)
         self.validate_size(value, self._name)
         if self.items is not None:
             if isinstance(self.items, Field):
-                setattr(self.items, "_name", self._name)
-                res = deque()
-                for i, val in enumerate(value):
-                    temp_st = Structure()
-                    setattr(self.items, "_name", self._name + f"_{str(i)}")
-                    self.items.__set__(temp_st, val)
-                    res.append(getattr(temp_st, getattr(self.items, "_name")))
-                value = res
+                value = extract_field_value(self=self, value=value, cls=deque)
+
             elif isinstance(self.items, list):
                 additional_properties_forbidden = self.additionalItems is False
 

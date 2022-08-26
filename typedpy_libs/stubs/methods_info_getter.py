@@ -20,6 +20,7 @@ from typedpy_libs.stubs.types_ast import (
 )
 from typedpy_libs.stubs.utils import (
     INDENT,
+    get_optional_globe,
     get_sqlalchemy_init,
     is_not_generic_and_private_class_or_module,
     is_sqlalchemy,
@@ -169,13 +170,6 @@ def _get_list_of_params_with_type(
         if func_info.is_property and arg_position < 2:
             continue
         arg_position += 1
-        optional_globe = (
-            "**"
-            if v.kind == inspect.Parameter.VAR_KEYWORD
-            else "*"
-            if v.kind == inspect.Parameter.VAR_POSITIONAL
-            else ""
-        )
         if v.kind == inspect.Parameter.VAR_POSITIONAL:
             found_last_positional = True
         if v.kind == inspect.Parameter.KEYWORD_ONLY and not found_last_positional:
@@ -193,7 +187,7 @@ def _get_list_of_params_with_type(
             if v.annotation == inspect._empty
             else f": {get_type_info(v.annotation, locals_attrs, additional_classes)}"
         )
-        p_name = f"{optional_globe}{p}"
+        p_name = f"{get_optional_globe(v)}{p}"
         type_annotation = (
             type_annotation[: -len(" = None")]
             if (type_annotation.endswith("= None") and default)

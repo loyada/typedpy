@@ -9,6 +9,47 @@ from .collections_impl import (
 from .fields import _map_to_field, verify_type_and_uniqueness
 
 
+def extract_field_value(*, self, value, cls):
+    setattr(self.items, "_name", self._name)
+    res = cls()
+    for i, val in enumerate(value):
+        temp_st = Structure()
+        setattr(self.items, "_name", self._name + f"_{str(i)}")
+        self.items.__set__(temp_st, val)
+        res.append(getattr(temp_st, getattr(self.items, "_name")))
+    return res
+
+
+def init_array_like(
+        self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
+):
+    self.uniqueItems = uniqueItems
+    self.additionalItems = additionalItems
+    if isinstance(items, list):
+        self.items = []
+        for item in items:
+            self.items.append(_map_to_field(item))
+    else:
+        self.items = _map_to_field(items)
+
+
+def _get_items(items):
+    if isinstance(items, list):
+        res = []
+        for item in items:
+            res.append(_map_to_field(item))
+    else:
+        res = _map_to_field(items)
+    return res
+
+
+def has_multiple_items(items):
+    return (
+            not isinstance(items, (list, tuple))
+            and items
+            and python_ver_atleast_39
+    )
+
 class Array(
     SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta
 ):
@@ -51,7 +92,8 @@ class Array(
 
     _ty = list
 
-    def __init__(
+    # pylint: disable=duplicate-code
+    def __init__( # pylint: disable=duplicate-code
         self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
     ):
         """
@@ -64,24 +106,16 @@ class Array(
         elements beyond the ones defined in "items"?
         :param kwargs: pass-through
         """
+
         self.uniqueItems = uniqueItems
         self.additionalItems = additionalItems
-        if isinstance(items, list):
-            self.items = []
-            for item in items:
-                self.items.append(_map_to_field(item))
-        else:
-            self.items = _map_to_field(items)
+        self.items = _get_items(items)
         super().__init__(*args, **kwargs)
         self._set_immutable(getattr(self, "_immutable", False))
 
     @property
     def get_type(self):
-        if (
-            not isinstance(self.items, (list, tuple))
-            and self.items
-            and python_ver_atleast_39
-        ):
+        if has_multiple_items(self.items):
             return list[self.items.get_type]
         return list
 
@@ -90,14 +124,7 @@ class Array(
         self.validate_size(value, self._name)
         if self.items is not None:
             if isinstance(self.items, Field):
-                setattr(self.items, "_name", self._name)
-                res = []
-                for i, val in enumerate(value):
-                    temp_st = Structure()
-                    setattr(self.items, "_name", self._name + f"_{str(i)}")
-                    self.items.__set__(temp_st, val)
-                    res.append(getattr(temp_st, getattr(self.items, "_name")))
-                value = res
+                value = extract_field_value(self=self, value=value, cls=list)
             elif isinstance(self.items, list):
                 additional_properties_forbidden = self.additionalItems is False
 

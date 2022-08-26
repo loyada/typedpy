@@ -1,4 +1,5 @@
 import builtins
+import inspect
 import logging
 import typing
 
@@ -70,3 +71,13 @@ def get_package(v, attrs):
 
 def as_something(k, attrs):
     return f" as {k}" if attrs.get("__file__", "").endswith("__init__.py") else ""
+
+
+def get_optional_globe(param):
+    return (
+        "**"
+        if param.kind == inspect.Parameter.VAR_KEYWORD
+        else "*"
+        if param.kind == inspect.Parameter.VAR_POSITIONAL
+        else ""
+    )

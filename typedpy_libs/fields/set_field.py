@@ -1,5 +1,6 @@
 from typedpy_libs.structures import Structure, ImmutableField
-from typedpy.commons import python_ver_atleast_39, wrap_val
+from typedpy.commons import wrap_val
+from .array import has_multiple_items
 
 from .collections_impl import SizedCollection, ContainNestedFieldMixin, _CollectionMeta
 from .fields import TypedField, _map_to_field
@@ -52,11 +53,7 @@ class Set(
 
     @property
     def get_type(self):
-        if (
-            not isinstance(self.items, (list, tuple))
-            and self.items
-            and python_ver_atleast_39
-        ):
+        if has_multiple_items(self.items):
             return set[self.items.get_type]
         return set
 

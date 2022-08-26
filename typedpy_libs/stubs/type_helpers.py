@@ -1,4 +1,3 @@
-import builtins
 import enum
 import importlib.util
 import inspect
@@ -9,11 +8,10 @@ import typing
 from os.path import relpath
 from pathlib import Path
 
-from typedpy.commons import doublewrap_val, nested
+from typedpy.commons import doublewrap_val
 from typedpy_libs.fields import FunctionCall
 from typedpy_libs.serialization.serialization_wrappers import Deserializer, Serializer
 from typedpy_libs.structures import (
-    ADDITIONAL_PROPERTIES,
     Field,
     ImmutableStructure,
     Structure,
@@ -21,26 +19,30 @@ from typedpy_libs.structures import (
 from typedpy_libs.stubs.type_info_getter import (
     get_all_type_info,
     get_type_info,
-    is_typeddict,
 )
 from typedpy_libs.stubs.types_ast import (
-    extract_attributes_from_init,
     functions_to_str,
     get_imports,
     get_models,
     models_to_src,
 )
-from typedpy.utility import type_is_generic
+from .methods_info_getter import (
+    get_methods_and_attributes_as_code,
+    get_init,
+    get_additional_structure_methods,
+)
 
-builtins_types = [
-    getattr(builtins, k)
-    for k in dir(builtins)
-    if isinstance(getattr(builtins, k), type)
-]
+from .function_info_getter import get_stubs_of_functions
+from .utils import (
+    is_sqlalchemy,
+    INDENT,
+    get_package,
+    as_something,
+    is_internal_sqlalchemy,
+)
 
 module = getattr(inspect, "__class__")
 
-INDENT = " " * 4
 
 AUTOGEN_NOTE = [
     "",
@@ -50,28 +52,14 @@ AUTOGEN_NOTE = [
 ]
 
 
-_private_to_public_pkg = {"werkzeug.localxxx": "flask"}
-
-
-def _get_package(v, attrs):
-    pkg_name = attrs.get("__package__") or "%^$%^$%^#"
-    if v.startswith(pkg_name):
-        return v[len(pkg_name) :]
-    return _private_to_public_pkg.get(v, v)
-
-
-def _as_something(k, attrs):
-    return f" as {k}" if attrs.get("__file__", "").endswith("__init__.py") else ""
-
-
-def _get_struct_classes(attrs, only_calling_module=True):
+def _get_struct_classes(attrs):
     return {
         k: v
         for k, v in attrs.items()
         if (
             inspect.isclass(v)
             and issubclass(v, Structure)
-            and (v.__module__ == attrs["__name__"] or not only_calling_module)
+            and (v.__module__ == attrs["__name__"])
             and v not in {Deserializer, Serializer, ImmutableStructure, FunctionCall}
         )
     }
@@ -86,7 +74,7 @@ def _get_imported_classes(attrs):
         if (
             not k.startswith("_")
             and (isinstance(v, module) or _valid_module(v))
-            and not _is_internal_sqlalchemy(v)
+            and not is_internal_sqlalchemy(v)
         ):
             if isinstance(v, module):
                 if v.__name__ != k:
@@ -100,17 +88,19 @@ def _get_imported_classes(attrs):
                                 f"from {'.'.join(first_parts)} import {last_part} as {k}",
                             )
                         )
-                    elif nested(lambda: getattr(v.os, k)) == v:  # pylint: disable=(cell-var-from-loop
+                    elif (
+                        getattr(v.os, k, None) == v
+                    ):  # pylint: disable=(cell-var-from-loop
                         res.append((k, f"from os import {k} as {k}"))
                 else:
                     res.append((k, f"import {k}"))
             else:
-                pkg = _get_package(v.__module__, attrs)
+                pkg = get_package(v.__module__, attrs)
 
                 name_in_pkg = getattr(v, "__name__", k)
                 name_to_import = name_in_pkg if name_in_pkg and name_in_pkg != k else k
                 as_import = (
-                    _as_something(k, attrs) if name_to_import == k else f" as {k}"
+                    as_something(k, attrs) if name_to_import == k else f" as {k}"
                 )
                 import_stmt = f"from {pkg} import {name_to_import}{as_import}"
                 if pkg == "__future__":
@@ -148,306 +138,6 @@ def _get_mapped_extra_imports(additional_imports) -> dict:
     return mapped
 
 
-def _is_sqlalchemy(attr):
-    module_name = getattr(attr, "__module__", "")
-    return module_name and (
-        module_name.startswith("sqlalchemy.orm")
-        or module_name.startswith("sqlalchemy.sql")
-    )
-
-
-def _is_internal_sqlalchemy(attr):
-    module_name = getattr(attr, "__module__", "")
-    return module_name in {"sqlalchemy.orm.decl_api", "sqlalchemy.sql.schema"}
-
-
-def _try_extract_column_type(attr):
-    if attr.__class__.__name__ == "InstrumentedAttribute":
-        return next(iter(attr.expression.base_columns)).type.python_type
-    logging.warning(f"could not extract column type for {attr}")
-    return typing.Any
-
-def _skip_sqlalchemy_attribute(attribute):
-    return attribute.startswith("_") or attribute in {"registry", "metadata"}
-
-
-def _get_method_and_attr_list(cls, members):
-    all_fields = cls.get_all_fields_by_name() if issubclass(cls, Structure) else {}
-    ignored_methods = (
-        dir(Structure)
-        if issubclass(cls, Structure)
-        else dir(Field)
-        if issubclass(cls, Structure)
-        else dir(enum)
-        if issubclass(cls, enum.Enum)
-        else {}
-    )
-    private_prefix = "_" if issubclass(cls, enum.Enum) else "__"
-    method_list = []
-    attrs = []
-    cls_dict = cls.__dict__
-    for attribute in members:
-        if attribute.startswith(private_prefix) and attribute not in {
-            "__init__",
-            "__call__",
-        }:
-            continue
-        attr = (
-            cls_dict.get(attribute)
-            if attribute in cls_dict
-            else getattr(cls, attribute, None)
-        )
-        if _is_sqlalchemy(attr):
-            if not _skip_sqlalchemy_attribute(attribute):
-                members[attribute] = _try_extract_column_type(attr)
-                attrs.append(attribute)
-            continue
-        is_func = not inspect.isclass(attr) and (
-            callable(attr) or isinstance(attr, (property, classmethod, staticmethod))
-        )
-        if all(
-            [
-                attr is not None,
-                not inspect.isclass(attr),
-                not is_func,
-                not (is_typeddict(cls) or isinstance(attr, cls)),
-                not (issubclass(cls, Structure) and attribute.startswith("_")),
-            ]
-        ):
-            attrs.append(attribute)
-            continue
-
-        if (
-            is_func
-            and attribute not in all_fields
-            and (
-                attribute not in ignored_methods
-                or (issubclass(cls, Structure) and attribute == "__init__")
-            )
-        ):
-            method_list.append(attribute)
-
-    if (
-        not issubclass(cls, Structure)
-        and not issubclass(cls, enum.Enum)
-        and "__init__" in members
-        and "__init__" not in method_list
-    ):
-        method_list = ["__init__"] + method_list
-
-    for name in cls_dict.get("__annotations__", {}):
-        if name not in attrs:
-            attrs.append(name)
-    return method_list, attrs
-
-
-def _is_sqlalchemy_orm_model(cls):
-    return nested(lambda: str(cls.__class__.__module__), "").startswith(
-        "sqlalchemy.orm"
-    )
-
-
-def _get_sqlalchemy_init(attributes_with_type):
-    res = ["def __init__(self, *,"]
-    for p, p_type in attributes_with_type:
-        res.append(f"{INDENT}{p}: {p_type} = None,")
-    res.append(f"{INDENT}**kw")
-    res.append("): ...")
-    return res
-
-
-def _is_not_generic_and_private_class_or_module(the_type):
-    if type_is_generic(the_type):
-        return False
-    return getattr(the_type, "__module__", "").startswith("_") or nested(
-        lambda: the_type.__class__.__name__, ""
-    ).startswith("_")
-
-
-
-def _get_methods_info(
-    cls, locals_attrs, additional_classes, ignore_attributes=None
-) -> list:
-    ignore_attributes = ignore_attributes or set()
-    members = {}
-    members.update(dict(cls.__dict__))
-    annotations = cls.__dict__.get("__annotations__", {})
-    for a in annotations:
-        members[a] = annotations[a]
-    members.update(annotations)
-
-    method_list, cls_attrs_draft = _get_method_and_attr_list(cls, members)
-    cls_attrs = [a for a in cls_attrs_draft if a not in ignore_attributes]
-    attributes_with_type = []
-    for attr in cls_attrs:
-        the_type = members.get(attr, None)
-        if _is_not_generic_and_private_class_or_module(the_type):
-            continue
-        if inspect.isclass(the_type) or type_is_generic(the_type):
-            resolved_type = (
-                get_type_info(the_type, locals_attrs, additional_classes)
-                if the_type
-                else "Any"
-            )
-        else:
-            resolved_type = (
-                get_type_info(the_type.__class__, locals_attrs, additional_classes)
-                if the_type is not None
-                else "Any"
-            )
-        attributes_with_type.append((attr, resolved_type))
-    method_by_name = [
-        f"{attr}: {resolved_type}" for (attr, resolved_type) in attributes_with_type
-    ]
-    cls_dict = cls.__dict__
-
-    for name in method_list:
-        method_cls = members[name].__class__
-        is_property = False
-        func = cls_dict.get(name) if name in cls_dict else getattr(cls, name, None)
-        func = (
-            getattr(cls, name)
-            if isinstance(func, (classmethod, staticmethod, property))
-            and not _is_sqlalchemy(func)
-            else func
-        )
-        if isinstance(func, property):
-            is_property = True
-            func = func.fget
-        try:
-            sig = inspect.signature(func)
-            return_annotations = (
-                ""
-                if sig.return_annotation == inspect._empty
-                else " -> None"
-                if sig.return_annotation is None
-                else f" -> {get_type_info(sig.return_annotation, locals_attrs, additional_classes)}"
-            )
-            params_by_name = []
-            if _is_sqlalchemy_orm_model(cls) and name == "__init__":
-                method_by_name.extend(_get_sqlalchemy_init(attributes_with_type))
-                continue
-
-            if method_cls is classmethod:
-                params_by_name.append(("cls", ""))
-            if is_property:
-                params_by_name.append(("self", ""))
-            found_last_positional = False
-            arg_position = 0
-            for p, v in sig.parameters.items():
-                if is_property and arg_position < 2:
-                    continue
-                arg_position += 1
-                optional_globe = (
-                    "**"
-                    if v.kind == inspect.Parameter.VAR_KEYWORD
-                    else "*"
-                    if v.kind == inspect.Parameter.VAR_POSITIONAL
-                    else ""
-                )
-                if v.kind == inspect.Parameter.VAR_POSITIONAL:
-                    found_last_positional = True
-                if (
-                    v.kind == inspect.Parameter.KEYWORD_ONLY
-                    and not found_last_positional
-                ):
-                    params_by_name.append(("*", ""))
-                    found_last_positional = True
-                default = (
-                    ""
-                    if v.default == inspect._empty
-                    else f" = {v.default.__name__}"
-                    if inspect.isclass(v.default)
-                    else " = None"
-                )
-                type_annotation = (
-                    ""
-                    if v.annotation == inspect._empty
-                    else f": {get_type_info(v.annotation, locals_attrs, additional_classes)}"
-                )
-                p_name = f"{optional_globe}{p}"
-                type_annotation = (
-                    type_annotation[: -len(" = None")]
-                    if (type_annotation.endswith("= None") and default)
-                    else type_annotation
-                )
-                params_by_name.append((p_name, f"{type_annotation}{default}"))
-
-            params_as_str = ", ".join([f"{k}{v}" for (k, v) in params_by_name])
-            method_by_name.append("")
-            if method_cls is staticmethod:
-                method_by_name.append("@staticmethod")
-            elif method_cls is classmethod:
-                method_by_name.append("@classmethod")
-            elif is_property:
-                method_by_name.append("@property")
-            method_by_name.append(
-                f"def {name}({params_as_str}){return_annotations}: ..."
-            )
-            if name == "__init__" and not issubclass(cls, Structure):
-                try:
-                    source = inspect.getsource(members[name])
-                    init_type_by_attr = extract_attributes_from_init(
-                        source, locals_attrs, additional_classes
-                    )
-                    for attr_name, attr_type in init_type_by_attr.items():
-                        if attr_name not in dict(attributes_with_type):
-                            method_by_name = [
-                                f"{attr_name}: {attr_type}"
-                            ] + method_by_name
-                except:
-                    logging.info("no __init__ implementation found")
-        except Exception as e:
-            logging.warning(e)
-            method_by_name.append(f"def {name}(self, *args, **kw): ...")
-
-    return method_by_name
-
-
-def _get_init(cls, ordered_args: dict, additional_properties_default: bool) -> str:
-    init_params = f",\n{INDENT * 2}".join(
-        [f"{INDENT * 2}self"] + [f"{k}: {v}" for k, v in ordered_args.items()]
-    )
-    kw_opt = (
-        f",\n{INDENT * 2}**kw"
-        if getattr(cls, ADDITIONAL_PROPERTIES, additional_properties_default)
-        else ""
-    )
-    return f"    def __init__(\n{init_params}{kw_opt}\n{INDENT}): ..."
-
-
-def _get_additional_structure_methods(
-    cls, ordered_args: dict, additional_properties_default: bool
-) -> str:
-    ordered_args_with_none = {}
-    for k, v in ordered_args.items():
-        ordered_args_with_none[k] = v if v.endswith("= None") else f"{v} = None"
-    params = [f"{k}: {v}" for k, v in ordered_args_with_none.items()]
-    params_with_self = f",\n{INDENT * 2}".join([f"{INDENT * 2}self"] + params)
-    kw_opt = (
-        f",\n{INDENT * 2}**kw"
-        if getattr(cls, ADDITIONAL_PROPERTIES, additional_properties_default)
-        else ""
-    )
-    shallow_clone = f"    def shallow_clone_with_overrides(\n{params_with_self}{kw_opt}\n{INDENT}): ..."
-
-    params_with_cls = f",\n{INDENT*2}".join(
-        [f"{INDENT}cls", "source_object: Any", "*"]
-        + ["ignore_props: Iterable[str] = None"]
-        + params
-    )
-
-    from_other_class = f"\n{INDENT}".join(
-        [
-            "",
-            "@classmethod",
-            "def from_other_class(",
-            f"{params_with_cls}{kw_opt}\n{INDENT}): ...",
-        ]
-    )
-    return "\n".join([shallow_clone, from_other_class])
-
-
 def get_stubs_of_structures(
     struct_classe_by_name: dict,
     local_attrs,
@@ -459,7 +149,7 @@ def get_stubs_of_structures(
         fields_info = get_all_type_info(
             cls, locals_attrs=local_attrs, additional_classes=additional_classes
         )
-        method_info = _get_methods_info(
+        method_info = get_methods_and_attributes_as_code(
             cls,
             locals_attrs=local_attrs,
             additional_classes=additional_classes,
@@ -476,10 +166,10 @@ def get_stubs_of_structures(
             continue
 
         if not [m for m in method_info if m.startswith("def __init__(self")]:
-            out_src.append(_get_init(cls, ordered_args, additional_properties_default))
+            out_src.append(get_init(cls, ordered_args, additional_properties_default))
         out_src.append("")
         out_src.append(
-            _get_additional_structure_methods(
+            get_additional_structure_methods(
                 cls, ordered_args, additional_properties_default
             )
         )
@@ -499,7 +189,7 @@ def get_stubs_of_enums(
     out_src = []
     for cls_name, cls in enum_classes_by_name.items():
 
-        method_info = _get_methods_info(
+        method_info = get_methods_and_attributes_as_code(
             cls, locals_attrs=local_attrs, additional_classes=additional_classes
         )
         bases = _get_bases(cls, local_attrs, additional_classes)
@@ -540,7 +230,7 @@ def add_imports(local_attrs: dict, additional_classes, existing_imports: set) ->
     ]
     extra_imports_by_name = _get_mapped_extra_imports(additional_classes)
     extra_imports = {
-        f"from {_get_package(v, local_attrs)} import {k}{_as_something(k, local_attrs)}"
+        f"from {get_package(v, local_attrs)} import {k}{as_something(k, local_attrs)}"
         for k, v in extra_imports_by_name.items()
         if (
             (
@@ -553,20 +243,20 @@ def add_imports(local_attrs: dict, additional_classes, existing_imports: set) ->
     return base_import_statements + sorted(extra_imports)
 
 
-def _get_enum_classes(attrs, only_calling_module):
+def _get_enum_classes(attrs):
     res = {}
     for k, v in attrs.items():
         if (
             inspect.isclass(v)
             and issubclass(v, enum.Enum)
-            and (v.__module__ == attrs["__name__"] or not only_calling_module)
+            and (v.__module__ == attrs["__name__"])
         ):
             res[k] = v
 
     return res
 
 
-def _get_other_classes(attrs, only_calling_module):
+def _get_other_classes(attrs):
     res = {}
     for k, v in attrs.items():
         if (
@@ -579,80 +269,18 @@ def _get_other_classes(attrs, only_calling_module):
     return res
 
 
-def _get_functions(attrs, only_calling_module):
+def _get_functions(attrs):
     return {
         k: v
         for k, v in attrs.items()
         if (
             inspect.isfunction(v)
-            and (v.__module__ == attrs["__name__"] or not only_calling_module)
+            and (v.__module__ == attrs["__name__"])
         )
     }
 
 
-def _get_type_annotation(
-    prefix: str, annotation, default: str, local_attrs, additional_classes
-):
-    def _correct_for_return_annotation(res: str):
-        if "->" in prefix:
-            return res[:-7] if res.endswith("= None") else res
-        if default:
-            cleaned_res = res[: -len(" = None")] if res.endswith("= None") else res
-            return f"{cleaned_res}{default}"
-        return res
 
-    try:
-        res = (
-            ""
-            if annotation == inspect._empty
-            else f"{prefix}{get_type_info(annotation, local_attrs, additional_classes)}"
-        )
-        return _correct_for_return_annotation(res)
-    except Exception as e:
-        logging.exception(e)
-        return ""
-
-
-def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> list:
-    def _convert_default(d):
-        return d.__name__ if inspect.isclass(d) else None
-
-    out_src = []
-    for name, func in func_by_name.items():
-        sig = inspect.signature(func)
-        return_annotations = _get_type_annotation(
-            " -> ", sig.return_annotation, "", local_attrs, additional_classes
-        )
-        params_by_name = []
-        found_last_positional = False
-        for p, v in sig.parameters.items():
-            default = (
-                ""
-                if v.default == inspect._empty
-                else f" = {_convert_default(v.default)}"
-            )
-            type_annotation = _get_type_annotation(
-                ": ", v.annotation, default, local_attrs, additional_classes
-            )
-            optional_globe = (
-                "**"
-                if v.kind == inspect.Parameter.VAR_KEYWORD
-                else "*"
-                if v.kind == inspect.Parameter.VAR_POSITIONAL
-                else ""
-            )
-            if v.kind == inspect.Parameter.VAR_POSITIONAL:
-                found_last_positional = True
-            if v.kind == inspect.Parameter.KEYWORD_ONLY and not found_last_positional:
-                params_by_name.append(("*", ""))
-                found_last_positional = True
-            p_name = f"{optional_globe}{p}"
-            params_by_name.append((p_name, type_annotation))
-        params_as_str = ", ".join([f"{k}{v}" for (k, v) in params_by_name])
-
-        out_src.append(f"def {name}({params_as_str}){return_annotations}: ...")
-        out_src.append("\n")
-    return out_src
 
 
 def _get_bases(cls, local_attrs, additional_classes) -> list:
@@ -660,7 +288,7 @@ def _get_bases(cls, local_attrs, additional_classes) -> list:
     for b in cls.__bases__:
         if b is object or b.__module__ == "typing" and b is not typing.Generic:
             continue
-        if not _is_sqlalchemy(b):
+        if not is_sqlalchemy(b):
             the_type = get_type_info(b, local_attrs, additional_classes)
             if b is typing.Generic and the_type == "Generic":
                 params = [p.__name__ for p in cls.__parameters__]
@@ -697,7 +325,7 @@ def get_stubs_of_other_classes(
             continue
 
         bases = _get_bases(cls, local_attrs, additional_classes)
-        method_info = _get_methods_info(
+        method_info = get_methods_and_attributes_as_code(
             cls, locals_attrs=local_attrs, additional_classes=additional_classes
         )
         bases_str = f"({', '.join(bases)})" if bases else ""
@@ -722,41 +350,48 @@ def get_typevars(attrs, additional_classes):
     return [""] + res + [""]
 
 
+def _get_pyi_path(calling_source_file):
+    full_path: Path = Path(calling_source_file)
+    return (full_path.parent / f"{full_path.stem}.pyi").resolve()
+
+
+def _get_direct_imported_as_code(attrs: dict, additional_imports):
+    imported = list(get_imports(attrs.get("__file__")))
+    out_src = []
+    for level, pkg_name, val_info, alias in imported:
+        level_s = "." * level
+        val = ".".join(val_info)
+        alias = alias or val
+        if val and pkg_name:
+            if val != "*":
+                out_src.append(f"from {level_s}{pkg_name} import {val} as {alias}")
+                additional_imports.append(alias)
+            else:
+                out_src.append(f"from {level_s}{pkg_name} import {val}")
+        elif pkg_name:
+            out_src.append(f"import {level_s}{pkg_name}")
+            additional_imports.append(pkg_name)
+        else:
+            out_src.append(f"import {level_s}{alias}")
+            additional_imports.append(alias)
+
+    return out_src
+
+
 def create_pyi(
     calling_source_file,
     attrs: dict,
-    only_current_module: bool = True,
     additional_properties_default=True,
 ):
-    full_path: Path = Path(calling_source_file)
-    pyi_path = (full_path.parent / f"{full_path.stem}.pyi").resolve()
     out_src = []
     additional_imports = []
-    imported = list(get_imports(attrs.get("__file__")))
-    if only_current_module:
-        for level, pkg_name, val_info, alias in imported:
-            level_s = "." * level
-            val = ".".join(val_info)
-            alias = alias or val
-            if val and pkg_name:
-                if val != "*":
-                    out_src.append(f"from {level_s}{pkg_name} import {val} as {alias}")
-                    additional_imports.append(alias)
-                else:
-                    out_src.append(f"from {level_s}{pkg_name} import {val}")
-            elif pkg_name:
-                out_src.append(f"import {level_s}{pkg_name}")
-                additional_imports.append(pkg_name)
-            else:
-                out_src.append(f"import {level_s}{alias}")
-                additional_imports.append(alias)
-
-    enum_classes = _get_enum_classes(attrs, only_calling_module=only_current_module)
+    out_src.extend(_get_direct_imported_as_code(attrs=attrs, additional_imports=additional_imports))
+    enum_classes = _get_enum_classes(attrs)
     if enum_classes and enum not in additional_imports:
         out_src += ["import enum", ""]
-    struct_classes = _get_struct_classes(attrs, only_calling_module=only_current_module)
-    other_classes = _get_other_classes(attrs, only_calling_module=only_current_module)
-    functions = _get_functions(attrs, only_calling_module=only_current_module)
+    struct_classes = _get_struct_classes(attrs)
+    other_classes = _get_other_classes(attrs)
+    functions = _get_functions(attrs)
 
     additional_classes = set()
     out_src += get_typevars(attrs, additional_classes=additional_classes)
@@ -805,6 +440,10 @@ def create_pyi(
     )
 
     out_src = AUTOGEN_NOTE + out_src
+    _write_stub(out_src=out_src, pyi_path=_get_pyi_path(calling_source_file))
+
+
+def _write_stub(out_src, pyi_path):
     out_s = "\n".join(out_src)
     with open(pyi_path, "w", encoding="UTF-8") as f:
         f.write(out_s)
@@ -937,9 +576,9 @@ def create_pyi_ast(calling_source_file, pyi_path):
         out_src += models_to_src(models)
         out_src += functions_to_str(functions)
     out_src = AUTOGEN_NOTE + out_src
-    out_s = "\n".join(out_src)
-    with open(pyi_path, "w", encoding="UTF-8") as f:
-        f.write(out_s)
+
+    _write_stub(out_src, pyi_path)
+
 
 
 def create_stub_for_file_using_ast(

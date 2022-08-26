@@ -151,7 +151,7 @@ def _get_func_info(*, cls, name):
         else func_attr
     )
     is_property = isinstance(func, property)
-    return FunctionInfo(is_property=is_property, func=func.get if is_property else func)
+    return FunctionInfo(is_property=is_property, func=func.fget if is_property else func)
 
 
 def _get_list_of_params_with_type(

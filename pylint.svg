@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="320" height="20">
+<svg xmlns="http://www.w3.org/2000/svg" width="194" height="20">
     <linearGradient id="b" x2="0" y2="100%">
         <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
         <stop offset="1" stop-opacity=".1"/>
     </linearGradient>
     <mask id="anybadge_1">
-        <rect width="320" height="20" rx="3" fill="#fff"/>
+        <rect width="194" height="20" rx="3" fill="#fff"/>
     </mask>
     <g mask="url(#anybadge_1)">
-        <path fill="#555" d="M0 0h284v20H0z"/>
-        <path fill="#4c1" d="M284 0h36v20H284z"/>
-        <path fill="url(#b)" d="M0 0h320v20H0z"/>
+        <path fill="#555" d="M0 0h158v20H0z"/>
+        <path fill="#4c1" d="M158 0h36v20H158z"/>
+        <path fill="url(#b)" d="M0 0h194v20H0z"/>
     </g>
     <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
-        <text x="143.0" y="15" fill="#010101" fill-opacity=".3">pylint-score-Fri Aug 26 05:23:00 AM EDT 2022</text>
-        <text x="142.0" y="14">pylint-score-Fri Aug 26 05:23:00 AM EDT 2022</text>
+        <text x="80.0" y="15" fill="#010101" fill-opacity=".3">pylint-score-2022-08-26</text>
+        <text x="79.0" y="14">pylint-score-2022-08-26</text>
     </g>
     <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
-        <text x="303.0" y="15" fill="#010101" fill-opacity=".3">10.0</text>
-        <text x="302.0" y="14">10.0</text>
+        <text x="177.0" y="15" fill="#010101" fill-opacity=".3">10.0</text>
+        <text x="176.0" y="14">10.0</text>
     </g>
 </svg>

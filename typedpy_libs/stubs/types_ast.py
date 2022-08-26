@@ -72,6 +72,7 @@ def _get_param_type(ast_type):
         else:
             args = [ast_type.slice.id]
         return f"{value}[{', '.join(args)}]"
+    raise NotImplementedError(ast_type)
 
 
 def _extract_kw_args(args_info) -> str:

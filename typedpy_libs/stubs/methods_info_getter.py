@@ -215,7 +215,7 @@ def _append_special_methods_to_code(
         method_code.append("@property")
 
 
-def _handle_init_of_external_class(
+def _extract_init_of_external_class(
     *, init, attributes_with_type, method_code, locals_attrs, additional_classes
 ):
     try:
@@ -225,7 +225,7 @@ def _handle_init_of_external_class(
         )
         for attr_name, attr_type in init_type_by_attr.items():
             if attr_name not in dict(attributes_with_type):
-                method_code = [f"{attr_name}: {attr_type}"] + method_code
+                method_code.insert(0,  f"{attr_name}: {attr_type}")
     except:
         logging.info("no __init__ implementation found")
 
@@ -258,7 +258,7 @@ def _get_method_code(
         )
         method_code.append(f"def {name}({params_as_str}){return_annotations}: ...")
         if name == "__init__" and not issubclass(cls, Structure):
-            _handle_init_of_external_class(
+            _extract_init_of_external_class(
                 init=members[name],
                 attributes_with_type=attributes_with_type,
                 method_code=method_code,

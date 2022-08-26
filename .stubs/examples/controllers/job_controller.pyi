@@ -19,9 +19,9 @@ class Base:
 
 class JobController(Base):
 
-    urls:  dict[str, dict]
     CONST_ID: int
     CONST_ID_WITH_ANNOTATION: str
+    urls:  dict[str, dict]
 
     def __init__(self, urls: dict[str, dict]): ...
 

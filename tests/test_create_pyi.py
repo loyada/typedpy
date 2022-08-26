@@ -21,7 +21,7 @@ def _verify_file_are_same(actual_filename, expected_filename):
 
         for a, e in zip(actual_lines, expected_lines):
             if a.strip() or e.strip():
-                assert a == e
+                assert a.rstrip() == e.rstrip()
 
 
 @dataclasses.dataclass

@@ -12,14 +12,14 @@ from .job_controller import JobController as JobController
 
 class AController:
 
+    _abc: list
+    _name: str
     today: date
     numbers: list[int]
     now: datetime
     _job_controller:  JobController
     value:  int
-    _urls:  dict[str, dict] 
-    _abc: list
-    _name: str
+    _urls:  dict[str, dict]
     
     def __init__(self, val: int, other, name: str = None, *, urls: dict[str, dict] = None, job_controller: JobController): ...
 

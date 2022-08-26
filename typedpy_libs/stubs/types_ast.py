@@ -10,6 +10,7 @@ INDENT = " " * 4
 
 # pylint: disable=eval-used
 
+
 def get_imports(path):
     with open(path, encoding="UTF-8") as fh:
         root = ast.parse(fh.read(), path)
@@ -62,7 +63,7 @@ class ModelClass(Structure):
         }.get(the_type, "Any")
 
 
-def _get_param_type(ast_type):
+def _get_param_type(ast_type) -> typing.Optional[str]:
     if isinstance(ast_type, ast.Name):
         return ast_type.id
     elif isinstance(ast_type, ast.Subscript):
@@ -72,7 +73,7 @@ def _get_param_type(ast_type):
         else:
             args = [ast_type.slice.id]
         return f"{value}[{', '.join(args)}]"
-    raise NotImplementedError(ast_type)
+    return None
 
 
 def _extract_kw_args(args_info) -> str:
@@ -186,6 +187,38 @@ def _get_function_info(node) -> FunctionInfo:
     )
 
 
+def _get_model_class_def(bases, node) -> ModelClass:
+    bases.remove("Base")
+    class_name = node.name
+    body = node.body
+    methods = []
+    relationships = {}
+    columns = {}
+    for b in body:
+        if isinstance(b, ast.Assign) and isinstance(b.value, ast.Call):
+            field_name = b.targets[0].id
+            function_name = b.value.func.id
+            if function_name == "Column":
+                args = b.value.args
+                first = args[0]
+                column_type = first.id if isinstance(first, ast.Name) else first.func.id
+                columns[field_name] = ModelClass.type_by_sqlalchemy_type(column_type)
+            if function_name == "relationship":
+                args = b.value.args
+                first = args[0]
+                entity_type = first.id if isinstance(first, ast.Name) else first.value
+                relationships[field_name] = entity_type
+        if isinstance(b, ast.FunctionDef):
+            methods.append(_get_function_info(b))
+    return ModelClass(
+        name=class_name,
+        bases=bases,
+        columns=columns,
+        relationships=relationships,
+        functions=methods,
+    )
+
+
 def get_models(
     path,
 ) -> typing.Tuple[typing.Iterable[ModelClass], typing.Iterable[FunctionInfo]]:
@@ -201,54 +234,11 @@ def get_models(
             if node.bases:
                 bases = [x.id for x in node.bases if isinstance(x, ast.Name)]
                 if "Base" in bases:
-                    bases.remove("Base")
-                    class_name = node.name
-                    body = node.body
-                    methods = []
-                    relationships = {}
-                    columns = {}
-                    for b in body:
-                        if isinstance(b, ast.Assign) and isinstance(b.value, ast.Call):
-                            field_name = b.targets[0].id
-                            function_name = b.value.func.id
-                            if function_name == "Column":
-                                args = b.value.args
-                                first = args[0]
-                                column_type = (
-                                    first.id
-                                    if isinstance(first, ast.Name)
-                                    else first.func.id
-                                )
-                                columns[
-                                    field_name
-                                ] = ModelClass.type_by_sqlalchemy_type(column_type)
-                            if function_name == "relationship":
-                                args = b.value.args
-                                first = args[0]
-                                entity_type = (
-                                    first.id
-                                    if isinstance(first, ast.Name)
-                                    else first.value
-                                )
-                                relationships[field_name] = entity_type
-                        if isinstance(b, ast.FunctionDef):
-                            methods.append(_get_function_info(b))
-                    classes.append(
-                        ModelClass(
-                            name=class_name,
-                            bases=bases,
-                            columns=columns,
-                            relationships=relationships,
-                            functions=methods,
-                        )
-                    )
+                    classes.append(_get_model_class_def(bases=bases, node=node))
     return classes, functions
 
 
-def extract_attributes_from_init(source, locals_attrs, additional_classes):
-    def _get_normalized_dict(args):
-        return dict([x if len(x) == 2 else x + ["Any"] for x in args])
-
+def _get_cleaned_source(source):
     source_lines = source.split("\n")
     first_line = -1
     for ind, line in enumerate(source_lines):
@@ -257,7 +247,41 @@ def extract_attributes_from_init(source, locals_attrs, additional_classes):
         if line.lstrip().startswith("def"):
             first_line = ind
     cleaned_source = "\n".join(source_lines[first_line:])
-    root = ast.parse(cleaned_source.strip())
+    return cleaned_source.strip()
+
+
+def _get_normalized_dict(args) -> dict:
+    return {x[0]: x[1] if len(x) == 2 else x + ["Any"] for x in args}
+
+
+def _try_extract_field_and_type(
+    *, self_name, type_by_param, node, locals_attrs, additional_classes
+):
+    res = {}
+    if (
+        isinstance(node.targets[0], ast.Attribute)
+        and isinstance(node.targets[0].value, ast.Name)
+        and node.targets[0].value.id == self_name
+    ):
+        # assignment to attribute
+        attribute_name = node.targets[0].attr
+        if isinstance(node.value, ast.Name) and node.value.id in type_by_param:
+            res[attribute_name] = type_by_param[node.value.id]
+        elif python_ver_atleast_39:
+            try:
+                value = eval(ast.unparse(node.value), locals_attrs)
+                the_type = get_type_info(
+                    value.__class__, locals_attrs, additional_classes
+                )
+                res[attribute_name] = the_type
+            except:
+                res[attribute_name] = "Any"
+
+    return res
+
+
+def extract_attributes_from_init(source, locals_attrs, additional_classes):
+    root = ast.parse(_get_cleaned_source(source))
     info = _get_function_info(root.body[0])
     self_name = info.positional_args[0]
     positional_args = [x.split(":") for x in info.positional_args[1:]]
@@ -274,28 +298,17 @@ def extract_attributes_from_init(source, locals_attrs, additional_classes):
     res = {}
     for node in func_body:
         if isinstance(node, ast.Assign):
-            if (
-                isinstance(node.targets[0], ast.Attribute)
-                and isinstance(node.targets[0].value, ast.Name)
-                and node.targets[0].value.id == self_name
-            ):
-                # assignment to attribute
-                attribute_name = node.targets[0].attr
-                if isinstance(node.value, ast.Name) and node.value.id in type_by_param:
-                    res[attribute_name] = type_by_param[node.value.id]
-                elif python_ver_atleast_39:
-                    try:
-                        value = eval(ast.unparse(node.value), locals_attrs)
-                        the_type = get_type_info(
-                            value.__class__, locals_attrs, additional_classes
-                        )
-                        res[attribute_name] = the_type
-                    except:
-                        res[attribute_name] = "Any"
+            res.update(
+                _try_extract_field_and_type(
+                    self_name=self_name,
+                    type_by_param=type_by_param,
+                    node=node,
+                    locals_attrs=locals_attrs,
+                    additional_classes=additional_classes,
+                )
+            )
 
         elif isinstance(node, ast.AnnAssign) and python_ver_atleast_39:
-            annotation = ast.unparse(node.annotation)
-            attribute_name = node.target.attr
-            res[attribute_name] = annotation
+            res[node.target.attr] = ast.unparse(node.annotation)
 
     return res

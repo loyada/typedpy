@@ -52,14 +52,14 @@ AUTOGEN_NOTE = [
 ]
 
 
-def _get_struct_classes(attrs, only_calling_module=True):
+def _get_struct_classes(attrs):
     return {
         k: v
         for k, v in attrs.items()
         if (
             inspect.isclass(v)
             and issubclass(v, Structure)
-            and (v.__module__ == attrs["__name__"] or not only_calling_module)
+            and (v.__module__ == attrs["__name__"])
             and v not in {Deserializer, Serializer, ImmutableStructure, FunctionCall}
         )
     }
@@ -243,20 +243,20 @@ def add_imports(local_attrs: dict, additional_classes, existing_imports: set) ->
     return base_import_statements + sorted(extra_imports)
 
 
-def _get_enum_classes(attrs, only_calling_module):
+def _get_enum_classes(attrs):
     res = {}
     for k, v in attrs.items():
         if (
             inspect.isclass(v)
             and issubclass(v, enum.Enum)
-            and (v.__module__ == attrs["__name__"] or not only_calling_module)
+            and (v.__module__ == attrs["__name__"])
         ):
             res[k] = v
 
     return res
 
 
-def _get_other_classes(attrs, only_calling_module):
+def _get_other_classes(attrs):
     res = {}
     for k, v in attrs.items():
         if (
@@ -269,13 +269,13 @@ def _get_other_classes(attrs, only_calling_module):
     return res
 
 
-def _get_functions(attrs, only_calling_module):
+def _get_functions(attrs):
     return {
         k: v
         for k, v in attrs.items()
         if (
             inspect.isfunction(v)
-            and (v.__module__ == attrs["__name__"] or not only_calling_module)
+            and (v.__module__ == attrs["__name__"])
         )
     }
 
@@ -350,41 +350,48 @@ def get_typevars(attrs, additional_classes):
     return [""] + res + [""]
 
 
+def _get_pyi_path(calling_source_file):
+    full_path: Path = Path(calling_source_file)
+    return (full_path.parent / f"{full_path.stem}.pyi").resolve()
+
+
+def _get_direct_imported_as_code(attrs: dict, additional_imports):
+    imported = list(get_imports(attrs.get("__file__")))
+    out_src = []
+    for level, pkg_name, val_info, alias in imported:
+        level_s = "." * level
+        val = ".".join(val_info)
+        alias = alias or val
+        if val and pkg_name:
+            if val != "*":
+                out_src.append(f"from {level_s}{pkg_name} import {val} as {alias}")
+                additional_imports.append(alias)
+            else:
+                out_src.append(f"from {level_s}{pkg_name} import {val}")
+        elif pkg_name:
+            out_src.append(f"import {level_s}{pkg_name}")
+            additional_imports.append(pkg_name)
+        else:
+            out_src.append(f"import {level_s}{alias}")
+            additional_imports.append(alias)
+
+    return out_src
+
+
 def create_pyi(
     calling_source_file,
     attrs: dict,
-    only_current_module: bool = True,
     additional_properties_default=True,
 ):
-    full_path: Path = Path(calling_source_file)
-    pyi_path = (full_path.parent / f"{full_path.stem}.pyi").resolve()
     out_src = []
     additional_imports = []
-    imported = list(get_imports(attrs.get("__file__")))
-    if only_current_module:
-        for level, pkg_name, val_info, alias in imported:
-            level_s = "." * level
-            val = ".".join(val_info)
-            alias = alias or val
-            if val and pkg_name:
-                if val != "*":
-                    out_src.append(f"from {level_s}{pkg_name} import {val} as {alias}")
-                    additional_imports.append(alias)
-                else:
-                    out_src.append(f"from {level_s}{pkg_name} import {val}")
-            elif pkg_name:
-                out_src.append(f"import {level_s}{pkg_name}")
-                additional_imports.append(pkg_name)
-            else:
-                out_src.append(f"import {level_s}{alias}")
-                additional_imports.append(alias)
-
-    enum_classes = _get_enum_classes(attrs, only_calling_module=only_current_module)
+    out_src.extend(_get_direct_imported_as_code(attrs=attrs, additional_imports=additional_imports))
+    enum_classes = _get_enum_classes(attrs)
     if enum_classes and enum not in additional_imports:
         out_src += ["import enum", ""]
-    struct_classes = _get_struct_classes(attrs, only_calling_module=only_current_module)
-    other_classes = _get_other_classes(attrs, only_calling_module=only_current_module)
-    functions = _get_functions(attrs, only_calling_module=only_current_module)
+    struct_classes = _get_struct_classes(attrs)
+    other_classes = _get_other_classes(attrs)
+    functions = _get_functions(attrs)
 
     additional_classes = set()
     out_src += get_typevars(attrs, additional_classes=additional_classes)
@@ -433,6 +440,10 @@ def create_pyi(
     )
 
     out_src = AUTOGEN_NOTE + out_src
+    _write_stub(out_src=out_src, pyi_path=_get_pyi_path(calling_source_file))
+
+
+def _write_stub(out_src, pyi_path):
     out_s = "\n".join(out_src)
     with open(pyi_path, "w", encoding="UTF-8") as f:
         f.write(out_s)
@@ -565,9 +576,9 @@ def create_pyi_ast(calling_source_file, pyi_path):
         out_src += models_to_src(models)
         out_src += functions_to_str(functions)
     out_src = AUTOGEN_NOTE + out_src
-    out_s = "\n".join(out_src)
-    with open(pyi_path, "w", encoding="UTF-8") as f:
-        f.write(out_s)
+
+    _write_stub(out_src, pyi_path)
+
 
 
 def create_stub_for_file_using_ast(

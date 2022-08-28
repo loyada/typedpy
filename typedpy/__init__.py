@@ -22,7 +22,6 @@ from typedpy_libs.structures import (
     keys_of,
 )
 
-import typedpy_libs.fields as fields
 
 from typedpy_libs.fields import (
     Number,

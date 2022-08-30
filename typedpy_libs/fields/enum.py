@@ -147,7 +147,7 @@ class Enum(SerializableField, metaclass=_EnumMeta):
             return value.value if self.serialization_by_value else value.name
         return value
 
-    def deserialize(self, value):  # pylint: disable=no-self-use
+    def deserialize(self, value):
         if self._is_enum:
             if self.serialization_by_value:
                 if value not in self._enum_by_value:

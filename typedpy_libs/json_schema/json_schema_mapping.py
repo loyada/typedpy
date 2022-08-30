@@ -582,7 +582,7 @@ class BooleanMapper(Mapper):
     def get_paramlist_from_schema(schema, definitions):
         return []
 
-    def to_schema(self, definitions, serialization_mapper):  # pylint:disable=no-self-use
+    def to_schema(self, definitions, serialization_mapper):
         params = {
             "type": "boolean",
         }
@@ -611,7 +611,7 @@ class StringMapper(Mapper):
 
 
 class DateStringMapper(Mapper):
-    def to_schema(self, definitions, serialization_mapper):  # pylint: disable=no-self-use
+    def to_schema(self, definitions, serialization_mapper):
         params = {
             "type": "string",
             "pattern": r"^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$",

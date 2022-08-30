@@ -363,7 +363,7 @@ class Field(UniqueMixin, metaclass=FieldMeta):
     def _try_default_value(self, default):
         try:
             self._name = self._name or "value"
-            self.__set__(Structure(), default)
+            self.__set__(Structure(), default)  # pylint: disable=unnecessary-dunder-call
         except Exception as e:
             raise e.__class__(
                 f"Invalid default value: {wrap_val(default)}; Reason: {str(e)}"
@@ -438,7 +438,7 @@ class Field(UniqueMixin, metaclass=FieldMeta):
         ):
             instance.__validate__()
 
-    def __serialize__(self, value):  # pylint: disable=R0201
+    def __serialize__(self, value):
         return value
 
     def __str__(self):
@@ -469,7 +469,7 @@ class Field(UniqueMixin, metaclass=FieldMeta):
     def get_type(self):
         return typing.Any
 
-    def to_json_schema(self) -> dict:  # pylint: disable=no-self-use
+    def to_json_schema(self) -> dict:
         ...
 
     @classmethod

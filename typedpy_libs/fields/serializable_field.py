@@ -14,8 +14,8 @@ class SerializableField(Field):
     These methods are not being used for pickling.
     """
 
-    def serialize(self, value):  # pylint: disable=no-self-use
+    def serialize(self, value):
         return value
 
-    def deserialize(self, value):  # pylint: disable=no-self-use
+    def deserialize(self, value):
         return value

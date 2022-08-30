@@ -222,10 +222,10 @@ class _DequeStruct(deque, ImmutableMixin, _IteratorProxyMixin):
                 self._instance, getattr(self._field_definition, "_name", None), copied
             )
 
-    def insert(self, x: int, i):
+    def insert(self, i: int, x):
         self._raise_if_immutable()
         copied = deque(self)
-        copied.insert(x, i)
+        copied.insert(i, x)
         setattr(self._instance, getattr(self._field_definition, "_name", None), copied)
 
     def remove(self, value):

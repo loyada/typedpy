@@ -26,7 +26,7 @@ from typedpy import (
     unique,
 )
 
-from typedpy_libs.structures.structures import MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
+from typedpy.structures import MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
 
 class Venue(enum.Enum):
     NYSE = enum.auto()

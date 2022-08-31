@@ -2,7 +2,7 @@ import json
 from typing import Union
 
 from typedpy.commons import wrap_val
-from typedpy_libs.structures import Structure
+from typedpy.structures import Structure
 
 MISSING_VALUES = "missing values"
 ADDITIONAL_VALUES = "additional values"

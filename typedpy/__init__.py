@@ -2,7 +2,7 @@
 A type-safe strictly defined structures, compatible with JSON draft 4
 but offers significantly more functionality.
 """
-from typedpy_libs.structures import (
+from typedpy.structures import (
     Structure,
     Field,
     TypedField,
@@ -22,58 +22,7 @@ from typedpy_libs.structures import (
     keys_of,
 )
 
-
-from typedpy_libs.fields import (
-    Number,
-    Integer,
-    PositiveInt,
-    PositiveFloat,
-    NonPositiveInt,
-    NonPositiveFloat,
-    NegativeInt,
-    NegativeFloat,
-    NonNegativeInt,
-    NonNegativeFloat,
-    Float,
-    Positive,
-    Negative,
-    NonPositive,
-    NonNegative,
-    DecimalNumber,
-    String,
-    SizedString,
-    Sized,
-    Enum,
-    EnumString,
-    AllOf,
-    AnyOf,
-    OneOf,
-    NotField,
-    Boolean,
-    Array,
-    Set,
-    Map,
-    Tuple,
-    StructureReference,
-    Anything,
-    SerializableField,
-    Function,
-    ImmutableMap,
-    ImmutableArray,
-    ImmutableSet,
-    ImmutableFloat,
-    ImmutableString,
-    ImmutableInteger,
-    ImmutableNumber,
-    ImmutableDeque,
-    Deque,
-    SubClass,
-    ExceptionField,
-    Generator,
-    FunctionCall,
-)
-
-from typedpy_libs.json_schema.json_schema_mapping import (
+from .json_schema import (
     structure_to_schema,
     schema_to_struct_code,
     schema_definitions_to_code,
@@ -81,7 +30,7 @@ from typedpy_libs.json_schema.json_schema_mapping import (
 )
 
 
-from typedpy_libs.serialization import (
+from .serialization import (
     Serializer,
     Deserializer,
     deserializer_by_discriminator,
@@ -97,7 +46,7 @@ from typedpy_libs.serialization import (
     HasTypes,
 )
 
-from typedpy_libs.extfields import (
+from .extfields import (
     DateString,
     DateField,
     DateTime,
@@ -108,7 +57,7 @@ from typedpy_libs.extfields import (
     EmailAddress,
 )
 
-from typedpy_libs.stubs import (
+from .stubs import (
     create_pyi,
     create_stub_for_file,
     create_stub_for_file_using_ast,
@@ -123,6 +72,7 @@ from .errors import (
 
 from .utility import get_list_type, type_is_generic
 
+from .fields import *
 
 from .commons import (
     nested,

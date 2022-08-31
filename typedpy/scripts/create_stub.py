@@ -2,13 +2,13 @@ import argparse
 import fnmatch
 from pathlib import Path
 
-from typedpy_libs.stubs.type_helpers import (
+from typedpy.stubs.type_helpers import (
     create_stub_for_file,
     create_stub_for_file_using_ast,
 )
 
 
-def main():
+def get_base_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("src_root_dir", help="source root directory")
     parser.add_argument(
@@ -27,6 +27,11 @@ def main():
         type=str,
         help="exclude patterns in the form path1:path2:path3",
     )
+    return parser
+
+
+def main():
+    parser = get_base_parser()
     parser.add_argument(
         "--ast",
         action=argparse.BooleanOptionalAction,

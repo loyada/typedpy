@@ -746,3 +746,13 @@ def test_auto_enum_conversion(auto_conversion_of_enums):
         foo.color = 1
     assert "color: Got 1; Expected one of: RED, GREEN, YELLOW" in str(excinfo.value)
 
+
+def test_issue_221():
+    class Bar(ImmutableStructure):
+        x: int
+
+    Structure.set_additional_properties_default(False)
+    class Foo(ImmutableStructure):
+        a: int
+        b: typing.Optional[int]
+        c: bool = False

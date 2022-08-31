@@ -122,6 +122,7 @@ def make_signature(
                 name not in required
                 and name not in bases_required
                 and name not in constants
+                and (additional_properties or param.kind != Parameter.VAR_KEYWORD)
             )
         ]
     )

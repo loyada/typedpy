@@ -220,14 +220,14 @@ def _generate_schema_for_fields_internal(
 
 
 type_name_to_field = {
-        "object": StructureReference,
-        "integer": Integer,
-        "number": Number,
-        "float": Float,
-        "array": Array,
-        "string": String,
-        "boolean": Boolean,
-    }
+    "object": StructureReference,
+    "integer": Integer,
+    "number": Number,
+    "float": Float,
+    "array": Array,
+    "string": String,
+    "boolean": Boolean,
+}
 multivals = {"allOf": AllOf, "anyOf": AnyOf, "oneOf": OneOf, "not": NotField}
 
 
@@ -247,7 +247,9 @@ def convert_to_field_code(schema, definitions, additional_fields=list):
         def_name = schema["$ref"][len("#/definitions/") :]
         return def_name
 
-    return _convert_field_to_schema_code_internal(additional_fields, definitions, schema)
+    return _convert_field_to_schema_code_internal(
+        additional_fields, definitions, schema
+    )
 
 
 def _convert_field_to_schema_code_internal(additional_fields, definitions, schema):
@@ -503,7 +505,8 @@ class MapMapper(Mapper):
         additional_properties = schema.get(SCHEMA_ADDITIONAL_PROPERTIES, None)
         pattern_properties = schema.get(SCHEMA_PATTERN_PROPERTIES, None)
         property_names = schema.get(SCHEMA_PATTERN_PROPERTIES, {})
-        if (pattern_properties and ( len(pattern_properties) > 1 or additional_properties or property_names)
+        if pattern_properties and (
+            len(pattern_properties) > 1 or additional_properties or property_names
         ):
             raise NotImplementedError("Conversion for this map is unsupported")
         if not any([additional_properties, property_names, pattern_properties]):

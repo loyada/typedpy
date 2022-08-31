@@ -35,14 +35,14 @@ def _process_dir(dirpath, exclude, filenames, src_root_abs_path, stub_dir_abs_pa
         print(f"processing {abs_file_path}")
         try:
             with subprocess.Popen(
-                    [
-                        "create-stub",
-                        "-s",
-                        stub_dir_abs_path,
-                        src_root_abs_path,
-                        abs_file_path,
-                    ],
-                    stdout=subprocess.PIPE,
+                [
+                    "create-stub",
+                    "-s",
+                    stub_dir_abs_path,
+                    src_root_abs_path,
+                    abs_file_path,
+                ],
+                stdout=subprocess.PIPE,
             ) as proc:
                 res = proc.stdout.read().decode("UTF-8")
                 if res:

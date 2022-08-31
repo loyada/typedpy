@@ -8,7 +8,7 @@ from .collections_impl import (
     ContainNestedFieldMixin,
     _CollectionMeta,
 )
-from .fields import  verify_type_and_uniqueness
+from .fields import verify_type_and_uniqueness
 
 
 class Deque(
@@ -71,7 +71,6 @@ class Deque(
         self.items = _get_items(items)
         super().__init__(*args, **kwargs)
         self._set_immutable(getattr(self, "_immutable", False))
-
 
     def __set__(self, instance, value):
         verify_type_and_uniqueness(deque, value, self._name, self.uniqueItems)

@@ -37,7 +37,9 @@ def _get_type_info_for_typing_generic(
     origin = getattr(the_type, "__origin__", None)
     args = getattr(the_type, "__args__", [])
     if origin in {list, set, tuple}:
-        return _get_type_info_from_single_type_collection(additional_classes, args, locals_attrs, origin)
+        return _get_type_info_from_single_type_collection(
+            additional_classes, args, locals_attrs, origin
+        )
     mapped_args = (
         [get_type_info(a, locals_attrs, additional_classes) for a in args]
         if args
@@ -93,10 +95,14 @@ def _get_type_info_for_typing_generic(
     return None
 
 
-def _get_type_info_from_single_type_collection(additional_classes, args, locals_attrs, origin):
+def _get_type_info_from_single_type_collection(
+    additional_classes, args, locals_attrs, origin
+):
     if len(args) != 1:
         return origin.__name__
-    return f"{origin.__name__}[{get_type_info(args[0], locals_attrs, additional_classes)}]"
+    return (
+        f"{origin.__name__}[{get_type_info(args[0], locals_attrs, additional_classes)}]"
+    )
 
 
 def _found_in_local_attrs(field, attrs):
@@ -116,10 +122,10 @@ def _get_resolved_type_info(field, the_type, locals_attrs, additional_classes):
     if the_type in [typing.Any, typing.Optional, typing.Union, typing.NoReturn]:
         return getattr(the_type, "_name")
     if (
-            getattr(the_type, "__module__", None)
-            and the_type.__module__ != "builtins"
-            and the_type not in locals_attrs
-            and not type_is_generic(the_type)
+        getattr(the_type, "__module__", None)
+        and the_type.__module__ != "builtins"
+        and the_type not in locals_attrs
+        and not type_is_generic(the_type)
     ):
         additional_classes.add(field)
 
@@ -177,12 +183,14 @@ def get_type_info(field, locals_attrs, additional_classes):
         )
         # deal with from __future__ import annotations. Using eval is not a proble given it is not in run time.
         if isinstance(the_type, str):
-            the_type = eval(the_type, locals_attrs)  #pylint: disable=eval-used
+            the_type = eval(the_type, locals_attrs)  # pylint: disable=eval-used
             field = the_type
             if isinstance(the_type, str):
                 return the_type
 
-        return _get_resolved_type_info(field, the_type, locals_attrs, additional_classes)
+        return _get_resolved_type_info(
+            field, the_type, locals_attrs, additional_classes
+        )
 
     except Exception as e:
         logging.exception(e)

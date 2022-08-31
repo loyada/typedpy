@@ -15,13 +15,13 @@ def extract_field_value(*, self, value, cls):
     for i, val in enumerate(value):
         temp_st = Structure()
         setattr(self.items, "_name", self._name + f"_{str(i)}")
-        self.items.__set__(temp_st, val)   # pylint: disable=unnecessary-dunder-call
+        self.items.__set__(temp_st, val)  # pylint: disable=unnecessary-dunder-call
         res.append(getattr(temp_st, getattr(self.items, "_name")))
     return res
 
 
 def init_array_like(
-        self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
+    self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
 ):
     self.uniqueItems = uniqueItems
     self.additionalItems = additionalItems
@@ -44,11 +44,8 @@ def _get_items(items):
 
 
 def has_multiple_items(items):
-    return (
-            not isinstance(items, (list, tuple))
-            and items
-            and python_ver_atleast_39
-    )
+    return not isinstance(items, (list, tuple)) and items and python_ver_atleast_39
+
 
 class Array(
     SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta
@@ -93,7 +90,7 @@ class Array(
     _ty = list
 
     # pylint: disable=duplicate-code
-    def __init__( # pylint: disable=duplicate-code
+    def __init__(  # pylint: disable=duplicate-code
         self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
     ):
         """

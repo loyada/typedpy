@@ -273,14 +273,8 @@ def _get_functions(attrs):
     return {
         k: v
         for k, v in attrs.items()
-        if (
-            inspect.isfunction(v)
-            and (v.__module__ == attrs["__name__"])
-        )
+        if (inspect.isfunction(v) and (v.__module__ == attrs["__name__"]))
     }
-
-
-
 
 
 def _get_bases(cls, local_attrs, additional_classes) -> list:
@@ -385,7 +379,9 @@ def create_pyi(
 ):
     out_src = []
     additional_imports = []
-    out_src.extend(_get_direct_imported_as_code(attrs=attrs, additional_imports=additional_imports))
+    out_src.extend(
+        _get_direct_imported_as_code(attrs=attrs, additional_imports=additional_imports)
+    )
     enum_classes = _get_enum_classes(attrs)
     if enum_classes and enum not in additional_imports:
         out_src += ["import enum", ""]
@@ -578,7 +574,6 @@ def create_pyi_ast(calling_source_file, pyi_path):
     out_src = AUTOGEN_NOTE + out_src
 
     _write_stub(out_src, pyi_path)
-
 
 
 def create_stub_for_file_using_ast(

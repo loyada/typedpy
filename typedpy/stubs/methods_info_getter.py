@@ -152,7 +152,9 @@ def _get_func_info(*, cls, name):
         else func_attr
     )
     is_property = isinstance(func, property)
-    return FunctionInfo(is_property=is_property, func=func.fget if is_property else func)
+    return FunctionInfo(
+        is_property=is_property, func=func.fget if is_property else func
+    )
 
 
 def _get_list_of_params_with_type(
@@ -219,7 +221,7 @@ def _extract_init_of_external_class(
         )
         for attr_name, attr_type in init_type_by_attr.items():
             if attr_name not in dict(attributes_with_type):
-                method_code.insert(0,  f"{attr_name}: {attr_type}")
+                method_code.insert(0, f"{attr_name}: {attr_type}")
     except:
         logging.info("no __init__ implementation found")
 

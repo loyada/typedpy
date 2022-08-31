@@ -100,7 +100,8 @@ class Enum(SerializableField, metaclass=_EnumMeta):
         if not values:
             raise ValueError("Enum requires values parameters")
         self._is_enum = (
-            issubclass(values, enum.Enum) if isinstance(values, (type,))
+            issubclass(values, enum.Enum)
+            if isinstance(values, (type,))
             else _all_values_from_single_enum(values)
         )
         self.serialization_by_value = serialization_by_value

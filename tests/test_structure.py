@@ -752,7 +752,11 @@ def test_issue_221():
         x: int
 
     Structure.set_additional_properties_default(False)
+
+    # defect was that this class definition raises an exception
     class Foo(ImmutableStructure):
         a: int
         b: typing.Optional[int]
         c: bool = False
+
+    Structure.set_additional_properties_default(True)

@@ -11,7 +11,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -20,7 +19,16 @@ classifiers = [
 
 setup(
     name="typedpy",
-    packages=find_packages(include=["typedpy", "typedpy.scripts"]),
+    packages=find_packages(include=[
+        "typedpy",
+        "typedpy.scripts",
+        "typedpy.structures",
+        "typedpy.fields",
+        "typedpy.extfields",
+        "typedpy.json_schema",
+        "typedpy.serialization",
+        "typedpy.stubs"
+    ]),
     entry_points={
         "console_scripts": [
             "create-stub=typedpy.scripts.create_stub:main",
@@ -36,9 +44,9 @@ setup(
     license="MIT",
     long_description=long_description,
     url="http://github.com/loyada/typedpy",
-    download_url="https://github.com/loyada/typedpy/archive/v2.18.1.tar.gz",
+    download_url="https://github.com/loyada/typedpy/archive/v2.18.3.tar.gz",
     keywords=["testing", "type-safe", "strict", "schema", "validation"],
-    version="2.18.1",
+    version="2.18.3",
 )
 
 # coverage run --source=typedpy/ setup.py test

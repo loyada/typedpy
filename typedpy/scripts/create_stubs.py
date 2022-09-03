@@ -1,13 +1,27 @@
+import argparse
 import fnmatch
 import logging
 import subprocess
 from os import walk
 from pathlib import Path
 
-from .common import get_base_parser
 
 def main():
-    parser = get_base_parser()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("src_root_dir", help="source root directory")
+    parser.add_argument(
+        "-s",
+        "--stubs-dir",
+        type=str,
+        default=".stubs",
+        help="source directory of stubs. Default is .stubs",
+    )
+    parser.add_argument(
+        "-x",
+        "--exclude",
+        type=str,
+        help="exclude patterns in the form path1:path2:path3",
+    )
     parser.add_argument("directory", help="directory to process")
     args = parser.parse_args()
     src_root_abs_path = str(Path(args.src_root_dir).resolve())

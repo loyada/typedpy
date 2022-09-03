@@ -4,7 +4,7 @@ import subprocess
 from os import walk
 from pathlib import Path
 
-from typedpy.scripts.create_stub import get_base_parser
+from .common import get_base_parser
 
 def main():
     parser = get_base_parser()

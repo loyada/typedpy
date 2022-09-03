@@ -340,6 +340,7 @@ def test_create_stub_for_file_regular_classes(test_case: PYI_TEST_CASE):
     _verify_file_are_same(actual_filename, str(test_case.reference_path))
 
 
+@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 @pytest.mark.parametrize(
     "test_case",
     test_cases_for_regular_classes,
@@ -367,7 +368,7 @@ def test_create_stub_using_script(test_case: PYI_TEST_CASE):
     )
     _verify_file_are_same(actual_filename, str(test_case.reference_path))
 
-
+@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_create_stubs_using_script():
     src_root = str(get_abs_path_from_here("../", __file__))
     os.chdir(src_root)

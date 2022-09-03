@@ -1,4 +1,6 @@
 import dataclasses
+import os
+import subprocess
 import sys
 from pathlib import Path
 import importlib.util
@@ -336,3 +338,58 @@ def test_create_stub_for_file_regular_classes(test_case: PYI_TEST_CASE):
         )
     )
     _verify_file_are_same(actual_filename, str(test_case.reference_path))
+
+
+@pytest.mark.parametrize(
+    "test_case",
+    test_cases_for_regular_classes,
+    ids=[str(s.source_path) for s in test_cases_for_regular_classes],
+)
+def test_create_stub_using_script(test_case: PYI_TEST_CASE):
+    src_root = str(get_abs_path_from_here("../", __file__))
+    os.chdir(src_root)
+    cmd_args = [
+        "python",
+        "typedpy/scripts/create_stub.py",
+        "-s",
+        "stubs_for_tests_scripts",
+        src_root,
+        str(get_abs_path_from_here(test_case.source_path, __file__))
+    ]
+    proc = subprocess.Popen(cmd_args, stdout=subprocess.PIPE)
+    exit_code = proc.wait()
+    assert exit_code == 0
+    actual_filename = str(
+        get_abs_path_from_here(
+            f"../stubs_for_tests_scripts/examples/controllers/{test_case.source_path.stem}.pyi",
+            __file__,
+        )
+    )
+    _verify_file_are_same(actual_filename, str(test_case.reference_path))
+
+
+def test_create_stubs_using_script():
+    src_root = str(get_abs_path_from_here("../", __file__))
+    os.chdir(src_root)
+    cmd_args = [
+        "python",
+        "typedpy/scripts/create_stubs.py",
+        "-s",
+        "stubs_for_tests_scripts_2",
+        src_root,
+        str(get_abs_path_from_here("../examples", __file__))
+    ]
+    proc = subprocess.Popen(cmd_args, stdout=subprocess.PIPE)
+    exit_code = proc.wait()
+
+    assert exit_code == 0
+    actual_filename = str(
+        get_abs_path_from_here(
+            f"../stubs_for_tests_scripts_2/examples/api_example.pyi",
+            __file__,
+        )
+    )
+    reference_path = get_abs_path_from_here(
+            "../.stubs/examples/api_example_1.pyi", __file__
+        )
+    _verify_file_are_same(actual_filename, str(reference_path))

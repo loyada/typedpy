@@ -6,9 +6,9 @@ from pathlib import Path
 
 from typedpy.scripts.create_stub import get_base_parser
 
-
 def main():
     parser = get_base_parser()
+    parser.add_argument("directory", help="directory to process")
     args = parser.parse_args()
     src_root_abs_path = str(Path(args.src_root_dir).resolve())
     input_dir = str(Path(args.directory).resolve())

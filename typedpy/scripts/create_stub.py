@@ -12,9 +12,6 @@ def get_base_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("src_root_dir", help="source root directory")
     parser.add_argument(
-        "src_script_path", help="absolute path of python script to process"
-    )
-    parser.add_argument(
         "-s",
         "--stubs-dir",
         type=str,
@@ -32,6 +29,9 @@ def get_base_parser() -> argparse.ArgumentParser:
 
 def main():
     parser = get_base_parser()
+    parser.add_argument(
+        "src_script_path", help="absolute path of python script to process"
+    )
     parser.add_argument(
         "--ast",
         action=argparse.BooleanOptionalAction,

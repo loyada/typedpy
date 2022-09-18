@@ -54,7 +54,7 @@ class State1(Enum):
 
 class FooFoo:
 
-
+    
     def __init__(self, *, mapper: dict[str, Any] = dict, camel_case_convert: bool = None): ...
 
 
@@ -126,7 +126,7 @@ class Employee(Structure):
     address: Address
     sex: Sex
     ssid: str
-
+    
     @property
     def prop1(self) -> list[str]: ...
 

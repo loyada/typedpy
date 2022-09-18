@@ -1,6 +1,7 @@
 import pytest
 
 from typedpy import (ImmutableStructure, Integer, Map, Omit, Serializer, Structure, mappers)
+from typedpy.serialization.mappers import aggregated_mapper_by_class
 
 
 def build_default_dict():
@@ -56,6 +57,7 @@ def test_omit_and_construct(Bar):
     }
 
     Bar._serialization_mapper.append({"I": "number", "X": "xxx"})
+    aggregated_mapper_by_class.clear()
     assert Serializer(bar).serialize() == {
         "D": {"x": 1},
         "number": 5,

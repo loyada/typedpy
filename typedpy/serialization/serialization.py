@@ -628,8 +628,15 @@ def serialize_multifield_wrapper(fields, name, val, mapper, camel_case_convert):
         raise ValueError(f"{name}: cannot serialize value: {val}")
 
 
-def serialize_val(field_definition, name, val, mapper=None, camel_case_convert=False):
+def serialize_val(
+    field_definition, name, val, mapper=None, camel_case_convert=False, cache=None
+):
+    if cache is None:
+        cache = {}
+    if field_definition in cache:
+        return cache[field_definition](val)
     if isinstance(field_definition, SerializableField):
+        cache[field_definition] = field_definition.serialize
         return field_definition.serialize(val)
     if isinstance(field_definition, MultiFieldWrapper):
         return serialize_multifield_wrapper(
@@ -783,7 +790,7 @@ def _convert_to_camel_case_if_required(key, camel_case_convert):
 
 def serialize_internal(structure, mapper=None, compact=False, camel_case_convert=False):
     cls = structure.__class__
-    field_by_name = _get_all_fields_by_name(cls)
+    field_by_name = cls.get_all_fields_by_name() if issubclass(cls, Structure) else {}
     if isinstance(structure, (Structure, ClassReference)):
         mapper = aggregate_serialization_mappers(
             structure.__class__, mapper, camel_case_convert

@@ -44,6 +44,8 @@ from .type_mapping import convert_basic_types
 
 T = typing.TypeVar("T")
 
+_immutable_types = (int, float, str, tuple, bool, enum.Enum)
+
 
 class ImmutableMixin:
     """
@@ -54,7 +56,26 @@ class ImmutableMixin:
     _instance = None
 
     def _get_defensive_copy_if_needed(self, value):
-        return deepcopy(value) if self._is_immutable() else value
+        return (
+            deepcopy(value)
+            if (
+                not isinstance(
+                    value,
+                    (
+                        int,
+                        float,
+                        str,
+                        tuple,
+                        bool,
+                        enum.Enum,
+                        ImmutableMixin,
+                        ImmutableStructure,
+                    ),
+                )
+                and self._is_immutable()
+            )
+            else value
+        )
 
     def _is_immutable(self):
         if getattr(self._field_definition, "_immutable", False):
@@ -1130,7 +1151,19 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         pass
 
     def __deepcopy__(self, memo):
-        if isinstance(self, ImmutableStructure) and getattr(self, IS_IMMUTABLE, False):
+        if isinstance(
+            self,
+            (
+                int,
+                float,
+                str,
+                tuple,
+                bool,
+                enum.Enum,
+                ImmutableMixin,
+                ImmutableStructure,
+            ),
+        ) and getattr(self, IS_IMMUTABLE, False):
             return self
         cls = self.__class__
         result = cls.__new__(cls)

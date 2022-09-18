@@ -8,7 +8,7 @@ from typedpy import (
     Serializer,
     AllFieldsRequired,
 )
-
+from typedpy.serialization.mappers import aggregated_mapper_by_class
 
 class Blah(Structure):
     i: int
@@ -51,6 +51,7 @@ def test_allfieldsrequired_of_structure():
     }
 
     Bar._serialization_mapper.append({"I": "number"})
+    aggregated_mapper_by_class.clear()
     assert Serializer(bar).serialize() == {
         "A": [1, 2, 3],
         "D": {"x": 1},

@@ -1,6 +1,7 @@
 """
 Module for custom deserialization mappers aggregation
 """
+import json
 from collections.abc import Mapping
 from enum import Enum, auto
 
@@ -14,9 +15,6 @@ class Deleted:
     Used to mark an attribute as "removed" in a versioned mapper.
     This is unsupported (nor needed) in a "regular" serialization mapper.
     """
-
-    pass
-
 
 # pylint:disable=protected-access, missing-function-docstring, invalid-name
 def _set_base_mapper_no_op(cls, for_serialization):
@@ -215,9 +213,26 @@ def aggregate_deserialization_mappers(
     return aggregate_mapper
 
 
+aggregated_mapper_by_class = {}
+
+
 def aggregate_serialization_mappers(
     cls, override_mapper=None, camel_case_convert=False
 ):
+    try:
+        override_mapper_param = json.dumps(override_mapper) if override_mapper else ""
+        cachable = True
+    except:     # pylint: disable=bare-except
+        override_mapper_param = override_mapper
+        cachable = False
+    if (
+        cachable
+        and (cls, override_mapper_param, camel_case_convert)
+        in aggregated_mapper_by_class
+    ):
+        return aggregated_mapper_by_class[
+            (cls, override_mapper_param, camel_case_convert)
+        ]
     base_mapper = _set_base_mapper_no_op(cls, for_serialization=True)
     aggregate_mapper = base_mapper
     override_mapper = (
@@ -238,4 +253,8 @@ def aggregate_serialization_mappers(
         aggregate_mapper = add_mapper_to_aggregation(
             mappers.TO_CAMELCASE, aggregate_mapper, True
         )
+    if cachable:
+        aggregated_mapper_by_class[
+            (cls, override_mapper_param, camel_case_convert)
+        ] = aggregate_mapper
     return aggregate_mapper

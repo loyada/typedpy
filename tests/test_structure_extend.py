@@ -11,6 +11,7 @@ from typedpy import (
     Serializer,
     Extend,
 )
+from typedpy.serialization.mappers import aggregated_mapper_by_class
 
 
 class Blah(Structure):
@@ -53,6 +54,8 @@ def test_extend_structure():
     }
 
     Bar._serialization_mapper.append({"I": "number"})
+    aggregated_mapper_by_class.clear()
+
     assert Serializer(bar).serialize() == {
         "A": [1, 2, 3],
         "D": {"x": 1},

@@ -1,6 +1,7 @@
 import pytest
 
 from typedpy import ImmutableStructure, Map, Partial, Structure, mappers, Serializer
+from typedpy.serialization.mappers import aggregated_mapper_by_class
 
 
 class Blah(Structure):
@@ -39,6 +40,8 @@ def test_partial_of_structure():
     assert Serializer(bar).serialize() == {"D": {"x": 1}, "I": 5, "X": "xyz"}
 
     Bar._serialization_mapper.append({"I": "number"})
+    aggregated_mapper_by_class.clear()
+
     assert Serializer(bar).serialize() == {"D": {"x": 1}, "number": 5, "X": "xyz"}
 
 

@@ -438,7 +438,6 @@ class Field(UniqueMixin, metaclass=FieldMeta):
                         str,
                         bool,
                         enum.Enum,
-                        Field,
                         ImmutableStructure,
                     ),
                 )
@@ -453,9 +452,11 @@ class Field(UniqueMixin, metaclass=FieldMeta):
                     f"{self._name} cannot be immutable, as its type does not support pickle."
                 )
         else:
-            self.__manage_uniqueness_for_field__(instance, value)
+            if TypedPyDefaults.uniqueness_features_enabled:
+                self.__manage_uniqueness_for_field__(instance, value)
             instance.__dict__[self._name] = value
-            instance.__manage__uniqueness_of_all_fields__()
+            if TypedPyDefaults.uniqueness_features_enabled:
+                instance.__manage__uniqueness_of_all_fields__()
         if getattr(instance, "_instantiated", False) and not getattr(
             instance, "_skip_validation", False
         ):
@@ -1003,8 +1004,9 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
         self.__validate__()
         self._instantiated = True
-        self.__manage_uniqueness__()
-        self.__manage__uniqueness_of_all_fields__()
+        if TypedPyDefaults.uniqueness_features_enabled:
+            self.__manage_uniqueness__()
+            self.__manage__uniqueness_of_all_fields__()
 
     def _set_defaults(self, defaults_fields, field_by_name):
         for field_name in defaults_fields:
@@ -1032,7 +1034,6 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                         str,
                         bool,
                         enum.Enum,
-                        Field,
                         ImmutableStructure,
                     ),
                 )
@@ -1074,6 +1075,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             getattr(self, "_instantiated", False)
             and not _is_dunder(key)
             and not _is_sunder(key)
+            and TypedPyDefaults.uniqueness_features_enabled
         ):
             self.__manage_uniqueness__()
 

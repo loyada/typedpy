@@ -12,8 +12,8 @@ from .fields import _map_to_field, verify_type_and_uniqueness
 def extract_field_value(*, self, value, cls):
     setattr(self.items, "_name", self._name)
     res = cls()
+    temp_st = Structure()
     for i, val in enumerate(value):
-        temp_st = Structure()
         setattr(self.items, "_name", self._name + f"_{str(i)}")
         self.items.__set__(temp_st, val)  # pylint: disable=unnecessary-dunder-call
         res.append(getattr(temp_st, getattr(self.items, "_name")))

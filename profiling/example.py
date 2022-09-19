@@ -203,7 +203,9 @@ if __name__ == "__main__":
     import pstats
 
     with cProfile.Profile() as pr:
-        serialize_all(firms)
+        firms = create_many_firms(50)
+
+    #    serialize_all(firms)
     stats = pstats.Stats(pr)
     stats.sort_stats(pstats.SortKey.TIME)
     stats.print_stats()

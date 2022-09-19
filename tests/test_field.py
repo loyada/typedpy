@@ -3,7 +3,7 @@ from pytest import raises
 from typedpy import Boolean, unique, String, Structure
 
 
-def test_unique_field_violation():
+def test_unique_field_violation(uniqueness_enabled):
     @unique
     class SSID(String):
         pass
@@ -32,7 +32,7 @@ def test_unique_field_violation():
     )
 
 
-def test_unique_field_violation_by_update():
+def test_unique_field_violation_by_update(uniqueness_enabled):
     @unique
     class SSID(String):
         pass
@@ -71,7 +71,7 @@ def test_unique_field_multiple_structures_are_allowed_to_have_same_values():
     Employee(ssid="1234", name="Jack")
 
 
-def test_unique_field_using_parameter_violation():
+def test_unique_field_using_parameter_violation(uniqueness_enabled):
     class SSID(String):
         pass
 

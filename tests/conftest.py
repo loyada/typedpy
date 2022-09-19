@@ -2,6 +2,7 @@
 import pytest
 
 from typedpy import Structure
+from typedpy.structures import TypedPyDefaults
 
 
 @pytest.fixture(name="additional_props_default_is_false")
@@ -23,3 +24,10 @@ def fixture_auto_conversion_of_enums():
     Structure.set_auto_enum_conversion(True)
     yield
     Structure.set_auto_enum_conversion(False)
+
+
+@pytest.fixture(name="uniqueness_enabled")
+def fixture_uniqueness_enabled():
+    TypedPyDefaults.uniqueness_features_enabled = True
+    yield
+    TypedPyDefaults.uniqueness_features_enabled = False

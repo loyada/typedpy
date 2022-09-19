@@ -386,7 +386,7 @@ def test_as_bool():
     assert Foo(i=5)
 
 
-def test_unique_violation():
+def test_unique_violation(uniqueness_enabled):
     @unique
     class Foo(Structure):
         s: str
@@ -402,7 +402,7 @@ def test_unique_violation():
     )
 
 
-def test_unique_violation_by_update():
+def test_unique_violation_by_update(uniqueness_enabled):
     @unique
     class Foo(Structure):
         s: str

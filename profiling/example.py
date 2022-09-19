@@ -198,12 +198,11 @@ def serialize_all(the_firms: list[Firm]):
 
 if __name__ == "__main__":
     firms = create_many_firms(50)
-    serialize_all(firms)
     import cProfile
     import pstats
 
     with cProfile.Profile() as pr:
-        firms = create_many_firms(50)
+        serialize_all(firms)
 
     #    serialize_all(firms)
     stats = pstats.Stats(pr)

@@ -845,10 +845,13 @@ Typedpy exposes several global defaults. These can be views as the Typedpy confi
 2. Structure.set_compact_serialization_default - override the default for "compact" serialization
    of Structures, where applicable. The default is False.
 3. Structure.set_auto_enum_conversion - allow automatic conversion of enum.Enum types to a Typedpy
-   Enum field. The default is False.
+   Enum field. The default is True.
 4. Structure.set_block_non_typedpy_field_assignment - block assignments of class attributes to a
    non-typedpy value in the class definition. This can be used to protect the programmer from silly
    mistakes, The default is False.
+5. TypedPyDefaults.uniqueness_features_enabled - Determines whether the uniqueness features for field/structure
+   are enabled or ignored. The reason for this setting is that for most use cases, these features where found
+   as unneeded and by disabling them, performance gains can be made. The default is False.
 
 Structure Documentation
 =======================

@@ -12,6 +12,9 @@ python_ver_atleast_39 = py_version >= (3, 9)
 python_ver_atleast_310 = py_version >= (3, 10)
 
 
+class Undefined:
+    pass
+
 def wrap_val(v):
     return f"'{v}'" if isinstance(v, str) else v
 
@@ -130,7 +133,7 @@ def flatten(iterable, ignore_none=False) -> list:
     return res
 
 
-def deep_get(dictionary, deep_key, default=None, do_flatten=False):
+def deep_get(dictionary, deep_key, default=None, do_flatten=False, *, enable_undefined=False):
     """
     Get a nested value from within a dictionary. Supports also nested lists, in
     which case the result is a a list of values
@@ -144,6 +147,9 @@ def deep_get(dictionary, deep_key, default=None, do_flatten=False):
                 the default value, in case the path does not exist
            do_flatten(bool): optional
                 flatten the outputs, in case the result is multiple outputs
+           enable_undefined(bool): optional
+                if set, then keys that are not in the dictionary return Undefined.
+                otherwise, returns None for undefined keys. Default is False.
 
     Returns:
         the nested attribute(s) or the default value. For example:
@@ -158,17 +164,19 @@ def deep_get(dictionary, deep_key, default=None, do_flatten=False):
 
     """
 
-    def _get_next_level(d: Optional[Union[Mapping, Iterable]], key, default):
+    def _get_next_level(d: Optional[Union[Mapping, Iterable]], key, default, *, enable_undefined):
         if isinstance(d, Mapping):
+            if enable_undefined and key not in d:
+                return Undefined
             return d.get(key, default)
         if isinstance(d, (list, tuple, Generator)):
-            res = [_get_next_level(r, key, default) for r in d if r is not None]
+            res = [_get_next_level(r, key, default, enable_undefined=enable_undefined) for r in d if r is not None]
             return res
         return default
 
     keys = deep_key.split(".")
     result = reduce(
-        lambda d, key: _get_next_level(d, key, default) if d else default,
+        lambda d, key: _get_next_level(d, key, default, enable_undefined=enable_undefined) if d else default,
         keys,
         dictionary,
     )

@@ -4,7 +4,7 @@ import json
 import uuid
 from typing import Dict
 
-from typedpy.commons import Constant, deep_get, raise_errs_if_needed, wrap_val
+from typedpy.commons import Constant, Undefined, deep_get, raise_errs_if_needed, wrap_val
 from typedpy.serialization.versioned_mapping import (
     VERSION_MAPPING,
     Versioned,
@@ -27,7 +27,7 @@ from typedpy.structures import (
     Field,
     ClassReference,
 )
-from typedpy.structures.structures import _get_all_fields_by_name
+from typedpy.structures.consts import ENABLE_UNDEFINED
 from typedpy.fields import (
     FunctionCall,
     Number,
@@ -411,6 +411,7 @@ def construct_fields_map(
     cls,
     camel_case_convert=False,
     ignore_none=False,
+    enable_undefined=False,
 ):
     result = {}
     errors = []
@@ -422,8 +423,8 @@ def construct_fields_map(
         process = False
         processed_input = None
         if key in mapper:
-            processed_input = get_processed_input(key, mapper, input_dict)
-            if processed_input is not None:
+            processed_input = get_processed_input(key, mapper, input_dict, enable_undefined=enable_undefined)
+            if processed_input is not None or getattr(cls, ENABLE_UNDEFINED, False):
                 process = True
         elif key in input_dict and key not in mapper:
             processed_input = input_dict[key]
@@ -433,18 +434,8 @@ def construct_fields_map(
             sub_mapper = mapper.get(
                 f"{mapped_key}._mapper", mapper.get(f"{key}._mapper")
             )
-            if Structure.failing_fast():
-                result[key] = deserialize_single_field(
-                    field,
-                    processed_input,
-                    key,
-                    mapper=sub_mapper,
-                    keep_undefined=keep_undefined,
-                    camel_case_convert=camel_case_convert,
-                    ignore_none=ignore_none,
-                )
-            else:
-                try:
+            if processed_input is not Undefined:
+                if Structure.failing_fast() and processed_input:
                     result[key] = deserialize_single_field(
                         field,
                         processed_input,
@@ -454,8 +445,19 @@ def construct_fields_map(
                         camel_case_convert=camel_case_convert,
                         ignore_none=ignore_none,
                     )
-                except (TypeError, ValueError) as ex:
-                    errors.append(ex)
+                else:
+                    try:
+                        result[key] = deserialize_single_field(
+                            field,
+                            processed_input,
+                            key,
+                            mapper=sub_mapper,
+                            keep_undefined=keep_undefined,
+                            camel_case_convert=camel_case_convert,
+                            ignore_none=ignore_none,
+                        )
+                    except (TypeError, ValueError) as ex:
+                        errors.append(ex)
 
     raise_errs_if_needed(cls, errors)
     return result
@@ -551,6 +553,7 @@ def deserialize_structure_internal(
             cls=cls,
             camel_case_convert=camel_case_convert,
             ignore_none=ignore_none,
+            enable_undefined=getattr(cls, ENABLE_UNDEFINED, False)
         )
     )
 
@@ -594,7 +597,7 @@ def deserialize_structure(
 SENTITNEL = uuid.uuid4()
 
 
-def get_processed_input(key, mapper, the_dict):
+def get_processed_input(key, mapper, the_dict, *, enable_undefined):
     def _get_arg_list(key_mapper):
         vals = [deep_get(the_dict, k, default=SENTITNEL) for k in key_mapper.args]
         return [v for v in vals if v != SENTITNEL]
@@ -604,7 +607,7 @@ def get_processed_input(key, mapper, the_dict):
         args = _get_arg_list(key_mapper) if key_mapper.args else [the_dict.get(key)]
         processed_input = key_mapper.func(*args) if args else None
     elif isinstance(key_mapper, (str,)):
-        val = deep_get(the_dict, key_mapper)
+        val = deep_get(the_dict, key_mapper, enable_undefined=enable_undefined)
         processed_input = val if val is not None else the_dict.get(key)
     elif isinstance(key_mapper, Constant):
         processed_input = key_mapper()
@@ -798,11 +801,14 @@ def serialize_internal(structure, mapper=None, compact=False, camel_case_convert
     mapper = {} if mapper is None else mapper
     if isinstance(structure, getattr(Generator, "_ty", None)):
         raise TypeError("Generator cannot be serialized")
+    nones = [(k, None) for k in getattr(structure, "_none_fields", [])]
+
     items = (
-        structure.items()
+        list(structure.items())
         if isinstance(structure, dict)
-        else [(k, v) for (k, v) in structure.__dict__.items() if k != "_instantiated"]
-    )
+        else [(k, v) for (k, v) in structure.__dict__.items() if k not in ["_instantiated", "_none_fields"]]
+
+    ) + nones
     props = structure.__class__.__dict__
     fields = list(field_by_name.keys())
     additional_props = props.get(
@@ -826,7 +832,7 @@ def serialize_internal(structure, mapper=None, compact=False, camel_case_convert
         result = {}
         items_map = dict(items)
         for key, val in items:
-            if val is None:
+            if val is None and not getattr(structure, ENABLE_UNDEFINED, False):
                 continue
             mapped_key = (
                 mapper[key]

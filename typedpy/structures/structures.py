@@ -18,7 +18,7 @@ from typing import get_type_hints, Iterable
 
 from typedpy.commons import (
     Constant,
-    raise_errs_if_needed,
+    Undefined, raise_errs_if_needed,
     wrap_val,
     _is_sunder,
     _is_dunder,
@@ -37,6 +37,7 @@ from .consts import (
     REQUIRED_FIELDS,
     SERIALIZATION_MAPPER,
     SPECIAL_ATTRIBUTES,
+    ENABLE_UNDEFINED,
 )
 from .defaults import TypedPyDefaults
 from .type_mapping import convert_basic_types
@@ -401,7 +402,11 @@ class Field(UniqueMixin, metaclass=FieldMeta):
 
         if instance is not None and self._name not in instance.__dict__:
             default_value = (
-                self._default() if callable(self._default) else self._default
+                self._default()
+                if callable(self._default)
+                else self._default
+                if not getattr(instance.__class__, ENABLE_UNDEFINED, False) or self._name in getattr(instance, "_none_fields", [])
+                else Undefined
             )
             return default_value
         res = (
@@ -975,6 +980,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             and key not in bound.arguments
         ]
 
+        setattr(self, "_none_fields", set())
         for field_name, const_val in getattr(self, "_constants", {}).items():
             if field_name in kwargs:
                 raise ValueError(
@@ -987,7 +993,8 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         if Structure.failing_fast():
             for name, val in bound.arguments.items():
                 try:
-                    setattr(self, name, val)
+                    if val is not Undefined:
+                        setattr(self, name, val)
                 except Exception as e:
                     if isinstance(e, JSONDecodeError):
                         raise e
@@ -1062,13 +1069,17 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             )
         if all(
             [
-                getattr(self, IGNORE_NONE_VALUES, False),
+                getattr(self, IGNORE_NONE_VALUES, False) or getattr(self, ENABLE_UNDEFINED, False),
                 value is None,
                 key not in getattr(self.__class__, REQUIRED_FIELDS, []),
             ]
         ):
+            if key in self.get_all_fields_by_name() and getattr(self, ENABLE_UNDEFINED, False):
+                getattr(self, "_none_fields").add(key)
             return
 
+        if key in self.get_all_fields_by_name() and getattr(self, ENABLE_UNDEFINED, False) and value is not None:
+            getattr(self, "_none_fields").discard(key)
         super().__setattr__(key, value)
 
         if (
@@ -1113,11 +1124,13 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         ):
             name = "Structure"
         props = []
-        internal_props = ["_instantiated"]
+        internal_props = ["_instantiated", "_none_fields"]
         for k, val in sorted(self.__dict__.items()):
             if k not in internal_props:
                 strv = f"'{val}'" if isinstance(val, str) else to_str(val)
                 props.append(f"{k} = {strv}")
+        for k in sorted((getattr(self, "_none_fields", []))):
+            props.append(f"{k} = None")
         props_list = ", ".join(props)
         return f"<Instance of {name}. Properties: {props_list}>"
 
@@ -1127,13 +1140,18 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     def __eq__(self, other):
         if self.__class__ != other.__class__:
             return False
-        internal_props = ["_instantiated"]
+        internal_props = ["_instantiated", "_none_fields"]
         for k, val in sorted(self.__dict__.items()):
             if k not in internal_props and val != other.__dict__.get(k):
                 return False
         for k, val in sorted(other.__dict__.items()):
             if k not in internal_props and val != self.__dict__.get(k):
                 return False
+        self_nones = self.__dict__.get("_none_fields")
+        other_nones = other.__dict__.get("_none_fields")
+        if (self_nones or other_nones) and self_nones!=other_nones:
+            return False
+
         return True
 
     def __ne__(self, other):
@@ -1183,11 +1201,11 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         return result
 
     def __dir__(self) -> Iterable[str]:
-        internal_props = ["_instantiated"]
+        internal_props = ["_instantiated", "_none_fields"]
         return [k for k in sorted(self.__dict__) if k not in internal_props]
 
     def __bool__(self):
-        internal_props = ["_instantiated"]
+        internal_props = ["_instantiated", "_none_fields"]
         return any(
             v is not None for k, v in self.__dict__.items() if k not in internal_props
         )
@@ -1267,7 +1285,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         field_value_by_name = {
             f: getattr(self, f)
             for f in fields_names
-            if getattr(self, f) is not None
+            if (getattr(self, f) is not None or f in getattr(self, "_none_fields"))
             and f not in getattr(self.__class__, "_constants", {})
         }
         kw_args = {**field_value_by_name, **kw}

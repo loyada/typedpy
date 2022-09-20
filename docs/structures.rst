@@ -834,6 +834,49 @@ It is also reflected in the generated stub files, so that the IDE knows this fie
 
 
 
+Differentiating Between Undefined values and None Values
+========================================================
+The default behavior of Typedpy is that there is no "undefined" value, as it exists in Javascript.
+Therefore, the following code is correct:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        a: int
+        b: int
+        c: int
+        _required = []
+        _ignore_none = True
+
+    assert Foo(a=5).b is None
+    assert Foo(a=5) == Foo(a=5, b=None, c=None)
+    assert Deserializer(Foo).deserialize({"a": 5}) == Deserializer(Foo).deserialize({"a": 5, "c": None})
+
+However, there are use cases in which it might be useful to differentiate between None value
+and "undefined". For example, in create an API to patch an object.
+To support that, Typedpy defines a special "Undefined" construct, and a class flag of "_enable_undefined_value".
+Contrast the example above with this one:
+
+
+.. code-block:: python
+
+    class Foo(Structure):
+        a: int
+        b: int
+        c: int
+        _required = []
+        _ignore_none = True
+        _enable_undefined = True
+
+    assert Foo(a=5).b is Undefined
+    assert Foo(a=5, b=None).b is None
+    assert Foo(a=5) != Foo(a=5, b=None, c=None)
+    assert Deserializer(Foo).deserialize({"a": 5}) != Deserializer(Foo).deserialize({"a": 5, "c": None})
+    assert Serializer(Foo(a=None)).serialize() == {"a": None}
+
+Note that "Undefined" should never be assigned explicitly as a value to field.
+
+
 
 Global Defaults
 ===============

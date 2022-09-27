@@ -12,8 +12,14 @@ python_ver_atleast_39 = py_version >= (3, 9)
 python_ver_atleast_310 = py_version >= (3, 10)
 
 
-class Undefined:
+
+class UndefinedMeta(type):
+    def __bool__(self):
+        return False
+
+class Undefined(metaclass=UndefinedMeta):
     pass
+
 
 def wrap_val(v):
     return f"'{v}'" if isinstance(v, str) else v

@@ -5,7 +5,7 @@ Structure, Field, StructureReference, ClassReference, TypedField
 """
 import enum
 import inspect
-from builtins import issubclass
+from builtins import enumerate, issubclass
 from copy import deepcopy
 from collections import OrderedDict, defaultdict
 from inspect import Signature, Parameter, signature, currentframe
@@ -1288,7 +1288,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             if (getattr(self, f) is not None or f in getattr(self, "_none_fields"))
             and f not in getattr(self.__class__, "_constants", {})
         }
-        kw_args = {**field_value_by_name, **kw}
+        kw_args = {**{k:v for k,v in field_value_by_name.items() if v is not Undefined}, **kw}
         return self.__class__(**kw_args)
 
     def cast_to(self, cls: type(T)) -> T:
@@ -1320,7 +1320,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 for f in fields_names
                 if getattr(that, f, None) is not None
             }
-            return cls(**field_value_by_name)
+            return cls(**{k:v for k,v in field_value_by_name.items() if v is not Undefined})
 
         raise TypeError(f"cls must be subclass of {self.__class__.__name__}")
 
@@ -1359,6 +1359,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             the keyword arguments.
             :param ignore_props:
         """
+
         ignore_props = ignore_props if ignore_props else []
         args_from_structure = {
             k: getattr(self, k, None)
@@ -1366,7 +1367,8 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             if k not in ignore_props
             and k not in getattr(self.__class__, "_constants", {})
         }
-        kwargs = {**args_from_structure, **kw}
+
+        kwargs = {**{k:v for k,v in args_from_structure.items() if v is not Undefined}, **kw}
         return target_class(**kwargs)
 
     @classmethod

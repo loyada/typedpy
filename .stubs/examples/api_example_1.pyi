@@ -401,6 +401,8 @@ class Bar(Structure):
         any: Any,
         x: int,
         state: State,
+        stats: list[int],
+        states: list[State],
         d: Optional[dict[str, int]] = None,
         opt: Optional[float] = None
     ): ...
@@ -416,6 +418,8 @@ class Bar(Structure):
         any: Any = None,
         x: int = None,
         state: State = None,
+        stats: list[int] = None,
+        states: list[State] = None,
         d: Optional[dict[str, int]] = None,
         opt: Optional[float] = None
     ): ...
@@ -435,6 +439,8 @@ class Bar(Structure):
         any: Any = None,
         x: int = None,
         state: State = None,
+        stats: list[int] = None,
+        states: list[State] = None,
         d: Optional[dict[str, int]] = None,
         opt: Optional[float] = None
     ): ...
@@ -449,6 +455,8 @@ class Bar(Structure):
     any: Any
     x: int
     state: State
+    stats: list[int]
+    states: list[State]
     d: Optional[dict[str, int]] = None
     opt: Optional[float] = None
 

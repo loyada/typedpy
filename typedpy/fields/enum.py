@@ -1,4 +1,5 @@
 import enum
+from typing import Any
 
 from typedpy.commons import first_in, wrap_val
 from typedpy.structures import FieldMeta
@@ -170,6 +171,11 @@ class Enum(SerializableField, metaclass=_EnumMeta):
                 value = self._enum_class[value]
         super().__set__(instance, value)
 
+    @property
+    def get_type(self):
+        if self._enum_class:
+            return self._enum_class
+        return Any
 
 class EnumString(Enum, String):
     """

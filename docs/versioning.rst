@@ -178,6 +178,7 @@ The example below clarifies how to use :class:`Versioned` together with deserial
 
 
 Note that the version field is populated automatically when instantiating Foo, to be the latest.
+From TypedPy 2.19.4, "version" is a mandatory field in the payload to be deserialized.
 
 What About Serialization?
 -------------------------

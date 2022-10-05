@@ -495,13 +495,12 @@ def deserialize_structure_internal(
         an instance of the provided :class:`Structure` deserialized
     """
 
-    if (
-        issubclass(cls, Versioned)
-        and isinstance(the_dict, dict)
-        and getattr(cls, VERSION_MAPPING)
-    ):
-        versions_mapping = getattr(cls, VERSION_MAPPING)
-        input_dict = convert_dict(the_dict, versions_mapping)
+    if issubclass(cls, Versioned):
+        if not isinstance(the_dict, dict) or "version" not in the_dict:
+            raise TypeError("Expected a dictionary with a 'version' value")
+        if getattr(cls, VERSION_MAPPING):
+            versions_mapping = getattr(cls, VERSION_MAPPING)
+            input_dict = convert_dict(the_dict, versions_mapping)
     else:
         input_dict = the_dict
     mapper = aggregate_deserialization_mappers(cls, mapper, camel_case_convert)

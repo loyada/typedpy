@@ -1,3 +1,4 @@
+import datetime
 from collections import deque
 
 import typing
@@ -18,6 +19,10 @@ def convert_basic_types(v):
         Anything,
         Deque,
     )
+    from typedpy.extfields import (
+        DateField,
+        DateTime
+    )
 
     type_mapping = {
         deque: Deque,
@@ -30,6 +35,8 @@ def convert_basic_types(v):
         tuple: Tuple,
         bool: Boolean,
         frozenset: ImmutableSet,
+        datetime.date: DateField,
+        datetime.datetime: DateTime,
         typing.Union: AnyOf,
         typing.Any: Anything,
     }

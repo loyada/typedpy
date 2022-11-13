@@ -1,9 +1,11 @@
-from typedpy import DateField, IPV4, Integer, Structure
+from datetime import date
+
+from typedpy import IPV4, Integer, Structure
 
 
 class Example13(Structure):
     ip: IPV4
-    as_of: DateField
+    as_of: date
     i: Integer(minimum=5)
 
     _required = []

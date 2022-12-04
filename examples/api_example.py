@@ -112,6 +112,8 @@ class Bar(Foo.omit("a", "b")):
     x: int
     opt: Optional[Float]
     state: Enum[State]
+    stats: list[int]
+    states: list[Enum[State]]
 
     _additionalProperties = False
 

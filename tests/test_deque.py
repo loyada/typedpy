@@ -5,7 +5,7 @@ import pytest
 from pytest import raises
 
 from typedpy import Structure, Deque, Number, String, Integer, Field, ImmutableStructure, ImmutableDeque
-from typedpy_libs.fields import _DequeStruct
+from typedpy.fields import _DequeStruct
 
 class Foo(Structure):
     s = String
@@ -193,7 +193,7 @@ def test_extend_err():
 
 
 def test_extend_valid():
-    from typedpy_libs.fields import _ListStruct
+    from typedpy.fields import _ListStruct
 
     e = Example(b=deque([1, 2, 3]))
     e.b.extend([5, 9])

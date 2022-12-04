@@ -26,7 +26,7 @@ from typedpy import (
     unique,
 )
 
-from typedpy_libs.structures.structures import MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
+from typedpy.structures import MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
 
 class Venue(enum.Enum):
     NYSE = enum.auto()
@@ -386,7 +386,7 @@ def test_as_bool():
     assert Foo(i=5)
 
 
-def test_unique_violation():
+def test_unique_violation(uniqueness_enabled):
     @unique
     class Foo(Structure):
         s: str
@@ -402,7 +402,7 @@ def test_unique_violation():
     )
 
 
-def test_unique_violation_by_update():
+def test_unique_violation_by_update(uniqueness_enabled):
     @unique
     class Foo(Structure):
         s: str
@@ -746,3 +746,17 @@ def test_auto_enum_conversion(auto_conversion_of_enums):
         foo.color = 1
     assert "color: Got 1; Expected one of: RED, GREEN, YELLOW" in str(excinfo.value)
 
+
+def test_issue_221():
+    class Bar(ImmutableStructure):
+        x: int
+
+    Structure.set_additional_properties_default(False)
+
+    # defect was that this class definition raises an exception
+    class Foo(ImmutableStructure):
+        a: int
+        b: typing.Optional[int]
+        c: bool = False
+
+    Structure.set_additional_properties_default(True)

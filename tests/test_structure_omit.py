@@ -1,6 +1,7 @@
 import pytest
 
 from typedpy import (ImmutableStructure, Integer, Map, Omit, Serializer, Structure, mappers)
+from typedpy.serialization.mappers import aggregated_mapper_by_class
 
 
 def build_default_dict():
@@ -56,6 +57,7 @@ def test_omit_and_construct(Bar):
     }
 
     Bar._serialization_mapper.append({"I": "number", "X": "xxx"})
+    aggregated_mapper_by_class.clear()
     assert Serializer(bar).serialize() == {
         "D": {"x": 1},
         "number": 5,
@@ -110,9 +112,9 @@ def test_omit_additional_props_default_false(additional_props_default_is_false):
     class BarImmutable(Foo.omit("a", "b"), ImmutableStructure):
         x: str
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(TypeError) as excinfo:
         BarImmutable(i=5, x="xyz", s={1, 2, 3}, qweasd=1)
-    assert "BarImmutable: trying to set a non-field 'qweasd' is not allowed" in str(
+    assert "BarImmutable: got an unexpected keyword argument 'qweasd'" in str(
         excinfo.value
     )
 

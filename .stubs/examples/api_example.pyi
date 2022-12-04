@@ -54,7 +54,7 @@ class State1(Enum):
 
 class FooFoo:
 
-
+    
     def __init__(self, *, mapper: dict[str, Any] = dict, camel_case_convert: bool = None): ...
 
 
@@ -126,7 +126,7 @@ class Employee(Structure):
     address: Address
     sex: Sex
     ssid: str
-
+    
     @property
     def prop1(self) -> list[str]: ...
 
@@ -421,6 +421,8 @@ class Bar(Structure):
         any: Any,
         x: int,
         state: State,
+        stats: list[int],
+        states: list[State],
         d: Optional[dict[str, int]] = None,
         opt: Optional[float] = None
     ): ...
@@ -436,6 +438,8 @@ class Bar(Structure):
         any: Any = None,
         x: int = None,
         state: State = None,
+        stats: list[int] = None,
+        states: list[State] = None,
         d: Optional[dict[str, int]] = None,
         opt: Optional[float] = None
     ): ...
@@ -455,6 +459,8 @@ class Bar(Structure):
         any: Any = None,
         x: int = None,
         state: State = None,
+        stats: list[int] = None,
+        states: list[State] = None,
         d: Optional[dict[str, int]] = None,
         opt: Optional[float] = None
     ): ...
@@ -469,6 +475,8 @@ class Bar(Structure):
     any: Any
     x: int
     state: State
+    stats: list[int]
+    states: list[State]
     d: Optional[dict[str, int]] = None
     opt: Optional[float] = None
 

@@ -2,7 +2,7 @@ import sys
 from typing import Optional
 
 import pytest
-from pytest import mark
+from pytest import mark, raises
 from typedpy import (
     Array,
     Constant,
@@ -70,6 +70,14 @@ in_version_2 = {
     "j": 150,
     "old_m": {"abc": "xyzxyzxyzyxyzxyzxyzxz", "b": "bb"},
 }
+
+
+def test_deserialize_non_versioned_raises_clear_err():
+    payload_with_no_version = {k:v for (k,v) in in_version_2.items() if k!="version"}
+    with raises(TypeError) as excinfo:
+        Deserializer(Foo).deserialize(payload_with_no_version)
+    assert "Expected a dictionary with a 'version' value" in str(excinfo.value)
+
 
 
 def test_version_conversion_deserializer():
@@ -177,7 +185,7 @@ def test_mapping_list_of_objects():
 
         _versions_mapping = [{"i._mapper": {"s": "sss", "sss": Deleted}}]
 
-    serialized = {"i": [{"sss": "xyz", "a": [1, 2, 3]}]}
+    serialized = {"version": 1, "i": [{"sss": "xyz", "a": [1, 2, 3]}]}
 
     assert Deserializer(Example).deserialize(serialized) == Example(
         i=[Bar(s="xyz", a=[1, 2, 3])]
@@ -198,9 +206,9 @@ def test_optional_field_mapping():
         ]
 
     assert Deserializer(Example).deserialize(
-        {"i": {"abc": "xyz", "def": 1}}, keep_undefined=False
+        {"version": 1, "i": {"abc": "xyz", "def": 1}}, keep_undefined=False
     ) == Example(foo="xyz", bar=1)
-    assert Deserializer(Example).deserialize({}, keep_undefined=False) == Example()
+    assert Deserializer(Example).deserialize({"version": 1}, keep_undefined=False) == Example()
 
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
@@ -214,7 +222,7 @@ def test_deleted_and_missing_field():
         ]
 
     assert Deserializer(Example).deserialize(
-        {"foo": "xyz", "bar": 1}, keep_undefined=False
+        {"version": 1, "foo": "xyz", "bar": 1}, keep_undefined=False
     ) == Example(foo="xyz", bar=1)
 
 

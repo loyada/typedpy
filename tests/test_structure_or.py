@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from pytest import raises
 
@@ -28,7 +28,7 @@ def test_or_operator_structmeta_and_python_type():
     with raises(TypeError):
 
         class Bad(Structure):
-            a: Integer | datetime
+            a: Integer | timedelta
 
 
 def test_or_operator_chain_3():

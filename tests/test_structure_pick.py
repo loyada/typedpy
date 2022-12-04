@@ -9,6 +9,7 @@ from typedpy import (
     mappers,
     Pick,
 )
+from typedpy.serialization.mappers import aggregated_mapper_by_class
 
 
 def build_default_dict():
@@ -60,6 +61,8 @@ def test_pick_and_construct(Bar):
     assert Serializer(bar).serialize() == {"D": {"x": 1}, "B": 5, "A": "a", "X": 10}
 
     Bar._serialization_mapper.append({"A": "ABC", "X": "xxx"})
+    aggregated_mapper_by_class.clear()
+
     assert Serializer(bar).serialize() == {"D": {"x": 1}, "ABC": "a", "B": 5, "xxx": 10}
 
 

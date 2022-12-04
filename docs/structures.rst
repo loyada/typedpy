@@ -85,7 +85,8 @@ After version 2.0, you can also use dataclass-style definition. Look at the foll
 #. Version 1.35 added Generic classes of the "typing" library, e.g. typing.List
 #. Version 2.0 allows to use list, typing.List. They are converted automatically to a Typedpy :class:`Array`, thus enjoying other features of Typepy automatically.
 #. After version 2.0 Typepy also supports implicit conversion of any class to a Typedpy field, thus you can use Field[list]. The disadvantage of this style is that Typedpy knows nothing about the field except its type, so serialization is done only on a best effort basis, pickling and JSON schema mapping is unsupported for any Structure with implicit mapping. Typedpy offers API to explicitly create Typedpy Field types that correspond to non-Typedpy classes, and if you don't mind the extra code, it is more flexible.
-#. Wherever you can, prefer to use the Typedpy classes. They provide the richest API support and are the most rigorously tested.
+#. The Typedpy class are the most flexible ones and provide the richest API support.
+
 
 
 
@@ -834,6 +835,51 @@ It is also reflected in the generated stub files, so that the IDE knows this fie
 
 
 
+Differentiating Between Undefined values and None Values
+========================================================
+The default behavior of Typedpy is that there is no "undefined" value, as it exists in Javascript.
+This is the standard behavior of the Python ecosystem.
+Therefore, the following code is correct:
+
+.. code-block:: python
+
+    class Foo(Structure):
+        a: int
+        b: int
+        c: int
+        _required = []
+        _ignore_none = True
+
+    assert Foo(a=5).b is None
+    assert Foo(a=5) == Foo(a=5, b=None, c=None)
+    assert Deserializer(Foo).deserialize({"a": 5}) == Deserializer(Foo).deserialize({"a": 5, "c": None})
+
+However, there are use cases in which it might be useful to differentiate between "None" value
+and "undefined". For example, when creating an API to patch an object.
+
+To support that, Typedpy defines a special "Undefined" construct, and a class flag of "_enable_undefined".
+Contrast the example above with this one:
+
+
+.. code-block:: python
+
+    class Foo(Structure):
+        a: int
+        b: int
+        c: int
+        _required = []
+        _ignore_none = True
+        _enable_undefined = True
+
+    assert Foo(a=5).b is Undefined
+    assert Foo(a=5, b=None).b is None
+    assert Foo(a=5) != Foo(a=5, b=None, c=None)
+    assert Deserializer(Foo).deserialize({"a": 5}) != Deserializer(Foo).deserialize({"a": 5, "c": None})
+    assert Serializer(Foo(a=None)).serialize() == {"a": None}
+
+Note that "Undefined" should never be assigned explicitly as a value to field.
+
+
 
 Global Defaults
 ===============
@@ -845,11 +891,13 @@ Typedpy exposes several global defaults. These can be views as the Typedpy confi
 2. Structure.set_compact_serialization_default - override the default for "compact" serialization
    of Structures, where applicable. The default is False.
 3. Structure.set_auto_enum_conversion - allow automatic conversion of enum.Enum types to a Typedpy
-   Enum field. The default is False.
+   Enum field. The default is True.
 4. Structure.set_block_non_typedpy_field_assignment - block assignments of class attributes to a
    non-typedpy value in the class definition. This can be used to protect the programmer from silly
    mistakes, The default is False.
-
+5. TypedPyDefaults.uniqueness_features_enabled - Determines whether the uniqueness features for field/structure
+   are enabled or ignored. The reason for this setting is that for most use cases, these features where found
+   as unneeded and by disabling them, performance gains can be made. The default is False.
 
 Structure Documentation
 =======================

@@ -2,18 +2,16 @@ import argparse
 import fnmatch
 from pathlib import Path
 
-from typedpy_libs.stubs.type_helpers import (
+from typedpy.stubs.type_helpers import (
     create_stub_for_file,
     create_stub_for_file_using_ast,
 )
 
 
+# pylint: disable=R0801
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("src_root_dir", help="source root directory")
-    parser.add_argument(
-        "src_script_path", help="absolute path of python script to process"
-    )
     parser.add_argument(
         "-s",
         "--stubs-dir",
@@ -26,6 +24,9 @@ def main():
         "--exclude",
         type=str,
         help="exclude patterns in the form path1:path2:path3",
+    )
+    parser.add_argument(
+        "src_script_path", help="absolute path of python script to process"
     )
     parser.add_argument(
         "--ast",

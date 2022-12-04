@@ -1,9 +1,11 @@
+from datetime import date, datetime
+
 from pytest import raises
 
 from typedpy import Boolean, unique, String, Structure
 
 
-def test_unique_field_violation():
+def test_unique_field_violation(uniqueness_enabled):
     @unique
     class SSID(String):
         pass
@@ -32,7 +34,7 @@ def test_unique_field_violation():
     )
 
 
-def test_unique_field_violation_by_update():
+def test_unique_field_violation_by_update(uniqueness_enabled):
     @unique
     class SSID(String):
         pass
@@ -71,7 +73,7 @@ def test_unique_field_multiple_structures_are_allowed_to_have_same_values():
     Employee(ssid="1234", name="Jack")
 
 
-def test_unique_field_using_parameter_violation():
+def test_unique_field_using_parameter_violation(uniqueness_enabled):
     class SSID(String):
         pass
 
@@ -98,3 +100,21 @@ def test_boolean_string_assignment():
     assert foo.a is False
     foo.a = "True"
     assert foo.a is True
+
+
+def test_datetime():
+    class Foo(Structure):
+        d: date
+        t: datetime
+
+    now = datetime.now()
+    foo = Foo(
+        d=now.date(),
+        t=now
+    )
+    assert foo.d == now.date()
+    assert foo.t ==now
+    foo.d = str(foo.d)
+    assert foo.d == now.date()
+    with raises(TypeError) as excinfo:
+        foo.t = 123

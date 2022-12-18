@@ -1,7 +1,7 @@
 import enum
 import time
 from functools import wraps
-from typing import Optional
+from typing import Optional, Type
 
 from typedpy import (
     ImmutableStructure,
@@ -196,15 +196,159 @@ def serialize_all(the_firms: list[Firm]):
     return [Serializer(firm).serialize() for firm in the_firms]
 
 
+
+def get_location_serializer():
+    def wrapped(v: Location):
+        if v is None:
+            return None
+        return {
+            "name": v.name,
+            "id": v.id
+        }
+
+    return wrapped
+
+
+def get_policy_serializer():
+    def wrapped(v: Policy):
+        if v is None:
+            return None
+        return {
+            "softLimit": v.soft_limit,
+            "hardLimit": v.hard_limit,
+            "timeDays": v.time_days,
+            "mccs": v.mccs
+        }
+    return wrapped
+
+def get_phone_serializer():
+    def wrapped(v: Phone):
+        if v is None:
+            return None
+        return {
+            "number": v.number,
+            "validated": v.validated
+        }
+
+    return wrapped
+
+def get_employee_serializer():
+    location_serializer = get_location_serializer()
+    phone_serializer = get_phone_serializer()
+    policy_serializer = get_policy_serializer()
+    spend_serializer = get_spend_serializer()
+    def wrapped(v: Employee):
+        if v is None:
+            return None
+        return {
+            "lastName": v.last_name,
+            "firstName": v.first_name,
+            "role": v.role.name,
+            "location": location_serializer(v.location),
+            "phone": phone_serializer(v.phone),
+            "policies": [policy_serializer(p) for p in v.policies],
+            "isActive": v.is_active,
+            "spend": spend_serializer(v.spend),
+            "streetAddr": v.street_addr,
+            "city": v.city,
+            "zip": v.zip
+        }
+
+    return wrapped
+
+
+def get_card_serializer():
+    def wrapped(v: Card):
+        if v is None:
+            return None
+        return {
+            "companyId": v.company_id,
+            "cardId": v.card_id
+        }
+
+    return wrapped
+
+
+def get_vehicle_serializer():
+    location_serializer = get_location_serializer()
+    policy_serializer = get_policy_serializer()
+    def wrapped(v: Vehicle):
+        if v is None:
+            return None
+        return {
+            "name": v.name,
+            "licensePlate": v.license_plate,
+            "location": location_serializer(v.location),
+            "isActive": v.is_active,
+            "policies": [policy_serializer(p) for p in v.policies]
+        }
+
+    return wrapped
+
+def get_assignment_serializer():
+    card_serializer = get_card_serializer()
+    employee_serializer = get_employee_serializer()
+    vehicle_serializer = get_vehicle_serializer()
+    def wrapped(v: Assignment):
+        if v is None:
+            return None
+        return {
+            "card": card_serializer(v.card),
+            "employee": employee_serializer(v.employee),
+            "vehicle": vehicle_serializer(v.vehicle)
+        }
+
+    return wrapped
+
+def get_spend_serializer():
+    def wrapped(v: Spend):
+        if v is None:
+            return None
+        return {
+            "day": v.day,
+            "week": v.week,
+            "month": v.month
+        }
+
+    return wrapped
+
+
+
+def get_firm_serializer():
+    def wrapped(v: Firm):
+        employee_serializer = get_employee_serializer()
+        card_serializer = get_card_serializer()
+        assignment_serializer = get_assignment_serializer()
+        spend_serializer = get_spend_serializer()
+
+        return {
+            "name": v.name,
+            "employees": [employee_serializer(e) for e in v.employees],
+            "cards": [card_serializer(c) for c in v.cards],
+            "assignments": [assignment_serializer(a) for a in v.assignments],
+            "spend": spend_serializer(v.spend),
+            "credit": v.credit
+        }
+    return wrapped
+
+# def get_struct_serializer(cls: Type[Structure]):
+    
+
+@timeit
+def serialize_all_optimized(firms: list[Firm]):
+    firm_serializer = get_firm_serializer()
+    return [firm_serializer(f) for f in firms]
+
+
 if __name__ == "__main__":
     firms = create_many_firms(50)
     import cProfile
     import pstats
 
     with cProfile.Profile() as pr:
-        serialize_all(firms)
+        serialize_all_optimized(firms)
 
-    #    serialize_all(firms)
+       # serialize_all(firms)
     stats = pstats.Stats(pr)
     stats.sort_stats(pstats.SortKey.TIME)
     stats.print_stats()

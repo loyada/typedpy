@@ -421,11 +421,12 @@ class Field(UniqueMixin, metaclass=FieldMeta):
         )
         needs_defensive_copy = (
             not isinstance(
-                res, (ImmutableMixin, int, float, str, bool, enum.Enum, Field)
+                res, (ImmutableMixin, int, float, str, bool, enum.Enum, Field, ImmutableStructure)
             )
             or res is None
         )
-        return deepcopy(res) if (is_immutable and needs_defensive_copy) else res
+        return res
+   #     return deepcopy(res) if (is_immutable and needs_defensive_copy) else res
 
     def __set__(self, instance, value):
         if getattr(self, IS_IMMUTABLE, False) and self._name in instance.__dict__:

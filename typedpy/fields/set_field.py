@@ -72,6 +72,10 @@ class Set(
             value = cls(res)
         super().__set__(instance, value)
 
+    def serialize(self, value):
+        if self.items is not None:
+            return [self.items.serialize(x) for x in value]
+        return list(value)
 
 class ImmutableSet(Set, ImmutableField):
     """

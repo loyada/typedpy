@@ -21,7 +21,7 @@ def extract_field_value(*, self, value, cls):
 
 
 def init_array_like(
-    self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
+        self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
 ):
     self.uniqueItems = uniqueItems
     self.additionalItems = additionalItems
@@ -91,7 +91,7 @@ class Array(
 
     # pylint: disable=duplicate-code
     def __init__(  # pylint: disable=duplicate-code
-        self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
+            self, *args, items=None, uniqueItems=None, additionalItems=None, **kwargs
     ):
         """
         Constructor
@@ -127,7 +127,7 @@ class Array(
 
                 if not getattr(instance, "_skip_validation", False):
                     if len(self.items) > len(value) or (
-                        additional_properties_forbidden and len(self.items) > len(value)
+                            additional_properties_forbidden and len(self.items) > len(value)
                     ):
                         raise ValueError(
                             f"{self._name}: Got {value}; Expected an array of length {len(self.items)}"
@@ -141,10 +141,18 @@ class Array(
                     setattr(item, "_name", self._name + f"_{str(ind)}")
                     item.__set__(temp_st, value[ind])
                     res.append(getattr(temp_st, getattr(item, "_name")))
-                res += value[len(self.items) :]
+                res += value[len(self.items):]
                 value = res
 
         super().__set__(instance, _ListStruct(self, instance, value, self._name))
+
+    def serialize(self, value):
+        if self.items is not None:
+            if isinstance(self.items, Field):
+                return [self.items.serialize(x) for x in value]
+            elif isinstance(self.items, list):
+                return [self.items[i].serialize(x) for (i,x) in enumerate(value) ]
+        return value
 
 
 class ImmutableArray(ImmutableField, Array):

@@ -5,6 +5,7 @@ Structure, Field, StructureReference, ClassReference, TypedField
 """
 import enum
 import inspect
+import json
 from builtins import enumerate, issubclass
 from copy import deepcopy
 from collections import OrderedDict, defaultdict
@@ -414,6 +415,8 @@ class Field(UniqueMixin, metaclass=FieldMeta):
             if instance is not None
             else get_field_with_inheritance(self._name)
         )
+        if instance is not None and getattr(instance, "_disable_immutable_protection", False):
+            return res
         is_immutable = (
             getattr(instance, IS_IMMUTABLE, False)
             if instance is not None
@@ -425,8 +428,7 @@ class Field(UniqueMixin, metaclass=FieldMeta):
             )
             or res is None
         )
-        return res
-   #     return deepcopy(res) if (is_immutable and needs_defensive_copy) else res
+        return deepcopy(res) if (is_immutable and needs_defensive_copy) else res
 
     def __set__(self, instance, value):
         if getattr(self, IS_IMMUTABLE, False) and self._name in instance.__dict__:
@@ -494,6 +496,11 @@ class Field(UniqueMixin, metaclass=FieldMeta):
 
     def _set_immutable(self, immutable: bool):
         self._immutable = immutable
+
+    def serialize(self, value):
+        if isinstance(value, (int, float, str, bool)) or value is None:
+            return value
+        return json.dumps(value)
 
     @property
     def get_type(self):

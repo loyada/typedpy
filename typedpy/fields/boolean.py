@@ -20,3 +20,6 @@ class Boolean(TypedField):
 
         if value not in {"True", "False", True, False}:
             raise TypeError(f"{err_prefix()}Expected {self._ty}; Got {wrap_val(value)}")
+
+    def serialize(self, value):
+        return value

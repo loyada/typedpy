@@ -55,3 +55,6 @@ class StructureReference(Field):
 
         propst = f". Properties: {', '.join(props)}" if props else ""
         return f"<Structure{propst}>"
+
+    def serialize(self, value):
+        raise TypeError(f"Cannot be serialized. Use standard Structure Class instead")

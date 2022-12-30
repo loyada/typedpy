@@ -108,3 +108,11 @@ class Tuple(ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
         value = tuple(res)
 
         super().__set__(instance, value)
+
+    def serialize(self, value):
+        if self.items is not None:
+            if isinstance(self.items, Field):
+                return [self.items.serialize(x) for x in value]
+            elif isinstance(self.items, (list, tuple)):
+                return [self.items[i].serialize(x) for (i,x) in enumerate(value) ]
+        return value

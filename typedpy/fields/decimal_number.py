@@ -27,3 +27,6 @@ class DecimalNumber(Number, SerializableField):
     @property
     def get_type(self):
         return Decimal
+
+    def serialize(self, value):
+        return str(value)

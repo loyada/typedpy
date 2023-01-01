@@ -83,7 +83,7 @@ class ImmutableMixin:
         if getattr(self._field_definition, "_immutable", False):
             return True
         instance = getattr(self, "_instance", None)
-        return getattr(self._instance, IS_IMMUTABLE, False) if instance else False
+        return getattr(self._instance, IS_IMMUTABLE, False) if instance is not None else False
 
     def _raise_if_immutable(self):
         if self._is_immutable():
@@ -415,7 +415,7 @@ class Field(UniqueMixin, metaclass=FieldMeta):
             if instance is not None
             else get_field_with_inheritance(self._name)
         )
-        if instance is not None and getattr(instance, "_disable_immutable_protection", False):
+        if not TypedPyDefaults.defensive_copy_on_get:
             return res
         is_immutable = (
             getattr(instance, IS_IMMUTABLE, False)
@@ -1683,6 +1683,12 @@ class ClassReference(TypedField):
     @property
     def get_type(self):
         return self._ty
+
+    def serialize(self, value):
+        serializer = getattr(self._ty, "_serializer", None)
+        if serializer:
+            return serializer(value)
+        raise NotImplementedError()
 
 
 class ImmutableField(Field):

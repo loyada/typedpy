@@ -11,6 +11,7 @@ from typedpy import (
     PositiveInt,
     mappers,
 )
+from typedpy.structures import TypedPyDefaults
 
 Structure.set_auto_enum_conversion(True)
 
@@ -345,10 +346,10 @@ if __name__ == "__main__":
     import cProfile
     import pstats
 
+    TypedPyDefaults.defensive_copy_on_get = False
     with cProfile.Profile() as pr:
-        serialize_all_optimized(firms)
-
-       # serialize_all(firms)
+        #serialize_all_optimized(firms)
+        serialize_all(firms)
     stats = pstats.Stats(pr)
     stats.sort_stats(pstats.SortKey.TIME)
     stats.print_stats()

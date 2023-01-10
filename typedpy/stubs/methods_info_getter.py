@@ -4,7 +4,7 @@ import inspect
 import logging
 from typing import Callable
 
-from typedpy.commons import default_factories
+from typedpy.commons import INDENT, default_factories
 from typedpy.utility import type_is_generic
 from typedpy.structures import (
     ADDITIONAL_PROPERTIES,
@@ -19,7 +19,6 @@ from typedpy.stubs.types_ast import (
     extract_attributes_from_init,
 )
 from typedpy.stubs.utils import (
-    INDENT,
     get_optional_globe,
     get_sqlalchemy_init,
     is_not_generic_and_private_class_or_module,

@@ -112,6 +112,7 @@ class Deque(
                 return [self.items[i].serialize(x) for (i, x) in enumerate(value)]
         return value
 
+
 class ImmutableDeque(ImmutableField, Deque):
     """
     An immutable version of :class:`Deque`

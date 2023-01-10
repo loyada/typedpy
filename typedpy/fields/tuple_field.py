@@ -1,8 +1,8 @@
-from typedpy.structures import Field, Structure, TypedField
+from typedpy.structures import Field, Structure, TypedField, ClassReference
 from typedpy.commons import python_ver_atleast_39, wrap_val
-
 from .collections_impl import ContainNestedFieldMixin, _CollectionMeta
 from .fields import verify_type_and_uniqueness
+from .function_call import Callable
 
 
 class Tuple(ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
@@ -59,6 +59,7 @@ class Tuple(ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
         :param kwargs: pass-through
         """
         self.uniqueItems = uniqueItems
+        self._serialize = None
         if isinstance(items, (list, tuple)):
             self.items = []
             for item in items:
@@ -110,9 +111,22 @@ class Tuple(ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
         super().__set__(instance, value)
 
     def serialize(self, value):
-        if self.items is not None:
-            if isinstance(self.items, Field):
-                return [self.items.serialize(x) for x in value]
-            elif isinstance(self.items, (list, tuple)):
-                return [self.items[i].serialize(x) for (i,x) in enumerate(value) ]
+        cached: Callable = self._serialize
+        if cached is not None:
+            return cached(value)
+        items = self.items
+        if items is not None:
+            if isinstance(items, Field):
+                if isinstance(items, ClassReference):
+                    serializer = items._ty.serialize
+                    self._serialize = lambda value: [serializer(x) for x in value]
+                    return self._serialize(value)
+                serialize = items.serialize
+                self._serialize = lambda value: [serialize(x) for x in value]
+                return self._serialize(value)
+            elif isinstance(items, list):
+                self._serialize = lambda value: [
+                    items[i].serialize(x) for (i, x) in enumerate(value)
+                ]
+                return self._serialize(value)
         return value

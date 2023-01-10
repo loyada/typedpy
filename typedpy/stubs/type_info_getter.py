@@ -1,19 +1,12 @@
-import builtins
 import collections.abc
 import logging
 import typing
 
+from typedpy.commons import builtins_types
 from typedpy.fields import AllOf, AnyOf, Map, OneOf, Enum
 from typedpy.structures import Field, NoneField
 from typedpy.structures.structures import get_typing_lib_info
 from typedpy.utility import type_is_generic
-
-builtins_types = [
-    getattr(builtins, k)
-    for k in dir(builtins)
-    if isinstance(getattr(builtins, k), type)
-]
-
 
 def _get_anyof_typing(field, locals_attrs, additional_classes):
     union_fields = getattr(field, "_fields", [])

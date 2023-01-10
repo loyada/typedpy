@@ -11,4 +11,4 @@ class ExceptionField(TypedField, SerializableField):
     _ty = Exception
 
     def serialize(self, value):
-        return f"{value.__class__.__name__}: {str(value)}"
+        return value.__class__.__name__

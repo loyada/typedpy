@@ -1,5 +1,7 @@
 import json
 import sys
+import builtins
+
 from collections.abc import Iterable, Mapping, Generator
 from functools import reduce, wraps
 from inspect import signature
@@ -11,6 +13,13 @@ python_ver_atleast_than_37 = py_version > (3, 6)
 python_ver_atleast_39 = py_version >= (3, 9)
 python_ver_atleast_310 = py_version >= (3, 10)
 
+INDENT = " " * 4
+
+builtins_types = [
+    getattr(builtins, k)
+    for k in dir(builtins)
+    if isinstance(getattr(builtins, k), type)
+]
 
 
 class UndefinedMeta(type):
@@ -239,7 +248,7 @@ def default_factories(func):
 
 class Constant:
     """
-    Mark a value as constant in a versioned mapper.
+    Mark a value as constant in a mapper.
     This is useful if an attribute did not exist in a previous version
     and you want to assign it to a default value in the more recent version.
     """

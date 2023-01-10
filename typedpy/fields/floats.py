@@ -13,9 +13,6 @@ class Float(TypedField, Number):
         super()._validate(value)
         Number._validate_static(self, value)
 
-    def serialize(self, value):
-        return value.value
-
 
 class PositiveFloat(Float, Positive):
     """

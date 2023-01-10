@@ -1,4 +1,6 @@
-from typedpy.structures import Structure, ImmutableField
+from typing import Callable
+
+from typedpy.structures import Structure, ImmutableField, Field, ClassReference
 from typedpy.commons import wrap_val
 from .array import has_multiple_items
 
@@ -41,7 +43,7 @@ class Set(
 
     def __init__(self, *args, items=None, **kwargs):
         self.items = _map_to_field(items)
-
+        self._serialize = None
         if isinstance(self.items, TypedField) and not getattr(
             getattr(self.items, "_ty"), "__hash__"
         ):
@@ -73,9 +75,25 @@ class Set(
         super().__set__(instance, value)
 
     def serialize(self, value):
-        if self.items is not None:
-            return [self.items.serialize(x) for x in value]
+        cached: Callable = getattr(self, "_serialize", None)
+        if cached is not None:
+            return cached(value)
+
+        items = self.items
+        if items is not None:
+            if isinstance(items, Field):
+                if isinstance(items, ClassReference):
+                    serializer = items._ty.serialize
+                    self._serialize = lambda value: [serializer(x) for x in value]
+                    return self._serialize(value)
+                serialize = items.serialize
+                self._serialize = lambda value: [serialize(x) for x in value]
+                return self._serialize(value)
+            elif isinstance(items, list):
+                return [items[i].serialize(x) for (i, x) in enumerate(value)]
+
         return list(value)
+
 
 class ImmutableSet(Set, ImmutableField):
     """

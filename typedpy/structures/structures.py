@@ -19,7 +19,8 @@ from typing import get_type_hints, Iterable
 
 from typedpy.commons import (
     Constant,
-    Undefined, raise_errs_if_needed,
+    Undefined,
+    raise_errs_if_needed,
     wrap_val,
     _is_sunder,
     _is_dunder,
@@ -29,6 +30,7 @@ from .consts import (
     ADDITIONAL_PROPERTIES,
     DEFAULTS,
     DESERIALIZATION_MAPPER,
+    DISABLE_PROTECTION,
     IGNORE_NONE_VALUES,
     IS_IMMUTABLE,
     MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS,
@@ -83,7 +85,11 @@ class ImmutableMixin:
         if getattr(self._field_definition, "_immutable", False):
             return True
         instance = getattr(self, "_instance", None)
-        return getattr(self._instance, IS_IMMUTABLE, False) if instance is not None else False
+        return (
+            getattr(self._instance, IS_IMMUTABLE, False)
+            if instance is not None
+            else False
+        )
 
     def _raise_if_immutable(self):
         if self._is_immutable():
@@ -406,7 +412,8 @@ class Field(UniqueMixin, metaclass=FieldMeta):
                 self._default()
                 if callable(self._default)
                 else self._default
-                if not getattr(instance.__class__, ENABLE_UNDEFINED, False) or self._name in getattr(instance, "_none_fields", [])
+                if not getattr(instance.__class__, ENABLE_UNDEFINED, False)
+                or self._name in getattr(instance, "_none_fields", [])
                 else Undefined
             )
             return default_value
@@ -415,7 +422,10 @@ class Field(UniqueMixin, metaclass=FieldMeta):
             if instance is not None
             else get_field_with_inheritance(self._name)
         )
-        if not TypedPyDefaults.defensive_copy_on_get:
+        if (
+            getattr(owner, DISABLE_PROTECTION, False)
+            or not TypedPyDefaults.defensive_copy_on_get
+        ):
             return res
         is_immutable = (
             getattr(instance, IS_IMMUTABLE, False)
@@ -424,7 +434,17 @@ class Field(UniqueMixin, metaclass=FieldMeta):
         )
         needs_defensive_copy = (
             not isinstance(
-                res, (ImmutableMixin, int, float, str, bool, enum.Enum, Field, ImmutableStructure)
+                res,
+                (
+                    ImmutableMixin,
+                    int,
+                    float,
+                    str,
+                    bool,
+                    enum.Enum,
+                    Field,
+                    ImmutableStructure,
+                ),
             )
             or res is None
         )
@@ -572,7 +592,7 @@ def _get_all_values_of_attribute(cls, attr_name: str):
     all_classes = reversed([c for c in cls.mro() if isinstance(c, StructMeta)])
     all_values = []
     for the_class in all_classes:
-        if issubclass(the_class, Structure):
+        if isinstance(the_class, StructMeta):
             attr = getattr(the_class, attr_name, None)
             if isinstance(attr, list):
                 all_values.extend(attr)
@@ -715,8 +735,9 @@ class StructMeta(type):
             bases_required=bases_required,
             constants=clsobj._constants.keys(),
         )
+        field_by_name = _get_all_fields_by_name(clsobj)
         setattr(clsobj, "__signature__", sig)
-        setattr(clsobj, "_field_by_name", _get_all_fields_by_name(clsobj))
+        setattr(clsobj, "_field_by_name", field_by_name)
         return clsobj
 
     def __str__(cls):
@@ -1077,16 +1098,23 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             )
         if all(
             [
-                getattr(self, IGNORE_NONE_VALUES, False) or getattr(self, ENABLE_UNDEFINED, False),
+                getattr(self, IGNORE_NONE_VALUES, False)
+                or getattr(self, ENABLE_UNDEFINED, False),
                 value is None,
                 key not in getattr(self.__class__, REQUIRED_FIELDS, []),
             ]
         ):
-            if key in self.get_all_fields_by_name() and getattr(self, ENABLE_UNDEFINED, False):
+            if key in self.get_all_fields_by_name() and getattr(
+                self, ENABLE_UNDEFINED, False
+            ):
                 getattr(self, "_none_fields").add(key)
             return
 
-        if key in self.get_all_fields_by_name() and getattr(self, ENABLE_UNDEFINED, False) and value is not None:
+        if (
+            key in self.get_all_fields_by_name()
+            and getattr(self, ENABLE_UNDEFINED, False)
+            and value is not None
+        ):
             getattr(self, "_none_fields").discard(key)
         super().__setattr__(key, value)
 
@@ -1157,7 +1185,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 return False
         self_nones = self.__dict__.get("_none_fields")
         other_nones = other.__dict__.get("_none_fields")
-        if (self_nones or other_nones) and self_nones!=other_nones:
+        if (self_nones or other_nones) and self_nones != other_nones:
             return False
 
         return True
@@ -1296,7 +1324,10 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             if (getattr(self, f) is not None or f in getattr(self, "_none_fields"))
             and f not in getattr(self.__class__, "_constants", {})
         }
-        kw_args = {**{k:v for k,v in field_value_by_name.items() if v is not Undefined}, **kw}
+        kw_args = {
+            **{k: v for k, v in field_value_by_name.items() if v is not Undefined},
+            **kw,
+        }
         return self.__class__(**kw_args)
 
     def cast_to(self, cls: type(T)) -> T:
@@ -1328,7 +1359,9 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 for f in fields_names
                 if getattr(that, f, None) is not None
             }
-            return cls(**{k:v for k,v in field_value_by_name.items() if v is not Undefined})
+            return cls(
+                **{k: v for k, v in field_value_by_name.items() if v is not Undefined}
+            )
 
         raise TypeError(f"cls must be subclass of {self.__class__.__name__}")
 
@@ -1376,7 +1409,10 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             and k not in getattr(self.__class__, "_constants", {})
         }
 
-        kwargs = {**{k:v for k,v in args_from_structure.items() if v is not Undefined}, **kw}
+        kwargs = {
+            **{k: v for k, v in args_from_structure.items() if v is not Undefined},
+            **kw,
+        }
         return target_class(**kwargs)
 
     @classmethod
@@ -1685,10 +1721,8 @@ class ClassReference(TypedField):
         return self._ty
 
     def serialize(self, value):
-        serializer = getattr(self._ty, "_serializer", None)
-        if serializer:
-            return serializer(value)
-        raise NotImplementedError()
+        serializer = getattr(self._ty, "serialize", None)
+        return serializer(value)
 
 
 class ImmutableField(Field):

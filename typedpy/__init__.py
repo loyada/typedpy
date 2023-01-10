@@ -82,5 +82,6 @@ from .commons import (
     default_factories,
     InvalidStructureErr,
     Constant,
-    Undefined
+    Undefined,
+    INDENT
 )

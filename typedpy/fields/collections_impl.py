@@ -2,7 +2,14 @@ from collections import deque
 from copy import deepcopy
 from typing import Iterable
 
-from typedpy.structures import FieldMeta, ImmutableMixin, Field, Structure, TypedPyDefaults
+from typedpy.structures import (
+    FieldMeta,
+    ImmutableMixin,
+    Field,
+    Structure,
+    TypedPyDefaults,
+)
+from typedpy.structures.consts import DISABLE_PROTECTION
 
 
 class _CollectionMeta(FieldMeta):
@@ -76,7 +83,10 @@ class _ListStruct(list, ImmutableMixin, _IteratorProxyMixin):
         return self._get_defensive_copy_if_needed(val)
 
     def __iter__(self):
-        disable_protection = not TypedPyDefaults.defensive_copy_on_get
+        disable_protection = (
+            getattr(self._instance, DISABLE_PROTECTION, False)
+            or not TypedPyDefaults.defensive_copy_on_get
+        )
         if not disable_protection and self._is_immutable():
             return _IteratorProxyMixin.ListIteratorProxy(self)
         return super().__iter__()
@@ -181,7 +191,11 @@ class _DequeStruct(deque, ImmutableMixin, _IteratorProxyMixin):
         return self._get_defensive_copy_if_needed(val)
 
     def __iter__(self):
-        if self._is_immutable():
+        disable_protection = (
+            getattr(self._instance, DISABLE_PROTECTION, False)
+            or not TypedPyDefaults.defensive_copy_on_get
+        )
+        if not disable_protection and self._is_immutable():
             return _ListStruct.ListIteratorProxy(self)
         return super().__iter__()
 

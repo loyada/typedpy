@@ -72,8 +72,6 @@ class Number(Field):
             self._validate(value)
         super().__set__(instance, value)
 
-    def serialize(self, value):
-        return value.value
 
 class Positive(Number):
     """

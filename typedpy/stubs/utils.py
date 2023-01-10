@@ -1,18 +1,11 @@
-import builtins
 import inspect
 import logging
 import typing
 
-from typedpy.commons import nested
+from typedpy.commons import INDENT, nested
 from typedpy.utility import type_is_generic
 
-INDENT = " " * 4
 _private_to_public_pkg = {"werkzeug.localxxx": "flask"}
-builtins_types = [
-    getattr(builtins, k)
-    for k in dir(builtins)
-    if isinstance(getattr(builtins, k), type)
-]
 
 
 def is_sqlalchemy(attr):

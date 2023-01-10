@@ -87,7 +87,9 @@ class Map(
     def serialize(self, value):
         if self.items is not None:
             key_field, value_field = self.items[0], self.items[1]
-            return {key_field.serialize(k):value_field.serialize(v) for k, v in value.items()}
+            key_serialize = key_field.serialize
+            value_serialize = value_field.serialize
+            return {key_serialize(k): value_serialize(v) for k, v in value.items()}
         return value
 
 

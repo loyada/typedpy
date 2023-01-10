@@ -1,7 +1,7 @@
 import enum
 import time
 from functools import wraps
-from typing import Optional, Type
+from typing import Optional
 
 from typedpy import (
     ImmutableStructure,
@@ -11,6 +11,7 @@ from typedpy import (
     PositiveInt,
     mappers,
 )
+from typedpy.serialization.fast_serialization import create_serializer
 from typedpy.structures import TypedPyDefaults
 
 Structure.set_auto_enum_conversion(True)
@@ -105,6 +106,16 @@ class Firm(ImmutableStructure):
 
     _serialization_mapper = mappers.TO_CAMELCASE
 
+    def serialize1(self):
+        return {
+            "name": self.name,
+            "employees": [Employee.serialize(e) for e in self.employees],
+            "cards": [Card.serialize(c) for c in self.cards],
+            "assignments": [Assignment.serialize(a) for a in self.assignments],
+            "spend": Spend.serialize(self.spend),
+            "credit": self.credit,
+        }
+
 
 def create_employees(fleet_id) -> list[Employee]:
     return [
@@ -197,162 +208,21 @@ def serialize_all(the_firms: list[Firm]):
     return [Serializer(firm).serialize() for firm in the_firms]
 
 
-def get_location_serializer():
-    def wrapped(v: Location):
-        if v is None:
-            return None
-        return {"name": v.name, "id": v.id}
-
-    return wrapped
-
-
-def get_policy_serializer():
-    def wrapped(v: Policy):
-        if v is None:
-            return None
-        return {
-            "softLimit": v.soft_limit,
-            "hardLimit": v.hard_limit,
-            "timeDays": v.time_days,
-            "mccs": v.mccs,
-        }
-
-    return wrapped
-
-
-def get_phone_serializer():
-    def wrapped(v: Phone):
-        if v is None:
-            return None
-        return {"number": v.number, "validated": v.validated}
-
-    return wrapped
-
-
-def get_employee_serializer():
-    location_serializer = get_location_serializer()
-    phone_serializer = get_phone_serializer()
-    policy_serializer = get_policy_serializer()
-    spend_serializer = get_spend_serializer()
-
-    def wrapped(v: Employee):
-        if v is None:
-            return None
-        return {
-            "lastName": v.last_name,
-            "firstName": v.first_name,
-            "role": v.role.name,
-            "location": location_serializer(v.location),
-            "phone": phone_serializer(v.phone),
-            "policies": [policy_serializer(p) for p in v.policies],
-            "isActive": v.is_active,
-            "spend": spend_serializer(v.spend),
-            "streetAddr": v.street_addr,
-            "city": v.city,
-            "zip": v.zip,
-        }
-
-    return wrapped
-
-
-def get_card_serializer():
-    def wrapped(v: Card):
-        if v is None:
-            return None
-        return {"companyId": v.company_id, "cardId": v.card_id}
-
-    return wrapped
-
-
-def get_vehicle_serializer():
-    location_serializer = get_location_serializer()
-    policy_serializer = get_policy_serializer()
-
-    def wrapped(v: Vehicle):
-        if v is None:
-            return None
-        return {
-            "name": v.name,
-            "licensePlate": v.license_plate,
-            "location": location_serializer(v.location),
-            "isActive": v.is_active,
-            "policies": [policy_serializer(p) for p in v.policies],
-        }
-
-    return wrapped
-
-
-def get_assignment_serializer():
-    card_serializer = get_card_serializer()
-    employee_serializer = get_employee_serializer()
-    vehicle_serializer = get_vehicle_serializer()
-
-    def wrapped(v: Assignment):
-        if v is None:
-            return None
-        return {
-            "card": card_serializer(v.card),
-            "employee": employee_serializer(v.employee),
-            "vehicle": vehicle_serializer(v.vehicle),
-        }
-
-    return wrapped
-
-
-def get_spend_serializer():
-    def wrapped(v: Spend):
-        if v is None:
-            return None
-        return {"day": v.day, "week": v.week, "month": v.month}
-
-    return wrapped
-
-
-def get_firm_serializer():
-    def wrapped(v: Firm):
-        employee_serializer = get_employee_serializer()
-        card_serializer = get_card_serializer()
-        assignment_serializer = get_assignment_serializer()
-        spend_serializer = get_spend_serializer()
-
-        return {
-            "name": v.name,
-            "employees": [employee_serializer(e) for e in v.employees],
-            "cards": [card_serializer(c) for c in v.cards],
-            "assignments": [assignment_serializer(a) for a in v.assignments],
-            "spend": spend_serializer(v.spend),
-            "credit": v.credit,
-        }
-
-    return wrapped
-
-
-def get_firm_serializer():
-    def wrapped(v: Firm):
-        employee_serializer = get_employee_serializer()
-        card_serializer = get_card_serializer()
-        assignment_serializer = get_assignment_serializer()
-        spend_serializer = get_spend_serializer()
-
-        return {
-            "name": v.name,
-            "employees": [employee_serializer(e) for e in v.employees],
-            "cards": [card_serializer(c) for c in v.cards],
-            "assignments": [assignment_serializer(a) for a in v.assignments],
-            "spend": spend_serializer(v.spend),
-            "credit": v.credit,
-        }
-
-    return wrapped
-
-
-# def get_struct_serializer(cls: Type[Structure]):
-
-
 @timeit
 def serialize_all_optimized(firms: list[Firm]):
-    firm_serializer = get_firm_serializer()
-    return [firm_serializer(f) for f in firms]
+    return [Firm.serialize(f) for f in firms]
+
+
+create_serializer(Firm)
+create_serializer(Employee)
+create_serializer(Vehicle)
+create_serializer(Policy)
+create_serializer(Spend)
+create_serializer(Address)
+create_serializer(Assignment)
+create_serializer(Card)
+create_serializer(Phone)
+create_serializer(Location)
 
 
 if __name__ == "__main__":
@@ -362,8 +232,8 @@ if __name__ == "__main__":
 
     TypedPyDefaults.defensive_copy_on_get = False
     with cProfile.Profile() as pr:
-        #  serialize_all_optimized(firms)
-        serialize_all(firms)
+        res = serialize_all_optimized(firms)
+    # serialize_all(firms)
     stats = pstats.Stats(pr)
     stats.sort_stats(pstats.SortKey.TIME)
     stats.print_stats()

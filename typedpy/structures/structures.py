@@ -392,9 +392,9 @@ class Field(UniqueMixin, metaclass=FieldMeta):
     def _try_default_value(self, default):
         try:
             self._name = self._name or "value"
-            self.__set__(
+            self.__set__(  # pylint: disable=unnecessary-dunder-call
                 Structure(), default
-            )  # pylint: disable=unnecessary-dunder-call
+            )
         except Exception as e:
             raise e.__class__(
                 f"Invalid default value: {wrap_val(default)}; Reason: {str(e)}"

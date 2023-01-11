@@ -161,7 +161,7 @@ class Array(
     def serialize(self, value):
         cached: Callable = getattr(self, "_serialize", None)
         if cached is not None:
-            return cached(value)
+            return cached(value)  # pylint: disable=E1102
         items = self.items
         if items is not None:
             if isinstance(items, Field):

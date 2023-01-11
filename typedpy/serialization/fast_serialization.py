@@ -24,7 +24,7 @@ def _get_value(field, cls):
     owner = cls
 
     def wrapped(self):
-        return field.__get__(self, owner)
+        return field.__get__(self, owner)  # pylint: disable=unnecessary-dunder-call
 
     return wrapped
 
@@ -34,7 +34,7 @@ def _get_serialize(field, cls):
     owner = cls
 
     def wrapped(self):
-        val = field.__get__(self, owner)
+        val = field.__get__(self, owner)  # pylint: disable=unnecessary-dunder-call
         return obj.serialize(val) if val is not None else None
 
     return wrapped
@@ -53,7 +53,7 @@ def create_serializer(cls: Type[Structure], compact: bool = False):
     processed_mapper = {}
     for field_name, field in field_by_name.items():
         mapped_key = mapper[field_name]
-        if type(mapped_key) == str:
+        if mapped_key.__class__ == str:
             if isinstance(field, (Number, String, Boolean)):
                 processed_mapper[mapped_key] = _get_value(field, cls)
             else:

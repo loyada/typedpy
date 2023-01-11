@@ -50,4 +50,4 @@ class SubClass(TypedField, metaclass=_SubClassMeta):
         super().__set__(instance, value)
 
     def serialize(self, value):
-        raise TypeError(f"SubClass cannot be serialized")
+        raise TypeError("SubClass cannot be serialized")

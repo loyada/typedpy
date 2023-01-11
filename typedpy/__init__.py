@@ -44,6 +44,8 @@ from .serialization import (
     deserialize_structure,
     deserialize_single_field,
     HasTypes,
+    create_serializer,
+    FastSerializable,
 )
 
 from .extfields import (
@@ -82,5 +84,6 @@ from .commons import (
     default_factories,
     InvalidStructureErr,
     Constant,
-    Undefined
+    Undefined,
+    INDENT,
 )

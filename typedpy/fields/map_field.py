@@ -84,6 +84,14 @@ class Map(
 
         super().__set__(instance, _DictStruct(self, instance, value, self._name))
 
+    def serialize(self, value):
+        if self.items is not None:
+            key_field, value_field = self.items[0], self.items[1]
+            key_serialize = key_field.serialize
+            value_serialize = value_field.serialize
+            return {key_serialize(k): value_serialize(v) for k, v in value.items()}
+        return value
+
 
 class ImmutableMap(ImmutableField, Map):
     """

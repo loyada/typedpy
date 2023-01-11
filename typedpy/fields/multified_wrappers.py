@@ -71,6 +71,9 @@ class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     def __str__(self):
         return _str_for_multioption_field(self)
 
+    def serialize(self, value):
+        field = self.get_fields()[0]
+        return field.serialize(value)
 
 class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     """
@@ -98,12 +101,12 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             raise TypeError("AnyOf definition must include at least one field option")
 
     def __set__(self, instance, value):
-        matched = False
+        matched = None
         for field in self.get_fields():
             setattr(field, "_name", self._name)
             try:
                 field.__set__(instance, value)
-                matched = True
+                matched = field
             except TypeError:
                 pass
             except ValueError:
@@ -113,11 +116,14 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             raise ValueError(
                 f"{prefix}{wrap_val(value)} Did not match any field option"
             )
+        self._matched = matched
         super().__set__(instance, getattr(instance, self._name))
 
     def __str__(self):
         return _str_for_multioption_field(self)
 
+    def serialize(self, value):
+        return self._matched.serialize(value)
 
 class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     """
@@ -145,6 +151,7 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             try:
                 field.__set__(instance, value)
                 matched += 1
+                self._matched = field
             except TypeError:
                 pass
             except ValueError:
@@ -161,6 +168,9 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __str__(self):
         return _str_for_multioption_field(self)
+
+    def serialize(self, value):
+        return self._matched.serialize(value)
 
 
 class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
@@ -200,3 +210,4 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __str__(self):
         return _str_for_multioption_field(self)
+

@@ -12,4 +12,4 @@ def test_serialize():
     except ValueError as exc:
         foo = Foo(e=exc)
         serialized = Serializer(foo).serialize(compact=True)
-        assert serialized == "ValueError: my exception"
+        assert serialized == "ValueError"

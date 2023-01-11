@@ -85,7 +85,7 @@ After version 2.0, you can also use dataclass-style definition. Look at the foll
 #. Version 1.35 added Generic classes of the "typing" library, e.g. typing.List
 #. Version 2.0 allows to use list, typing.List. They are converted automatically to a Typedpy :class:`Array`, thus enjoying other features of Typepy automatically.
 #. After version 2.0 Typepy also supports implicit conversion of any class to a Typedpy field, thus you can use Field[list]. The disadvantage of this style is that Typedpy knows nothing about the field except its type, so serialization is done only on a best effort basis, pickling and JSON schema mapping is unsupported for any Structure with implicit mapping. Typedpy offers API to explicitly create Typedpy Field types that correspond to non-Typedpy classes, and if you don't mind the extra code, it is more flexible.
-#. The Typedpy class are the most fleible ones and provide the richest API support.
+#. The Typedpy class are the most flexible ones and provide the richest API support.
 
 
 
@@ -838,7 +838,7 @@ It is also reflected in the generated stub files, so that the IDE knows this fie
 Differentiating Between Undefined values and None Values
 ========================================================
 The default behavior of Typedpy is that there is no "undefined" value, as it exists in Javascript.
-This is the standard behavior of the Python ecosystem. 
+This is the standard behavior of the Python ecosystem.
 Therefore, the following code is correct:
 
 .. code-block:: python

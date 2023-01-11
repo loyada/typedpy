@@ -913,3 +913,61 @@ Serialization by the *value* of the enum is achieved by setting the serializatio
 "e_value" above.
 
 The same is true for deserialization.
+
+
+Fast Serialization
+==================
+Typedpy offers significantly faster version of serialization. In internal profiling it is roughly 5 times faster.
+
+However, it requires more setup. First, you need tomark the Structure class by FastSerializable.
+
+Then, tell Typedpy to implement an optimized serializer, by calling create_serializer(<your class>). For example:
+
+
+.. code-block:: python
+
+    from typedpy import Structure, FastSerializable, Integer, create_serializer, mappers
+
+    class Foo(Structure, FastSerializable):
+        a: list[Integer(max=5)]
+        b: str
+        _required = []
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    create_serializer(Foo)
+
+    foo = Foo(a=[1, 5])
+    serialized = Foo.serialize()
+    assert serialized = {"A": [1, 5], "b": None}
+
+In case you implement your own custom Field classes, they can include a custom serialize(value) method.
+Fast serialization can be used for the vast majority of the cases, including serialization mappers, but does not
+support the following:
+
+
+#. Nested mappers. I.E: a mapper that looks like {"foo._mapper": {....}}"
+#. Function mappers
+#. Serialize class type automatically - ie. :class:`HasTypes`
+#. Serialize attributes that are not Typedpy fields
+#. providing custom mappers when calling serialize()
+
+
+Requirements:
+#. All Structures in the hierarchy implement FastSerializable. Typically this is done by calling create_serializer
+#. Any custom Field classes should implement the serialize() method.
+#. All mappers must be in the definition of the Structures.
+
+
+Instead of support of the "compact" (see above) flag in the serialize() call, you provide it to create_serializer().
+For example:
+
+.. code-block:: python
+
+    class Foo(Structure, FastSerializable):
+        s = Array[AnyOf[String, Number]]
+        _additionalProperties = False
+
+    create_serializer(Foo, compact=True)
+
+    foo = Foo(s=["abcde", 234])
+    assert Foo.serialize(foo) == ["abcde", 234]

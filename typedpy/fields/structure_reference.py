@@ -55,3 +55,11 @@ class StructureReference(Field):
 
         propst = f". Properties: {', '.join(props)}" if props else ""
         return f"<Structure{propst}>"
+
+    def serialize(self, value):
+        # This is not optimized, since it is a legacy field type
+        res = {
+            name: getattr(self._newclass, name).serialize(getattr(value, name, None))
+            for name, field in self._newclass.get_all_fields_by_name().items()
+        }
+        return res

@@ -177,6 +177,7 @@ class Enum(SerializableField, metaclass=_EnumMeta):
             return self._enum_class
         return Any
 
+
 class EnumString(Enum, String):
     """
     Combination of :class:`Enum` and :class:`String`. This is useful if you want to further

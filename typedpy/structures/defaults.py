@@ -4,3 +4,4 @@ class TypedPyDefaults:
     automatic_enum_conversion = True
     support_json_schema_v6 = False
     uniqueness_features_enabled = False
+    defensive_copy_on_get = True

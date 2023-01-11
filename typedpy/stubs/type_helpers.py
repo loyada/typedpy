@@ -8,7 +8,7 @@ import typing
 from os.path import relpath
 from pathlib import Path
 
-from typedpy.commons import doublewrap_val
+from typedpy.commons import INDENT, doublewrap_val
 from typedpy.fields import FunctionCall
 from typedpy.serialization.serialization_wrappers import Deserializer, Serializer
 from typedpy.structures import (
@@ -35,7 +35,6 @@ from .methods_info_getter import (
 from .function_info_getter import get_stubs_of_functions
 from .utils import (
     is_sqlalchemy,
-    INDENT,
     get_package,
     as_something,
     is_internal_sqlalchemy,

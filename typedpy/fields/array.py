@@ -1,4 +1,12 @@
-from typedpy.structures import Field, Structure, TypedField, ImmutableField
+from typing import Callable
+
+from typedpy.structures import (
+    Field,
+    Structure,
+    TypedField,
+    ImmutableField,
+    ClassReference,
+)
 from typedpy.commons import python_ver_atleast_39
 from .collections_impl import (
     _ListStruct,
@@ -48,7 +56,10 @@ def has_multiple_items(items):
 
 
 class Array(
-    SizedCollection, ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta
+    SizedCollection,
+    ContainNestedFieldMixin,
+    TypedField,
+    metaclass=_CollectionMeta,
 ):
     """
     An Array field, similar to a list. Supports the properties in JSON schema draft 4.
@@ -107,6 +118,7 @@ class Array(
         self.uniqueItems = uniqueItems
         self.additionalItems = additionalItems
         self.items = _get_items(items)
+        self._serialize = None
         super().__init__(*args, **kwargs)
         self._set_immutable(getattr(self, "_immutable", False))
 
@@ -146,10 +158,29 @@ class Array(
 
         super().__set__(instance, _ListStruct(self, instance, value, self._name))
 
+    def serialize(self, value):
+        cached: Callable = getattr(self, "_serialize", None)
+        if cached is not None:
+            return cached(value)
+        items = self.items
+        if items is not None:
+            if isinstance(items, Field):
+                if isinstance(items, ClassReference):
+                    serializer = items._ty.serialize
+                    self._serialize = lambda value: [serializer(x) for x in value]
+                    return self._serialize(value)
+                serialize = items.serialize
+                self._serialize = lambda value: [serialize(x) for x in value]
+                return self._serialize(value)
+            elif isinstance(items, list):
+                self._serialize = lambda value: [
+                    items[i].serialize(x) for (i, x) in enumerate(value)
+                ]
+                return self._serialize(value)
+        return value
+
 
 class ImmutableArray(ImmutableField, Array):
     """
     An immutable version of :class:`Array`
     """
-
-    pass

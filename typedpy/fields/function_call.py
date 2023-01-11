@@ -28,6 +28,20 @@ class Function(Field):
         super().__set__(instance, value)
 
 
+class Callable(Field):
+    """
+    Any callable. This is a more "tolerant" version of Function.
+    """
+
+    def __set__(self, instance, value):
+        def err_prefix():
+            return f"{self._name}: Got {wrap_val(value)}; " if self._name else ""
+
+        if not callable(value):
+            raise TypeError(f"{err_prefix()}Expected a a callable")
+        super().__set__(instance, value)
+
+
 class FunctionCall(Structure):
     """
     Structure that represents a function call for the purpose of serialization mappers: \
@@ -35,12 +49,12 @@ class FunctionCall(Structure):
     This is not a generic function call.
 
     Arguments:
-        func(Function):
-            the function to be called. Note this must be a real function, not any callable.
+        func(Callable):
+            the function to be called.
         args(Array[String]): optional
             the keys of the arguments to be used as positional arguments for the function call
     """
 
-    func = Function
+    func = Callable
     args = Array[String]
     _required = ["func"]

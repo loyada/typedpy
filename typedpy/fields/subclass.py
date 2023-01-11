@@ -48,3 +48,6 @@ class SubClass(TypedField, metaclass=_SubClassMeta):
         if not getattr(instance, "_skip_validation", False):
             self._validate(value)
         super().__set__(instance, value)
+
+    def serialize(self, value):
+        raise TypeError(f"SubClass cannot be serialized")

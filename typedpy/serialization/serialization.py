@@ -714,7 +714,7 @@ def serialize_val(
         return serialize(val, mapper=mapper, camel_case_convert=camel_case_convert)
     if isinstance(val, Structure) or isinstance(field_definition, Field):
         return serialize_internal(
-            val, mapper=mapper, camel_case_convert=camel_case_convert
+            val, resolved_mapper=mapper, camel_case_convert=camel_case_convert
         )
     if isinstance(field_definition, Constant):
         return val.name if isinstance(val, enum.Enum) else val
@@ -765,6 +765,8 @@ def serialize_field(field_definition: Field, value, camel_case_convert=False):
 def _get_mapped_value(mapper, key, items):
     if key in mapper:
         key_mapper = mapper[key]
+        if type(key_mapper) is str:
+            return None
         if isinstance(key_mapper, (FunctionCall,)):
             args = (
                 [deep_get(items, k) for k in key_mapper.args]
@@ -790,11 +792,11 @@ def _convert_to_camel_case_if_required(key, camel_case_convert):
         return key
 
 
-def serialize_internal(structure, mapper=None, compact=False, camel_case_convert=False):
+def serialize_internal(structure, mapper=None, resolved_mapper=None, compact=False, camel_case_convert=False):
     cls = structure.__class__
     field_by_name = cls.get_all_fields_by_name() if issubclass(cls, Structure) else {}
     if isinstance(structure, (Structure, ClassReference)):
-        mapper = aggregate_serialization_mappers(
+        mapper = resolved_mapper if resolved_mapper else aggregate_serialization_mappers(
             structure.__class__, mapper, camel_case_convert
         )
     mapper = {} if mapper is None else mapper

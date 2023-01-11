@@ -57,4 +57,9 @@ class StructureReference(Field):
         return f"<Structure{propst}>"
 
     def serialize(self, value):
-        raise TypeError(f"Cannot be serialized. Use standard Structure Class instead")
+        # This is not optimized, since it is a legacy field type
+        res = {
+            name: getattr(self._newclass, name).serialize(getattr(value, name, None))
+            for name, field in self._newclass.get_all_fields_by_name().items()
+        }
+        return res

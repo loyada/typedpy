@@ -67,8 +67,8 @@ class ImmutableExample(ImmutableStructure):
     _required = []
 
 
-@pytest.fixture()
-def original_object():
+@pytest.fixture(name="original_object")
+def fixture_original_object():
     return Example(
         i=5,
         s="abc",

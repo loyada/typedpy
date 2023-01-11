@@ -520,6 +520,8 @@ class Field(UniqueMixin, metaclass=FieldMeta):
     def serialize(self, value):
         if isinstance(value, (int, float, str, bool)) or value is None:
             return value
+        if isinstance(value, list):
+            return [self.serialize(v) for v in value]
         return json.dumps(value)
 
     @property

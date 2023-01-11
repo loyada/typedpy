@@ -14,3 +14,5 @@ from .serialization import (
     HasTypes,
     deserialize_single_field,
 )
+
+from .fast_serialization import create_serializer, FastSerializable

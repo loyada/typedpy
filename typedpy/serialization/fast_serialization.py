@@ -1,12 +1,23 @@
+from functools import wraps
 from typing import Type
 
-from typedpy import Boolean, ClassReference, Constant, FunctionCall, Number, String
+from typedpy.commons import Constant, first_in
+from typedpy.fields import Boolean, FunctionCall, Number, String
+from typedpy.structures import ClassReference
 from typedpy.serialization.mappers import (
     aggregate_serialization_mappers,
 )
 from typedpy.structures import (
     Structure,
 )
+
+
+class FastSerializable:
+    def serialize(self) -> dict:
+        cls_name = self.__class__.__name__
+        raise NotImplementedError(
+            f"You need to implement serialize(self) for class {cls_name}, or use: create_serializer({cls_name})"
+        )
 
 
 def _get_value(field, cls):
@@ -36,7 +47,7 @@ def _get_constant(constant: Constant):
     return wrapped
 
 
-def create_serializer(cls: Type[Structure]):
+def create_serializer(cls: Type[Structure], compact: bool = False):
     mapper = aggregate_serialization_mappers(cls)
     field_by_name = cls.get_all_fields_by_name()
     processed_mapper = {}
@@ -48,7 +59,7 @@ def create_serializer(cls: Type[Structure]):
             else:
                 processed_mapper[mapped_key] = _get_serialize(field, cls)
         elif isinstance(mapped_key, (FunctionCall,)):
-            raise ValueError("Function mappers is not supported for fast serialization")
+            raise ValueError("Function mappers is not supported in fast serialization")
         elif isinstance(mapped_key, Constant):
             processed_mapper[field_name] = _get_constant(mapped_key)
     items = processed_mapper.items()
@@ -57,3 +68,19 @@ def create_serializer(cls: Type[Structure]):
         return {name: value(self) for name, value in items}
 
     cls.serialize = serializer
+
+    if compact:
+        set_compact_wrapper(cls)
+
+
+def set_compact_wrapper(cls):
+    func = cls.serialize
+
+    @wraps(func)
+    def wrapper(self: Structure):
+        res = func(self)
+        if len(self.__class__.get_all_fields_by_name()) == 1 and len(res) == 1:
+            return first_in(res.values())
+        return res
+
+    cls.serialize = wrapper

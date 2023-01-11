@@ -23,8 +23,9 @@ builtins_types = [
 
 
 class UndefinedMeta(type):
-    def __bool__(self):
+    def __bool__(cls):
         return False
+
 
 class Undefined(metaclass=UndefinedMeta):
     pass
@@ -148,7 +149,9 @@ def flatten(iterable, ignore_none=False) -> list:
     return res
 
 
-def deep_get(dictionary, deep_key, default=None, do_flatten=False, *, enable_undefined=False):
+def deep_get(
+    dictionary, deep_key, default=None, do_flatten=False, *, enable_undefined=False
+):
     """
     Get a nested value from within a dictionary. Supports also nested lists, in
     which case the result is a a list of values
@@ -179,19 +182,29 @@ def deep_get(dictionary, deep_key, default=None, do_flatten=False, *, enable_und
 
     """
 
-    def _get_next_level(d: Optional[Union[Mapping, Iterable]], key, default, *, enable_undefined):
+    def _get_next_level(
+        d: Optional[Union[Mapping, Iterable]], key, default, *, enable_undefined
+    ):
         if isinstance(d, Mapping):
             if enable_undefined and key not in d:
                 return Undefined
             return d.get(key, default)
         if isinstance(d, (list, tuple, Generator)):
-            res = [_get_next_level(r, key, default, enable_undefined=enable_undefined) for r in d if r is not None]
+            res = [
+                _get_next_level(r, key, default, enable_undefined=enable_undefined)
+                for r in d
+                if r is not None
+            ]
             return res
         return default
 
     keys = deep_key.split(".")
     result = reduce(
-        lambda d, key: _get_next_level(d, key, default, enable_undefined=enable_undefined) if d else default,
+        lambda d, key: _get_next_level(
+            d, key, default, enable_undefined=enable_undefined
+        )
+        if d
+        else default,
         keys,
         dictionary,
     )

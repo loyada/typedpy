@@ -75,6 +75,7 @@ class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         field = self.get_fields()[0]
         return field.serialize(value)
 
+
 class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     """
     Content must adhere to one or more of the requirements in the fields arguments.
@@ -93,6 +94,7 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __init__(self, fields):
         super().__init__(fields=fields)
+        self._matched = None
         if fields:
             for f in fields:
                 if isinstance(f, NoneField):
@@ -125,6 +127,7 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     def serialize(self, value):
         return self._matched.serialize(value)
 
+
 class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     """
     Content must adhere to one, and only one, of the requirements in the fields arguments.
@@ -142,6 +145,7 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     """
 
     def __init__(self, fields):
+        self._matched = None
         super().__init__(fields=fields)
 
     def __set__(self, instance, value):
@@ -210,4 +214,3 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __str__(self):
         return _str_for_multioption_field(self)
-

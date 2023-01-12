@@ -113,7 +113,6 @@ class DateString(String):
         )
 
 
-
 class TimeString(TypedField):
     """
     A string field of the format '%H:%M:%S' that can be converted to a time

@@ -4,7 +4,13 @@ import json
 import uuid
 from typing import Dict
 
-from typedpy.commons import Constant, Undefined, deep_get, raise_errs_if_needed, wrap_val
+from typedpy.commons import (
+    Constant,
+    Undefined,
+    deep_get,
+    raise_errs_if_needed,
+    wrap_val,
+)
 from typedpy.serialization.versioned_mapping import (
     VERSION_MAPPING,
     Versioned,
@@ -423,7 +429,9 @@ def construct_fields_map(
         process = False
         processed_input = None
         if key in mapper:
-            processed_input = get_processed_input(key, mapper, input_dict, enable_undefined=enable_undefined)
+            processed_input = get_processed_input(
+                key, mapper, input_dict, enable_undefined=enable_undefined
+            )
             if processed_input is not None or getattr(cls, ENABLE_UNDEFINED, False):
                 process = True
         elif key in input_dict and key not in mapper:
@@ -552,7 +560,7 @@ def deserialize_structure_internal(
             cls=cls,
             camel_case_convert=camel_case_convert,
             ignore_none=ignore_none,
-            enable_undefined=getattr(cls, ENABLE_UNDEFINED, False)
+            enable_undefined=getattr(cls, ENABLE_UNDEFINED, False),
         )
     )
 
@@ -792,12 +800,22 @@ def _convert_to_camel_case_if_required(key, camel_case_convert):
         return key
 
 
-def serialize_internal(structure, mapper=None, resolved_mapper=None, compact=False, camel_case_convert=False):
+def serialize_internal(
+    structure,
+    mapper=None,
+    resolved_mapper=None,
+    compact=False,
+    camel_case_convert=False,
+):
     cls = structure.__class__
     field_by_name = cls.get_all_fields_by_name() if issubclass(cls, Structure) else {}
     if isinstance(structure, (Structure, ClassReference)):
-        mapper = resolved_mapper if resolved_mapper else aggregate_serialization_mappers(
-            structure.__class__, mapper, camel_case_convert
+        mapper = (
+            resolved_mapper
+            if resolved_mapper
+            else aggregate_serialization_mappers(
+                structure.__class__, mapper, camel_case_convert
+            )
         )
     mapper = {} if mapper is None else mapper
     if isinstance(structure, getattr(Generator, "_ty", None)):
@@ -807,8 +825,11 @@ def serialize_internal(structure, mapper=None, resolved_mapper=None, compact=Fal
     items = (
         list(structure.items())
         if isinstance(structure, dict)
-        else [(k, v) for (k, v) in structure.__dict__.items() if k not in ["_instantiated", "_none_fields"]]
-
+        else [
+            (k, v)
+            for (k, v) in structure.__dict__.items()
+            if k not in ["_instantiated", "_none_fields"]
+        ]
     ) + nones
     props = structure.__class__.__dict__
     fields = list(field_by_name.keys())

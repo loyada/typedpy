@@ -108,12 +108,9 @@ def test_datetime():
         t: datetime
 
     now = datetime.now()
-    foo = Foo(
-        d=now.date(),
-        t=now
-    )
+    foo = Foo(d=now.date(), t=now)
     assert foo.d == now.date()
-    assert foo.t ==now
+    assert foo.t == now
     foo.d = str(foo.d)
     assert foo.d == now.date()
     with raises(TypeError) as excinfo:

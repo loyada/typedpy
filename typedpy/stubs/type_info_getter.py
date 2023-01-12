@@ -8,6 +8,7 @@ from typedpy.structures import Field, NoneField
 from typedpy.structures.structures import get_typing_lib_info
 from typedpy.utility import type_is_generic
 
+
 def _get_anyof_typing(field, locals_attrs, additional_classes):
     union_fields = getattr(field, "_fields", [])
     if len(union_fields) == 2 and isinstance(union_fields[1], NoneField):

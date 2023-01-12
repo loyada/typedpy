@@ -19,10 +19,7 @@ def convert_basic_types(v):
         Anything,
         Deque,
     )
-    from typedpy.extfields import (
-        DateField,
-        DateTime
-    )
+    from typedpy.extfields import DateField, DateTime
 
     type_mapping = {
         deque: Deque,

@@ -19,16 +19,18 @@ classifiers = [
 
 setup(
     name="typedpy",
-    packages=find_packages(include=[
-        "typedpy",
-        "typedpy.scripts",
-        "typedpy.structures",
-        "typedpy.fields",
-        "typedpy.extfields",
-        "typedpy.json_schema",
-        "typedpy.serialization",
-        "typedpy.stubs"
-    ]),
+    packages=find_packages(
+        include=[
+            "typedpy",
+            "typedpy.scripts",
+            "typedpy.structures",
+            "typedpy.fields",
+            "typedpy.extfields",
+            "typedpy.json_schema",
+            "typedpy.serialization",
+            "typedpy.stubs",
+        ]
+    ),
     entry_points={
         "console_scripts": [
             "create-stub=typedpy.scripts.create_stub:main",

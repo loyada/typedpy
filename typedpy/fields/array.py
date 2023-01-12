@@ -15,6 +15,8 @@ from .collections_impl import (
     _CollectionMeta,
 )
 from .fields import _map_to_field, verify_type_and_uniqueness
+from .numbers import Number
+from .strings import String
 
 
 def extract_field_value(*, self, value, cls):
@@ -165,6 +167,9 @@ class Array(
         items = self.items
         if items is not None:
             if isinstance(items, Field):
+                if isinstance(items, Number) or items.__class__ is String:
+                    self._serialize = lambda value: value
+                    return value
                 if isinstance(items, ClassReference):
                     serializer = items._ty.serialize
                     self._serialize = lambda value: [serializer(x) for x in value]

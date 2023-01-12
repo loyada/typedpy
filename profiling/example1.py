@@ -232,8 +232,8 @@ if __name__ == "__main__":
 
     TypedPyDefaults.defensive_copy_on_get = False
     with cProfile.Profile() as pr:
-        res = serialize_all_optimized(firms)
-    # serialize_all(firms)
+        serialize_all_optimized(firms)
+        # serialize_all(firms)
     stats = pstats.Stats(pr)
     stats.sort_stats(pstats.SortKey.TIME)
     stats.print_stats()

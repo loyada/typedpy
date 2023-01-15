@@ -71,24 +71,24 @@ class Example(Structure, FastSerializable):
 create_serializer(SimpleStruct)
 
 
-def test_not_impelmented(serialized_source):
+def test_not_impelmented(serialized_example):
     class Foo(Structure, FastSerializable):
         i = Integer(maximum=10)
         s = String(maxLength=5)
 
-    example = deserialize_structure(Foo, serialized_source)
+    example = deserialize_structure(Foo, serialized_example)
     with raises(NotImplementedError) as excinfo:
         result = Foo.serialize(example)
     assert (
-        "You need to implement serialize(self) for class Foo, or use: create_serializer(Foo)"
-        in str(excinfo.value)
+            "You need to implement serialize(self) for class Foo, or use: create_serializer(Foo)"
+            in str(excinfo.value)
     )
 
 
 create_serializer(Example)
 
 
-@pytest.fixture(name="serialized_source")
+@pytest.fixture(name="serialized_example")
 def fixture_serialized_source():
     return {
         "i": 5,
@@ -102,20 +102,20 @@ def fixture_serialized_source():
 
 
 @pytest.fixture(name="example")
-def fixture_example(serialized_source):
-    return deserialize_structure(Example, serialized_source)
+def fixture_example(serialized_example):
+    return deserialize_structure(Example, serialized_example)
 
 
-def test_successful_deserialization_with_many_types(serialized_source, example):
+def test_successful_deserialization_with_many_types(serialized_example, example):
     result = Example.serialize(example)
-    assert {k: v for k, v in result.items() if v is not None} == serialized_source
+    assert {k: v for k, v in result.items() if v is not None} == serialized_example
 
 
 def test_fast_serialization_with_non_typedpy_wrapper_may_fail(
-    serialized_source, example
+        serialized_example, example
 ):
-    serialized_source["points"] = [{"x": 1, "y": 2}]
-    example = deserialize_structure(Example, serialized_source)
+    serialized_example["points"] = [{"x": 1, "y": 2}]
+    example = deserialize_structure(Example, serialized_example)
     with raises(TypeError) as excinfo:
         result = Example.serialize(example)
     assert "Object of type Point1 is not JSON serializable" in str(excinfo.value)
@@ -265,8 +265,8 @@ def test_serialize_map():
     assert serialized["m1"] == {"a": [1, 2, 3], "b": 1}
 
 
-def test_serialize_field_basic_field(serialized_source, example):
-    assert serialize_field(Example.array, example.array) == serialized_source["array"]
+def test_serialize_field_basic_field(serialized_example, example):
+    assert serialize_field(Example.array, example.array) == serialized_example["array"]
 
 
 def test_serialize_with_mapper_to_different_keys():
@@ -497,7 +497,7 @@ def test_serialize_mapper_to_lowercase():
     create_serializer(Foo)
 
     foo = Foo(abc=123, m={"my_key": Bar(field1="xxx", field2="yyy")})
-    serialized = Foo.serialize(foo)
+    serialized = foo.serialize()
     assert serialized == {
         "ABC": 123,
         "M": {"my_key": {"FIELD1": "xxx", "FIELD2": "yyy"}},
@@ -521,7 +521,7 @@ def test_serialize_anyof():
 
     f = {"field1": "val1", "field2": "val2"}
     f2d = Deserializer(Container).deserialize(f)
-    f2s = Container.serialize(f2d)
+    f2s = f2d.serialize()
     assert f2s == f
 
 
@@ -551,7 +551,7 @@ def test_serialize_optional_of_serializablefield():
     assert f2s == f
 
     f1d = Deserializer(Container1).deserialize(f)
-    f1s = Container1.serialize(f1d)
+    f1s = f1d.serialize()
     assert f1s == f
 
 
@@ -567,7 +567,7 @@ def test_trivial_serializable():
     deserialized = Bar(foo=123)
     serialized = {"foo": 123}
     assert Deserializer(Bar).deserialize(serialized) == deserialized
-    assert Bar.serialize(deserialized) == serialized
+    assert deserialized.serialize() == serialized
 
 
 def test_serialize_multified_with_any():
@@ -584,3 +584,24 @@ def test_serialize_multified_with_any():
     with raises(TypeError) as excinfo:
         Foo.serialize(Foo(a=[1, MyPoint1(1, 2)]))
     assert "Object of type MyPoint1 is not JSON serializable" in str(excinfo.value)
+
+
+def test_optional_field_defect_234(serialized_example):
+    class Number(enum.Enum):
+        One = 1
+        Two = 2
+        Three = 3
+
+    class Foo(Structure, FastSerializable):
+        a: Optional[Number]
+
+    class Bar(ImmutableStructure, FastSerializable):
+        foo: Foo
+
+
+    create_serializer(Foo)
+    create_serializer(Bar)
+
+    foo = Foo(a=Number.One)
+    bar = Bar(foo=foo)
+    bar.serialize()

@@ -4,7 +4,6 @@ import pytest
 from typedpy import Structure
 from typedpy.structures import TypedPyDefaults
 
-
 @pytest.fixture(name="additional_props_default_is_false")
 def fixture_additional_props_default_is_false():
     Structure.set_additional_properties_default(False)
@@ -31,3 +30,19 @@ def fixture_uniqueness_enabled():
     TypedPyDefaults.uniqueness_features_enabled = True
     yield
     TypedPyDefaults.uniqueness_features_enabled = False
+
+
+@pytest.fixture(name="allow_none_for_optional")
+def fixture_allow_none_for_optional():
+    TypedPyDefaults.allow_none_for_optionals = True
+    yield
+    TypedPyDefaults.allow_none_for_optionals = False
+
+
+@pytest.fixture(name="no_defensive_copy_on_get")
+def fixture_no_defensive_copy_on_get():
+    TypedPyDefaults.defensive_copy_on_get = False
+    yield
+    TypedPyDefaults.defensive_copy_on_get = True
+
+

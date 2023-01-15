@@ -62,6 +62,33 @@ def test_optional_fields():
     )
 
 
+
+
+
+
+def test_typing_optional_fields_none_allowed():
+    class Trade(Structure):
+        notional: DecimalNumber(maximum=10000, minimum=0)
+        quantity: typing.Optional[PositiveInt(maximum=100000, multiplesOf=5)]
+        symbol: String(pattern="[A-Z]+$", maxLength=6)
+        buyer: Trader
+        seller: Trader
+        venue: Enum[Venue]
+        comment: String
+        _required = []
+
+    assert Trade(
+            notional=1000,
+            quantity=None,
+            symbol="AAA",
+            buyer=Trader(lei="12345678901234567890", alias="GSET"),
+            seller=Trader(lei="12345678901234567888", alias="MSIM"),
+            timestamp="01/30/20 05:35:35",
+    ).quantity is None
+
+
+
+
 def test_optional_fields_required_overrides():
     class Trade(Structure):
         notional: DecimalNumber(maximum=10000, minimum=0)
@@ -196,7 +223,7 @@ def test_field_of_class(Point):
 
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
-def test_ignore_none(Point):
+def test_optional_ignore_none(Point):
     class Foo(Structure):
         i: list[int]
         maybe_date: typing.Optional[DateField]
@@ -210,10 +237,30 @@ def test_ignore_none(Point):
         assert Foo(i=[5], maybe_date="2020-01-31a")
 
 
-def test_do_not_ignore_none(Point):
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_optional_global_config_ignore_none(Point, allow_none_for_optional):
+    class Foo(Structure):
+        i: list[int]
+        maybe_date: DateField
+
+        _required = []
+
+    assert Foo(i=[5], maybe_date=None).i == [5]
+    assert Foo(i=[1]).maybe_date is None
+    assert Foo(i=[1], maybe_date=None).i[0] == 1
+    assert Foo(i=[5], maybe_date="2020-01-31").i[0] == 5
+    with raises(ValueError):
+        assert Foo(i=[5], maybe_date="2020-01-31a")
+
+
+
+
+def test_optional_do_not_ignore_none(Point):
     class Foo(Structure):
         i = Integer
         point: Field[Point]
+
+        _required = []
         _ignore_none = False
 
     with raises(TypeError) as excinfo:

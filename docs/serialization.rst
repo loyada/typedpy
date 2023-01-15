@@ -917,9 +917,9 @@ The same is true for deserialization.
 
 Fast Serialization
 ==================
-Typedpy offers significantly faster version of serialization. In internal profiling it is roughly 5 times faster.
+Typedpy offers a significantly faster version of serialization. Using internal profiling it is roughly 4-5 times faster.
 
-However, it requires more setup. First, you need tomark the Structure class by FastSerializable.
+However, it requires more setup. First, you need to mark the Structure class by FastSerializable.
 
 Then, tell Typedpy to implement an optimized serializer, by calling create_serializer(<your class>). For example:
 
@@ -937,7 +937,7 @@ Then, tell Typedpy to implement an optimized serializer, by calling create_seria
     create_serializer(Foo)
 
     foo = Foo(a=[1, 5])
-    serialized = Foo.serialize()
+    serialized = foo.serialize()
     assert serialized = {"A": [1, 5], "b": None}
 
 In case you implement your own custom Field classes, they can include a custom serialize(value) method.

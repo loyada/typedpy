@@ -109,6 +109,7 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             try:
                 field.__set__(instance, value)
                 matched = field
+                break
             except TypeError:
                 pass
             except ValueError:

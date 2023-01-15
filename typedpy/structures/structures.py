@@ -1100,7 +1100,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             )
         if all(
             [
-                getattr(self, IGNORE_NONE_VALUES, False)
+                getattr(self, IGNORE_NONE_VALUES, TypedPyDefaults.allow_none_for_optionals)
                 or getattr(self, ENABLE_UNDEFINED, False),
                 value is None,
                 key not in getattr(self.__class__, REQUIRED_FIELDS, []),
@@ -1658,6 +1658,9 @@ class NoneField(TypedField):
     """
 
     _ty = type(None)
+
+    def serialize(self, value):
+        return None
 
 
 class ValidatedTypedField(TypedField):

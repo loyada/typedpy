@@ -1,10 +1,11 @@
 from functools import wraps
 from typing import Type
 
-from typedpy.commons import Constant, first_in
+from typedpy.commons import Constant, deep_get, first_in
 from typedpy.fields import Boolean, FunctionCall, Number, String
 from typedpy.structures import ClassReference
 from typedpy.serialization.mappers import (
+    aggregate_deserialization_mappers,
     aggregate_serialization_mappers,
 )
 from typedpy.structures import (
@@ -40,6 +41,16 @@ def _get_serialize(field, cls):
     return wrapped
 
 
+
+def _get_deserialize(field):
+    obj = field._ty if isinstance(field, ClassReference) else field
+
+    def wrapped(val):
+        return obj.deserialize(val) if val is not None else None
+
+    return wrapped
+
+
 def _get_constant(constant: Constant):
     def wrapped(_self):
         return constant()
@@ -64,7 +75,8 @@ def create_serializer(cls: Type[Structure], compact: bool = False):
                 )
         elif isinstance(mapped_key, (FunctionCall,)):
             raise ValueError("Function mappers is not supported in fast serialization")
-
+        else:
+            raise NotImplementedError()
     items = processed_mapper.items()
 
     def serializer(self):
@@ -87,3 +99,37 @@ def set_compact_wrapper(cls):
         return res
 
     cls.serialize = wrapper
+
+
+def _get_by_mapped_key(mapped_key):
+    use_deep_get = "." in mapped_key
+
+    def wrapped(self, input: dict):
+        return (
+            deep_get(input, mapped_key) if use_deep_get else input.get(mapped_key, None)
+        )
+
+    return wrapped
+
+
+def create_deserializer(cls: Type[Structure]):
+    mapper = aggregate_deserialization_mappers(cls)
+    field_by_name = cls.get_all_fields_by_name()
+    processed_mapper = {}
+    for field_name, field in field_by_name.items():
+        mapped_key = mapper[field_name]
+        if mapped_key.__class__ is str:
+            if isinstance(field, (Number, String, Boolean)):
+                processed_mapper[field_name] = _get_by_mapped_key(mapped_key=mapped_key)
+            else:
+                processed_mapper[field_name] = _get_serialize(field, cls)
+        elif isinstance(mapped_key, (FunctionCall,)):
+            raise ValueError("Function mappers is not supported in fast serialization")
+
+    items = processed_mapper.items()
+
+    def deserializer(input_data):
+        return cls(**{name: value(input_data) for name, value in items})
+
+    cls.deserialize = deserializer
+

@@ -42,7 +42,7 @@ def _get_serialize(field, cls):
 
 def _get_constant(constant: Constant):
     def wrapped(_self):
-        constant()
+        return constant()
 
     return wrapped
 
@@ -57,11 +57,14 @@ def create_serializer(cls: Type[Structure], compact: bool = False):
             if isinstance(field, (Number, String, Boolean)):
                 processed_mapper[mapped_key] = _get_value(field, cls)
             else:
-                processed_mapper[mapped_key] = _get_serialize(field, cls)
+                processed_mapper[mapped_key] = (
+                    _get_constant(field)
+                    if isinstance(field, Constant)
+                    else _get_serialize(field, cls)
+                )
         elif isinstance(mapped_key, (FunctionCall,)):
             raise ValueError("Function mappers is not supported in fast serialization")
-        elif isinstance(mapped_key, Constant):
-            processed_mapper[field_name] = _get_constant(mapped_key)
+
     items = processed_mapper.items()
 
     def serializer(self):

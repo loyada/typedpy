@@ -952,10 +952,12 @@ support the following:
 #. providing custom mappers when calling serialize()
 
 
-Requirements:
+Requirements/Limitations:
+
 #. All Structures in the hierarchy implement FastSerializable. Typically this is done by calling create_serializer
 #. Any custom Field classes should implement the serialize() method.
 #. All mappers must be in the definition of the Structures.
+#. No mapper to Typedpy Constant in custom serialization mapper of the class
 
 
 Instead of support of the "compact" (see above) flag in the serialize() call, you provide it to create_serializer().
@@ -970,4 +972,4 @@ For example:
     create_serializer(Foo, compact=True)
 
     foo = Foo(s=["abcde", 234])
-    assert Foo.serialize(foo) == ["abcde", 234]
+    assert foo.serialize() == ["abcde", 234]

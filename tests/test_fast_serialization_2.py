@@ -17,6 +17,7 @@ import pytest
 from pytest import raises
 
 from typedpy import (
+    Constant,
     ImmutableStructure,
     NoneField,
     SerializableField,
@@ -129,7 +130,21 @@ def test_some_empty_fields(no_defensive_copy_on_get):
 
     foo = Foo(a=5)
     create_serializer(Foo)
-    assert Foo.serialize(foo) == {"a": 5, "b": None}
+    assert foo.serialize() == {"a": 5, "b": None}
+
+
+
+def test_with_constant_field(no_defensive_copy_on_get):
+    class Foo(ImmutableStructure, FastSerializable):
+        a = Integer
+        b = String
+        const = Constant("xyz")
+        _required = []
+
+    create_serializer(Foo)
+    foo = Foo(a=5, b="bbb")
+    assert foo.serialize() == {"a": 5, "b": "bbb", "const": "xyz"}
+
 
 
 def test_null_fields(no_defensive_copy_on_get):

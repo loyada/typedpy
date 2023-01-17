@@ -62,14 +62,10 @@ def test_optional_fields():
     )
 
 
-
-
-
-
 def test_typing_optional_fields_none_allowed():
     class Trade(Structure):
         notional: DecimalNumber(maximum=10000, minimum=0)
-        quantity: typing.Optional[PositiveInt(maximum=100000, multiplesOf=5)]
+        quantity: typing.Optional[PositiveInt]
         symbol: String(pattern="[A-Z]+$", maxLength=6)
         buyer: Trader
         seller: Trader

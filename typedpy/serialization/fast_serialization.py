@@ -47,7 +47,7 @@ def _get_constant(constant: Constant):
     return wrapped
 
 
-def create_serializer(cls: Type[Structure], compact: bool = False):
+def create_serializer(cls: Type[Structure], compact: bool = False, serialize_none: bool = False):
     mapper = aggregate_serialization_mappers(cls)
     field_by_name = cls.get_all_fields_by_name()
     processed_mapper = {}
@@ -68,7 +68,8 @@ def create_serializer(cls: Type[Structure], compact: bool = False):
     items = processed_mapper.items()
 
     def serializer(self):
-        return {name: value(self) for name, value in items}
+        res = {name: value(self) for name, value in items}
+        return res if serialize_none else {k:v for (k,v) in res.items() if v is not None}
 
     cls.serialize = serializer
 

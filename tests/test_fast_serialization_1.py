@@ -128,7 +128,7 @@ def test_some_empty_fields():
         _required = []
 
     foo = Foo(a=5)
-    create_serializer(Foo)
+    create_serializer(Foo, serialize_none=True)
     assert Foo.serialize(foo) == {"a": 5, "b": None}
 
 
@@ -138,7 +138,7 @@ def test_null_fields():
         b = String
         _required = []
 
-    create_serializer(Foo)
+    create_serializer(Foo, serialize_none=True)
 
     foo = Foo(a=5, c=None)
     assert Foo.serialize(foo) == {"a": 5, "b": None}

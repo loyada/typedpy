@@ -16,6 +16,7 @@ class Deleted:
     This is unsupported (nor needed) in a "regular" serialization mapper.
     """
 
+
 # pylint:disable=protected-access, missing-function-docstring, invalid-name
 def _set_base_mapper_no_op(cls, for_serialization):
     mapper = {}
@@ -222,7 +223,7 @@ def aggregate_serialization_mappers(
     try:
         override_mapper_param = json.dumps(override_mapper) if override_mapper else ""
         cachable = True
-    except:     # pylint: disable=bare-except
+    except:  # pylint: disable=bare-except
         override_mapper_param = override_mapper
         cachable = False
     if (

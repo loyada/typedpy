@@ -129,7 +129,7 @@ def test_some_empty_fields(no_defensive_copy_on_get):
         _required = []
 
     foo = Foo(a=5)
-    create_serializer(Foo)
+    create_serializer(Foo, serialize_none=True)
     assert foo.serialize() == {"a": 5, "b": None}
 
 
@@ -153,7 +153,7 @@ def test_null_fields(no_defensive_copy_on_get):
         b = String
         _required = []
 
-    create_serializer(Foo)
+    create_serializer(Foo, serialize_none=True)
 
     foo = Foo(a=5, c=None)
     assert Foo.serialize(foo) == {"a": 5, "b": None}
@@ -621,3 +621,28 @@ def test_optional_field_defect_234(serialized_example, no_defensive_copy_on_get)
     foo = Foo(a=Number.One)
     bar = Bar(foo=foo)
     bar.serialize()
+
+
+
+def test_do_not_serialize_none(no_defensive_copy_on_get, allow_none_for_optional):
+    class Foo(Structure, FastSerializable):
+        a: Optional[Number]
+        b: int
+        c: str
+
+        _required = []
+
+    create_serializer(Foo)
+    assert Foo(c="xxx", b=None, a=None).serialize() == {"c": "xxx"}
+
+
+def test_serialize_none(no_defensive_copy_on_get, allow_none_for_optional):
+    class Foo(Structure, FastSerializable):
+        a: Optional[Number]
+        b: int
+        c: str
+
+        _required = []
+
+    create_serializer(Foo, serialize_none=True)
+    assert Foo(c="xxx", b=None).serialize() == {"c": "xxx", "a": None, "b": None}

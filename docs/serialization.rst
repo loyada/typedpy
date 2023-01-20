@@ -973,3 +973,12 @@ For example:
 
     foo = Foo(s=["abcde", 234])
     assert foo.serialize() == ["abcde", 234]
+
+
+To control whether or not None values are serialized, use the optional flag "serialize_none" when creating
+the serializer, as such:
+
+
+.. code-block:: python
+
+    create_serializer(Foo, serialize_none = True)

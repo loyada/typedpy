@@ -72,18 +72,17 @@ class Example(Structure, FastSerializable):
 create_serializer(SimpleStruct)
 
 
-def test_not_impelmented(serialized_example, no_defensive_copy_on_get):
+def test_not_impelmented(no_defensive_copy_on_get):
+    serialized = {"i": 5, "s": "test"}
+
     class Foo(Structure, FastSerializable):
         i = Integer(maximum=10)
         s = String(maxLength=5)
 
-    example = deserialize_structure(Foo, serialized_example)
-    with raises(NotImplementedError) as excinfo:
-        result = Foo.serialize(example)
-    assert (
-            "You need to implement serialize(self) for class Foo, or use: create_serializer(Foo)"
-            in str(excinfo.value)
-    )
+    assert not hasattr(Foo, "serialize")
+    example = deserialize_structure(Foo, serialized)
+    assert example.serialize() == serialized
+    assert hasattr(Foo, "serialize")
 
 
 create_serializer(Example)

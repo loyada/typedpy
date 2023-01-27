@@ -1045,6 +1045,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         if TypedPyDefaults.uniqueness_features_enabled:
             self.__manage_uniqueness__()
             self.__manage__uniqueness_of_all_fields__()
+        super().__init__()
 
     def _set_defaults(self, defaults_fields, field_by_name):
         for field_name in defaults_fields:

@@ -13,11 +13,11 @@ from typedpy.structures import (
 
 
 class FastSerializable:
-    def serialize(self) -> dict:
-        cls_name = self.__class__.__name__
-        raise NotImplementedError(
-            f"You need to implement serialize(self) for class {cls_name}, or use: create_serializer({cls_name})"
-        )
+    def __init__(self, *args, **kwargs):
+        if not hasattr(self.__class__, "serialize"):
+            create_serializer(self.__class__)
+        super().__init__(*args, **kwargs)
+
 
 
 def _get_value(field, cls):

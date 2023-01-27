@@ -934,6 +934,8 @@ Then, tell Typedpy to implement an optimized serializer, by calling create_seria
         _required = []
         _serialization_mapper = mappers.TO_LOWERCASE
 
+    # optional: if you want to create the serializer before Foo is used.
+    # Otherwise, it creates the serializer on the first instantiation
     create_serializer(Foo)
 
     foo = Foo(a=[1, 5])
@@ -954,7 +956,8 @@ support the following:
 
 Requirements/Limitations:
 
-#. All Structures in the hierarchy implement FastSerializable. Typically this is done by calling create_serializer
+#. All Structures in the hierarchy implement FastSerializable. Typically this is done by calling create_serializer, or
+   or automatically, during first instantiation.
 #. Any custom Field classes should implement the serialize() method.
 #. All mappers must be in the definition of the Structures.
 #. No mapper to Typedpy Constant in custom serialization mapper of the class

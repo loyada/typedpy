@@ -897,3 +897,13 @@ def test_serialize_descriminator():
             {"type": "sales", "name": "joe"},
         ]
     }
+
+
+def test_dont_serialize_none():
+    class Foo(Structure):
+        a: int
+        s: str
+
+        _required = []
+
+    assert Serializer(Foo()).serialize() == {}

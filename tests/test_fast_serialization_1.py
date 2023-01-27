@@ -71,18 +71,28 @@ class Example(Structure, FastSerializable):
 create_serializer(SimpleStruct)
 
 
-def test_not_impelmented(serialized_example):
+def test_serialize_created_on_instantiation():
+    serialized = {"i": 5, "s": "test"}
+
     class Foo(Structure, FastSerializable):
         i = Integer(maximum=10)
         s = String(maxLength=5)
 
-    example = deserialize_structure(Foo, serialized_example)
-    with raises(NotImplementedError) as excinfo:
-        result = Foo.serialize(example)
-    assert (
-            "You need to implement serialize(self) for class Foo, or use: create_serializer(Foo)"
-            in str(excinfo.value)
-    )
+    assert not hasattr(Foo, "serialize")
+    example = deserialize_structure(Foo, serialized)
+    assert example.serialize() == serialized
+
+
+def test_serialize_created_on_instantiation_only_once():
+    class Foo(Structure, FastSerializable):
+        i = Integer(maximum=10)
+        s = String(maxLength=5)
+
+    Foo(i=1, s="x")
+    serialize_method = getattr(Foo, "serialize")
+    assert serialize_method
+    Foo(i=1, s="x")
+    assert getattr(Foo, "serialize") is serialize_method
 
 
 create_serializer(Example)
@@ -597,7 +607,6 @@ def test_optional_field_defect_234(serialized_example):
 
     class Bar(ImmutableStructure, FastSerializable):
         foo: Foo
-
 
     create_serializer(Foo)
     create_serializer(Bar)

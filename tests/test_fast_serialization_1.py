@@ -331,7 +331,7 @@ def test_raise_exception_if_nested_structure_is_not_fastserializable_1():
         i = Integer
 
     class Bar(Structure, FastSerializable):
-        wrapped: list[Foo]
+        wrapped: Array[Foo]
 
     with pytest.raises(TypeError) as excinfo:
         create_serializer(Bar)
@@ -345,7 +345,7 @@ def test_raise_exception_if_nested_structure_is_not_fastserializable_2():
         i: int
 
     class Bar(Structure, FastSerializable):
-        wrapped: list[list[Foo]]
+        wrapped: Array[Array[Foo]]
 
     with pytest.raises(TypeError) as excinfo:
         create_serializer(Bar)

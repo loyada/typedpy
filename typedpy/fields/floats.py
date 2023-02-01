@@ -4,10 +4,18 @@ from .numbers import Number, Positive, Negative, NonPositive, NonNegative
 
 class Float(TypedField, Number):
     """
-    An extension of :class:`Number` for a float
+    An extension of :class:`Number` for a float. Also excepts an int, which will be converted to a float.
     """
 
     _ty = float
+
+    def __set__(self, instance, value):
+        converted = (
+            float(value)
+            if isinstance(value, int) and value is not True and value is not False
+            else value
+        )
+        super().__set__(instance, converted)
 
     def _validate(self, value):
         super()._validate(value)

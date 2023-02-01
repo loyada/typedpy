@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pytest import raises
 
 from typedpy import Structure, Tuple, Number, String, Integer, Float
@@ -27,7 +29,7 @@ def test_wrong_type_for_tuple_items_err1():
 
 def test_wrong_type_for_tuple_items_err2():
     with raises(TypeError) as excinfo:
-        Example(c=(1, "aa", 2))
+        Example(c=(1, "aa", datetime.now()))
     assert "c_2: Expected <class 'float'>" in str(excinfo.value)
 
 

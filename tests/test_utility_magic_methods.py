@@ -66,7 +66,7 @@ def rich_object_example():
         anything={"a", "b", "c"},
         i=5,
         s="test",
-        array_of_one_of=[{"a1": 8, "a2": 0.5}, 0.5, 4, Person(name="john", ssid="123")],
+        array_of_one_of=[{"a1": 8, "a2": 0.5}, 0.5, 4.0, Person(name="john", ssid="123")],
         complex_allof=BigPerson(name="john", ssid="123"),
         any=[Person(name="john", ssid="123")],
         array=[10, 7],

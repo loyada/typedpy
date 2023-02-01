@@ -172,8 +172,8 @@ def test_simplified_definition_implicit_wrapper_error():
         a = AllOf[Number(minimum=10), float]
 
     with raises(TypeError) as excinfo:
-        Example(a=20)
-    assert "a: Expected <class 'float'>; Got 20" in str(excinfo.value)
+        Example(a="x")
+    assert "Example.a: Got 'x'; Expected a number" in str(excinfo.value)
 
 
 def test_standard_definition_wrong_field_type_err():

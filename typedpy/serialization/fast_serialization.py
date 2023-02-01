@@ -2,8 +2,8 @@ from functools import wraps
 from typing import Type
 
 from typedpy.commons import Constant, first_in
-from typedpy.fields import Boolean, FunctionCall, Number, String
-from typedpy.structures import ClassReference
+from typedpy.fields import Boolean, FunctionCall, Number, String, Array
+from typedpy.structures import ClassReference, Field
 from typedpy.serialization.mappers import (
     aggregate_serialization_mappers,
 )
@@ -28,9 +28,18 @@ def _get_value(field, cls):
 
     return wrapped
 
+def _verify_is_fast_serializable(field):
+    obj = field._ty if isinstance(field, ClassReference) else field
+    if isinstance(field, Array) and isinstance(field.items, (Field, ClassReference)):
+        _verify_is_fast_serializable(field.items)
+    if isinstance(field, ClassReference) and (not hasattr(obj, "serialize") or not issubclass(obj, FastSerializable)):
+        raise TypeError(f"{obj.__name__} is not FastSerializable or does not implement 'serialize(self, value)'")
 
 def _get_serialize(field, cls):
+    _verify_is_fast_serializable(field)
     obj = field._ty if isinstance(field, ClassReference) else field
+
+
     owner = cls
 
     def wrapped(self):

@@ -390,5 +390,5 @@ def test_auto_mapping_of_deque():
         d: deque[float]
 
     with raises(TypeError) as excinfo:
-        Foo(d=deque([0.5, 2]))
-    assert "d_1: Expected <class 'float'>; Got 2" in str(excinfo.value)
+        Foo(d=deque([0.5, True]))
+    assert "d_1: Expected <class 'float'>; Got True" in str(excinfo.value)

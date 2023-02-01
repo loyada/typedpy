@@ -313,6 +313,58 @@ def test_serialize_with_deep_mapper_ignores_mappping():
     assert serialized == {"other": [{"a": "string1", "i": 1}, {"a": "string2", "i": 2}]}
 
 
+def test_raise_exception_if_nested_structure_is_not_fastserializable_0():
+    class Foo(Structure):
+        a = String
+        i = Integer
+
+    class Bar(Structure, FastSerializable):
+        wrapped: Foo
+
+    with pytest.raises(TypeError) as excinfo:
+        create_serializer(Bar)
+    assert "Foo is not FastSerializable or does not implement 'serialize(self, value)'" in str(excinfo.value)
+
+def test_raise_exception_if_nested_structure_is_not_fastserializable_1():
+    class Foo(Structure):
+        a = String
+        i = Integer
+
+    class Bar(Structure, FastSerializable):
+        wrapped: list[Foo]
+
+    with pytest.raises(TypeError) as excinfo:
+        create_serializer(Bar)
+    assert "Foo is not FastSerializable or does not implement 'serialize(self, value)'" in str(excinfo.value)
+
+
+def test_raise_exception_if_nested_structure_is_not_fastserializable_2():
+
+    class Foo(Structure):
+        a = String
+        i: int
+
+    class Bar(Structure, FastSerializable):
+        wrapped: list[list[Foo]]
+
+    with pytest.raises(TypeError) as excinfo:
+        create_serializer(Bar)
+    assert "Foo is not FastSerializable or does not implement 'serialize(self, value)'" in str(excinfo.value)
+
+
+def test_raise_exception_if_nested_structure_is_does_not_implement_serialize():
+    class Foo(Structure, FastSerializable):
+        a = String
+        i = Integer
+
+    class Bar(Structure, FastSerializable):
+        wrapped = Array[Foo]
+
+    with pytest.raises(TypeError) as excinfo:
+        create_serializer(Bar)
+    assert "Foo is not FastSerializable or does not implement 'serialize(self, value)'"
+
+
 def test_serialize_with_mappers_in_nested_structures():
     class Foo(Structure, FastSerializable):
         ab_a = String

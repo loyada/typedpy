@@ -60,6 +60,24 @@ class FooOmitSubPackage(Structure):
         **kw
     ): ...
 
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
+        *,
+        ignore_props: Iterable[str] = None,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
+        union: Union[int,str] = None,
+        any: Any = None,
+        x: int = None,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
 
     i: int
     s: str

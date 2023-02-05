@@ -50,6 +50,19 @@ class Vehicle(Structure):
         **kw
     ): ...
 
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
+        *,
+        ignore_props: Iterable[str] = None,
+        license_plate_state: State = None,
+        odometer: int = None,
+        alias: str = None,
+        license_plate: str = None,
+        **kw
+    ): ...
+
 
     license_plate_state: State
     odometer: int
@@ -110,6 +123,26 @@ class AnotherFoo(Structure):
         **kw
     ): ...
 
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
+        *,
+        ignore_props: Iterable[str] = None,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
+        union: Union[int,str] = None,
+        any: Any = None,
+        a: set = None,
+        b: set = None,
+        another: str = None,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
 
     i: int
     s: str
@@ -147,6 +180,19 @@ class Vehicle2(Structure):
     def from_other_class(
         cls,
         source_object: Any,
+        *,
+        ignore_props: Iterable[str] = None,
+        license_plate_state: Optional[State] = None,
+        odometer: Optional[int] = None,
+        alias: Optional[str] = None,
+        license_plate: Optional[str] = None,
+        **kw
+    ): ...
+
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
         *,
         ignore_props: Iterable[str] = None,
         license_plate_state: Optional[State] = None,

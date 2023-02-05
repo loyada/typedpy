@@ -43,6 +43,16 @@ class Event(Structure):
         i: Optional[int] = None
     ): ...
 
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
+        *,
+        ignore_props: Iterable[str] = None,
+        subject: EventSubject = None,
+        i: Optional[int] = None
+    ): ...
+
 
     subject: EventSubject
     i: Optional[int] = None
@@ -71,6 +81,16 @@ class FooEvent(Event, Structure):
         i: Optional[int] = None
     ): ...
 
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
+        *,
+        ignore_props: Iterable[str] = None,
+        name: str = None,
+        i: Optional[int] = None
+    ): ...
+
 
     name: str
     i: Optional[int] = None
@@ -93,6 +113,16 @@ class BarEvent(Event, Structure):
     def from_other_class(
         cls,
         source_object: Any,
+        *,
+        ignore_props: Iterable[str] = None,
+        val: int = None,
+        i: Optional[int] = None
+    ): ...
+
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
         *,
         ignore_props: Iterable[str] = None,
         val: int = None,

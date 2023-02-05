@@ -113,8 +113,10 @@ def _get_resolved_type_info(field, the_type, locals_attrs, additional_classes):
     if the_type in builtins_types:
         return the_type.__name__
 
-    if the_type in [typing.Any, typing.Optional, typing.Union, typing.NoReturn]:
+    if the_type in [typing.Optional, typing.Union, typing.NoReturn]:
         return getattr(the_type, "_name")
+    if the_type is typing.Any:
+        return "Any"
     if (
         getattr(the_type, "__module__", None)
         and the_type.__module__ != "builtins"

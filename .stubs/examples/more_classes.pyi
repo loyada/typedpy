@@ -65,6 +65,17 @@ class Address(Structure):
         **kw
     ): ...
 
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
+        *,
+        ignore_props: Iterable[str] = None,
+        city: str = None,
+        zip: str = None,
+        **kw
+    ): ...
+
 
     city: str
     zip: str
@@ -93,6 +104,19 @@ class Person(Structure):
     def from_other_class(
         cls,
         source_object: Any,
+        *,
+        ignore_props: Iterable[str] = None,
+        name: str = None,
+        age: int = None,
+        address: Address = None,
+        sex: Sex = None,
+        **kw
+    ): ...
+
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
         *,
         ignore_props: Iterable[str] = None,
         name: str = None,

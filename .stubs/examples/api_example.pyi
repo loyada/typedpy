@@ -78,6 +78,17 @@ class WithCustomInit(Structure):
         **kw
     ): ...
 
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
+        *,
+        ignore_props: Iterable[str] = None,
+        i: int = None,
+        s: str = None,
+        **kw
+    ): ...
+
 
     i: int
     s: str
@@ -110,6 +121,20 @@ class Employee(Structure):
     def from_other_class(
         cls,
         source_object: Any,
+        *,
+        ignore_props: Iterable[str] = None,
+        name: str = None,
+        age: int = None,
+        address: Address = None,
+        sex: Sex = None,
+        ssid: str = None,
+        **kw
+    ): ...
+
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
         *,
         ignore_props: Iterable[str] = None,
         name: str = None,
@@ -169,6 +194,21 @@ class Blah(Structure):
         **kw
     ): ...
 
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
+        *,
+        ignore_props: Iterable[str] = None,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
 
     i: int
     s: str
@@ -213,6 +253,25 @@ class Foo(Blah, Structure):
     def from_other_class(
         cls,
         source_object: Any,
+        *,
+        ignore_props: Iterable[str] = None,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
+        union: Union[int,str] = None,
+        any: Any = None,
+        a: set = None,
+        b: set = None,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
         *,
         ignore_props: Iterable[str] = None,
         i: int = None,
@@ -301,6 +360,26 @@ class FooPartial(Structure):
         **kw
     ): ...
 
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
+        *,
+        ignore_props: Iterable[str] = None,
+        x: str = None,
+        i: Optional[int] = None,
+        d: Optional[dict[str, int]] = None,
+        s: Optional[str] = None,
+        person: Optional[Person] = None,
+        dob: Optional[datetime] = None,
+        arr: Optional[list[str]] = None,
+        union: Optional[Union[int,str]] = None,
+        any: Optional[Any] = None,
+        a: Optional[set] = None,
+        b: Optional[set] = None,
+        **kw
+    ): ...
+
 
     x: str
     i: Optional[int] = None
@@ -362,6 +441,24 @@ class FooOmit(Structure):
         **kw
     ): ...
 
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
+        *,
+        ignore_props: Iterable[str] = None,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
+        union: Union[int,str] = None,
+        any: Any = None,
+        x: int = None,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
 
     i: int
     s: str
@@ -395,6 +492,18 @@ class FooPick(Structure):
     def from_other_class(
         cls,
         source_object: Any,
+        *,
+        ignore_props: Iterable[str] = None,
+        a: set = None,
+        xyz: float = None,
+        d: Optional[dict[str, int]] = None,
+        **kw
+    ): ...
+
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
         *,
         ignore_props: Iterable[str] = None,
         a: set = None,
@@ -448,6 +557,27 @@ class Bar(Structure):
     def from_other_class(
         cls,
         source_object: Any,
+        *,
+        ignore_props: Iterable[str] = None,
+        i: int = None,
+        s: str = None,
+        person: Person = None,
+        dob: datetime = None,
+        arr: list[str] = None,
+        union: Union[int,str] = None,
+        any: Any = None,
+        x: int = None,
+        state: State = None,
+        stats: list[int] = None,
+        states: list[State] = None,
+        d: Optional[dict[str, int]] = None,
+        opt: Optional[float] = None
+    ): ...
+
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
         *,
         ignore_props: Iterable[str] = None,
         i: int = None,

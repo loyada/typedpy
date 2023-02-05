@@ -2,7 +2,7 @@ import collections
 import enum
 import json
 import uuid
-from functools import cache
+from functools import lru_cache
 from typing import Dict
 
 from typedpy.commons import (
@@ -473,7 +473,7 @@ def construct_fields_map(
     raise_errs_if_needed(cls, errors)
     return result
 
-@cache
+@lru_cache
 def _structure_is_simple(cls):
     for v in cls.get_all_fields_by_name().values():
         if isinstance(v, (Integer, String, Float, Boolean, NoneField)):

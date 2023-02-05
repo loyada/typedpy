@@ -7,6 +7,8 @@ import pytest
 from pytest import raises
 
 from typedpy import (
+    FastSerializable,
+    Serializer,
     Structure,
     DecimalNumber,
     PositiveInt,
@@ -27,6 +29,7 @@ from typedpy import (
 )
 
 from typedpy.structures import MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
+
 
 class Venue(enum.Enum):
     NYSE = enum.auto()
@@ -73,16 +76,17 @@ def test_typing_optional_fields_none_allowed():
         comment: String
         _required = []
 
-    assert Trade(
+    assert (
+        Trade(
             notional=1000,
             quantity=None,
             symbol="AAA",
             buyer=Trader(lei="12345678901234567890", alias="GSET"),
             seller=Trader(lei="12345678901234567888", alias="MSIM"),
             timestamp="01/30/20 05:35:35",
-    ).quantity is None
-
-
+        ).quantity
+        is None
+    )
 
 
 def test_optional_fields_required_overrides():
@@ -204,7 +208,7 @@ def Point():
             self.y = y
 
         def size(self):
-            return sqrt(self.x ** 2 + self.y ** 2)
+            return sqrt(self.x**2 + self.y**2)
 
     return PointClass
 
@@ -247,8 +251,6 @@ def test_optional_global_config_ignore_none(Point, allow_none_for_optional):
     assert Foo(i=[5], maybe_date="2020-01-31").i[0] == 5
     with raises(ValueError):
         assert Foo(i=[5], maybe_date="2020-01-31a")
-
-
 
 
 def test_optional_do_not_ignore_none(Point):
@@ -560,6 +562,47 @@ def test_from_other_class():
     person_model = PersonModel(first_name="john", age=40)
     person = Person.from_other_class(person_model, id=123, name=person_model.first_name)
     assert person == Person(name="john", id=123, age=40)
+
+
+def test_from_trusted_class():
+    class PersonModel:
+        def __init__(self, *, first_name, age):
+            self.first_name = first_name
+            self.age = age
+
+    class Person(Structure, FastSerializable):
+        id = Integer
+        name = String
+        age = Integer
+
+    person_model = PersonModel(first_name="john", age=40)
+    person = Person.from_trusted_data(
+        person_model, id=123, name=person_model.first_name
+    )
+    assert person == Person(name="john", id=123, age=40)
+    assert person.name == "john"
+    assert Serializer(person).serialize() == {"name": "john", "age": 40, "id": 123}
+    assert person.serialize() == {"name": "john", "age": 40, "id": 123}
+
+
+def test_from_trusted_dict():
+    class PersonModel:
+        def __init__(self, *, first_name, age):
+            self.first_name = first_name
+            self.age = age
+
+    class Person(Structure, FastSerializable):
+        id = Integer
+        name = String
+        age = Integer
+
+    person_model = dict(first_name="john", age=40, id=123)
+
+    person = Person.from_trusted_data(person_model, name=person_model["first_name"])
+    assert person == Person(name="john", id=123, age=40)
+    assert person.name == "john"
+    assert Serializer(person).serialize() == {"name": "john", "age": 40, "id": 123}
+    assert person.serialize() == {"name": "john", "age": 40, "id": 123}
 
 
 def test_to_other_class():

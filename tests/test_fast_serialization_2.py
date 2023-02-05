@@ -79,10 +79,9 @@ def test_not_impelmented(no_defensive_copy_on_get):
         i = Integer(maximum=10)
         s = String(maxLength=5)
 
-    assert not hasattr(Foo, "serialize")
+    assert Foo.serialize is FastSerializable.serialize
     example = deserialize_structure(Foo, serialized)
     assert example.serialize() == serialized
-    assert hasattr(Foo, "serialize")
 
 
 create_serializer(Example)

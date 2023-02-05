@@ -60,6 +60,9 @@ class Set(
         return set
 
     def __set__(self, instance, value):
+        if getattr(instance, "_trust_supplied_values", False):
+            super().__set__(instance, value)
+            return
         cls = self.__class__._ty
         if not isinstance(value, cls):
             raise TypeError(f"{self._name}: Got {wrap_val(value)}; Expected {cls}")

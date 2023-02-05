@@ -4,7 +4,7 @@ from functools import wraps
 from typing import Optional, Type
 
 from typedpy import (
-    ImmutableStructure,
+    Deserializer, ImmutableStructure,
     Extend,
     Serializer,
     Structure,
@@ -314,6 +314,7 @@ def get_firm_serializer():
         card_serializer = get_card_serializer()
         assignment_serializer = get_assignment_serializer()
         spend_serializer = get_spend_serializer()
+        vehicle_serializer = get_vehicle_serializer()
 
         return {
             "name": v.name,
@@ -321,32 +322,13 @@ def get_firm_serializer():
             "cards": [card_serializer(c) for c in v.cards],
             "assignments": [assignment_serializer(a) for a in v.assignments],
             "spend": spend_serializer(v.spend),
+            "vehicles": [vehicle_serializer(ve) for ve in v.vehicles],
             "credit": v.credit,
         }
 
     return wrapped
 
 
-def get_firm_serializer():
-    def wrapped(v: Firm):
-        employee_serializer = get_employee_serializer()
-        card_serializer = get_card_serializer()
-        assignment_serializer = get_assignment_serializer()
-        spend_serializer = get_spend_serializer()
-
-        return {
-            "name": v.name,
-            "employees": [employee_serializer(e) for e in v.employees],
-            "cards": [card_serializer(c) for c in v.cards],
-            "assignments": [assignment_serializer(a) for a in v.assignments],
-            "spend": spend_serializer(v.spend),
-            "credit": v.credit,
-        }
-
-    return wrapped
-
-
-# def get_struct_serializer(cls: Type[Structure]):
 
 
 @timeit
@@ -357,13 +339,17 @@ def serialize_all_optimized(firms: list[Firm]):
 
 if __name__ == "__main__":
     firms = create_many_firms(50)
+    serialized = serialize_all_optimized(firms)
+    deserializer = Deserializer(Firm)
     import cProfile
     import pstats
 
     TypedPyDefaults.defensive_copy_on_get = False
     with cProfile.Profile() as pr:
+        deserialized = [deserializer.deserialize(s) for s in serialized]
+
         #  serialize_all_optimized(firms)
-        serialize_all(firms)
+#        serialize_all(firms)
     stats = pstats.Stats(pr)
     stats.sort_stats(pstats.SortKey.TIME)
     stats.print_stats()

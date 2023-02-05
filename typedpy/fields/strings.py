@@ -52,6 +52,9 @@ class String(TypedField):
             )
 
     def __set__(self, instance, value):
+        if getattr(instance, "_trust_supplied_values", False):
+            super().__set__(instance, value)
+            return
         self._validate(value)
         super().__set__(instance, value)
 

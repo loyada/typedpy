@@ -7,6 +7,7 @@ import enum
 import inspect
 import json
 from builtins import enumerate, issubclass
+from collections.abc import Mapping
 from copy import deepcopy
 from collections import OrderedDict, defaultdict
 from inspect import Signature, Parameter, signature, currentframe
@@ -49,6 +50,7 @@ from .type_mapping import convert_basic_types
 T = typing.TypeVar("T")
 
 _immutable_types = (int, float, str, tuple, bool, enum.Enum)
+_internal_props = ["_instantiated", "_none_fields", "_trust_supplied_values"]
 
 
 class ImmutableMixin:
@@ -453,6 +455,10 @@ class Field(UniqueMixin, metaclass=FieldMeta):
     def __set__(self, instance, value):
         if getattr(self, IS_IMMUTABLE, False) and self._name in instance.__dict__:
             raise ValueError(f"{self._name}: Field is immutable")
+        if getattr(instance, "_trust_supplied_values", False):
+            instance.__dict__[self._name] = value
+            return
+
         if getattr(self, IS_IMMUTABLE, False) and not getattr(
             self, "_custom_deep_copy_implementation", False
         ):
@@ -552,7 +558,7 @@ class TypedField(Field):
             raise TypeError(f"{err_prefix()}Expected {self._ty}; Got {wrap_val(value)}")
 
     def __set__(self, instance, value):
-        if not getattr(instance, "_skip_validation", False):
+        if not getattr(instance, "_skip_validation", False) and not getattr(instance, "_trust_supplied_values", False):
             self._validate(value)
         super().__set__(instance, value)
 
@@ -994,6 +1000,13 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     _fail_fast = True
 
     def __init__(self, *args, **kwargs):
+        if getattr(self, "_trust_supplied_values", False):
+            for key, value in kwargs.items():
+                self.__dict__[key] = value
+                self.__dict__["_instantiated"] = True
+                self.__dict__["_none_fields"] = set()
+                super().__init__()
+            return
         try:
             bound = getattr(self, "__signature__").bind(*args, **kwargs)
         except TypeError as ex:
@@ -1060,6 +1073,10 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 field.__manage_uniqueness_for_field__(self, getattr(self, name, None))
 
     def __setattr__(self, key, value):
+        if getattr(self, "_trust_supplied_values", False):
+            super().__setattr__(key, value)
+            return
+
         if getattr(self, IS_IMMUTABLE, False):
             if getattr(self, "_instantiated", False):
                 raise ValueError(f"{self.__class__.__name__}: Structure is immutable")
@@ -1124,10 +1141,10 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         super().__setattr__(key, value)
 
         if (
-            getattr(self, "_instantiated", False)
+            TypedPyDefaults.uniqueness_features_enabled
+            and getattr(self, "_instantiated", False)
             and not _is_dunder(key)
             and not _is_sunder(key)
-            and TypedPyDefaults.uniqueness_features_enabled
         ):
             self.__manage_uniqueness__()
 
@@ -1165,9 +1182,8 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         ):
             name = "Structure"
         props = []
-        internal_props = ["_instantiated", "_none_fields"]
         for k, val in sorted(self.__dict__.items()):
-            if k not in internal_props:
+            if k not in _internal_props:
                 strv = f"'{val}'" if isinstance(val, str) else to_str(val)
                 props.append(f"{k} = {strv}")
         for k in sorted((getattr(self, "_none_fields", []))):
@@ -1181,12 +1197,11 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     def __eq__(self, other):
         if self.__class__ != other.__class__:
             return False
-        internal_props = ["_instantiated", "_none_fields"]
         for k, val in sorted(self.__dict__.items()):
-            if k not in internal_props and val != other.__dict__.get(k):
+            if k not in _internal_props and val != other.__dict__.get(k):
                 return False
         for k, val in sorted(other.__dict__.items()):
-            if k not in internal_props and val != self.__dict__.get(k):
+            if k not in _internal_props and val != self.__dict__.get(k):
                 return False
         self_nones = self.__dict__.get("_none_fields")
         other_nones = other.__dict__.get("_none_fields")
@@ -1242,13 +1257,11 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         return result
 
     def __dir__(self) -> Iterable[str]:
-        internal_props = ["_instantiated", "_none_fields"]
-        return [k for k in sorted(self.__dict__) if k not in internal_props]
+        return [k for k in sorted(self.__dict__) if k not in _internal_props]
 
     def __bool__(self):
-        internal_props = ["_instantiated", "_none_fields"]
         return any(
-            v is not None for k, v in self.__dict__.items() if k not in internal_props
+            v is not None for k, v in self.__dict__.items() if k not in _internal_props
         )
 
     def _additional_serialization(self) -> dict:
@@ -1467,6 +1480,37 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         }
         kwargs = {**args_from_model, **kw}
         return cls(**kwargs)
+
+    @classmethod
+    def from_trusted_data(cls, source_object=None, *, ignore_props=None, **kw):
+        """
+            Like from_other_class, but "trusts" the input and skips any validation.
+            This should be used when you trusts the parameters and performance is more
+            important.
+        """
+        if source_object:
+            ignore_props = ignore_props if ignore_props else []
+            is_mapping = isinstance(source_object, Mapping)
+            args_from_model = {
+                k: source_object.get(k, None) if is_mapping else getattr(source_object, k, None)
+                for k in cls.get_all_fields_by_name()
+                if k not in ignore_props and k not in getattr(cls, "_constants", {})
+            }
+            kwargs = {**args_from_model, **kw}
+        else:
+            kwargs = kw
+        obj = cls.__new__(cls)
+        setattr(obj, "_trust_supplied_values", True)
+        obj.__init__(**kwargs)
+        return obj
+
+    @classmethod
+    def trust_supplied_values(cls, trust=True):
+        """
+        Mark the class as trusting supplied
+        """
+        cls._trust_supplied_values = trust
+
 
     @staticmethod
     def set_fail_fast(fast_fail: bool):

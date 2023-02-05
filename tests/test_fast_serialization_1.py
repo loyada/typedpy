@@ -78,7 +78,7 @@ def test_serialize_created_on_instantiation():
         i = Integer(maximum=10)
         s = String(maxLength=5)
 
-    assert not hasattr(Foo, "serialize")
+    assert Foo.serialize is FastSerializable.serialize
     example = deserialize_structure(Foo, serialized)
     assert example.serialize() == serialized
 

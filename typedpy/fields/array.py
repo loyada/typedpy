@@ -131,6 +131,9 @@ class Array(
         return list
 
     def __set__(self, instance, value):
+        if getattr(instance, "_trust_supplied_values", False):
+            super().__set__(instance, value)
+            return
         verify_type_and_uniqueness(list, value, self._name, self.uniqueItems)
         self.validate_size(value, self._name)
         if self.items is not None:

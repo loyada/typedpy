@@ -103,6 +103,9 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             raise TypeError("AnyOf definition must include at least one field option")
 
     def __set__(self, instance, value):
+        if getattr(instance, "_trust_supplied_values", False):
+            super().__set__(instance, value)
+            return
         matched = None
         for field in self.get_fields():
             setattr(field, "_name", self._name)

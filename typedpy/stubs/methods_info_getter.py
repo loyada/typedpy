@@ -339,6 +339,19 @@ def get_additional_structure_methods(
             f"{params_with_cls}{kw_opt}\n{INDENT}): ...",
         ]
     )
+    # params_with_cls_none_default = f",\n{INDENT * 2}".join(
+    #     [f"{INDENT}cls", "source_object: Any = None,", "*"]
+    #     + ["ignore_props: Iterable[str] = None"]
+    #     + params
+    # )
+    # from_trusted_data = f"\n{INDENT}".join(
+    #     [
+    #         "",
+    #         "@classmethod",
+    #         "def from_trusted_data(",
+    #         f"{params_with_cls_none_default}{kw_opt}\n{INDENT}): ...",
+    #     ]
+    # )
     return "\n".join([shallow_clone, from_other_class])
 
 

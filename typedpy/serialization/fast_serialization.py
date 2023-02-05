@@ -14,10 +14,15 @@ from typedpy.structures import (
 
 class FastSerializable:
     def __init__(self, *args, **kwargs):
-        if not hasattr(self.__class__, "serialize"):
+        if self.__class__.serialize is FastSerializable.serialize:
             create_serializer(self.__class__)
         super().__init__(*args, **kwargs)
 
+    def serialize(self) -> dict:
+        cls_name = self.__class__.__name__
+        raise NotImplementedError(
+            f"You need to implement serialize(self) for class {cls_name}, or use: create_serializer({cls_name})"
+        )
 
 
 def _get_value(field, cls):
@@ -28,17 +33,23 @@ def _get_value(field, cls):
 
     return wrapped
 
+
 def _verify_is_fast_serializable(field):
     obj = field._ty if isinstance(field, ClassReference) else field
     if isinstance(field, Array) and isinstance(field.items, (Field, ClassReference)):
         _verify_is_fast_serializable(field.items)
-    if isinstance(field, ClassReference) and (not hasattr(obj, "serialize") or not issubclass(obj, FastSerializable)):
-        raise TypeError(f"{obj.__name__} is not FastSerializable or does not implement 'serialize(self, value)'")
+    if isinstance(field, ClassReference) and (
+        getattr(obj, "serialize", None) is FastSerializable.serialize
+        or not issubclass(obj, FastSerializable)
+    ):
+        raise TypeError(
+            f"{obj.__name__} is not FastSerializable or does not implement 'serialize(self, value)'"
+        )
+
 
 def _get_serialize(field, cls):
     _verify_is_fast_serializable(field)
     obj = field._ty if isinstance(field, ClassReference) else field
-
 
     owner = cls
 
@@ -56,7 +67,9 @@ def _get_constant(constant: Constant):
     return wrapped
 
 
-def create_serializer(cls: Type[Structure], compact: bool = False, serialize_none: bool = False):
+def create_serializer(
+    cls: Type[Structure], compact: bool = False, serialize_none: bool = False
+):
     mapper = aggregate_serialization_mappers(cls)
     field_by_name = cls.get_all_fields_by_name()
     processed_mapper = {}
@@ -78,7 +91,9 @@ def create_serializer(cls: Type[Structure], compact: bool = False, serialize_non
 
     def serializer(self):
         res = {name: value(self) for name, value in items}
-        return res if serialize_none else {k:v for (k,v) in res.items() if v is not None}
+        return (
+            res if serialize_none else {k: v for (k, v) in res.items() if v is not None}
+        )
 
     cls.serialize = serializer
 

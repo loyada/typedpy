@@ -2,6 +2,7 @@ import collections
 import enum
 import json
 import uuid
+from functools import cache
 from typing import Dict
 
 from typedpy.commons import (
@@ -39,6 +40,8 @@ from typedpy.fields import (
     Number,
     SizedCollection,
     String,
+    Float,
+    Integer,
     StructureReference,
     Array,
     Map,
@@ -470,6 +473,23 @@ def construct_fields_map(
     raise_errs_if_needed(cls, errors)
     return result
 
+@cache
+def _structure_is_simple(cls):
+    for v in cls.get_all_fields_by_name().values():
+        if isinstance(v, (Integer, String, Float, Boolean, NoneField)):
+            continue
+        if isinstance(v, AnyOf):
+            for f in v.get_fields():
+                if not isinstance(f,  (Integer, String, Float, Boolean, NoneField)):
+                    return False
+            continue
+        if isinstance(v, Array):
+            if isinstance(v.items, (Integer, String, Float, Boolean, NoneField)):
+                continue
+            return False
+        return False
+
+    return True
 
 def deserialize_structure_internal(
     cls,
@@ -479,6 +499,7 @@ def deserialize_structure_internal(
     mapper=None,
     keep_undefined=False,
     camel_case_convert=False,
+    direct_trusted_mapping=False,
 ):
     """
     Deserialize a dict to a Structure instance, Jackson style.
@@ -503,14 +524,17 @@ def deserialize_structure_internal(
         an instance of the provided :class:`Structure` deserialized
     """
 
+    input_dict = the_dict
     if issubclass(cls, Versioned):
         if not isinstance(the_dict, dict) or "version" not in the_dict:
             raise TypeError("Expected a dictionary with a 'version' value")
         if getattr(cls, VERSION_MAPPING):
             versions_mapping = getattr(cls, VERSION_MAPPING)
             input_dict = convert_dict(the_dict, versions_mapping)
-    else:
-        input_dict = the_dict
+
+    if direct_trusted_mapping and not mapper and _structure_is_simple(cls) and not camel_case_convert:
+        return cls.from_trusted_data(input_dict)
+
     mapper = aggregate_deserialization_mappers(cls, mapper, camel_case_convert)
     if keep_undefined:
         for m in cls.get_aggregated_deserialization_mapper():
@@ -568,7 +592,7 @@ def deserialize_structure_internal(
 
 
 def deserialize_structure(
-    cls, the_dict, *, mapper=None, keep_undefined=True, camel_case_convert=False
+    cls, the_dict, *, mapper=None, keep_undefined=True, camel_case_convert=False, direct_trusted_mapping=False,
 ):
     """
     Deserialize a dict to a Structure instance, Jackson style.
@@ -598,6 +622,7 @@ def deserialize_structure(
         mapper=mapper,
         keep_undefined=keep_undefined,
         camel_case_convert=camel_case_convert,
+        direct_trusted_mapping=direct_trusted_mapping
     )
 
 
@@ -828,7 +853,7 @@ def serialize_internal(
         else [
             (k, v)
             for (k, v) in structure.__dict__.items()
-            if k not in ["_instantiated", "_none_fields"]
+            if k not in ["_instantiated", "_none_fields", "_trust_supplied_values"]
         ]
     ) + nones
     props = structure.__class__.__dict__

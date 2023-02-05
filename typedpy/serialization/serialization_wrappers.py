@@ -71,13 +71,14 @@ class Deserializer(Structure):
                         "the class fields. "
                     )
 
-    def deserialize(self, input_data, keep_undefined=None):
+    def deserialize(self, input_data, keep_undefined=None, direct_trusted_mapping=False):
         return deserialize_structure(
             self.target_class,
             input_data,
             mapper=self.mapper,
             keep_undefined=keep_undefined,
             camel_case_convert=self.camel_case_convert,
+            direct_trusted_mapping=direct_trusted_mapping
         )
 
 

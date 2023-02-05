@@ -61,16 +61,17 @@ from typedpy.fields import (
     _ListStruct,
 )
 
+
 # pylint: disable=too-many-locals, too-many-arguments, too-many-branches
 def deserialize_list_like(
-    field,
-    content_type,
-    value,
-    name,
-    *,
-    keep_undefined=True,
-    mapper=None,
-    camel_case_convert=False,
+        field,
+        content_type,
+        value,
+        name,
+        *,
+        keep_undefined=True,
+        mapper=None,
+        camel_case_convert=False,
 ):
     if not isinstance(value, (list, tuple, set)):
         raise ValueError(f"{name}: Got {value}; Expected a list, set, or tuple")
@@ -111,14 +112,14 @@ def deserialize_list_like(
             except (ValueError, TypeError) as e:
                 raise ValueError(f"{name}_{i}: {str(e)}") from e
             values.append(res)
-        values += value[len(items) :]
+        values += value[len(items):]
     else:
         values = value
     return content_type(values)
 
 
 def deserialize_array(
-    array_field, value, name, *, keep_undefined=True, mapper, camel_case_convert=False
+        array_field, value, name, *, keep_undefined=True, mapper, camel_case_convert=False
 ):
     return deserialize_list_like(
         array_field,
@@ -132,7 +133,7 @@ def deserialize_array(
 
 
 def deserialize_deque(
-    array_field, value, name, *, keep_undefined=True, mapper, camel_case_convert=False
+        array_field, value, name, *, keep_undefined=True, mapper, camel_case_convert=False
 ):
     return deserialize_list_like(
         array_field,
@@ -146,7 +147,7 @@ def deserialize_deque(
 
 
 def deserialize_tuple(
-    tuple_field, value, name, *, keep_undefined=True, mapper, camel_case_convert=False
+        tuple_field, value, name, *, keep_undefined=True, mapper, camel_case_convert=False
 ):
     return deserialize_list_like(
         tuple_field,
@@ -160,7 +161,7 @@ def deserialize_tuple(
 
 
 def deserialize_set(
-    set_field, value, name, *, keep_undefined=True, mapper, camel_case_convert=False
+        set_field, value, name, *, keep_undefined=True, mapper, camel_case_convert=False
 ):
     return deserialize_list_like(
         set_field,
@@ -174,13 +175,13 @@ def deserialize_set(
 
 
 def deserialize_multifield_wrapper(
-    field,
-    source_val,
-    name,
-    *,
-    keep_undefined=True,
-    mapper=None,
-    camel_case_convert=False,
+        field,
+        source_val,
+        name,
+        *,
+        keep_undefined=True,
+        mapper=None,
+        camel_case_convert=False,
 ):
     """
     Only primitive values are supported, otherwise deserialization is ambiguous,
@@ -256,14 +257,14 @@ def deserialize_map(map_field, source_val, name, camel_case_convert=False):
 
 
 def deserialize_single_field(  # pylint: disable=too-many-branches
-    field,
-    source_val,
-    name="value",
-    *,
-    mapper=None,
-    keep_undefined=True,
-    camel_case_convert=False,
-    ignore_none=False,
+        field,
+        source_val,
+        name="value",
+        *,
+        mapper=None,
+        keep_undefined=True,
+        camel_case_convert=False,
+        ignore_none=False,
 ):
     """
     Deserialize a field directly, without the need to define a Structure class.
@@ -287,14 +288,14 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
     if source_val is None and (ignore_none or isinstance(field, NoneField)):
         return source_val
     if isinstance(field, (Number, String, Boolean)) and not isinstance(
-        field, SerializableField
+            field, SerializableField
     ):
         field._validate(source_val)
         value = source_val
     elif (
-        isinstance(field, TypedField)
-        and getattr(field, "_ty", "") in {str, int, float}
-        and isinstance(source_val, getattr(field, "_ty", ""))
+            isinstance(field, TypedField)
+            and getattr(field, "_ty", "") in {str, int, float}
+            and isinstance(source_val, getattr(field, "_ty", ""))
     ):
         value = source_val
     elif isinstance(field, Array):
@@ -391,7 +392,7 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
 
 
 def deserialize_structure_reference(
-    cls, the_dict: dict, *, keep_undefined, mapper, camel_case_convert=False
+        cls, the_dict: dict, *, keep_undefined, mapper, camel_case_convert=False
 ):
     field_by_name = {k: v for k, v in cls.__dict__.items() if isinstance(v, Field)}
     kwargs = {
@@ -413,14 +414,14 @@ def deserialize_structure_reference(
 
 
 def construct_fields_map(
-    field_by_name,
-    keep_undefined,
-    mapper,
-    input_dict,
-    cls,
-    camel_case_convert=False,
-    ignore_none=False,
-    enable_undefined=False,
+        field_by_name,
+        keep_undefined,
+        mapper,
+        input_dict,
+        cls,
+        camel_case_convert=False,
+        ignore_none=False,
+        enable_undefined=False,
 ):
     result = {}
     errors = []
@@ -473,14 +474,15 @@ def construct_fields_map(
     raise_errs_if_needed(cls, errors)
     return result
 
-@lru_cache
+
+@lru_cache(maxsize=128)
 def _structure_is_simple(cls):
     for v in cls.get_all_fields_by_name().values():
         if isinstance(v, (Integer, String, Float, Boolean, NoneField)):
             continue
         if isinstance(v, AnyOf):
             for f in v.get_fields():
-                if not isinstance(f,  (Integer, String, Float, Boolean, NoneField)):
+                if not isinstance(f, (Integer, String, Float, Boolean, NoneField)):
                     return False
             continue
         if isinstance(v, Array):
@@ -491,15 +493,16 @@ def _structure_is_simple(cls):
 
     return True
 
+
 def deserialize_structure_internal(
-    cls,
-    the_dict,
-    name=None,
-    *,
-    mapper=None,
-    keep_undefined=False,
-    camel_case_convert=False,
-    direct_trusted_mapping=False,
+        cls,
+        the_dict,
+        name=None,
+        *,
+        mapper=None,
+        keep_undefined=False,
+        camel_case_convert=False,
+        direct_trusted_mapping=False,
 ):
     """
     Deserialize a dict to a Structure instance, Jackson style.
@@ -541,7 +544,7 @@ def deserialize_structure_internal(
             if isinstance(m, mappers) or isinstance(mapper, mappers):
                 keep_undefined = False
         if (camel_case_convert or isinstance(mapper, mappers)) and not getattr(
-            cls, ADDITIONAL_PROPERTIES, False
+                cls, ADDITIONAL_PROPERTIES, False
         ):
             keep_undefined = False
 
@@ -565,14 +568,14 @@ def deserialize_structure_internal(
                     ignore_none=ignore_none,
                 )
             )
-        raise TypeError(f"{name}: Expected a dictionary; Got { wrap_val(input_dict)}")
+        raise TypeError(f"{name}: Expected a dictionary; Got {wrap_val(input_dict)}")
 
     kwargs = {
         k: v
         for k, v in input_dict.items()
         if k not in field_by_name
-        and keep_undefined
-        and k not in getattr(cls, "_constants", [])
+           and keep_undefined
+           and k not in getattr(cls, "_constants", [])
     }
 
     kwargs.update(
@@ -592,7 +595,7 @@ def deserialize_structure_internal(
 
 
 def deserialize_structure(
-    cls, the_dict, *, mapper=None, keep_undefined=True, camel_case_convert=False, direct_trusted_mapping=False,
+        cls, the_dict, *, mapper=None, keep_undefined=True, camel_case_convert=False, direct_trusted_mapping=False,
 ):
     """
     Deserialize a dict to a Structure instance, Jackson style.
@@ -664,7 +667,7 @@ def serialize_multifield_wrapper(fields, name, val, mapper, camel_case_convert):
 
 
 def serialize_val(
-    field_definition, name, val, mapper=None, camel_case_convert=False, cache=None
+        field_definition, name, val, mapper=None, camel_case_convert=False, cache=None
 ):
     if cache is None:
         cache = {}
@@ -680,14 +683,14 @@ def serialize_val(
     if isinstance(field_definition, (Number, Boolean, String)) or val is None:
         return val
     if isinstance(field_definition, Anything) and (
-        isinstance(val, (int, float, str, bool)) or val is None
+            isinstance(val, (int, float, str, bool)) or val is None
     ):
         return val
     if isinstance(field_definition, SizedCollection):
         if isinstance(field_definition, Map):
             if (
-                isinstance(field_definition.items, list)
-                and len(field_definition.items) == 2
+                    isinstance(field_definition.items, list)
+                    and len(field_definition.items) == 2
             ):
                 key_type, value_type = field_definition.items
                 return {
@@ -826,11 +829,11 @@ def _convert_to_camel_case_if_required(key, camel_case_convert):
 
 
 def serialize_internal(
-    structure,
-    mapper=None,
-    resolved_mapper=None,
-    compact=False,
-    camel_case_convert=False,
+        structure,
+        mapper=None,
+        resolved_mapper=None,
+        compact=False,
+        camel_case_convert=False,
 ):
     cls = structure.__class__
     field_by_name = cls.get_all_fields_by_name() if issubclass(cls, Structure) else {}
@@ -848,24 +851,24 @@ def serialize_internal(
     nones = [(k, None) for k in getattr(structure, "_none_fields", [])]
 
     items = (
-        list(structure.items())
-        if isinstance(structure, dict)
-        else [
-            (k, v)
-            for (k, v) in structure.__dict__.items()
-            if k not in ["_instantiated", "_none_fields", "_trust_supplied_values"]
-        ]
-    ) + nones
+                list(structure.items())
+                if isinstance(structure, dict)
+                else [
+                    (k, v)
+                    for (k, v) in structure.__dict__.items()
+                    if k not in ["_instantiated", "_none_fields", "_trust_supplied_values"]
+                ]
+            ) + nones
     props = structure.__class__.__dict__
     fields = list(field_by_name.keys())
     additional_props = props.get(
         ADDITIONAL_PROPERTIES, TypedPyDefaults.additional_properties_default
     )
     if (
-        len(fields) == 1
-        and props.get(REQUIRED_FIELDS, fields) == fields
-        and additional_props is False
-        and compact
+            len(fields) == 1
+            and props.get(REQUIRED_FIELDS, fields) == fields
+            and additional_props is False
+            and compact
     ):
         key = fields[0]
         result = serialize_val(
@@ -909,11 +912,11 @@ def serialize_internal(
 
 
 def serialize(
-    value,
-    *,
-    mapper: Dict = None,
-    compact=None,
-    camel_case_convert=False,
+        value,
+        *,
+        mapper: Dict = None,
+        compact=None,
+        camel_case_convert=False,
 ):
     """
     Serialize an instance of :class:`Structure` to a JSON-like dict.

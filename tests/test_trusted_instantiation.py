@@ -5,11 +5,11 @@ from typing import Optional
 import pytest
 
 from typedpy import (
-    Extend,
+    Array, Extend,
     FastSerializable,
     ImmutableStructure,
     PositiveInt,
-    create_serializer,
+    Set, create_serializer,
 )
 
 
@@ -17,7 +17,7 @@ class Policy(ImmutableStructure, FastSerializable):
     soft_limit: PositiveInt
     hard_limit: PositiveInt
     time_days: Optional[PositiveInt]
-    mccs: list[int]
+    mccs: Array[int]
 
 
 create_serializer(Policy)
@@ -52,7 +52,7 @@ class Policy(ImmutableStructure, FastSerializable):
     soft_limit: PositiveInt
     hard_limit: PositiveInt
     time_days: Optional[PositiveInt]
-    mccs: list[int]
+    mccs: Array[int]
 
 
 
@@ -68,7 +68,7 @@ class Employee(Extend[Address], ImmutableStructure, FastSerializable):
     role: Role
     location: Location
     phone: Phone
-    policies: set[Policy]
+    policies: Set[Policy]
     spend: Spend
 
 

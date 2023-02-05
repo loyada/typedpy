@@ -2,14 +2,15 @@ import enum
 import time
 from typing import Optional
 
-from typedpy import Deserializer, Extend, FastSerializable, ImmutableStructure, PositiveInt, create_serializer
+from typedpy import Array, Deserializer, Extend, FastSerializable, ImmutableStructure, PositiveInt, Set, \
+    create_serializer
 
 
 class Policy(ImmutableStructure, FastSerializable):
     soft_limit: PositiveInt
     hard_limit: PositiveInt
     time_days: Optional[PositiveInt]
-    mccs: list[int]
+    mccs: Array[int]
 
 
 create_serializer(Policy)
@@ -44,7 +45,7 @@ class Policy(ImmutableStructure, FastSerializable):
     soft_limit: PositiveInt
     hard_limit: PositiveInt
     time_days: Optional[PositiveInt]
-    mccs: list[int]
+    mccs: Array[int]
 
 
 class Phone(ImmutableStructure, FastSerializable):
@@ -58,7 +59,7 @@ class Employee(Extend[Address], ImmutableStructure, FastSerializable):
     role: Role
     location: Location
     phone: Phone
-    policies: set[Policy]
+    policies: Set[Policy]
     spend: Spend
 
 

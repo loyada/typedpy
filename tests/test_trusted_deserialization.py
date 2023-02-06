@@ -10,7 +10,7 @@ class Policy(ImmutableStructure, FastSerializable):
     soft_limit: PositiveInt
     hard_limit: PositiveInt
     time_days: Optional[PositiveInt]
-    mccs: Array[int]
+    codes: Array[int]
 
 
 create_serializer(Policy)
@@ -45,7 +45,7 @@ class Policy(ImmutableStructure, FastSerializable):
     soft_limit: PositiveInt
     hard_limit: PositiveInt
     time_days: Optional[PositiveInt]
-    mccs: Array[int]
+    codes: Array[int]
 
 
 class Phone(ImmutableStructure, FastSerializable):
@@ -75,7 +75,7 @@ def build_policies_fast(**kw):
 
 def test_trusted_deserialization_equivalent_to_regular():
     # Given
-    validated_policies = build_policies(hard_limit=20, mccs=[1, 2, 3], time_days=7)
+    validated_policies = build_policies(hard_limit=20, codes=[1, 2, 3], time_days=7)
     serialized = [p.serialize() for p in validated_policies]
     deserializer = Deserializer(target_class=Policy)
     start = time.time()
@@ -109,7 +109,7 @@ def create_employee() -> Employee:
         ),
         policies={
             Policy(
-                soft_limit=10, hard_limit=20, mccs=[1, 2, 3]
+                soft_limit=10, hard_limit=20, codes=[1, 2, 3]
             )
         },
     )

@@ -1485,7 +1485,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     def from_trusted_data(cls, source_object=None, *, ignore_props=None, **kw):
         """
             Like from_other_class, but "trusts" the input and skips any validation.
-            This should be used when you trusts the parameters and performance is more
+            This should be used when you trust the input, and performance is more
             important.
         """
         if source_object:

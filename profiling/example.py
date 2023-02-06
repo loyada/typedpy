@@ -48,7 +48,7 @@ class Policy(ImmutableStructure):
     soft_limit: PositiveInt
     hard_limit: PositiveInt
     time_days: Optional[PositiveInt]
-    mccs: list[int]
+    codes: list[int]
 
     _serialization_mapper = mappers.TO_CAMELCASE
 
@@ -123,7 +123,7 @@ def create_employees(fleet_id) -> list[Employee]:
                 week=50,
                 month=200,
             ),
-            policies={Policy(soft_limit=10, hard_limit=20, mccs=[1, 2, 3])},
+            policies={Policy(soft_limit=10, hard_limit=20, codes=[1, 2, 3])},
         )
         for x in range(100)
     ]
@@ -136,7 +136,7 @@ def create_vehicles(fleet_id) -> list[Vehicle]:
             license_plate=f"{x}-123-{fleet_id}",
             location=Location(id=x, name="HQ"),
             is_active=True,
-            policies={Policy(soft_limit=10, hard_limit=20, mccs=[1, 2, 3])},
+            policies={Policy(soft_limit=10, hard_limit=20, codes=[1, 2, 3])},
         )
         for x in range(100)
     ]
@@ -214,7 +214,7 @@ def get_policy_serializer():
             "softLimit": v.soft_limit,
             "hardLimit": v.hard_limit,
             "timeDays": v.time_days,
-            "mccs": v.mccs,
+            "codes": v.codes,
         }
 
     return wrapped

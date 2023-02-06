@@ -418,7 +418,7 @@ For example:
         _serialization_mapper = [{"a": "b"}, mappers.TO_LOWERCASE]
 
     original = {"B": 5, "S": "xyz"}
-    deserialized = Deserializer(Foo).deserialize(original, keep_undefined=False)
+    deserialized = Deserializer(target_class=Foo).deserialize(original, keep_undefined=False)
     assert deserialized == Foo(a=5, s="xyz")
     serialized = Serializer(deserialized).serialize()
     assert serialized == original
@@ -454,7 +454,7 @@ Another, more involved mapping:
         "XYZ": [1, 4],
         "J": 9
     }
-    deserialized = Deserializer(Blah).deserialize(original, keep_undefined=False)
+    deserialized = Deserializer(target_class=Blah).deserialize(original, keep_undefined=False)
     assert deserialized == Blah(
         s="abcabc",
         foo=Foo(i=5, xyz=[1, 2]),
@@ -549,6 +549,41 @@ Here is a valid usage example, referring to the same Bar class defined in the pr
     assert bar == Bar(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')
 
 
+Deserialization From Trusted Data
+============================================
+If we are serializing to a "simple" structure, i.e: No mapper, no nested Structures, and all fields
+are directly matched from JSON (None, str, int, float, bool, and lists of one of those), we can bypass
+Typedpy sophisticated dynamic serialization and instantiation, and directly create an instance of the wanted
+class. This is useful when you are confident the data passed is valid, and performance is paramount.
+
+The gain in performance is typically X15.
+
+.. code-block:: python
+
+    class Policy(ImmutableStructure):
+        soft_limit: PositiveInt
+        hard_limit: PositiveInt
+        time_days: Optional[PositiveInt]
+        codes: Array[int]
+
+    serialized = {
+        "soft_limit": 5,
+        "hard_limit": 10,
+        "time_days": 2,
+        "codes": [33,44,55],
+    }
+
+    # This will be executed much faster than a typical Typedpy deserialization
+    policy = deserializer.deserialize(input_data=serialized, direct_trusted_mapping=True)
+
+
+Note that deserializing this way bypasses any serialization mapper of the Structure. Also,
+if the Structure is not "Simple" (as described above), the flat "direct_trusted_mapping" has no effect.
+
+
+
+
+
 .. _serialization-classes:
 
 Classes
@@ -598,7 +633,7 @@ Here is a contrived example:
             'i': FunctionCall(func=lambda f: [int(f)], args=['i']),
             'f': FunctionCall(func=lambda x: str(x), args=['f'])
         }
-        deserializer = Deserializer(Bar, {'numbers': 'i', 's': 'f'})
+        deserializer = Deserializer(target_class=Bar, {'numbers': 'i', 's': 'f'})
         serializer = Serializer(source=foo, mapper=mapper)
 
         return deserializer.deserialize(serializer.serialize(), keep_undefined=False)
@@ -652,7 +687,7 @@ This is supported in Typedpy. Consider the following:
                 }
             }
         }
-        deserialized = Deserializer(Bar).deserialize(serialized, keep_undefined=False)
+        deserialized = Deserializer(target_class=Bar).deserialize(serialized, keep_undefined=False)
         assert deserialized == Bar(t="1", f=[1, 2, 3], foo=Foo1(a="xyz", i=9))
 
 Here, we determine how to deserialize the content of serialized["x"]["foo"], based on the value of "type".
@@ -731,7 +766,7 @@ For example:
         _serialization_mapper = [{"j": DoNotSerialize}, mappers.TO_LOWERCASE]
         _deserialization_mapper = [mappers.TO_LOWERCASE]
 
-    deserialized = Deserializer(Bar).deserialize(
+    deserialized = Deserializer(target_class=Bar).deserialize(
         {"J": 5, "A": [1, 2, 3], "NAME": "jon"}, keep_undefined=False
     )
     assert deserialized == Bar(i=5, a=[1, 2, 3], s="jon")

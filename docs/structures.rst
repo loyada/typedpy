@@ -880,6 +880,43 @@ Contrast the example above with this one:
 Note that "Undefined" should never be assigned explicitly as a value to field.
 
 
+Trusted Instantiation
+=====================
+Sometimes we instantiate an structure based on data that we trust, because it is internal to our system.
+In this case, Typedpy provides a way to bypass the validation system, which results in a much faster instantiation.
+
+This is done by calling the class method "from_trusted_data". For example:
+
+.. code-block:: python
+
+    # Suppose we defined Structures for Person, Location, Spend, Phone, Policy
+
+    person = Person.from_trusted_data(
+            None,
+            first_name=f"joe-1",
+            last_name="smith",
+            role=Role.admin,
+            location=Location.from_trusted_data(None, id=1, name="HQ"),
+            zip="123123",
+            city="ny",
+            street_addr="100 w 45th",
+            phone=Phone.from_trusted_data(None, number="917-1231231", validated=True),
+            spend=Spend.from_trusted_data(
+                None,
+                day=10,
+                week=50,
+                month=200,
+            ),
+            policies={
+                Policy.from_trusted_data(
+                    None, soft_limit=10, hard_limit=20, codes=[1, 2, 3]
+                )
+            },
+        )
+
+The method "from_trusted_data" is similar to "from_other_class" method, but is much faster, since it bypasses the
+validation. The difference in speed is x10-x25, based on the complexity of the Structure.
+
 
 Global Defaults
 ===============

@@ -49,7 +49,7 @@ class Policy(ImmutableStructure, FastSerializable):
     soft_limit: PositiveInt
     hard_limit: PositiveInt
     time_days: Optional[PositiveInt]
-    mccs: list[int]
+    codes: list[int]
 
 
 #   _serialization_mapper = mappers.TO_CAMELCASE
@@ -136,7 +136,7 @@ def create_employees(fleet_id) -> list[Employee]:
                                         month=200,
                                     ),
                                    policies={
-                                        Policy.from_trusted_data(None, soft_limit=10, hard_limit=20, mccs=[1, 2, 3])},
+                                        Policy.from_trusted_data(None, soft_limit=10, hard_limit=20, codes=[1, 2, 3])},
                                    )
         for x in range(100)
     ]
@@ -150,7 +150,7 @@ def create_vehicles(fleet_id) -> list[Vehicle]:
                                   location=Location.from_trusted_data(None, id=x, name="HQ"),
                                   is_active=True,
                                   policies={
-                                       Policy.from_trusted_data(None, soft_limit=10, hard_limit=20, mccs=[1, 2, 3])},
+                                       Policy.from_trusted_data(None, soft_limit=10, hard_limit=20, codes=[1, 2, 3])},
                                   )
         for x in range(100)
     ]
@@ -230,12 +230,12 @@ create_serializer(Firm)
 
 @timeit
 def build_policies():
-    return [Policy(soft_limit=x, hard_limit=20, mccs=[1, 2, 3], time_days=7) for x in range(10, 100_000)]
+    return [Policy(soft_limit=x, hard_limit=20, codes=[1, 2, 3], time_days=7) for x in range(10, 100_000)]
 
 
 @timeit
 def build_policies_fast():
-    return [Policy.from_trusted_data(None, soft_limit=5, hard_limit=20, mccs=[1, 2, 3], time_days=7) for x in range(10, 100_000)]
+    return [Policy.from_trusted_data(None, soft_limit=5, hard_limit=20, codes=[1, 2, 3], time_days=7) for x in range(10, 100_000)]
 
 
 if __name__ == "__main__":

@@ -17,7 +17,7 @@ class Policy(ImmutableStructure, FastSerializable):
     soft_limit: PositiveInt
     hard_limit: PositiveInt
     time_days: Optional[PositiveInt]
-    mccs: Array[int]
+    codes: Array[int]
 
 
 create_serializer(Policy)
@@ -52,7 +52,7 @@ class Policy(ImmutableStructure, FastSerializable):
     soft_limit: PositiveInt
     hard_limit: PositiveInt
     time_days: Optional[PositiveInt]
-    mccs: Array[int]
+    codes: Array[int]
 
 
 
@@ -86,9 +86,9 @@ def build_policies_fast(**kw):
 
 def test_trusted_instantiation_equivalent_to_regular():
     start = time.time()
-    validated_policies = build_policies(hard_limit=20, mccs=[1, 2, 3], time_days=7)
+    validated_policies = build_policies(hard_limit=20, codes=[1, 2, 3], time_days=7)
     time_1 = time.time()
-    fast_policies = build_policies_fast(hard_limit=20, mccs=[1, 2, 3], time_days=7)
+    fast_policies = build_policies_fast(hard_limit=20, codes=[1, 2, 3], time_days=7)
     time_2 = time.time()
     print(f"validated policies took: {time_1 - start}")
     print(f"fast policies took: {time_2 - time_1}")
@@ -113,7 +113,7 @@ def create_employee() -> Employee:
         ),
         policies={
             Policy(
-                soft_limit=10, hard_limit=20, mccs=[1, 2, 3]
+                soft_limit=10, hard_limit=20, codes=[1, 2, 3]
             )
         },
     )
@@ -138,7 +138,7 @@ def create_trusted_employee() -> Employee:
         ),
         policies={
             Policy.from_trusted_data(
-                None, soft_limit=10, hard_limit=20, mccs=[1, 2, 3]
+                None, soft_limit=10, hard_limit=20, codes=[1, 2, 3]
             )
         },
     )
@@ -174,7 +174,7 @@ def create_trusted_employee_missing_arg() -> Employee:
         ),
         policies={
             Policy.from_trusted_data(
-                None, soft_limit=10, hard_limit=20, mccs=[1, 2, 3]
+                None, soft_limit=10, hard_limit=20, codes=[1, 2, 3]
             )
         },
     )

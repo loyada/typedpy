@@ -150,6 +150,19 @@ def test_nested_trusted_instantiation():
     assert employee == trusted_employee
 
 
+def test_trusted_instantiation_different_style():
+    start = time.time()
+    validated_policies = build_policies(hard_limit=20, codes=[1, 2, 3], time_days=7)
+    time_1 = time.time()
+    Policy.trust_supplied_values(True)
+    fast_policies = build_policies(hard_limit=20, codes=[1, 2, 3], time_days=7)
+    time_2 = time.time()
+    print(f"validated policies took: {time_1 - start}")
+    print(f"fast policies took: {time_2 - time_1}")
+    print(f"ratio: {(time_1 - start) / (time_2 - time_1)}")
+    assert validated_policies == fast_policies
+
+
 def test_nested_trusted_instantiation_with_dict():
     employee = create_employee()
     trusted_employee = Employee.from_trusted_data(employee.to_other_class(dict))

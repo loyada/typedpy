@@ -917,6 +917,22 @@ This is done by calling the class method "from_trusted_data". For example:
 The method "from_trusted_data" is similar to "from_other_class" method, but is much faster, since it bypasses the
 validation. The difference in speed is x10-x25, based on the complexity of the Structure.
 
+Another option is to declare that instantiation of this Structure should always trust the input, and then
+any following instantiation will shortcut the validation logic. It has the same effect as "from_trusted_data".
+
+.. code-block:: python
+
+    Person.trust_supplied_values(True)
+
+    # this will be fast...
+    person = Person(
+        first_name=f"joe-1",
+        last_name="smith",
+        role=Role.admin,
+        ....
+    )
+
+
 
 Global Defaults
 ===============

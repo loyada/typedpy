@@ -85,7 +85,7 @@ def create_serializer(
                     else _get_serialize(field, cls)
                 )
         elif isinstance(mapped_key, (FunctionCall,)):
-            raise ValueError("Function mappers is not supported in fast serialization")
+            raise ValueError("Function mappers are not supported in fast serialization")
 
     items = processed_mapper.items()
 

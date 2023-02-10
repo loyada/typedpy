@@ -551,10 +551,16 @@ Here is a valid usage example, referring to the same Bar class defined in the pr
 
 Deserialization From Trusted Data
 ============================================
-If we are serializing to a "simple" structure, i.e: No mapper, no nested Structures, and all fields
-are directly matched from JSON (None, str, int, float, bool, and lists of one of those), we can bypass
-Typedpy sophisticated dynamic serialization and instantiation, and directly create an instance of the wanted
-class. This is useful when you are confident the data passed is valid, and performance is paramount.
+If we are serializing to a "simple" Structure, you can bypass Typedpy's sophisticated dynamic serialization and
+instantiation, and directly create an instance of the wanted class.
+This is useful when you are confident the data passed is valid, and performance is paramount.
+
+The definition of a "simple" Structure, in this context, is:
+* Serialization mapper, if exists, does not include function transformations.
+* Fields can mapped directly to Json: None, str, int, float, bool, and lists of one of those.
+* No nested dictionaries or Structures.
+* Enum fields are supported!
+
 
 The gain in performance is typically X15.
 
@@ -566,10 +572,12 @@ The gain in performance is typically X15.
         time_days: Optional[PositiveInt]
         codes: Array[int]
 
+        _serialization_mapper = mappers.TO_CAMELCASE
+
     serialized = {
-        "soft_limit": 5,
-        "hard_limit": 10,
-        "time_days": 2,
+        "softLimit": 5,
+        "hardLimit": 10,
+        "timeDays": 2,
         "codes": [33,44,55],
     }
 

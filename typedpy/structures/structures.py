@@ -558,7 +558,9 @@ class TypedField(Field):
             raise TypeError(f"{err_prefix()}Expected {self._ty}; Got {wrap_val(value)}")
 
     def __set__(self, instance, value):
-        if not getattr(instance, "_skip_validation", False) and not getattr(instance, "_trust_supplied_values", False):
+        if not getattr(instance, "_skip_validation", False) and not getattr(
+            instance, "_trust_supplied_values", False
+        ):
             self._validate(value)
         super().__set__(instance, value)
 
@@ -1460,7 +1462,8 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
         Arguments:
             source_object:
-                The source object to be copied from. Can be of any type.
+                The source object to be copied from. Can be of any type that has
+                attributes with the names of the expected fields
 
             ignore_props(list[str]): optional
                 The field names to ignore (not copy)
@@ -1476,7 +1479,9 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         args_from_model = {
             k: getattr(source_object, k, None)
             for k in cls.get_all_fields_by_name()
-            if k not in ignore_props and k not in getattr(cls, "_constants", {})
+            if k not in ignore_props
+            and k not in getattr(cls, "_constants", {})
+            and hasattr(source_object, k)
         }
         kwargs = {**args_from_model, **kw}
         return cls(**kwargs)
@@ -1484,17 +1489,35 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     @classmethod
     def from_trusted_data(cls, source_object=None, *, ignore_props=None, **kw):
         """
-            Like from_other_class, but "trusts" the input and skips any validation.
-            This should be used when you trust the input, and performance is more
-            important.
+        Like from_other_class, but "trusts" the input and skips any validation.
+        This should be used when you trust the input, and performance is more
+        important.
+
+         Arguments:
+            source_object:
+                The source object to be copied from. Can be of any type, including
+                Mapping.
+
+            ignore_props(list[str]): optional
+                The field names to ignore (not copy)
+
+            kw: optional
+                explicit overrides/additional field mapping. In the snippet above we
+                set the "id" and "name" fields directly.
+        Returns:
+            The new instance of the current structure type, with the fields set.
+            However, there is no validation: garbage-in => garbage-out
         """
         if source_object:
             ignore_props = ignore_props if ignore_props else []
             is_mapping = isinstance(source_object, Mapping)
             args_from_model = {
-                k: source_object.get(k, None) if is_mapping else getattr(source_object, k, None)
+                k: source_object.get(k, None)
+                if is_mapping
+                else getattr(source_object, k, None)
                 for k in cls.get_all_fields_by_name()
-                if k not in ignore_props and k not in getattr(cls, "_constants", {})
+                if k not in ignore_props
+                and k not in getattr(cls, "_constants", {})
             }
             kwargs = {**args_from_model, **kw}
         else:
@@ -1510,7 +1533,6 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         Mark the class as trusting supplied
         """
         cls._trust_supplied_values = trust
-
 
     @staticmethod
     def set_fail_fast(fast_fail: bool):

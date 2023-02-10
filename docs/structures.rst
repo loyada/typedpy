@@ -914,6 +914,14 @@ This is done by calling the class method "from_trusted_data". For example:
             },
         )
 
+    # alternatively...
+    other_person = Person.from_trusted_data(person, role=Role.CEO)
+
+    # The source object can also be a dict (or any Mapping)
+    as_dict = {soft_limit: 10, hard_limit: 20, codes: [1, 2, 3]}
+    Policy.from_trusted_data(as_dict,  soft_limit=5)
+
+
 The method "from_trusted_data" is similar to "from_other_class" method, but is much faster, since it bypasses the
 validation. The difference in speed is x10-x25, based on the complexity of the Structure.
 

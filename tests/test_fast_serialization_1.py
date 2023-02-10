@@ -437,7 +437,7 @@ def test_serialize_with_mapper_with_functions_not_supported():
     with raises(ValueError) as excinfo:
         create_serializer(Foo)
 
-    assert "Function mappers is not supported in fast serialization" in str(
+    assert "Function mappers are not supported in fast serialization" in str(
         excinfo.value
     )
 

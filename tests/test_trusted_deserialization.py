@@ -2,8 +2,10 @@ import enum
 import time
 from typing import Optional
 
-from typedpy import Array, Deserializer, Extend, FastSerializable, ImmutableStructure, PositiveInt, Set, \
-    create_serializer
+import pytest
+
+from typedpy import Array, Deserializer, Extend, FastSerializable, FunctionCall, ImmutableStructure, PositiveInt, Set, \
+    create_serializer, mappers
 
 
 class Policy(ImmutableStructure, FastSerializable):
@@ -89,8 +91,39 @@ def test_trusted_deserialization_equivalent_to_regular():
     # Then
     print(f"trusted serialization took: {time_1 - start}")
     print(f"untrusted serialization took: {time_2 - time_1}")
-    print(f"ratio: { (time_2 - time_1) / (time_1 - start)}")
+    print(f"ratio: {(time_2 - time_1) / (time_1 - start)}")
     assert trusted_result == untrusted_result
+
+
+def test_serialize_with_enum():
+    class LimitType(enum.Enum):
+        one = 1
+        two = 2
+        three = 3
+
+    class SpecialPolicy(Extend[Policy], ImmutableStructure, FastSerializable):
+        limit_type: LimitType
+
+        _required = []
+
+    deserializer = Deserializer(target_class=SpecialPolicy)
+    # Given
+    validated_policies = build_policies(hard_limit=20, codes=[1, 2, 3], time_days=7)
+    special_policies = [SpecialPolicy.from_other_class(x, limit_type=LimitType.two) for x in validated_policies]
+    special_policies.append(SpecialPolicy.from_other_class(validated_policies[0]))
+    serialized = [p.serialize() for p in special_policies]
+    start = time.time()
+
+    # When
+    trusted_result = [deserializer.deserialize(input_data=i, direct_trusted_mapping=True) for i in serialized]
+    time_1 = time.time()
+    untrusted_result = [deserializer.deserialize(input_data=i) for i in serialized]
+    time_2 = time.time()
+    print(f"trusted serialization took: {time_1 - start}")
+    print(f"untrusted serialization took: {time_2 - time_1}")
+    print(f"ratio: {(time_2 - time_1) / (time_1 - start)}")
+    assert trusted_result == untrusted_result
+
 
 def create_employee() -> Employee:
     return Employee(
@@ -114,6 +147,7 @@ def create_employee() -> Employee:
         },
     )
 
+
 def test_trusted_deserialize_nested_is_using_standard_deserialization():
     employee = create_employee()
     serialized = employee.serialize()
@@ -122,4 +156,46 @@ def test_trusted_deserialize_nested_is_using_standard_deserialization():
     # Then
     assert employee == deserialized
     # deserialized was not created using "from_trusted_data"
-    assert getattr(deserialized, "_trust_supplied_values", False) == False
+    assert getattr(deserialized, "_trust_supplied_values", False) is False
+
+
+def test_trusted_deserialization_with_mapper():
+    class PolicyWithMapper(Extend[Policy], ImmutableStructure, FastSerializable):
+        _serialization_mapper = mappers.TO_CAMELCASE
+
+    deserializer = Deserializer(target_class=PolicyWithMapper)
+    # Given
+    validated_policies = build_policies(hard_limit=20, codes=[1, 2, 3], time_days=7)
+    special_policies = [PolicyWithMapper.from_other_class(x) for x in validated_policies]
+    serialized = [p.serialize() for p in special_policies]
+    start = time.time()
+
+    # When
+    trusted_result = [deserializer.deserialize(input_data=i, direct_trusted_mapping=True) for i in serialized]
+    time_1 = time.time()
+    untrusted_result = [deserializer.deserialize(input_data=i) for i in serialized]
+    time_2 = time.time()
+    print(f"trusted serialization took: {time_1 - start}")
+    print(f"untrusted serialization took: {time_2 - time_1}")
+    print(f"ratio: {(time_2 - time_1) / (time_1 - start)}")
+    assert trusted_result == untrusted_result
+
+
+def test_trusted_deserialization_with_invalid_mapper():
+    class PolicyWithMapper(ImmutableStructure):
+        soft_limit: PositiveInt
+        hard_limit: PositiveInt
+        time_days: Optional[PositiveInt]
+        codes: Array[int]
+
+        _serialization_mapper = {"soft_limit": FunctionCall(func=lambda x: x * 100)}
+
+    deserializer = Deserializer(target_class=PolicyWithMapper)
+    # Given
+    serialized = {"hard_limit": 5, "soft_limit": 4, "codes": [1, 2, 3]}
+    deserializer.deserialize(input_data=serialized)
+
+    # When/ Then
+    with pytest.raises(ValueError)as excinfo:
+        deserializer.deserialize(input_data=serialized, direct_trusted_mapping=True)
+    assert "unsupported for trusted deserialization" in str(excinfo.value)

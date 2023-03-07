@@ -29,6 +29,7 @@ from typedpy.commons import (
 from typedpy.utility import type_is_generic
 from .consts import (
     ADDITIONAL_PROPERTIES,
+    CUSTOM_ATTRIBUTE_MARKER,
     DEFAULTS,
     DESERIALIZATION_MAPPER,
     DISABLE_PROTECTION,
@@ -656,6 +657,16 @@ def _apply_default_and_update_required_not_to_include_fields_with_defaults(
     cls_dict[REQUIRED_FIELDS] = list(required_fields)
 
 
+def _block_invalid_consts(cls_dict):
+    annotations = cls_dict.get("__annotations__", {})
+    for k, v in cls_dict.items():
+        if k in annotations or k in SPECIAL_ATTRIBUTES or _is_dunder(k) or k.startswith(CUSTOM_ATTRIBUTE_MARKER):
+            continue
+        if isinstance(v, (bool, list, dict)):
+            raise ValueError(f"attribute {k} is not a valid TypedPy attribute. "
+                             f"If it is not a typo, please add an annotation")
+
+
 class StructMeta(type):
     """
     Metaclass for Structure. Manipulates it to ensure the fields are set up correctly.
@@ -728,6 +739,8 @@ class StructMeta(type):
                 raise ValueError(
                     "optional cannot override prior required in the class or in a base class"
                 )
+        if TypedPyDefaults.block_unknown_consts:
+            _block_invalid_consts(cls_dict)
 
         if OLD_ADDITIONAL_PROPERTIES in cls_dict:
             cls_dict[ADDITIONAL_PROPERTIES] = cls_dict[OLD_ADDITIONAL_PROPERTIES]
@@ -843,6 +856,8 @@ def add_annotations_to_class_dict(cls_dict, previous_frame):
     optional_fields = set(cls_dict.get(OPTIONAL_FIELDS, []))
     if isinstance(annotations, dict):
         for k, v in annotations.items():
+            if k.startswith(CUSTOM_ATTRIBUTE_MARKER):
+                continue
             v = _evaluate_if_future_annotations(cls_dict, previous_frame, v)
 
             if is_simple_field_annotation(v):

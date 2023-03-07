@@ -46,3 +46,10 @@ def fixture_no_defensive_copy_on_get():
     TypedPyDefaults.defensive_copy_on_get = True
 
 
+@pytest.fixture(name="block_unknown_consts")
+def fixture_block_unknown_consts():
+    TypedPyDefaults.block_unknown_consts = True
+    yield
+    TypedPyDefaults.block_unknown_consts = False
+
+

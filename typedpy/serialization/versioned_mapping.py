@@ -2,11 +2,9 @@ import copy
 
 from typedpy.commons import Constant, deep_get
 from typedpy.structures import Structure
+from typedpy.structures.consts import VERSIONS_MAPPING
 from typedpy.fields import FunctionCall, PositiveInt
 from .mappers import Deleted
-
-
-VERSION_MAPPING = "_versions_mapping"
 
 
 class Versioned(Structure):
@@ -26,7 +24,7 @@ class Versioned(Structure):
     version: PositiveInt
 
     def __init__(self, *args, **kwargs):
-        versions_mapping = getattr(self, VERSION_MAPPING, [])
+        versions_mapping = getattr(self, VERSIONS_MAPPING, [])
         default_version = len(versions_mapping) + 1
         kwargs["version"] = default_version
         super().__init__(*args, **kwargs)

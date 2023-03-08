@@ -13,7 +13,7 @@ from typedpy.commons import (
     wrap_val,
 )
 from typedpy.serialization.versioned_mapping import (
-    VERSION_MAPPING,
+    VERSIONS_MAPPING,
     Versioned,
     convert_dict,
 )
@@ -561,8 +561,8 @@ def deserialize_structure_internal(
     if issubclass(cls, Versioned):
         if not isinstance(the_dict, dict) or "version" not in the_dict:
             raise TypeError("Expected a dictionary with a 'version' value")
-        if getattr(cls, VERSION_MAPPING):
-            versions_mapping = getattr(cls, VERSION_MAPPING)
+        if getattr(cls, VERSIONS_MAPPING):
+            versions_mapping = getattr(cls, VERSIONS_MAPPING)
             input_dict = convert_dict(the_dict, versions_mapping)
 
     if (

@@ -2,13 +2,26 @@ from typedpy import Structure
 from pytest import raises
 
 
-def test_dont_block_unknown_consts():
+def test_dont_block_unknown_consts(unblock_unknown_consts):
     class Foo(Structure):
         a: int
 
         _ignore_nonnes = True
 
     # no exception thrown
+
+
+def test_block_unknown_consts_default_config():
+    with raises(ValueError) as excinfo:
+
+        class Foo(Structure):
+            a: int
+
+            _asdasd = True
+
+    assert "attribute _asdasd is not a valid TypedPy attribute." in str(
+        excinfo.value
+    )
 
 
 def test_block_unknown_consts(block_unknown_consts):

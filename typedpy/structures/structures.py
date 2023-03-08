@@ -47,7 +47,6 @@ from .consts import (
 from .defaults import TypedPyDefaults
 from .type_mapping import convert_basic_types
 
-
 T = typing.TypeVar("T")
 
 _immutable_types = (int, float, str, tuple, bool, enum.Enum)
@@ -659,12 +658,21 @@ def _apply_default_and_update_required_not_to_include_fields_with_defaults(
 
 def _block_invalid_consts(cls_dict):
     annotations = cls_dict.get("__annotations__", {})
+    known_attributes = (
+        annotations.keys()
+        | SPECIAL_ATTRIBUTES
+        | {"_fields", "_fail_fast", "_field_by_name", "_constants"}
+    )
+    ""
     for k, v in cls_dict.items():
-        if k in annotations or k in SPECIAL_ATTRIBUTES or _is_dunder(k) or k.startswith(CUSTOM_ATTRIBUTE_MARKER):
+        if (
+            k in known_attributes
+            or _is_dunder(k)
+            or k.startswith(CUSTOM_ATTRIBUTE_MARKER)
+        ):
             continue
         if isinstance(v, (bool, list, dict)):
-            raise ValueError(f"attribute {k} is not a valid TypedPy attribute. "
-                             f"If it is not a typo, please add an annotation")
+            raise ValueError(f"attribute {k} is not a valid TypedPy attribute.")
 
 
 class StructMeta(type):
@@ -678,7 +686,7 @@ class StructMeta(type):
 
     def __new__(
         cls, name, bases, cls_dict
-    ):  #  pylint: disable=too-many-locals, too-many-branches
+    ):  # pylint: disable=too-many-locals, too-many-branches
         bases_params, bases_required = get_base_info(bases)
         add_annotations_to_class_dict(cls_dict, previous_frame=currentframe().f_back)
         defaults = cls_dict[DEFAULTS]
@@ -1531,8 +1539,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 if is_mapping
                 else getattr(source_object, k, None)
                 for k in cls.get_all_fields_by_name()
-                if k not in ignore_props
-                and k not in getattr(cls, "_constants", {})
+                if k not in ignore_props and k not in getattr(cls, "_constants", {})
             }
             kwargs = {**args_from_model, **kw}
         else:

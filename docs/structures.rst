@@ -966,6 +966,10 @@ Typedpy exposes several global defaults. These can be views as the Typedpy confi
 8. TypedPyDefaults.block_unknown_consts - if set to True, will raise an exception if a Structure class definition contains
    attributes that are not fields, and not Typedpy attributes. It is meant to avoid silly mistakes, like 
    setting "_ignore_nonnes".
+   In case you still want to use your own custom (non-typedpy) attribute in a Structure while block_unknown_consts is on
+   you can either use a method, a property or a class variable with a name that starts with "_custom_attribute_".
+
+
    
 
 

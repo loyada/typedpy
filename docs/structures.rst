@@ -963,6 +963,10 @@ Typedpy exposes several global defaults. These can be views as the Typedpy confi
    you trade of a level of immutability safety with significant performance benefits.
 7. TypedPyDefaults.allow_none_for_optionals - by default, if a field is defined of a specific type, then a None value
    is considered invalid. This flag allows to provide None for any optional field.
+8. TypedPyDefaults.block_unknown_consts - if set to True, will raise an exception if a Structure class definition contains
+   attributes that are not fields, and not Typedpy attributes. It is meant to avoid silly mistakes, like 
+   setting "_ignore_nonnes".
+   
 
 
 Structure Documentation

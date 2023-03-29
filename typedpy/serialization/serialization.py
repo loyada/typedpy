@@ -4,6 +4,7 @@ import json
 import uuid
 from functools import lru_cache
 from typing import Dict
+from decimal import Decimal
 
 from typedpy.commons import (
     Constant,
@@ -739,7 +740,7 @@ def serialize_val(
             field_definition.get_fields(), name, val, mapper, camel_case_convert
         )
     if isinstance(field_definition, (Number, Boolean, String)) or val is None:
-        return val
+        return str(val) if isinstance(val, Decimal) else val
     if isinstance(field_definition, Anything) and (
         isinstance(val, (int, float, str, bool)) or val is None
     ):

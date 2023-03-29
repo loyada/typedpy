@@ -1,8 +1,9 @@
 from decimal import Decimal
+from json import dumps
 
 from pytest import raises
 
-from typedpy import Deserializer, Structure, Positive, DecimalNumber
+from typedpy import Deserializer, ImmutableStructure, NonNegative, Structure, Positive, DecimalNumber, serialize
 
 
 class PositiveDecimal(DecimalNumber, Positive):
@@ -66,3 +67,12 @@ def test_positivedecimal_valid():
 def test_deserialize_string_as_decimal():
     f = Deserializer(Foo).deserialize({"c": "5"})
     assert int(f.c) == 5
+
+
+class HasDecimal(ImmutableStructure):
+    amount: NonNegative
+
+
+def test_dump_decimal_field():
+    has_decimal = HasDecimal(amount=Decimal("1.23"))
+    assert dumps(serialize(has_decimal)) == '{"amount": "1.23"}'

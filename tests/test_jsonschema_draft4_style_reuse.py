@@ -99,7 +99,10 @@ def test_allof_broken_err2():
 def test_anyof_misses_all_err():
     with raises(ValueError) as excinfo:
         Example(b=-99.1)
-    assert "b: -99.1 Did not match any field option" in str(excinfo.value)
+    assert (
+        "Example.b: -99.1 of type float did not match any field option. Valid types are: Number, int, Positive, str."
+        in str(excinfo.value)
+    )
 
 
 def test_anyof_valid1():
@@ -121,13 +124,13 @@ def test_anyof_valid4():
 def test_oneof_misses_all_err():
     with raises(ValueError) as excinfo:
         Example(c=-99.1)
-    assert "c: Got -99.1; Did not match any field option" in str(excinfo.value)
+    assert "Example.c: -99.1 of type float did not match any field option. Valid types are: Number, int, Positive, str." in str(excinfo.value)
 
 
 def test_oneof_matches_few_err():
     with raises(ValueError) as excinfo:
         Example(c=5)
-    assert "c: Got 5; Matched more than one field option" in str(excinfo.value)
+    assert "Example.c: : Got 5; Matched more than one field option" in str(excinfo.value)
 
 
 def test_oneof_valid1():
@@ -197,14 +200,13 @@ def test_standard_definition_wrong_fields_arg_err():
 def test_embeded_structure_type_err():
     with raises(ValueError) as excinfo:
         Example(g=3.5)
-    assert "g: 3.5 Did not match any field option" in str(excinfo.value)
+    assert "Example.g: 3.5 of type float did not match any field option. Valid types are: Foo, int." in str(excinfo.value)
 
 
 def test_embeded_structure_valid():
     assert Example(g=Foo(s="abc")).g.s == "abc"
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_with_function():
     def func() -> Field:
         return Integer(minimum=10)
@@ -216,7 +218,6 @@ def test_with_function():
     assert foo.any[0] == 15
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_with_function_err():
     def func() -> Field:
         return Integer(minimum=10)
@@ -226,4 +227,4 @@ def test_with_function_err():
 
     with raises(ValueError) as excinfo:
         Foo(any=[5, "xyz"])
-    assert "any_0: 5 Did not match any field option" in str(excinfo.value)
+    assert "Foo.any_0: 5 of type int did not match any field option. Valid types are: int, str." in str(excinfo.value)

@@ -254,7 +254,6 @@ def test_typing_error_unsupported():
     assert "typing.Iterable[int] type is not supported" in str(exc_info.value)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_typing_error_in_generic_union_mapps_to_anyof():
     class ExampleWithTyping(Structure):
         a: Union[int, float, str]
@@ -266,7 +265,7 @@ def test_typing_error_in_generic_union_mapps_to_anyof():
     e = ExampleWithTyping(a="x")
     with raises(ValueError) as exc_info:
         e.a = []
-    assert "a: [] Did not match any field option" in str(exc_info.value)
+    assert "a: [] of type list did not match any field option. Valid types are: int, float, str." in str(exc_info.value)
 
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.7 or higher")

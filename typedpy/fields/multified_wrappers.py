@@ -1,7 +1,6 @@
 from typedpy.commons import wrap_val
-from typedpy.structures import Field, FieldMeta, NoneField
+from typedpy.structures import Field, FieldMeta, NoneField, ClassReference, TypedField
 from .fields import _map_to_field
-from .. import TypedField
 
 
 class _JSONSchemaDraft4ReuseMeta(FieldMeta):
@@ -78,6 +77,8 @@ class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
 
 def _get_type_name(field):
+    if isinstance(field, ClassReference):
+        return field._ty.__name__
     clz = field.__class__
     if clz is NoneField:
         return "None"
@@ -131,7 +132,7 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             prefix = f"{self._name}: " if self._name else ""
             valid_type_names = ", ".join([_get_type_name(f) for f in self.get_fields()])
             raise ValueError(
-                f"{prefix}{wrap_val(value)} of type {value.__class__.__name__} Did not match"
+                f"{prefix}{wrap_val(value)} of type {value.__class__.__name__} did not match"
                 f" any field option. Valid types are: {valid_type_names}."
             )
         super().__set__(instance, getattr(instance, self._name))
@@ -177,7 +178,7 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             valid_type_names = ", ".join([_get_type_name(f) for f in self.get_fields()])
             prefix = f"{self._name}: " if self._name else ""
             raise ValueError(
-                f"{prefix}{wrap_val(value)} of type {value.__class__.__name__} Did not match"
+                f"{prefix}{wrap_val(value)} of type {value.__class__.__name__} did not match"
                 f" any field option. Valid types are: {valid_type_names}."
             )
         if matched > 1:

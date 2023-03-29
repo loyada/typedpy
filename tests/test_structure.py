@@ -328,7 +328,7 @@ def test_optional_err(Point):
 
     with raises(ValueError) as excinfo:
         Foo(i=1, point=3)
-    assert "point: 3 Did not match any field option" in str(excinfo.value)
+    assert "Foo.point: 3 of type int did not match any field option. Valid types are: PointClass, None" in str(excinfo.value)
 
 
 def test_field_of_class_in_map(Point):

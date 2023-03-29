@@ -233,7 +233,7 @@ def test_oneof_field_failure1():
     data = {"a": 1, "b": [1, "abcd"]}
     with raises(ValueError) as excinfo:
         deserialize_structure(Foo, data)
-    assert "b_1: Got abcd; Matched more than one field option" in str(excinfo.value)
+    assert "Foo.b_1: : Got 'abcd'; Matched more than one field option" in str(excinfo.value)
 
 
 def test_oneof_field_failure2():

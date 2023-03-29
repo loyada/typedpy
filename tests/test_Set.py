@@ -112,7 +112,7 @@ def test_simplified_definition_with_flexible_types_valid():
 def test_simplified_definition_with_flexible_types_err():
     with raises(ValueError) as excinfo:
         Example(g={"xy"})
-    assert "g: 'xy' Did not match any field option" in str(excinfo.value)
+    assert "Example.g: 'xy' of type str did not match any field option. Valid types are: str, Number." in str(excinfo.value)
 
 
 def test_invalid_type():

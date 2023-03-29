@@ -1,6 +1,7 @@
 from typedpy.commons import wrap_val
 from typedpy.structures import Field, FieldMeta, NoneField
 from .fields import _map_to_field
+from .. import TypedField
 
 
 class _JSONSchemaDraft4ReuseMeta(FieldMeta):
@@ -76,6 +77,14 @@ class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
         return field.serialize(value)
 
 
+def _get_type_name(field):
+    clz = field.__class__
+    if clz is NoneField:
+        return "None"
+    if isinstance(field, TypedField):
+        return clz._ty.__name__
+    return clz.__name__
+
 class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     """
     Content must adhere to one or more of the requirements in the fields arguments.
@@ -120,8 +129,10 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
                 pass
         if not matched:
             prefix = f"{self._name}: " if self._name else ""
+            valid_type_names = ", ".join([_get_type_name(f) for f in self.get_fields()])
             raise ValueError(
-                f"{prefix}{wrap_val(value)} Did not match any field option"
+                f"{prefix}{wrap_val(value)} of type {value.__class__.__name__} Did not match"
+                f" any field option. Valid types are: {valid_type_names}."
             )
         super().__set__(instance, getattr(instance, self._name))
 
@@ -163,12 +174,16 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             except ValueError:
                 pass
         if not matched:
+            valid_type_names = ", ".join([_get_type_name(f) for f in self.get_fields()])
+            prefix = f"{self._name}: " if self._name else ""
             raise ValueError(
-                f"{self._name}: Got {value}; Did not match any field option"
+                f"{prefix}{wrap_val(value)} of type {value.__class__.__name__} Did not match"
+                f" any field option. Valid types are: {valid_type_names}."
             )
         if matched > 1:
+            prefix = f"{self._name}: " if self._name else ""
             raise ValueError(
-                f"{self._name}: Got {value}; Matched more than one field option"
+                f"{prefix}: Got {wrap_val(value)}; Matched more than one field option"
             )
         super().__set__(instance, value)
 

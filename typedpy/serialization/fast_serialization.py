@@ -2,8 +2,8 @@ from functools import wraps
 from typing import Type
 
 from typedpy.commons import Constant, first_in
-from typedpy.fields import Boolean, FunctionCall, Number, String, Array
-from typedpy.structures import ClassReference, Field
+from typedpy.fields import Boolean, FunctionCall, Number, String, Array, AnyOf, OneOf
+from typedpy.structures import ClassReference, Field, NoneField
 from typedpy.serialization.mappers import (
     aggregate_serialization_mappers,
 )
@@ -50,7 +50,12 @@ def _verify_is_fast_serializable(field):
 def _get_serialize(field, cls):
     _verify_is_fast_serializable(field)
     obj = field._ty if isinstance(field, ClassReference) else field
-
+    if isinstance(obj, OneOf):
+        raise TypeError(f"{obj} Field is not FastSerializable")
+    if isinstance(obj, AnyOf):
+        non_null = [f for f in getattr(obj, "_fields") if not isinstance(f, NoneField)]
+        if len(non_null)>1:
+            raise TypeError(f"AnyOf(i.e. Union) is not FastSerializable when it can be multiple types: {obj}")
     owner = cls
 
     def wrapped(self):

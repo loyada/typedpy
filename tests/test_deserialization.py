@@ -1482,3 +1482,14 @@ def test_serialization_constant_in_list():
     assert Serializer(B(arr=[A(10), A(10)])).serialize() == {
         "numbers": [{"i": 10}, {"i": 10}]
     }
+
+
+def test_mapping_key_should_replace_original_mapping():
+    class Foo(Structure):
+        a: int
+        _serialization_mapper = {"a": "b"}
+
+    deserialize = Deserializer(Foo, use_strict_mapping=True).deserialize
+    assert deserialize({"b": 5}) == Foo(a=5)
+    with raises(TypeError):
+        deserialize({"a": 5})

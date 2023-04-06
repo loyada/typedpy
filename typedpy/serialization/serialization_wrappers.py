@@ -53,10 +53,23 @@ class Deserializer(Structure):
             If true, will convert any camelCase key that does not have explicit mapping to a snake_case attribute
             name. Default is False.
 
+        use_strict_mapping(bool): Optional
+            If true, if a field is mapped to a different key name, then deserialization will never use the key
+            that matches the original field name for that field. i.e.:
+
+            .. code-block:: python
+
+                class Foo(Structure):
+                    a: int
+                    _serialization_mapper = {"a": "b"}
+
+                # This raises an exception
+               Deserializer(Foo, use_strict_mapping=True).deserialize({"a": 5})
     """
 
     target_class = StructureClass
     mapper = Map[String, OneOf[String, FunctionCall, Map]]
+    use_strict_mapping = Boolean(default=False)
     camel_case_convert = Boolean(default=False)
 
     _required = ["target_class"]
@@ -71,11 +84,12 @@ class Deserializer(Structure):
                         "the class fields. "
                     )
 
-    def deserialize(self, input_data, keep_undefined=None, direct_trusted_mapping=False):
+    def deserialize(self, input_data, *, keep_undefined=None, direct_trusted_mapping=False):
         return deserialize_structure(
             self.target_class,
             input_data,
             mapper=self.mapper,
+            use_strict_mapping=self.use_strict_mapping,
             keep_undefined=keep_undefined,
             camel_case_convert=self.camel_case_convert,
             direct_trusted_mapping=direct_trusted_mapping

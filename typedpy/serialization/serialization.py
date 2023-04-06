@@ -425,6 +425,7 @@ def construct_fields_map(
     mapper,
     input_dict,
     cls,
+    use_strict_mapping=False,
     camel_case_convert=False,
     ignore_none=False,
     enable_undefined=False,
@@ -440,7 +441,7 @@ def construct_fields_map(
         processed_input = None
         if key in mapper:
             processed_input = get_processed_input(
-                key, mapper, input_dict, enable_undefined=enable_undefined
+                key, mapper, input_dict, enable_undefined=enable_undefined, use_strict_mapping=use_strict_mapping
             )
             if processed_input is not None or getattr(cls, ENABLE_UNDEFINED, False):
                 process = True
@@ -530,6 +531,7 @@ def deserialize_structure_internal(
     the_dict,
     name=None,
     *,
+    use_strict_mapping=False,
     mapper=None,
     keep_undefined=False,
     camel_case_convert=False,
@@ -638,6 +640,7 @@ def deserialize_structure_internal(
             mapper,
             input_dict,
             cls=cls,
+            use_strict_mapping=use_strict_mapping,
             camel_case_convert=camel_case_convert,
             ignore_none=ignore_none,
             enable_undefined=getattr(cls, ENABLE_UNDEFINED, False),
@@ -651,6 +654,7 @@ def deserialize_structure(
     cls,
     the_dict,
     *,
+    use_strict_mapping=False,
     mapper=None,
     keep_undefined=True,
     camel_case_convert=False,
@@ -665,6 +669,9 @@ def deserialize_structure(
             The target class
         the_dict(dict):
             the source dictionary
+        use_strict_mapping(bool): Optional
+            If True, in case a mapper maps field "x" to a key "y" in the input, will not use key "x" in the input
+            event if value for "y" does not exist. Default is False.
         mapper(dict): optional
             the key is the target attribute name. The value can either be a path of the value in the source dict
             using dot notation, for example: "aaa.bbb", or a :class:`FunctionCall`. In the latter case,
@@ -681,6 +688,7 @@ def deserialize_structure(
     return deserialize_structure_internal(
         cls,
         the_dict,
+        use_strict_mapping=use_strict_mapping,
         mapper=mapper,
         keep_undefined=keep_undefined,
         camel_case_convert=camel_case_convert,
@@ -691,7 +699,7 @@ def deserialize_structure(
 SENTITNEL = uuid.uuid4()
 
 
-def get_processed_input(key, mapper, the_dict, *, enable_undefined):
+def get_processed_input(key, mapper, the_dict, *, enable_undefined, use_strict_mapping):
     def _get_arg_list(key_mapper):
         vals = [deep_get(the_dict, k, default=SENTITNEL) for k in key_mapper.args]
         return [v for v in vals if v != SENTITNEL]
@@ -702,7 +710,7 @@ def get_processed_input(key, mapper, the_dict, *, enable_undefined):
         processed_input = key_mapper.func(*args) if args else None
     elif isinstance(key_mapper, (str,)):
         val = deep_get(the_dict, key_mapper, enable_undefined=enable_undefined)
-        processed_input = val if val is not None else the_dict.get(key)
+        processed_input = val if (val is not None or use_strict_mapping) else the_dict.get(key)
     elif isinstance(key_mapper, Constant):
         processed_input = key_mapper()
     else:

@@ -592,33 +592,6 @@ if the Structure is not "Simple" (as described above), the flat "direct_trusted_
 
 
 
-.. _serialization-classes:
-
-Classes
-=======
-(starting at version 0.70)
-
-.. autoclass:: FunctionCall
-
-.. autoclass:: Serializer
-
-.. autoclass:: Deserializer
-
-.. autoclass:: HasTypes
-
-
-Functions
-=========
-
-.. autofunction:: deserialize_structure
-
-.. autofunction:: deserialize_single_field
-
-.. autofunction:: serialize
-
-.. autofunction:: serialize_field
-
-
 Transformations
 ===============
 Serializer and deserializers can be used with mappers to transform one dictionary to another, or one
@@ -1001,6 +974,8 @@ Requirements/Limitations:
 
 #. All Structures in the hierarchy implement FastSerializable. Typically this is done by calling create_serializer, or
    or automatically, during first instantiation.
+#. No field of type AnyOf(i.e. Union) with the exception of Optional.
+#  No field of type OneOf.
 #. Any custom Field classes should implement the serialize() method.
 #. All mappers must be in the definition of the Structures.
 #. No mapper to Typedpy Constant in custom serialization mapper of the class
@@ -1028,3 +1003,32 @@ the serializer, as such:
 .. code-block:: python
 
     create_serializer(Foo, serialize_none = True)
+
+
+
+
+.. _serialization-classes:
+
+Classes
+=======
+(starting at version 0.70)
+
+.. autoclass:: FunctionCall
+
+.. autoclass:: Serializer
+
+.. autoclass:: Deserializer
+
+.. autoclass:: HasTypes
+
+
+Functions
+=========
+
+.. autofunction:: deserialize_structure
+
+.. autofunction:: deserialize_single_field
+
+.. autofunction:: serialize
+
+.. autofunction:: serialize_field

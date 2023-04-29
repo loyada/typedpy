@@ -362,3 +362,72 @@ def test_defect_in_complex_mapper3():
     assert Deserializer(Foo).deserialize({"blas": [{}]}, keep_undefined=False) == Foo(
         blas=[Blah()]
     )
+
+
+
+def test_serialization_mapper_inheritance1():
+    class Foo(Structure):
+        current_level: int
+        _serialization_mapper = mappers.TO_CAMELCASE
+
+    class Bar(Foo):
+        sub_categories: list[Foo]
+        number_of_transactions: int
+        _required = ["current_level"]
+        _serialization_mapper = mappers.TO_CAMELCASE
+
+    a = Bar(
+        current_level=1,
+        number_of_transactions=2,
+        sub_categories=[
+            Bar(current_level=2, number_of_transactions=2,
+                sub_categories=[Bar(current_level=3, number_of_transactions=1)])
+        ],
+    )
+    serialized = Serializer(a).serialize()
+
+    assert serialized == {
+        'currentLevel': 1,
+        'numberOfTransactions': 2,
+        'subCategories': [{
+            'currentLevel': 2,
+            'numberOfTransactions': 2,
+            'subCategories': [{
+                'currentLevel': 3,
+                'numberOfTransactions': 1}]
+        }]
+    }
+
+
+def test_serialization_mapper_inheritance2():
+    class Foo(Structure):
+        current_level: int
+
+    class Bar(Foo):
+        sub_categories: list[Foo]
+        number_of_transactions: int
+        _required = ["current_level"]
+        _serialization_mapper = mappers.TO_CAMELCASE
+
+    a = Bar(
+        current_level=1,
+        number_of_transactions=2,
+        sub_categories=[
+            Bar(current_level=2, number_of_transactions=2,
+                sub_categories=[Bar(current_level=3, number_of_transactions=1)])
+        ],
+    )
+    serialized = Serializer(a).serialize()
+
+    assert serialized == {
+        'currentLevel': 1,
+        'numberOfTransactions': 2,
+        'subCategories': [{
+            'currentLevel': 2,
+            'numberOfTransactions': 2,
+            'subCategories': [{
+                'currentLevel': 3,
+                'numberOfTransactions': 1}]
+        }]
+    }
+

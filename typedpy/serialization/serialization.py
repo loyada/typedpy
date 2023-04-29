@@ -441,7 +441,11 @@ def construct_fields_map(
         processed_input = None
         if key in mapper:
             processed_input = get_processed_input(
-                key, mapper, input_dict, enable_undefined=enable_undefined, use_strict_mapping=use_strict_mapping
+                key,
+                mapper,
+                input_dict,
+                enable_undefined=enable_undefined,
+                use_strict_mapping=use_strict_mapping,
             )
             if processed_input is not None or getattr(cls, ENABLE_UNDEFINED, False):
                 process = True
@@ -710,7 +714,9 @@ def get_processed_input(key, mapper, the_dict, *, enable_undefined, use_strict_m
         processed_input = key_mapper.func(*args) if args else None
     elif isinstance(key_mapper, (str,)):
         val = deep_get(the_dict, key_mapper, enable_undefined=enable_undefined)
-        processed_input = val if (val is not None or use_strict_mapping) else the_dict.get(key)
+        processed_input = (
+            val if (val is not None or use_strict_mapping) else the_dict.get(key)
+        )
     elif isinstance(key_mapper, Constant):
         processed_input = key_mapper()
     else:
@@ -816,8 +822,22 @@ def serialize_val(
     if isinstance(field_definition, Anything) and isinstance(val, Structure):
         return serialize(val, mapper=mapper, camel_case_convert=camel_case_convert)
     if isinstance(val, Structure) or isinstance(field_definition, Field):
+        resolved_mapper = (
+            aggregate_serialization_mappers(
+                val.__class__,
+                override_mapper=None,
+                camel_case_convert=camel_case_convert
+            )
+            if (
+                isinstance(field_definition, ClassReference)
+                and isinstance(val, field_definition.get_type)
+                and val.__class__ is not field_definition.get_type
+            )
+            else mapper
+        )
+
         return serialize_internal(
-            val, resolved_mapper=mapper, camel_case_convert=camel_case_convert
+            val, resolved_mapper=resolved_mapper, camel_case_convert=camel_case_convert
         )
     if isinstance(field_definition, Constant):
         return val.name if isinstance(val, enum.Enum) else val

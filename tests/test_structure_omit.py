@@ -126,3 +126,10 @@ def test_omit_additional_props_default_false(additional_props_default_is_false):
     assert "Bar: got an unexpected keyword argument 'qweasd'" in str(excinfo.value)
 
     assert BarImmutable(i=5, x="xyz", s={1, 2, 3}).x == "xyz"
+
+
+def test_block_omit_with_wrong_field():
+    with pytest.raises(TypeError) as excinfo:
+        class Bar(Omit[Foo, ("a", "x")]): pass
+
+    assert "Pick: 'x' is not a field of Foo" in str(excinfo.value)

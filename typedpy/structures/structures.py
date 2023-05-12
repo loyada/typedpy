@@ -1619,6 +1619,10 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         cls_dict[REQUIRED_FIELDS] = [
             x for x in getattr(cls, REQUIRED_FIELDS) if x not in fields_to_omit
         ]
+        for k in fields_to_omit:
+            if k not in cls.get_all_fields_by_name():
+                raise TypeError(f"Pick: {wrap_val(k)} is not a field of {cls.__name__}")
+
         for k, v in cls.get_all_fields_by_name().items():
             if k not in fields_to_omit:
                 cls_dict[k] = v
@@ -1659,10 +1663,11 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
         """
         cls_dict = _init_class_dict(cls)
-
-        for k, v in cls.get_all_fields_by_name().items():
-            if k in fields_to_pick:
-                cls_dict[k] = v
+        reference_class_fields = cls.get_all_fields_by_name()
+        for k in fields_to_pick:
+            if k not in reference_class_fields:
+                raise TypeError(f"Pick: {wrap_val(k)} is not a field of {cls.__name__}")
+            cls_dict[k] = reference_class_fields[k]
         cls_dict[REQUIRED_FIELDS] = [
             x for x in getattr(cls, REQUIRED_FIELDS) if x in fields_to_pick
         ]

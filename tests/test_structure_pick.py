@@ -32,14 +32,13 @@ class Foo(Blah, ImmutableStructure):
 class Bar1(Foo.pick("a", "b", "d")):
     x: int
 
-    _serialization_mapper=Foo.get_aggregated_serialization_mapper()
+    _serialization_mapper = Foo.get_aggregated_serialization_mapper()
 
 
 class Bar2(Pick[Foo, ("a", "b", "d")]):
     x: int
 
-    _serialization_mapper=Foo.get_aggregated_serialization_mapper()
-
+    _serialization_mapper = Foo.get_aggregated_serialization_mapper()
 
 
 @pytest.mark.parametrize("Bar", [Bar1, Bar2], ids=["Structure.pick", "Pick[Structure]"])
@@ -106,3 +105,10 @@ def test_pick_immutable():
     with pytest.raises(ValueError) as excinfo:
         bar.d = {}
     assert "Bar: Structure is immutable" in str(excinfo.value)
+
+
+def test_block_pick_with_wrong_field():
+    with pytest.raises(TypeError) as excinfo:
+        class Bar(Pick[Foo, ("a", "x")]): pass
+
+    assert "Pick: 'x' is not a field of Foo" in str(excinfo.value)

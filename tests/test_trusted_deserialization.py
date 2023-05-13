@@ -1,4 +1,5 @@
 import enum
+import sys
 import time
 from typing import Optional
 
@@ -196,6 +197,161 @@ def test_trusted_deserialization_with_invalid_mapper():
     deserializer.deserialize(input_data=serialized)
 
     # When/ Then
-    with pytest.raises(ValueError)as excinfo:
+    with pytest.raises(ValueError) as excinfo:
         deserializer.deserialize(input_data=serialized, direct_trusted_mapping=True)
     assert "unsupported for trusted deserialization" in str(excinfo.value)
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_trusted_deserialization_nested_1():
+    class Bar2(ImmutableStructure):
+        b: int
+        c: str
+
+    class Bar1(ImmutableStructure):
+        a: int
+        bar2: list[Bar2]
+
+    class Foo(ImmutableStructure):
+        bar1: Bar1
+
+    serialized = {
+        "bar1": {
+            "a": 5,
+            "bar2": [
+                {
+                    "b": 1,
+                    "c": "xyz"
+                },
+                {
+                    "b": 2,
+                    "c": "abc"
+                }
+            ]
+        }
+    }
+
+    deserialized = Deserializer(target_class=Foo).deserialize(input_data=serialized, direct_trusted_mapping=True)
+    assert deserialized == Foo(bar1=Bar1(a=5, bar2=[Bar2(b=1, c="xyz"), Bar2(b=2, c="abc")]))
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_trusted_deserialization_nested_2():
+    class Bar2(ImmutableStructure):
+        b: int
+        c: str
+
+    class Bar1(ImmutableStructure):
+        a: int
+        bar2: Bar2
+
+    class Foo(ImmutableStructure):
+        bar1: Bar1
+
+    serialized = {
+        "bar1": {
+            "a": 5,
+            "bar2": {
+                "b": 1,
+                "c": "xyz"
+            },
+        }
+    }
+
+    deserialized = Deserializer(target_class=Foo).deserialize(input_data=serialized, direct_trusted_mapping=True)
+    assert deserialized == Foo(bar1=Bar1(a=5, bar2=Bar2(b=1, c="xyz")))
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_trusted_deserialization_nested_mapper_of_nested_class1():
+    class Bar2(ImmutableStructure):
+        b: int
+        c: str
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    class Bar1(ImmutableStructure):
+        a: int
+        bar2: Bar2
+
+    class Foo(ImmutableStructure):
+        bar1: Bar1
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    serialized = {
+        "BAR1": {
+            "a": 5,
+            "bar2": {
+                "B": 1,
+                "C": "xyz"
+            },
+        }
+    }
+
+    deserialized = Deserializer(target_class=Foo).deserialize(input_data=serialized, direct_trusted_mapping=True)
+    assert deserialized == Foo(bar1=Bar1(a=5, bar2=Bar2(b=1, c="xyz")))
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_trusted_deserialization_nested_mapper_of_nested_class2():
+    class Bar2(ImmutableStructure):
+        b: int
+        c: str
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    class Bar1(ImmutableStructure):
+        a: int
+        bar2: Bar2
+
+    class Foo(ImmutableStructure):
+        bar1: Bar1
+
+    serialized = {
+        "bar1": {
+            "a": 5,
+            "bar2": {
+                "B": 1,
+                "C": "xyz"
+            },
+        }
+    }
+
+    deserialized = Deserializer(target_class=Foo).deserialize(input_data=serialized, direct_trusted_mapping=True)
+    assert deserialized == Foo(bar1=Bar1(a=5, bar2=Bar2(b=1, c="xyz")))
+
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_trusted_deserialization_nested_mapper_of_nested_class3():
+    class Bar2(ImmutableStructure):
+        b_1: int
+        c_1: str
+
+        _serialization_mapper = mappers.TO_CAMELCASE
+
+
+    class Bar1(ImmutableStructure):
+        a: int
+        bar2: list[Bar2]
+
+    class Foo(ImmutableStructure):
+        bar1: Bar1
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+
+    serialized = {
+        "BAR1": {
+            "a": 5,
+            "bar2": [
+                {
+                    "b1": 1,
+                    "c1": "xyz"
+                },
+                {
+                    "b1": 2,
+                    "c1": "abc"
+                }
+            ]
+        }
+    }
+
+    deserialized = Deserializer(target_class=Foo).deserialize(input_data=serialized, direct_trusted_mapping=True)
+    assert deserialized == Foo(bar1=Bar1(a=5, bar2=[Bar2(b_1=1, c_1="xyz"), Bar2(b_1=2, c_1="abc")]))

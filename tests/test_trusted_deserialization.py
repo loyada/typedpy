@@ -5,8 +5,18 @@ from typing import Optional
 
 import pytest
 
-from typedpy import Array, Deserializer, Extend, FastSerializable, FunctionCall, ImmutableStructure, PositiveInt, Set, \
-    create_serializer, mappers
+from typedpy import (
+    Array,
+    Deserializer,
+    Extend,
+    FastSerializable,
+    FunctionCall,
+    ImmutableStructure,
+    PositiveInt,
+    Set,
+    create_serializer,
+    mappers,
+)
 
 
 class Policy(ImmutableStructure, FastSerializable):
@@ -73,7 +83,9 @@ def build_policies(**kw):
 
 # @timeit
 def build_policies_fast(**kw):
-    return [Policy.from_trusted_data(None, soft_limit=x, **kw) for x in range(10, 10_000)]
+    return [
+        Policy.from_trusted_data(None, soft_limit=x, **kw) for x in range(10, 10_000)
+    ]
 
 
 def test_trusted_deserialization_equivalent_to_regular():
@@ -84,7 +96,10 @@ def test_trusted_deserialization_equivalent_to_regular():
     start = time.time()
 
     # When
-    trusted_result = [deserializer.deserialize(input_data=i, direct_trusted_mapping=True) for i in serialized]
+    trusted_result = [
+        deserializer.deserialize(input_data=i, direct_trusted_mapping=True)
+        for i in serialized
+    ]
     time_1 = time.time()
     untrusted_result = [deserializer.deserialize(input_data=i) for i in serialized]
     time_2 = time.time()
@@ -110,13 +125,19 @@ def test_serialize_with_enum():
     deserializer = Deserializer(target_class=SpecialPolicy)
     # Given
     validated_policies = build_policies(hard_limit=20, codes=[1, 2, 3], time_days=7)
-    special_policies = [SpecialPolicy.from_other_class(x, limit_type=LimitType.two) for x in validated_policies]
+    special_policies = [
+        SpecialPolicy.from_other_class(x, limit_type=LimitType.two)
+        for x in validated_policies
+    ]
     special_policies.append(SpecialPolicy.from_other_class(validated_policies[0]))
     serialized = [p.serialize() for p in special_policies]
     start = time.time()
 
     # When
-    trusted_result = [deserializer.deserialize(input_data=i, direct_trusted_mapping=True) for i in serialized]
+    trusted_result = [
+        deserializer.deserialize(input_data=i, direct_trusted_mapping=True)
+        for i in serialized
+    ]
     time_1 = time.time()
     untrusted_result = [deserializer.deserialize(input_data=i) for i in serialized]
     time_2 = time.time()
@@ -141,18 +162,16 @@ def create_employee() -> Employee:
             week=50,
             month=200,
         ),
-        policies={
-            Policy(
-                soft_limit=10, hard_limit=20, codes=[1, 2, 3]
-            )
-        },
+        policies={Policy(soft_limit=10, hard_limit=20, codes=[1, 2, 3])},
     )
 
 
 def test_trusted_deserialize_nested_is_using_standard_deserialization():
     employee = create_employee()
     serialized = employee.serialize()
-    deserialized = Deserializer(target_class=Employee).deserialize(serialized, direct_trusted_mapping=True)
+    deserialized = Deserializer(target_class=Employee).deserialize(
+        serialized, direct_trusted_mapping=True
+    )
 
     # Then
     assert employee == deserialized
@@ -167,12 +186,17 @@ def test_trusted_deserialization_with_mapper():
     deserializer = Deserializer(target_class=PolicyWithMapper)
     # Given
     validated_policies = build_policies(hard_limit=20, codes=[1, 2, 3], time_days=7)
-    special_policies = [PolicyWithMapper.from_other_class(x) for x in validated_policies]
+    special_policies = [
+        PolicyWithMapper.from_other_class(x) for x in validated_policies
+    ]
     serialized = [p.serialize() for p in special_policies]
     start = time.time()
 
     # When
-    trusted_result = [deserializer.deserialize(input_data=i, direct_trusted_mapping=True) for i in serialized]
+    trusted_result = [
+        deserializer.deserialize(input_data=i, direct_trusted_mapping=True)
+        for i in serialized
+    ]
     time_1 = time.time()
     untrusted_result = [deserializer.deserialize(input_data=i) for i in serialized]
     time_2 = time.time()
@@ -201,6 +225,7 @@ def test_trusted_deserialization_with_invalid_mapper():
         deserializer.deserialize(input_data=serialized, direct_trusted_mapping=True)
     assert "unsupported for trusted deserialization" in str(excinfo.value)
 
+
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_nested_1():
     class Bar2(ImmutableStructure):
@@ -215,23 +240,16 @@ def test_trusted_deserialization_nested_1():
         bar1: Bar1
 
     serialized = {
-        "bar1": {
-            "a": 5,
-            "bar2": [
-                {
-                    "b": 1,
-                    "c": "xyz"
-                },
-                {
-                    "b": 2,
-                    "c": "abc"
-                }
-            ]
-        }
+        "bar1": {"a": 5, "bar2": [{"b": 1, "c": "xyz"}, {"b": 2, "c": "abc"}]}
     }
 
-    deserialized = Deserializer(target_class=Foo).deserialize(input_data=serialized, direct_trusted_mapping=True)
-    assert deserialized == Foo(bar1=Bar1(a=5, bar2=[Bar2(b=1, c="xyz"), Bar2(b=2, c="abc")]))
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data=serialized, direct_trusted_mapping=True
+    )
+    assert deserialized == Foo(
+        bar1=Bar1(a=5, bar2=[Bar2(b=1, c="xyz"), Bar2(b=2, c="abc")])
+    )
+
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_nested_2():
@@ -249,15 +267,15 @@ def test_trusted_deserialization_nested_2():
     serialized = {
         "bar1": {
             "a": 5,
-            "bar2": {
-                "b": 1,
-                "c": "xyz"
-            },
+            "bar2": {"b": 1, "c": "xyz"},
         }
     }
 
-    deserialized = Deserializer(target_class=Foo).deserialize(input_data=serialized, direct_trusted_mapping=True)
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data=serialized, direct_trusted_mapping=True
+    )
     assert deserialized == Foo(bar1=Bar1(a=5, bar2=Bar2(b=1, c="xyz")))
+
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_nested_mapper_of_nested_class1():
@@ -279,15 +297,15 @@ def test_trusted_deserialization_nested_mapper_of_nested_class1():
     serialized = {
         "BAR1": {
             "a": 5,
-            "bar2": {
-                "B": 1,
-                "C": "xyz"
-            },
+            "bar2": {"B": 1, "C": "xyz"},
         }
     }
 
-    deserialized = Deserializer(target_class=Foo).deserialize(input_data=serialized, direct_trusted_mapping=True)
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data=serialized, direct_trusted_mapping=True
+    )
     assert deserialized == Foo(bar1=Bar1(a=5, bar2=Bar2(b=1, c="xyz")))
+
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_nested_mapper_of_nested_class2():
@@ -307,14 +325,13 @@ def test_trusted_deserialization_nested_mapper_of_nested_class2():
     serialized = {
         "bar1": {
             "a": 5,
-            "bar2": {
-                "B": 1,
-                "C": "xyz"
-            },
+            "bar2": {"B": 1, "C": "xyz"},
         }
     }
 
-    deserialized = Deserializer(target_class=Foo).deserialize(input_data=serialized, direct_trusted_mapping=True)
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data=serialized, direct_trusted_mapping=True
+    )
     assert deserialized == Foo(bar1=Bar1(a=5, bar2=Bar2(b=1, c="xyz")))
 
 
@@ -326,7 +343,6 @@ def test_trusted_deserialization_nested_mapper_of_nested_class3():
 
         _serialization_mapper = mappers.TO_CAMELCASE
 
-
     class Bar1(ImmutableStructure):
         a: int
         bar2: list[Bar2]
@@ -336,22 +352,13 @@ def test_trusted_deserialization_nested_mapper_of_nested_class3():
 
         _serialization_mapper = mappers.TO_LOWERCASE
 
-
     serialized = {
-        "BAR1": {
-            "a": 5,
-            "bar2": [
-                {
-                    "b1": 1,
-                    "c1": "xyz"
-                },
-                {
-                    "b1": 2,
-                    "c1": "abc"
-                }
-            ]
-        }
+        "BAR1": {"a": 5, "bar2": [{"b1": 1, "c1": "xyz"}, {"b1": 2, "c1": "abc"}]}
     }
 
-    deserialized = Deserializer(target_class=Foo).deserialize(input_data=serialized, direct_trusted_mapping=True)
-    assert deserialized == Foo(bar1=Bar1(a=5, bar2=[Bar2(b_1=1, c_1="xyz"), Bar2(b_1=2, c_1="abc")]))
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data=serialized, direct_trusted_mapping=True
+    )
+    assert deserialized == Foo(
+        bar1=Bar1(a=5, bar2=[Bar2(b_1=1, c_1="xyz"), Bar2(b_1=2, c_1="abc")])
+    )

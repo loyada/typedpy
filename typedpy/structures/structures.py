@@ -1621,7 +1621,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         ]
         for k in fields_to_omit:
             if k not in cls.get_all_fields_by_name():
-                raise TypeError(f"Pick: {wrap_val(k)} is not a field of {cls.__name__}")
+                raise TypeError(f"Omit: {wrap_val(k)} is not a field of {cls.__name__}")
 
         for k, v in cls.get_all_fields_by_name().items():
             if k not in fields_to_omit:

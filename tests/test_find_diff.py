@@ -192,6 +192,22 @@ def test_find_diff_order_in_list4():
     }
 
 
+def test_find_diff_dicts():
+    actual = find_diff(
+        {"a": [1, 2, 3], "b": "xyz", "c": False, "e": {"ee": 2}, "g": "g"},
+        {"a": [1, 3, 2], "b": 123, "c": True, "e": {"ee": 1}, "f": "xxx"},
+    )
+    expected = {
+        "a": {"different location": ["index 1 vs 2", "index 2 vs 1"]},
+        "b": {"class": "<class 'int'> vs. <class 'str'>"},
+        "c": "True vs False",
+        "e": {"ee": "2 vs 1"},
+        "additional values": ["f"],
+        "missing values": ["g"],
+    }
+    assert actual == expected
+
+
 def test_find_diff_dict1():
     bar1 = Bar(f=foo3)
     bar2 = Bar(f=foo4, x="extra struff")

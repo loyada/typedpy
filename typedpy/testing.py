@@ -41,7 +41,9 @@ def _diff_dict(val, otherval) -> dict:
             if diff:
                 result[key] = diff
         else:
-            result[key] = f"{v} vs {otherval[key]}"
+            diff = _find_diff(otherval[key], v )
+            if diff:
+                result[key] = diff
     for key, v in otherval.items():
         if key not in val:
             _add_val(result, ADDITIONAL_VALUES, key)
@@ -49,8 +51,10 @@ def _diff_dict(val, otherval) -> dict:
             diff = _find_diff(val[key], v)
             if diff:
                 result[key] = diff
-        else:
-            result[key] = f"{v} vs {val[key]}"
+        elif key not in result:
+            diff = _find_diff(val[key], v)
+            if diff:
+                result[key] = diff
     return result
 
 

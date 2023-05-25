@@ -132,4 +132,4 @@ def test_block_omit_with_wrong_field():
     with pytest.raises(TypeError) as excinfo:
         class Bar(Omit[Foo, ("a", "x")]): pass
 
-    assert "Pick: 'x' is not a field of Foo" in str(excinfo.value)
+    assert "Omit: 'x' is not a field of Foo" in str(excinfo.value)

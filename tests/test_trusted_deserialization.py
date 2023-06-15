@@ -1,12 +1,14 @@
 import enum
 import sys
 import time
+from datetime import date
 from typing import Optional
 
 import pytest
 
 from typedpy import (
     Array,
+    DateField,
     Deserializer,
     Extend,
     FastSerializable,
@@ -26,6 +28,7 @@ class Policy(ImmutableStructure, FastSerializable):
     codes: Array[int]
 
     _ignore_none = True
+
 
 create_serializer(Policy)
 
@@ -364,6 +367,7 @@ def test_trusted_deserialization_nested_mapper_of_nested_class3():
         bar1=Bar1(a=5, bar2=[Bar2(b_1=1, c_1="xyz"), Bar2(b_1=2, c_1="abc")])
     )
 
+
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_nested_mapper_of_nested_class4():
     class Bar2(ImmutableStructure):
@@ -397,7 +401,6 @@ def test_trusted_deserialization_nested_mapper_of_nested_class4():
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_nested_mapper_of_nested_class5():
-
     class Bar1(ImmutableStructure):
         a: int
         bar2: set[str]
@@ -407,17 +410,36 @@ def test_trusted_deserialization_nested_mapper_of_nested_class5():
 
         _serialization_mapper = mappers.TO_LOWERCASE
 
-    serialized = {
-        "BAR1": {"a": 5, "bar2": ["aaa", "bbb", "aaa"]}
-    }
+    serialized = {"BAR1": {"a": 5, "bar2": ["aaa", "bbb", "aaa"]}}
+
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data=serialized, direct_trusted_mapping=True
+    )
+    assert deserialized == Foo(bar1=Bar1(a=5, bar2={"aaa", "bbb"}))
+    # deserialized was created using "from_trusted_data"
+    assert getattr(deserialized, "_trust_supplied_values", False) is True
+
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_trusted_deserialization_nested_mapper_of_nested_class_datefield():
+    class Bar1(ImmutableStructure):
+        a: DateField
+        d: set[DateField]
+
+    class Foo(ImmutableStructure):
+        bar1: Bar1
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    serialized = {"BAR1": {"a": "2022-01-30", "d": ["2023-07-30"]}}
 
     deserialized = Deserializer(target_class=Foo).deserialize(
         input_data=serialized, direct_trusted_mapping=True
     )
     assert deserialized == Foo(
-        bar1=Bar1(a=5, bar2={"aaa", "bbb"})
+        bar1=Bar1(
+            a=date(year=2022, month=1, day=30), d={date(year=2023, month=7, day=30)}
+        )
     )
     # deserialized was created using "from_trusted_data"
     assert getattr(deserialized, "_trust_supplied_values", False) is True
-
-

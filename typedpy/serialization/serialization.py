@@ -6,6 +6,7 @@ from functools import lru_cache
 from typing import Dict
 from decimal import Decimal
 
+from typedpy.extfields import DateField, DateTime
 from typedpy.commons import (
     Constant,
     Undefined,
@@ -495,7 +496,7 @@ class _ClsSimplicity(enum.Enum):
 def _structure_simplicity_level(cls):
     simplicity = _ClsSimplicity.not_nested
     for v in cls.get_all_fields_by_name().values():
-        if isinstance(v, (Integer, String, Float, Boolean, NoneField, Enum)):
+        if isinstance(v, (Integer, String, Float, Boolean, NoneField, Enum, DateField, DateTime)):
             continue
         if isinstance(v, AnyOf):
             for f in v.get_fields():
@@ -503,7 +504,7 @@ def _structure_simplicity_level(cls):
                     return False
             continue
         if isinstance(v, Array):
-            if isinstance(v.items, (Integer, String, Float, Boolean, NoneField)):
+            if isinstance(v.items, (Integer, String, Float, Boolean, NoneField, DateField, DateTime)):
                 continue
             if isinstance(v.items, ClassReference) and _structure_simplicity_level(
                 v.items.get_type
@@ -512,7 +513,7 @@ def _structure_simplicity_level(cls):
                 continue
             return False
         if isinstance(v, Set):
-            if isinstance(v.items, (Integer, String, Float, Boolean, NoneField)):
+            if isinstance(v.items, (Integer, String, Float, Boolean, NoneField, DateField, DateTime)):
                 simplicity = _ClsSimplicity.nested
                 continue
             if isinstance(v.items, ClassReference) and _structure_simplicity_level(
@@ -584,25 +585,35 @@ def _remap_input(
                 simple_structure_verified=simple_structure_verified,
                 direct_trusted_mapping=True,
             )
-        elif isinstance(field_def, Array) and isinstance(
+        elif isinstance(field_def, (DateField, DateTime)):
+            corrected_input[k] = field_def.deserialize(v)
+        elif isinstance(field_def, Array):
+            if isinstance(
             field_def.items, ClassReference
-        ):
-            corrected_input[k] = [
-                deserialize_structure_internal(
-                    field_def.items.get_type,
-                    x,
-                    name,
-                    use_strict_mapping=use_strict_mapping,
-                    camel_case_convert=camel_case_convert,
-                    keep_undefined=keep_undefined,
-                    simple_structure_verified=simple_structure_verified,
-                    direct_trusted_mapping=True,
-                )
-                for x in v
-            ]
+            ):
+                corrected_input[k] = [
+                    deserialize_structure_internal(
+                        field_def.items.get_type,
+                        x,
+                        name,
+                        use_strict_mapping=use_strict_mapping,
+                        camel_case_convert=camel_case_convert,
+                        keep_undefined=keep_undefined,
+                        simple_structure_verified=simple_structure_verified,
+                        direct_trusted_mapping=True,
+                    )
+                    for x in v
+                ]
+            elif isinstance(field_def.items, (DateField, DateTime)):
+                corrected_input[k] = field_def.items.deserialize(v)
+            else:
+                corrected_input[k] = v
+
         elif isinstance(field_def, Set):
             if isinstance(field_def.items, (Integer, String, Float, Boolean, NoneField)):
                 corrected_input[k] = set(v)
+            elif isinstance(field_def.items, (DateField, DateTime)):
+                corrected_input[k] = {field_def.items.deserialize(x) for x in v}
             elif isinstance(field_def.items, ClassReference):
                 corrected_input[k] = {
                     deserialize_structure_internal(

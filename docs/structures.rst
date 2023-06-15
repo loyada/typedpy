@@ -857,7 +857,7 @@ Therefore, the following code is correct:
 However, there are use cases in which it might be useful to differentiate between "None" value
 and "undefined". For example, when creating an API to patch an object.
 
-To support that, Typedpy defines a special "Undefined" construct, and a class flag of "_enable_undefined".
+To support that, Typedpy defines a special "Undefined" construct, and a class flag of "_enable_undefined_value".
 Contrast the example above with this one:
 
 
@@ -869,13 +869,20 @@ Contrast the example above with this one:
         c: int
         _required = []
         _ignore_none = True
-        _enable_undefined = True
+        _enable_undefined_value = True
 
+    # distinction between None and Undefined
     assert Foo(a=5).b is Undefined
     assert Foo(a=5, b=None).b is None
     assert Foo(a=5) != Foo(a=5, b=None, c=None)
+
+    # serialization/deserialization  - None is not ignored. Undefined is ignored.
     assert Deserializer(Foo).deserialize({"a": 5}) != Deserializer(Foo).deserialize({"a": 5, "c": None})
     assert Serializer(Foo(a=None)).serialize() == {"a": None}
+
+    # conversion to dict does not contain undefined values
+    assert Foo(a=5, b=None).to_other_class(dict) == {"a": 5, "b": None}
+
 
 Note that "Undefined" should never be assigned explicitly as a value to field.
 

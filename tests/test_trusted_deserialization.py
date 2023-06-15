@@ -25,6 +25,7 @@ class Policy(ImmutableStructure, FastSerializable):
     time_days: Optional[PositiveInt]
     codes: Array[int]
 
+    _ignore_none = True
 
 create_serializer(Policy)
 
@@ -166,7 +167,7 @@ def create_employee() -> Employee:
     )
 
 
-def test_trusted_deserialize_nested_is_using_standard_deserialization():
+def test_trusted_deserialize_nested_is_using_trusted_deserialization():
     employee = create_employee()
     serialized = employee.serialize()
     deserialized = Deserializer(target_class=Employee).deserialize(
@@ -175,8 +176,8 @@ def test_trusted_deserialize_nested_is_using_standard_deserialization():
 
     # Then
     assert employee == deserialized
-    # deserialized was not created using "from_trusted_data"
-    assert getattr(deserialized, "_trust_supplied_values", False) is False
+    # deserialized was created using "from_trusted_data"
+    assert getattr(deserialized, "_trust_supplied_values", False) is True
 
 
 def test_trusted_deserialization_with_mapper():
@@ -362,3 +363,61 @@ def test_trusted_deserialization_nested_mapper_of_nested_class3():
     assert deserialized == Foo(
         bar1=Bar1(a=5, bar2=[Bar2(b_1=1, c_1="xyz"), Bar2(b_1=2, c_1="abc")])
     )
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_trusted_deserialization_nested_mapper_of_nested_class4():
+    class Bar2(ImmutableStructure):
+        b_1: int
+        c_1: str
+
+        _serialization_mapper = mappers.TO_CAMELCASE
+
+    class Bar1(ImmutableStructure):
+        a: int
+        bar2: set[Bar2]
+
+    class Foo(ImmutableStructure):
+        bar1: Bar1
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    serialized = {
+        "BAR1": {"a": 5, "bar2": [{"b1": 1, "c1": "xyz"}, {"b1": 2, "c1": "abc"}]}
+    }
+
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data=serialized, direct_trusted_mapping=True
+    )
+    assert deserialized == Foo(
+        bar1=Bar1(a=5, bar2={Bar2(b_1=1, c_1="xyz"), Bar2(b_1=2, c_1="abc")})
+    )
+    # deserialized was created using "from_trusted_data"
+    assert getattr(deserialized, "_trust_supplied_values", False) is True
+
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_trusted_deserialization_nested_mapper_of_nested_class5():
+
+    class Bar1(ImmutableStructure):
+        a: int
+        bar2: set[str]
+
+    class Foo(ImmutableStructure):
+        bar1: Bar1
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    serialized = {
+        "BAR1": {"a": 5, "bar2": ["aaa", "bbb", "aaa"]}
+    }
+
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data=serialized, direct_trusted_mapping=True
+    )
+    assert deserialized == Foo(
+        bar1=Bar1(a=5, bar2={"aaa", "bbb"})
+    )
+    # deserialized was created using "from_trusted_data"
+    assert getattr(deserialized, "_trust_supplied_values", False) is True
+
+

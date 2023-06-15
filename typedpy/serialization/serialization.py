@@ -511,6 +511,16 @@ def _structure_simplicity_level(cls):
                 simplicity = _ClsSimplicity.nested
                 continue
             return False
+        if isinstance(v, Set):
+            if isinstance(v.items, (Integer, String, Float, Boolean, NoneField)):
+                simplicity = _ClsSimplicity.nested
+                continue
+            if isinstance(v.items, ClassReference) and _structure_simplicity_level(
+                    v.items.get_type
+            ):
+                simplicity = _ClsSimplicity.nested
+                continue
+            return False
         if isinstance(v, ClassReference) and _structure_simplicity_level(v.get_type):
             simplicity = _ClsSimplicity.nested
             continue
@@ -590,6 +600,23 @@ def _remap_input(
                 )
                 for x in v
             ]
+        elif isinstance(field_def, Set):
+            if isinstance(field_def.items, (Integer, String, Float, Boolean, NoneField)):
+                corrected_input[k] = set(v)
+            elif isinstance(field_def.items, ClassReference):
+                corrected_input[k] = {
+                    deserialize_structure_internal(
+                        field_def.items.get_type,
+                        x,
+                        name,
+                        use_strict_mapping=use_strict_mapping,
+                        camel_case_convert=camel_case_convert,
+                        keep_undefined=keep_undefined,
+                        simple_structure_verified=simple_structure_verified,
+                        direct_trusted_mapping=True,
+                    )
+                    for x in v
+                }
         else:
             corrected_input[k] = v
     return corrected_input

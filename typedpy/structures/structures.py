@@ -1539,7 +1539,9 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 if is_mapping
                 else getattr(source_object, k, None)
                 for k in cls.get_all_fields_by_name()
-                if k not in ignore_props and k not in getattr(cls, "_constants", {})
+                if k not in ignore_props
+                and k not in getattr(cls, "_constants", {})
+                and (not is_mapping or k in source_object)
             }
             kwargs = {**args_from_model, **kw}
         else:

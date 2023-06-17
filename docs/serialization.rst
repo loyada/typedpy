@@ -557,7 +557,8 @@ This is useful when you are confident the data passed is valid, and performance 
 
 The definition of a "simple" Structure, in this context, is:
 * Serialization mapper, if exists, does not include function transformations.
-* Fields can mapped directly to Json: None, str, int, float, bool, date, datetime, and lists/sets of one of those.
+* Fields can mapped directly to Json: None, str, int, float, bool, and lists/sets of one of those, OR
+* Field of type DateField, DateTime, TimeField and any type that implements SerializableField.
 * The only nested collection fields allowed are list,set(i.e. Typedpy's Array, Set) - no Tuple or Map
 * No set of sets, list of lists, set of lists etc.
 * Any nested structure is also "simple"

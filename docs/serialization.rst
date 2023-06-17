@@ -547,7 +547,7 @@ Here is a valid usage example, referring to the same Bar class defined in the pr
         }, keep_undefined=False)
 
     assert bar == Bar(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')
-
+f
 
 Deserialization From Trusted Data
 ============================================
@@ -591,7 +591,14 @@ The gain in performance is typically ~x13.
 Note that deserializing this way bypasses any serialization mapper of the Structure. Also,
 if the Structure is not "Simple" (as described above), the flat "direct_trusted_mapping" has no effect.
 
+To check if your class is compatible with trusted deserialization, do the following:
 
+
+.. code-block:: python
+
+     policy = Deserializer(Policy).deserialize(input_data=serialized, direct_trusted_mapping=True)
+
+     assert policy.used_trusted_instantiation()
 
 
 

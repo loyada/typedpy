@@ -1551,6 +1551,14 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         obj.__init__(**kwargs)
         return obj
 
+    def used_trusted_instantiation(self) -> bool:
+        """
+        Was this instance created with trusted instantiation?
+        This is useful when you want to check if your Structure is compatible
+        with trusted deserialization.
+        """
+        return getattr(self, "_trust_supplied_values", False)
+
     @classmethod
     def trust_supplied_values(cls, trust=True):
         """

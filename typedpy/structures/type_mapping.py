@@ -19,7 +19,7 @@ def convert_basic_types(v):
         Anything,
         Deque,
     )
-    from typedpy.extfields import DateField, DateTime
+    from typedpy.extfields import DateField, DateTime, TimeField
 
     type_mapping = {
         deque: Deque,
@@ -34,6 +34,7 @@ def convert_basic_types(v):
         frozenset: ImmutableSet,
         datetime.date: DateField,
         datetime.datetime: DateTime,
+        datetime.time: TimeField,
         typing.Union: AnyOf,
         typing.Any: Anything,
     }

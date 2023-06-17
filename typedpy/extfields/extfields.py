@@ -3,7 +3,7 @@ Additional types of fields: datefield, datetime, timestring, DateString,
 Hostname, etc.
 """
 import json
-from datetime import datetime, date
+from datetime import datetime, date, time
 import re
 
 from typedpy.commons import wrap_val
@@ -201,6 +201,36 @@ class DateField(SerializableField):
     @classmethod
     def from_json_schema(cls, schema: dict):
         return "DateField()" if schema == {"type": "string", "format": "date"} else None
+
+
+
+class TimeField(SerializableField):
+    def __init__(self, format_str="%H:%M:%S", **kwargs):
+        self._format = format_str
+        super().__init__(**kwargs)
+
+    def __set__(self, instance, value):
+        parsed_time = value  if isinstance(value, time) else self.deserialize(value)
+        super().__set__(instance, parsed_time)
+
+    def serialize(self, value: time):
+        return value.strftime(self._format)
+
+    def deserialize(self, value):
+        try:
+            return datetime.strptime(value, self._format).time()
+        except ValueError as ex:
+            raise ValueError(f"{self._name}: Got {wrap_val(value)}; {str(ex)}") from ex
+    @property
+    def get_type(self):
+        return time
+
+    def to_json_schema(self) -> dict:
+        return {"type": "string", "format": "time"}
+
+    @classmethod
+    def from_json_schema(cls, schema: dict):
+        return "TimeField()" if schema == {"type": "string", "format": "time"} else None
 
 
 class DateTime(SerializableField):

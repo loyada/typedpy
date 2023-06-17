@@ -1,6 +1,7 @@
 import enum
 import sys
 import time
+import datetime
 from datetime import date
 from typing import Optional
 
@@ -180,7 +181,7 @@ def test_trusted_deserialize_nested_is_using_trusted_deserialization():
     # Then
     assert employee == deserialized
     # deserialized was created using "from_trusted_data"
-    assert getattr(deserialized, "_trust_supplied_values", False) is True
+    assert deserialized.used_trusted_instantiation()
 
 
 def test_trusted_deserialization_with_mapper():
@@ -396,7 +397,7 @@ def test_trusted_deserialization_nested_mapper_of_nested_class4():
         bar1=Bar1(a=5, bar2={Bar2(b_1=1, c_1="xyz"), Bar2(b_1=2, c_1="abc")})
     )
     # deserialized was created using "from_trusted_data"
-    assert getattr(deserialized, "_trust_supplied_values", False) is True
+    assert deserialized.used_trusted_instantiation()
 
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
@@ -417,7 +418,7 @@ def test_trusted_deserialization_nested_mapper_of_nested_class5():
     )
     assert deserialized == Foo(bar1=Bar1(a=5, bar2={"aaa", "bbb"}))
     # deserialized was created using "from_trusted_data"
-    assert getattr(deserialized, "_trust_supplied_values", False) is True
+    assert deserialized.used_trusted_instantiation()
 
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
@@ -442,4 +443,29 @@ def test_trusted_deserialization_nested_mapper_of_nested_class_datefield():
         )
     )
     # deserialized was created using "from_trusted_data"
-    assert getattr(deserialized, "_trust_supplied_values", False) is True
+    assert deserialized.used_trusted_instantiation()
+
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_trusted_deserialization_nested_mapper_of_nested_class_timefield():
+    class Bar1(ImmutableStructure):
+        a: datetime.time
+        d: set[datetime.time]
+
+    class Foo(ImmutableStructure):
+        bar1: Bar1
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    serialized = {"BAR1": {"a": "7:1:15", "d": ["16:00:0"]}}
+
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data=serialized, direct_trusted_mapping=True
+    )
+    assert deserialized == Foo(
+        bar1=Bar1(
+            a=datetime.time(hour=7, minute=1, second=15), d={datetime.time(hour=16, minute=0, second=0)}
+        )
+    )
+    # deserialized was created using "from_trusted_data"
+    assert deserialized.used_trusted_instantiation()

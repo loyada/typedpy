@@ -10,7 +10,7 @@ from typedpy import (
     DateTime,
     Enum,
     Extend,
-    Float,
+    Field, Float,
     ImmutableStructure,
     Integer,
     Map,
@@ -32,6 +32,10 @@ class FooFoo:
     ):
         self._mapper = mapper
         self._camel_case_convert = camel_case_convert
+
+
+class FooFooWrapper(Structure):
+    foofoo: Field[FooFoo]
 
 
 class WithCustomInit(Structure):

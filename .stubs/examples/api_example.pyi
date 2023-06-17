@@ -24,6 +24,7 @@ from typedpy import Anything as Anything
 from typedpy import DateTime as DateTime
 from typedpy import Enum as Enum
 from typedpy import Extend as Extend
+from typedpy import Field as Field
 from typedpy import Float as Float
 from typedpy import ImmutableStructure as ImmutableStructure
 from typedpy import Integer as Integer
@@ -56,6 +57,43 @@ class FooFoo:
 
     
     def __init__(self, *, mapper: dict[str, Any] = dict, camel_case_convert: bool = None): ...
+
+
+class FooFooWrapper(Structure):
+    def __init__(
+        self,
+        foofoo: FooFoo,
+        **kw
+    ): ...
+
+    def shallow_clone_with_overrides(
+        self,
+        foofoo: FooFoo = None,
+        **kw
+    ): ...
+
+    @classmethod
+    def from_other_class(
+        cls,
+        source_object: Any,
+        *,
+        ignore_props: Iterable[str] = None,
+        foofoo: FooFoo = None,
+        **kw
+    ): ...
+
+    @classmethod
+    def from_trusted_data(
+        cls,
+        source_object: Any = None,
+        *,
+        ignore_props: Iterable[str] = None,
+        foofoo: FooFoo = None,
+        **kw
+    ): ...
+
+
+    foofoo: FooFoo
 
 
 class WithCustomInit(Structure):

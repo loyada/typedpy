@@ -1,6 +1,7 @@
 from .extfields import (
     DateString,
     DateField,
+    TimeField,
     DateTime,
     TimeString,
     HostName,

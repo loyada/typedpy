@@ -24,6 +24,9 @@ class DecimalNumber(Number, SerializableField):
     def serialize(self, value):
         return float(value)
 
+    def deserialize(self, value):
+        return Decimal(value)
+
     @property
     def get_type(self):
         return Decimal

@@ -7,9 +7,9 @@ import enum
 import inspect
 import json
 from builtins import enumerate, issubclass
-from collections.abc import Mapping
 from copy import deepcopy
 from collections import OrderedDict, defaultdict
+from collections.abc import Mapping
 from inspect import Signature, Parameter, signature, currentframe
 import sys
 import typing
@@ -100,11 +100,11 @@ class ImmutableMixin:
 
 
 def make_signature(
-    names,
+    names: Iterable[str],
     *,
-    required,
-    additional_properties,
-    bases_params_by_name,
+    required: Iterable[str],
+    additional_properties: bool,
+    bases_params_by_name: dict,
     bases_required,
     constants,
 ):
@@ -810,9 +810,8 @@ def _mapped_type_of_mapped_args(mapped_type, mapped_args):
     if mapped_args:
         if mapped_type is AnyOf:
             return mapped_type(fields=mapped_args)
-        else:
-            mapped_args = mapped_args if len(mapped_args) > 1 else mapped_args[0]
-            return mapped_type(items=mapped_args)
+        mapped_args = mapped_args if len(mapped_args) > 1 else mapped_args[0]
+        return mapped_type(items=mapped_args)
     return mapped_type()
 
 
@@ -1301,15 +1300,15 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         return {}
 
     @classmethod
-    def get_all_fields_by_name(cls):
+    def get_all_fields_by_name(cls) -> dict:
         return getattr(cls, "_field_by_name")
 
     @classmethod
-    def get_aggregated_serialization_mapper(cls):
+    def get_aggregated_serialization_mapper(cls) -> list:
         return _get_all_values_of_attribute(cls, SERIALIZATION_MAPPER)
 
     @classmethod
-    def get_aggregated_deserialization_mapper(cls):
+    def get_aggregated_deserialization_mapper(cls) -> list:
         all_classes = reversed([c for c in cls.mro() if isinstance(c, StructMeta)])
         all_values = []
         for the_class in all_classes:
@@ -1408,7 +1407,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
         raise TypeError(f"cls must be subclass of {self.__class__.__name__}")
 
-    def to_other_class(self, target_class, *, ignore_props=None, **kw) -> T:
+    def to_other_class(self, target_class: type(T), *, ignore_props=None, **kw) -> T:
         """
         Shallow copy of the fields in the structure and instantiate an instance of the given target_class
         Arguments:

@@ -491,19 +491,35 @@ class _ClsSimplicity(enum.Enum):
     nested = 2
 
 
+_valid_classes_for_trusted_deserialization = (
+    Integer,
+    String,
+    Float,
+    Boolean,
+    NoneField,
+    Enum,
+    SerializableField,
+    Number,
+)
+
+
 @lru_cache(maxsize=128)
 def _structure_simplicity_level(cls):
     simplicity = _ClsSimplicity.not_nested
     for v in cls.get_all_fields_by_name().values():
-        if isinstance(v, (Integer, String, Float, Boolean, NoneField, Enum, SerializableField)):
+        if isinstance(
+            v, _valid_classes_for_trusted_deserialization
+        ):
             continue
         if isinstance(v, AnyOf):
             for f in v.get_fields():
-                if not isinstance(f, (Integer, String, Float, Boolean, NoneField)):
+                if not isinstance(f, _valid_classes_for_trusted_deserialization):
                     return False
             continue
         if isinstance(v, Array):
-            if isinstance(v.items, (Integer, String, Float, Boolean, NoneField, SerializableField)):
+            if isinstance(
+                v.items, _valid_classes_for_trusted_deserialization
+            ):
                 continue
             if isinstance(v.items, ClassReference) and _structure_simplicity_level(
                 v.items.get_type
@@ -512,11 +528,13 @@ def _structure_simplicity_level(cls):
                 continue
             return False
         if isinstance(v, Set):
-            if isinstance(v.items, (Integer, String, Float, Boolean, NoneField, SerializableField)):
+            if isinstance(
+                v.items, _valid_classes_for_trusted_deserialization
+            ):
                 simplicity = _ClsSimplicity.nested
                 continue
             if isinstance(v.items, ClassReference) and _structure_simplicity_level(
-                    v.items.get_type
+                v.items.get_type
             ):
                 simplicity = _ClsSimplicity.nested
                 continue
@@ -587,9 +605,7 @@ def _remap_input(
         elif isinstance(field_def, SerializableField):
             corrected_input[k] = field_def.deserialize(v)
         elif isinstance(field_def, Array):
-            if isinstance(
-            field_def.items, ClassReference
-            ):
+            if isinstance(field_def.items, ClassReference):
                 corrected_input[k] = [
                     deserialize_structure_internal(
                         field_def.items.get_type,
@@ -609,7 +625,9 @@ def _remap_input(
                 corrected_input[k] = v
 
         elif isinstance(field_def, Set):
-            if isinstance(field_def.items, (Integer, String, Float, Boolean, NoneField)):
+            if isinstance(
+                field_def.items, (Integer, String, Float, Boolean, NoneField)
+            ):
                 corrected_input[k] = set(v)
             elif isinstance(field_def.items, SerializableField):
                 corrected_input[k] = {field_def.items.deserialize(x) for x in v}

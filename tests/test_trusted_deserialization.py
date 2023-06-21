@@ -360,7 +360,9 @@ def test_trusted_deserialization_nested_mapper_of_nested_class3():
     serialized = {
         "BAR1": {"a": 5, "bar2": [{"b1": 1, "c1": "xyz"}, {"b1": 2, "c1": "abc"}]}
     }
-
+    not_trusted = Deserializer(target_class=Foo).deserialize(
+        input_data=serialized
+    )
     deserialized = Deserializer(target_class=Foo).deserialize(
         input_data=serialized, direct_trusted_mapping=True
     )

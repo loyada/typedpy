@@ -948,6 +948,18 @@ any following instantiation will shortcut the validation logic. It has the same 
     )
 
 
+Warning: In case a one of the fields is a list, using trusted deserialization, by default Typedpy optimizes for speed, so
+you lose the protection and validation for nested values in the list (in case you have an immutable structure).
+In other words, typedpy does not block you from doing "my_struct.my_list[5] = 123", even if this is an immutable
+structure, or "123" is an invalid value. So ideally, you should not update structures that were created from trusted
+data.
+If you don't want to lose the safety of Typepy for lists, at the expense of speed, set
+
+.. code-block:: python
+
+    TypedPyDefaults.safe_trusted_instantiation = True
+
+
 
 Global Defaults
 ===============

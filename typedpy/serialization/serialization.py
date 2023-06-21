@@ -507,9 +507,7 @@ _valid_classes_for_trusted_deserialization = (
 def _structure_simplicity_level(cls):
     simplicity = _ClsSimplicity.not_nested
     for v in cls.get_all_fields_by_name().values():
-        if isinstance(
-            v, _valid_classes_for_trusted_deserialization
-        ):
+        if isinstance(v, _valid_classes_for_trusted_deserialization):
             continue
         if isinstance(v, AnyOf):
             for f in v.get_fields():
@@ -517,9 +515,7 @@ def _structure_simplicity_level(cls):
                     return False
             continue
         if isinstance(v, Array):
-            if isinstance(
-                v.items, _valid_classes_for_trusted_deserialization
-            ):
+            if isinstance(v.items, _valid_classes_for_trusted_deserialization):
                 continue
             if isinstance(v.items, ClassReference) and _structure_simplicity_level(
                 v.items.get_type
@@ -528,9 +524,7 @@ def _structure_simplicity_level(cls):
                 continue
             return False
         if isinstance(v, Set):
-            if isinstance(
-                v.items, _valid_classes_for_trusted_deserialization
-            ):
+            if isinstance(v.items, _valid_classes_for_trusted_deserialization):
                 simplicity = _ClsSimplicity.nested
                 continue
             if isinstance(v.items, ClassReference) and _structure_simplicity_level(
@@ -587,6 +581,7 @@ def _remap_input(
     simple_structure_verified,
     camel_case_convert,
     keep_undefined,
+    deserialization_mapper,
 ):
     corrected_input = {}
     for k, v in input_dict.items():
@@ -601,6 +596,9 @@ def _remap_input(
                 keep_undefined=keep_undefined,
                 simple_structure_verified=simple_structure_verified,
                 direct_trusted_mapping=True,
+                resolved_mapper=deserialization_mapper.get(k)
+                if deserialization_mapper
+                else None,
             )
         elif isinstance(field_def, SerializableField):
             corrected_input[k] = field_def.deserialize(v)
@@ -616,6 +614,9 @@ def _remap_input(
                         keep_undefined=keep_undefined,
                         simple_structure_verified=simple_structure_verified,
                         direct_trusted_mapping=True,
+                        resolved_mapper=deserialization_mapper.get(k)
+                        if deserialization_mapper
+                        else None,
                     )
                     for x in v
                 ]
@@ -642,6 +643,9 @@ def _remap_input(
                         keep_undefined=keep_undefined,
                         simple_structure_verified=simple_structure_verified,
                         direct_trusted_mapping=True,
+                        resolved_mapper=deserialization_mapper.get(k)
+                        if deserialization_mapper
+                        else None,
                     )
                     for x in v
                 }
@@ -661,6 +665,7 @@ def deserialize_structure_internal(
     camel_case_convert=False,
     direct_trusted_mapping=False,
     simple_structure_verified=False,
+    resolved_mapper=None,
 ):
     """
     Deserialize a dict to a Structure instance, Jackson style.
@@ -707,14 +712,21 @@ def deserialize_structure_internal(
                 if input_dict.get(k)
             }
             input_dict.update(**enum_vals)
-        deserialization_mapper = _get_class_deserialization_mapping_for_simple_class(
-            cls
+        deserialization_mapper = (
+            _get_class_deserialization_mapping_for_simple_class(cls)
+            if not resolved_mapper
+            else aggregate_deserialization_mappers(cls, resolved_mapper)
         )
         if deserialization_mapper:
-            input_dict = {
-                k: input_dict[_extract_mapped_key(deserialization_mapper, k)]
+            key_by_mapped_key = {
+                _extract_mapped_key(deserialization_mapper, k): k
                 for k in deserialization_mapper
-                if k.endswith("._mapper") or deserialization_mapper[k] in input_dict
+            }
+            input_dict = {key_by_mapped_key.get(k, k): input_dict[k] for k in input_dict}
+            deserialization_mapper = {
+                key_by_mapped_key[k[:-8]]: deserialization_mapper[k]
+                for k in deserialization_mapper
+                if k.endswith("_mapper")
             }
 
         simple_structure_type = (
@@ -731,6 +743,7 @@ def deserialize_structure_internal(
                 simple_structure_verified=simple_structure_type,
                 camel_case_convert=camel_case_convert,
                 keep_undefined=keep_undefined,
+                deserialization_mapper=deserialization_mapper,
             )
 
         return cls.from_trusted_data(input_dict)

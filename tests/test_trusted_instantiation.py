@@ -9,8 +9,10 @@ from typedpy import (
     FastSerializable,
     ImmutableStructure,
     PositiveInt,
-    Set, create_serializer,
+    Set, Structure, create_serializer,
 )
+from typedpy.structures import TypedPyDefaults
+from typedpy.testing import find_diff
 
 
 class Policy(ImmutableStructure, FastSerializable):
@@ -53,8 +55,6 @@ class Policy(ImmutableStructure, FastSerializable):
     hard_limit: PositiveInt
     time_days: Optional[PositiveInt]
     codes: Array[int]
-
-
 
 
 class Phone(ImmutableStructure, FastSerializable):
@@ -204,4 +204,12 @@ def test_trusted_invalid():
         trusted.shallow_clone_with_overrides()
     assert "missing a required argument: 'last_name'" in str(excinfo.value)
 
+
+def test_trusted_with_list():
+    class Foo(Structure):
+        arr: list[str]
+
+    trusted = Foo.from_trusted_data({"arr": ["xx", "yy"]})
+
+    assert not find_diff(trusted, Foo(arr=["xx", "yy"]))
 

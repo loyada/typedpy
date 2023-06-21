@@ -41,7 +41,7 @@ def _diff_dict(val, otherval) -> dict:
             if diff:
                 result[key] = diff
         else:
-            diff = _find_diff(otherval[key], v )
+            diff = _find_diff(otherval[key], v)
             if diff:
                 result[key] = diff
     for key, v in otherval.items():
@@ -160,7 +160,7 @@ def _find_diff_collection(struct, other, outer_result, out_key):
 
 
 def _find_diff(
-    struct, other, outer_result=None, out_key=None
+        struct, other, outer_result=None, out_key=None
 ) -> Union[dict, str]:  # pylint: disable=too-many-branches, too-many-statements
 
     if struct.__class__ != other.__class__:
@@ -170,9 +170,9 @@ def _find_diff(
             struct, other, outer_result=outer_result, out_key=out_key
         )
 
-    internal_props = ["_instantiated"]
+    internal_props = ["_instantiated", "_trust_supplied_values"]
     res = {}
-    if isinstance(struct, Structure):  #  pylint: disable=too-many-nested-blocks
+    if isinstance(struct, Structure):  # pylint: disable=too-many-nested-blocks
         _diff_structure_internal(internal_props, other, res, struct)
         for k in sorted(other.__dict__):
             if k not in internal_props:
@@ -188,6 +188,8 @@ def _find_diff(
 def _diff_structure_internal(internal_props, other, res, struct):
     for k, val in sorted(struct.__dict__.items()):
         if k not in internal_props:
+            if k in struct.get_all_fields_by_name() and getattr(struct, k) == getattr(other, k):
+                continue
             if k not in other.__dict__:
                 _add_val(res, MISSING_VALUES, k)
             elif val != other.__dict__.get(k):

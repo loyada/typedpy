@@ -284,6 +284,14 @@ def test_find_diff_set():
     }
 
 
+
+def test_find_diff_list_liststruct():
+    class Foo(Structure):
+        a: list[int]
+
+
+    assert not find_diff(Foo(a=[1,2,3]), Foo.from_trusted_data({"a": [1,2,3]}))
+
 #
 # def test_assertion_err_example():
 #     bar1 = Bar(

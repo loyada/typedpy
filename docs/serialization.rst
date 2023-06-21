@@ -564,7 +564,6 @@ The definition of a "simple" Structure, in this context, is:
 * Any nested structure is also "simple"
 * Enum fields are supported!
 
-
 The gain in performance is typically ~x13.
 
 .. code-block:: python
@@ -599,6 +598,19 @@ To check if your class is compatible with trusted deserialization, do the follow
      policy = Deserializer(Policy).deserialize(input_data=serialized, direct_trusted_mapping=True)
 
      assert policy.used_trusted_instantiation()
+
+
+Warning: In case a one of the fields is a list, using trusted deserialization, Typedpy optimizes for speed, so
+you lose the protection and validation for nested values in the list (in case you have an immutable structure).
+In other words, typedpy does not block you from doing "my_struct.my_list[5] = 123", even if this is an immutable
+structure, or "123" is an invalid value. So ideally, you should not update structures that were created from trusted
+data.
+If you don't want to lose the safety of Typepy for lists, at the expense of speed, set:
+
+
+.. code-block:: python
+
+    TypedPyDefaults.safe_trusted_instantiation = True
 
 
 

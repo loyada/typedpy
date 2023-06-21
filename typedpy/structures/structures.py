@@ -1025,7 +1025,14 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
     def __init__(self, *args, **kwargs):
         if getattr(self, "_trust_supplied_values", False):
+            field_by_name = self.__class__.get_all_fields_by_name()
             for key, value in kwargs.items():
+                if (
+                    TypedPyDefaults.safe_trusted_instantiation
+                    and key in field_by_name
+                    and hasattr(field_by_name[key], "_from_trusted_value")
+                ):
+                    value = field_by_name[key]._from_trusted_value(value, self)
                 self.__dict__[key] = value
                 self.__dict__["_instantiated"] = True
                 self.__dict__["_none_fields"] = set()

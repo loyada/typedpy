@@ -7,3 +7,4 @@ class TypedPyDefaults:
     defensive_copy_on_get: bool = True
     allow_none_for_optionals: bool = False
     block_unknown_consts: bool = True
+    safe_trusted_instantiation: bool = False

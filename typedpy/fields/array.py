@@ -163,6 +163,11 @@ class Array(
 
         super().__set__(instance, _ListStruct(self, instance, value, self._name))
 
+    def _from_trusted_value(self, value, instance):
+        if isinstance(value, _ListStruct):
+            return _ListStruct(self, instance, value, self._name)
+        return value
+
     def serialize(self, value):
         cached: Callable = getattr(self, "_serialize", None)
         if cached is not None:

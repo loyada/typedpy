@@ -1,3 +1,4 @@
+from pytest import mark
 from typedpy import Array, Map, Set, Structure
 from typedpy.testing import find_diff
 
@@ -285,6 +286,7 @@ def test_find_diff_set():
 
 
 
+@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_find_diff_list_liststruct():
     class Foo(Structure):
         a: list[int]

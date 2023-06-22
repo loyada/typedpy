@@ -1,3 +1,4 @@
+import sys
 from pytest import mark
 from typedpy import Array, Map, Set, Structure
 from typedpy.testing import find_diff

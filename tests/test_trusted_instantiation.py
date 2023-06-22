@@ -1,3 +1,4 @@
+import sys
 import enum
 import time
 from typing import Optional
@@ -11,7 +12,6 @@ from typedpy import (
     PositiveInt,
     Set, Structure, create_serializer,
 )
-from typedpy.structures import TypedPyDefaults
 from typedpy.testing import find_diff
 
 

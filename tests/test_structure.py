@@ -77,15 +77,15 @@ def test_typing_optional_fields_none_allowed():
         _required = []
 
     assert (
-        Trade(
-            notional=1000,
-            quantity=None,
-            symbol="AAA",
-            buyer=Trader(lei="12345678901234567890", alias="GSET"),
-            seller=Trader(lei="12345678901234567888", alias="MSIM"),
-            timestamp="01/30/20 05:35:35",
-        ).quantity
-        is None
+            Trade(
+                notional=1000,
+                quantity=None,
+                symbol="AAA",
+                buyer=Trader(lei="12345678901234567890", alias="GSET"),
+                seller=Trader(lei="12345678901234567888", alias="MSIM"),
+                timestamp="01/30/20 05:35:35",
+            ).quantity
+            is None
     )
 
 
@@ -185,7 +185,6 @@ def test_iterating_over_wrapped_structure_err():
 
 def test_optional_fields_required_overrides1():
     with raises(ValueError) as excinfo:
-
         class Trade(Structure):
             venue: Enum[Venue]
             comment: String
@@ -193,8 +192,8 @@ def test_optional_fields_required_overrides1():
             _required = ["venue"]
 
     assert (
-        "optional cannot override prior required in the class or in a base class"
-        in str(excinfo.value)
+            "optional cannot override prior required in the class or in a base class"
+            in str(excinfo.value)
     )
 
 
@@ -208,7 +207,7 @@ def Point():
             self.y = y
 
         def size(self):
-            return sqrt(self.x**2 + self.y**2)
+            return sqrt(self.x ** 2 + self.y ** 2)
 
     return PointClass
 
@@ -285,8 +284,8 @@ def test_field_of_class_typeerror(Point):
     with raises(TypeError) as excinfo:
         Foo(i=5, point="xyz")
     assert (
-        "point: Expected <class 'tests.test_structure.Point.<locals>.PointClass'>; Got 'xyz'"
-        in str(excinfo.value)
+            "point: Expected <class 'tests.test_structure.Point.<locals>.PointClass'>; Got 'xyz'"
+            in str(excinfo.value)
     )
 
 
@@ -328,7 +327,8 @@ def test_optional_err(Point):
 
     with raises(ValueError) as excinfo:
         Foo(i=1, point=3)
-    assert "Foo.point: 3 of type int did not match any field option. Valid types are: PointClass, None" in str(excinfo.value)
+    assert "Foo.point: 3 of type int did not match any field option. Valid types are: PointClass, None" in str(
+        excinfo.value)
 
 
 def test_field_of_class_in_map(Point):
@@ -357,8 +357,8 @@ def test_field_of_class_in_map_typerror(Point):
     with raises(TypeError) as excinfo:
         Foo(i=5, point_by_int={1: Point(3, 4), 2: 3})
     assert (
-        "point_by_int_value: Expected <class 'tests.test_structure.Point.<locals>.PointClass'>; Got 3"
-        in str(excinfo.value)
+            "point_by_int_value: Expected <class 'tests.test_structure.Point.<locals>.PointClass'>; Got 3"
+            in str(excinfo.value)
     )
 
 
@@ -370,14 +370,13 @@ def test_field_of_class_in_map__simpler_syntax_typerror(Point):
     with raises(TypeError) as excinfo:
         Foo(i=5, point_by_int={1: Point(3, 4), 2: 3})
     assert (
-        "point_by_int_value: Expected <class 'tests.test_structure.Point.<locals>.PointClass'>; Got 3"
-        in str(excinfo.value)
+            "point_by_int_value: Expected <class 'tests.test_structure.Point.<locals>.PointClass'>; Got 3"
+            in str(excinfo.value)
     )
 
 
 def test_simple_invalid_type():
     with raises(TypeError) as excinfo:
-
         class Foo(Structure):
             i = Array["x"]
 
@@ -405,7 +404,6 @@ def test_final_structure_violation():
         s: str
 
     with raises(TypeError) as excinfo:
-
         class Bar(Foo):
             pass
 
@@ -442,8 +440,8 @@ def test_unique_violation(uniqueness_enabled):
     with raises(ValueError) as excinfo:
         Foo(s="xxx", i=1)
     assert (
-        "Instance copy in Foo, which is defined as unique. Instance is"
-        " <Instance of Foo. Properties: i = 1, s = 'xxx'>" in str(excinfo.value)
+            "Instance copy in Foo, which is defined as unique. Instance is"
+            " <Instance of Foo. Properties: i = 1, s = 'xxx'>" in str(excinfo.value)
     )
 
 
@@ -458,8 +456,8 @@ def test_unique_violation_by_update(uniqueness_enabled):
     with raises(ValueError) as excinfo:
         foo.i = 1
     assert (
-        "Instance copy in Foo, which is defined as unique. Instance is"
-        " <Instance of Foo. Properties: i = 1, s = 'xxx'>" in str(excinfo.value)
+            "Instance copy in Foo, which is defined as unique. Instance is"
+            " <Instance of Foo. Properties: i = 1, s = 'xxx'>" in str(excinfo.value)
     )
 
 
@@ -637,7 +635,6 @@ def test_invalid_defaults_are_caught():
         return [1, 2, 3]
 
     with raises(TypeError) as excinfo:
-
         class Foo(Structure):
             a: Array(items=String, default=factory)
 
@@ -660,15 +657,14 @@ def test_inheritance_with_optional_field():
         b: String
 
     with raises(ValueError) as excinfo:
-
         class Bar(Foo):
             c: String
 
             _optional = ["b"]
 
     assert (
-        "optional cannot override prior required in the class or in a base class"
-        in str(excinfo.value)
+            "optional cannot override prior required in the class or in a base class"
+            in str(excinfo.value)
     )
 
 
@@ -683,8 +679,8 @@ def test_classreference_cant_accept_none():
     with raises(TypeError) as excinfo:
         Bar(bar="abc", foo=None)
     assert (
-        "foo: Expected <Structure: Foo. Properties: bar = <String>>; Got None"
-        in str(excinfo.value)
+            "foo: Expected <Structure: Foo. Properties: bar = <String>>; Got None"
+            in str(excinfo.value)
     )
 
 
@@ -706,13 +702,11 @@ def test_required_is_inherited_field():
 def test_dont_allow_assignment_to_non_typedpy_types():
     Structure.set_block_non_typedpy_field_assignment()
     with raises(TypeError) as excinfo:
-
         class A(Structure):
             a = typing.List[str]
 
     assert "a: assigned a non-Typedpy type" in str(excinfo.value)
     with raises(TypeError) as excinfo:
-
         class B(Structure):
             b = typing.Optional[str]
 
@@ -728,7 +722,6 @@ def test_dont_allow_assignment_to_non_typedpy_types():
 def test_dont_allow_assignment_to_non_typedpy_types_pep585():
     Structure.set_block_non_typedpy_field_assignment()
     with raises(TypeError) as excinfo:
-
         class A(Structure):
             a = list[str]
 
@@ -786,7 +779,6 @@ def test_find_fields_with_function_returning_field():
 
 def test_disallow_mutable_default():
     with pytest.raises(ValueError) as excinfo:
-
         class Foo(Structure):
             a: list = []
 
@@ -846,3 +838,14 @@ def test_issue_221():
         c: bool = False
 
     Structure.set_additional_properties_default(True)
+
+
+def test_eq_optional():
+    class Foo(Structure):
+        a: int = 5
+        b: typing.Optional[int]
+
+        _ignore_none = True
+
+    assert Foo(a=5, b=None) == Foo()
+

@@ -1228,12 +1228,17 @@ class Structure(UniqueMixin, metaclass=StructMeta):
     def __eq__(self, other):
         if self.__class__ != other.__class__:
             return False
-        for k, val in sorted(self.__dict__.items()):
-            if k not in _internal_props and val != other.__dict__.get(k):
-                return False
-        for k, val in sorted(other.__dict__.items()):
-            if k not in _internal_props and val != self.__dict__.get(k):
-                return False
+        merged = {**self.__dict__, **other.__dict__}
+        for k in sorted(merged):
+            if k in _internal_props:
+                continue
+            if k in self.__class__.get_all_fields_by_name():
+                if getattr(self, k) != getattr(other, k):
+                    return False
+            else:
+                if self.__dict__.get(k) != other.__dict__.get(k):
+                    return False
+
         self_nones = self.__dict__.get("_none_fields")
         other_nones = other.__dict__.get("_none_fields")
         if (self_nones or other_nones) and self_nones != other_nones:

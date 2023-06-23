@@ -175,6 +175,8 @@ def _find_diff(
     if isinstance(struct, Structure):  # pylint: disable=too-many-nested-blocks
         _diff_structure_internal(internal_props, other, res, struct)
         for k in sorted(other.__dict__):
+            if k in other.get_all_fields_by_name() and getattr(struct, k) == getattr(other, k):
+                continue
             if k not in internal_props:
                 if k not in struct.__dict__:
                     _add_val(res, ADDITIONAL_VALUES, k)

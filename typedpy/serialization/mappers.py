@@ -7,6 +7,7 @@ from enum import Enum, auto
 
 from typedpy.commons import deep_get
 from typedpy.structures import ClassReference, Field, Structure, SERIALIZATION_MAPPER
+from typedpy.structures.consts import DESERIALIZATION_MAPPER
 from typedpy.fields import Array, FunctionCall, Set, StructureReference
 
 
@@ -186,6 +187,23 @@ class mappers(Enum):
 
 def get_mapper(val: Structure):
     return getattr(val.__class__, SERIALIZATION_MAPPER, {})
+
+
+
+def get_flat_resolved_mapper(cls):
+    mapper = getattr(
+        cls, DESERIALIZATION_MAPPER, getattr(cls, SERIALIZATION_MAPPER, {})
+    )
+    mapping = {}
+    for k in cls.get_all_fields_by_name():
+        if mapper is mappers.TO_CAMELCASE:
+            mapping[_convert_to_camelcase(k)] = k
+        elif mapper is mappers.TO_LOWERCASE:
+            mapping[k.upper()] = k
+        else:
+            mapping[mapper.get(k, k)] = k
+
+    return mapping
 
 
 def aggregate_deserialization_mappers(

@@ -360,12 +360,20 @@ def test_trusted_deserialization_nested_mapper_of_nested_class3():
     serialized = {
         "BAR1": {"a": 5, "bar2": [{"b1": 1, "c1": "xyz"}, {"b1": 2, "c1": "abc"}]}
     }
-    not_trusted = Deserializer(target_class=Foo).deserialize(
-        input_data=serialized
-    )
-    deserialized = Deserializer(target_class=Foo).deserialize(
-        input_data=serialized, direct_trusted_mapping=True
-    )
+    time_1 = time.time()
+    for _ in range(1000):
+         Deserializer(target_class=Foo).deserialize(
+            input_data=serialized
+        )
+    time_2 = time.time()
+    for _ in range(1000):
+        deserialized = Deserializer(target_class=Foo).deserialize(
+            input_data=serialized, direct_trusted_mapping=True
+        )
+    time_3 = time.time()
+
+    print(f"ratio: {(time_2 - time_1) / (time_3 - time_2)}")
+
     assert deserialized == Foo(
         bar1=Bar1(a=5, bar2=[Bar2(b_1=1, c_1="xyz"), Bar2(b_1=2, c_1="abc")])
     )

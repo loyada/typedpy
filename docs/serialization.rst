@@ -556,13 +556,20 @@ instantiation, and directly create an instance of the wanted class.
 This is useful when you are confident the data passed is valid, and performance is paramount.
 
 The definition of a "simple" Structure, in this context, is:
-* Serialization mapper, if exists, does not include function transformations.
+* Serialization mapper, if exists, has the following limitations:
+#. does not include function transformations or direct nested transformation (no key._mapper in the dictionary).
+#. mappings only change key name to another name. No functions.
+#. has a single transformation per class - ie. no lists of chained mappers.
+#. In case of nested structure, does not rely on mappers to be automatically applied from  high-level classes
+   to low level nested classes. Instead, Each class is required to have its own mapper, if it requires one.
+
 * Fields can mapped directly to Json: None, str, int, float, bool, and lists/sets of one of those, OR
 * Field of type DateField, DateTime, TimeField and any type that implements SerializableField.
 * The only nested collection fields allowed are list,set(i.e. Typedpy's Array, Set) - no Tuple or Map
 * No set of sets, list of lists, set of lists etc.
 * Any nested structure is also "simple"
-* Enum fields are supported!
+* Enum fields are supported
+*
 
 The gain in performance is typically ~x13.
 

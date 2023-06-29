@@ -515,7 +515,7 @@ def test_trusted_deserialization_safe_check_corrected_1():
 
     assert_trusted_deserialization_mapper_is_safe(Foo)
 
-
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_safe_check_false_2():
     class Bar2(ImmutableStructure):
         b_1: int
@@ -535,7 +535,7 @@ def test_trusted_deserialization_safe_check_false_2():
     with pytest.raises(AssertionError):
         assert_trusted_deserialization_mapper_is_safe(Foo)
 
-
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_safe_check_corrected_2():
     class Bar2(ImmutableStructure):
         b_1: int

@@ -1,8 +1,11 @@
 import json
-from typing import Union
+from typing import Set, Union
 
+from typedpy import AnyOf, Array, Boolean, ClassReference, Enum, Float, Integer, NoneField, Number, SerializableField, \
+    String, mappers
 from typedpy.commons import wrap_val
 from typedpy.structures import Structure
+from typedpy.structures.consts import DESERIALIZATION_MAPPER, SERIALIZATION_MAPPER
 
 MISSING_VALUES = "missing values"
 ADDITIONAL_VALUES = "additional values"
@@ -237,3 +240,84 @@ def pytest_assertrepr_compare(op, left, right):
         ]
         return res
     return None
+
+
+
+
+
+
+def _assert_mapper_safe_for_trusted_deserialization(cls, wrapping_mapper=None):
+    mapper = getattr(
+        cls, DESERIALIZATION_MAPPER, getattr(cls, SERIALIZATION_MAPPER, {})
+    )
+    cls_name = cls.__name__
+    if not mapper:
+        if wrapping_mapper in [mappers.NO_MAPPER, mappers.TO_CAMELCASE, mappers.TO_LOWERCASE]:
+            raise AssertionError(f"{cls_name} has no deserialization mapper, and its wrapping class has mapper: {wrapping_mapper}."
+                                 "To guarantee trusted deserialization works consistently with serialization and non-trusted"
+                                 f" deserialization, add the same mapper to {cls_name}")
+    if wrapping_mapper in [mappers.NO_MAPPER, mappers.TO_CAMELCASE, mappers.TO_LOWERCASE]:
+        if mapper is not wrapping_mapper:
+            raise AssertionError(
+                f"{cls_name} has mapper {mapper}, and its wrapping class has one: {wrapping_mapper}."
+                "To guarantee trusted deserialization works consistently with serialization and non-trusted"
+                f" deserialization, add the same mapper to {cls_name}")
+    if mapper in [mappers.NO_MAPPER, mappers.TO_CAMELCASE, mappers.TO_LOWERCASE]:
+        return
+    if not isinstance(mapper, dict):
+        raise AssertionError(
+            f"{cls_name} has a custom mapper {mapper}. For custom mappers, nly simple dicts are supported for trusted deserialization.")
+    for k, v in mapper.items():
+        if k.endswith("._mapper"):
+            raise AssertionError(
+            f"{cls_name} has a custom mapper with an unsupported direct nested mapping for {k}. No direct nested mapping are supported")
+
+        if not isinstance(v, str):
+            raise AssertionError(
+            f"{cls_name} has a custom mapper with an unsupported mapping value for {k}. Only key name mappings are supported.")
+    return
+
+_valid_classes_for_trusted_deserialization = (
+    Integer,
+    String,
+    Float,
+    Boolean,
+    NoneField,
+    Enum,
+    SerializableField,
+    Number,
+)
+
+
+def assert_trusted_deserialization_mapper_is_safe(cls, wrapping_mapper=None):
+        _assert_mapper_safe_for_trusted_deserialization(cls, wrapping_mapper=wrapping_mapper)
+
+        mapper = getattr(
+            cls, DESERIALIZATION_MAPPER, getattr(cls, SERIALIZATION_MAPPER, {})
+        )
+        for v in cls.get_all_fields_by_name().values():
+            if isinstance(v, _valid_classes_for_trusted_deserialization):
+                continue
+            if isinstance(v, AnyOf):
+                for f in v.get_fields():
+                    if not isinstance(f, _valid_classes_for_trusted_deserialization):
+                        raise AssertionError(f"{cls.__name__} as a field of type {f}, which is unsupported")
+                continue
+            if isinstance(v, Array):
+                if isinstance(v.items, _valid_classes_for_trusted_deserialization):
+                    continue
+                if isinstance(v.items, ClassReference) and assert_trusted_deserialization_mapper_is_safe(
+                    v.items.get_type, wrapping_mapper=mapper,
+                ):
+                    continue
+            if isinstance(v, Set):
+                if isinstance(v.items, _valid_classes_for_trusted_deserialization):
+                    continue
+                if isinstance(v.items, ClassReference) and assert_trusted_deserialization_mapper_is_safe(
+                    v.items.get_type, wrapping_mapper=mapper,
+                ):
+                    continue
+            if isinstance(v, ClassReference) and assert_trusted_deserialization_mapper_is_safe(v.get_type, wrapping_mapper=mapper):
+                continue
+
+        return

@@ -20,6 +20,7 @@ from typedpy import (
     create_serializer,
     mappers,
 )
+from typedpy.testing import assert_trusted_deserialization_mapper_is_safe
 
 
 class Policy(ImmutableStructure, FastSerializable):
@@ -294,6 +295,8 @@ def test_trusted_deserialization_nested_mapper_of_nested_class1():
         a: int
         bar2: Bar2
 
+        _serialization_mapper = mappers.TO_LOWERCASE
+
     class Foo(ImmutableStructure):
         bar1: Bar1
 
@@ -479,3 +482,130 @@ def test_trusted_deserialization_nested_mapper_of_nested_class_timefield():
     )
     # deserialized was created using "from_trusted_data"
     assert deserialized.used_trusted_instantiation()
+
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_trusted_deserialization_safe_check_false_1():
+    class Bar1(ImmutableStructure):
+        a: datetime.time
+        d: set[datetime.time]
+
+    class Foo(ImmutableStructure):
+        bar1: Bar1
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    with pytest.raises(AssertionError):
+        assert_trusted_deserialization_mapper_is_safe(Foo)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
+def test_trusted_deserialization_safe_check_corrected_1():
+    class Bar1(ImmutableStructure):
+        a: datetime.time
+        d: set[datetime.time]
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+
+    class Foo(ImmutableStructure):
+        bar1: Bar1
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    assert_trusted_deserialization_mapper_is_safe(Foo)
+
+
+def test_trusted_deserialization_safe_check_false_2():
+    class Bar2(ImmutableStructure):
+        b_1: int
+        c_1: str
+
+        _serialization_mapper = mappers.TO_CAMELCASE
+
+    class Bar1(ImmutableStructure):
+        a: int
+        bar2: set[Bar2]
+
+    class Foo(ImmutableStructure):
+        bar1: Bar1
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    with pytest.raises(AssertionError):
+        assert_trusted_deserialization_mapper_is_safe(Foo)
+
+
+def test_trusted_deserialization_safe_check_corrected_2():
+    class Bar2(ImmutableStructure):
+        b_1: int
+        c_1: str
+
+        _serialization_mapper = mappers.TO_CAMELCASE
+
+    class Bar1(ImmutableStructure):
+        a: int
+        bar2: set[Bar2]
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+
+    class Foo(ImmutableStructure):
+        bar1: Bar1
+
+        _serialization_mapper = mappers.TO_LOWERCASE
+
+    assert_trusted_deserialization_mapper_is_safe(Foo)
+
+
+def test_trusted_deserialization_safe_check_false_3():
+    class Bar(ImmutableStructure):
+        b_1: int
+        c_1: str
+
+        _serialization_mapper = [mappers.TO_CAMELCASE, mappers.TO_LOWERCASE]
+
+    with pytest.raises(AssertionError):
+        assert_trusted_deserialization_mapper_is_safe(Bar)
+
+
+
+def test_trusted_deserialization_safe_check_false_3():
+    class Bar(ImmutableStructure):
+        b_1: int
+        c_1: str
+
+        _serialization_mapper = [mappers.TO_CAMELCASE, mappers.TO_LOWERCASE]
+
+    with pytest.raises(AssertionError):
+        assert_trusted_deserialization_mapper_is_safe(Bar)
+
+
+
+def test_trusted_deserialization_safe_check_false_4():
+
+    class Bar(ImmutableStructure):
+        a: int
+
+    class Foo(ImmutableStructure):
+        bar1: Bar
+
+        _serialization_mapper = {"bar1._mapper": {"a": "A"}}
+
+    with pytest.raises(AssertionError):
+        assert_trusted_deserialization_mapper_is_safe(Foo)
+
+
+def test_trusted_deserialization_safe_check_corrected_4():
+
+    class Bar(ImmutableStructure):
+        a: int
+
+    _serialization_mapper = {"a": "A"}
+
+    class Foo(ImmutableStructure):
+        bar1: Bar
+
+        _serialization_mapper = {"bar1": "Foo"}
+
+    assert_trusted_deserialization_mapper_is_safe(Foo)

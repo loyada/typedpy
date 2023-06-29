@@ -569,7 +569,7 @@ The definition of a "simple" Structure, in this context, is:
 * No set of sets, list of lists, set of lists etc.
 * Any nested structure is also "simple"
 * Enum fields are supported
-*
+
 
 The gain in performance is typically ~x13.
 
@@ -597,7 +597,7 @@ The gain in performance is typically ~x13.
 Note that deserializing this way bypasses any serialization mapper of the Structure. Also,
 if the Structure is not "Simple" (as described above), the flat "direct_trusted_mapping" has no effect.
 
-To check if your class is compatible with trusted deserialization, do the following:
+To check if your deserialization used trusted deserialization, do the following:
 
 
 .. code-block:: python
@@ -605,6 +605,18 @@ To check if your class is compatible with trusted deserialization, do the follow
      policy = Deserializer(Policy).deserialize(input_data=serialized, direct_trusted_mapping=True)
 
      assert policy.used_trusted_instantiation()
+
+
+Or, if you want to assert in advance, before doing any deserialization:
+
+
+.. code-block:: python
+
+    assert_trusted_deserialization_mapper_is_safe(MyClass)
+
+
+I recommend doing the latter as a unit test, to ensure no one updates the Structure or any nested Structure and breaks
+trusted deserialization compatibility.
 
 
 Warning: In case a one of the fields is a list, using trusted deserialization, Typedpy optimizes for speed, so

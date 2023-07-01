@@ -328,6 +328,7 @@ Here is an example of how it works:
 
 As the name suggests, it performs a shallow copy.
 
+.. _uniqueness:
 
 
 Uniqueness
@@ -987,9 +988,17 @@ Typedpy exposes several global defaults. These can be views as the Typedpy confi
    setting "_ignore_nonnes".
    In case you still want to use your own custom (non-typedpy) attribute in a Structure while block_unknown_consts is on
    you can either use a method, a property or a class variable with a name that starts with "_custom_attribute_".
+9. TypedPyDefaults.safe_trusted_instantiation - if set, ensures that in case of "trusted" instantiation/deserialization
+   of a structure with list fields, it converts the list to Typedpy's internal representation, which is important in
+   case you use ImmutableStructure, as it protects from mutating nested elements. However, it has a significant cost
+   in terms of performance. That's why by default, it is set to False. The assumption is that if you are using trusted
+   instantiation, you prioritize performance over immutability safety.
 
 
-   
+Planned Deprecations
+====================
+1. Uniqueness features were found to be generally useless, and will be removed in version 2.26. See here: :ref:`uniqueness`
+
 
 
 Structure Documentation

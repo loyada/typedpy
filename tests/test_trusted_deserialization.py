@@ -20,6 +20,7 @@ from typedpy import (
     create_serializer,
     mappers,
 )
+from typedpy.extfields import TimeField
 from typedpy.testing import assert_trusted_deserialization_mapper_is_safe
 
 
@@ -609,3 +610,59 @@ def test_trusted_deserialization_safe_check_corrected_4():
         _serialization_mapper = {"bar1": "Foo"}
 
     assert_trusted_deserialization_mapper_is_safe(Foo)
+
+
+def test_simple_enum():
+    class Color(enum.Enum):
+        red = 1
+        black = 2
+        green = 3
+
+    class Foo(ImmutableStructure):
+        c: Color
+
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data={"c": "red"}, direct_trusted_mapping=True
+    )
+    assert deserialized.used_trusted_instantiation()
+    assert deserialized == Foo(c=Color.red)
+
+
+def test_deserialize_optional():
+    class Bar(ImmutableStructure):
+        a: Optional[int]
+
+    class Foo(ImmutableStructure):
+        i: Optional[int]
+        b: Optional[Bar]
+
+    assert_trusted_deserialization_mapper_is_safe(Foo)
+
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data={}, direct_trusted_mapping=True
+    )
+    assert deserialized.used_trusted_instantiation()
+    assert deserialized == Foo()
+
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data={"b": {"a": 123}}, direct_trusted_mapping=True
+    )
+    assert deserialized.used_trusted_instantiation()
+    assert deserialized == Foo(b=Bar(a=123))
+
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data={"b": {}, "i": 1}, direct_trusted_mapping=True
+    )
+    assert deserialized.used_trusted_instantiation()
+    assert deserialized == Foo(b=Bar(), i=1)
+
+
+def test_serializablefield_with_simple_class():
+    class Foo(ImmutableStructure):
+        t: TimeField
+
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data={"t": "12:00:00"}, direct_trusted_mapping=True
+    )
+    assert deserialized.used_trusted_instantiation()
+    assert deserialized == Foo(t=datetime.time(hour=12))

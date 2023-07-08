@@ -523,26 +523,46 @@ def _is_mapper_simple(cls) -> bool:
     return True
 
 
+def _is_optional_anyof(field: AnyOf) -> bool:
+    return len(field.get_fields()) == 2 and NoneField in [
+        x.__class__ for x in field.get_fields()
+    ]
+
+
+def _extract_non_nonefield_from_optional(field: AnyOf) -> Field:
+    fields = field.get_fields()
+    return fields[0] if fields[1].__class__ is NoneField else fields[0]
+
+
 @lru_cache(maxsize=128)
 def _structure_simplicity_level(cls):
     mapper_is_valid = _is_mapper_simple(cls)
     if not mapper_is_valid:
-        raise ValueError(f"class {cls.__name__} has a mapper that is unsupported for trusted deserialization")
+        raise ValueError(
+            f"class {cls.__name__} has a mapper that is unsupported for trusted deserialization"
+        )
 
     simplicity = _ClsSimplicity.not_nested
     for v in cls.get_all_fields_by_name().values():
+        if isinstance(v, SerializableField):
+            simplicity = _ClsSimplicity.nested
         if isinstance(v, _valid_classes_for_trusted_deserialization):
             continue
         if isinstance(v, AnyOf):
             for f in v.get_fields():
+                if _is_optional_anyof(v):
+                    simplicity = _ClsSimplicity.nested
+                    continue
                 if not isinstance(f, _valid_classes_for_trusted_deserialization):
                     return False
             continue
         if isinstance(v, Array):
+            if isinstance(v, SerializableField):
+                simplicity = _ClsSimplicity.nested
             if isinstance(v.items, _valid_classes_for_trusted_deserialization):
                 continue
             if isinstance(v.items, ClassReference) and _structure_simplicity_level(
-                    v.items.get_type
+                v.items.get_type
             ):
                 simplicity = _ClsSimplicity.nested
                 continue
@@ -552,7 +572,7 @@ def _structure_simplicity_level(cls):
                 simplicity = _ClsSimplicity.nested
                 continue
             if isinstance(v.items, ClassReference) and _structure_simplicity_level(
-                    v.items.get_type
+                v.items.get_type
             ):
                 simplicity = _ClsSimplicity.nested
                 continue
@@ -579,7 +599,6 @@ def _get_class_deserialization_mapping_for_simple_class(cls):
     return get_flat_resolved_mapper(cls)
 
 
-
 def _extract_mapped_key(deserialization_mapper, key):
     if key.endswith("._mapper"):
         return key[:-8]
@@ -587,18 +606,21 @@ def _extract_mapped_key(deserialization_mapper, key):
 
 
 def _remap_input(
-        input_dict,
-        cls,
-        *,
-        name,
-        use_strict_mapping,
-        simple_structure_verified,
-        camel_case_convert,
-        keep_undefined,
+    input_dict,
+    cls,
+    *,
+    name,
+    use_strict_mapping,
+    simple_structure_verified,
+    camel_case_convert,
+    keep_undefined,
 ):
     corrected_input = {}
     for k, v in input_dict.items():
         field_def = cls.get_all_fields_by_name().get(k)
+        if isinstance(field_def, AnyOf) and _is_optional_anyof(field_def) and v is not None:
+            field_def = _extract_non_nonefield_from_optional(field_def)
+
         if isinstance(field_def, ClassReference):
             corrected_input[k] = deserialize_structure_internal(
                 field_def.get_type,
@@ -636,7 +658,7 @@ def _remap_input(
 
         elif isinstance(field_def, Set):
             if isinstance(
-                    field_def.items, (Integer, String, Float, Boolean, NoneField)
+                field_def.items, (Integer, String, Float, Boolean, NoneField)
             ):
                 corrected_input[k] = set(v)
             elif isinstance(field_def.items, SerializableField):
@@ -661,16 +683,16 @@ def _remap_input(
 
 
 def deserialize_structure_internal(
-        cls,
-        the_dict,
-        name=None,
-        *,
-        use_strict_mapping=False,
-        mapper=None,
-        keep_undefined=False,
-        camel_case_convert=False,
-        direct_trusted_mapping=False,
-        simple_structure_verified=False,
+    cls,
+    the_dict,
+    name=None,
+    *,
+    use_strict_mapping=False,
+    mapper=None,
+    keep_undefined=False,
+    camel_case_convert=False,
+    direct_trusted_mapping=False,
+    simple_structure_verified=False,
 ):
     """
     Deserialize a dict to a Structure instance, Jackson style.
@@ -704,15 +726,19 @@ def deserialize_structure_internal(
             input_dict = convert_dict(the_dict, versions_mapping)
 
     if (
-            direct_trusted_mapping
-            and not mapper
-            and (simple_structure_verified or _structure_simplicity_level(cls))
-            and not camel_case_convert
+        direct_trusted_mapping
+        and not mapper
+        and (simple_structure_verified or _structure_simplicity_level(cls))
+        and not camel_case_convert
     ):
 
-        deserialization_mapper = _get_class_deserialization_mapping_for_simple_class(cls)
+        deserialization_mapper = _get_class_deserialization_mapping_for_simple_class(
+            cls
+        )
         if deserialization_mapper:
-            input_dict = {deserialization_mapper.get(k, k): input_dict[k] for k in input_dict}
+            input_dict = {
+                deserialization_mapper.get(k, k): input_dict[k] for k in input_dict
+            }
 
         enum_mapping = _get_enum_mapping(cls)
         if enum_mapping:
@@ -730,8 +756,8 @@ def deserialize_structure_internal(
             if simple_structure_verified
             else _structure_simplicity_level(cls)
         )
-        if simple_structure_type is _ClsSimplicity.nested:
-            input_dict = _remap_input(
+        remapped_input = (
+            _remap_input(
                 updated_input,
                 cls,
                 name=name,
@@ -740,8 +766,11 @@ def deserialize_structure_internal(
                 camel_case_convert=camel_case_convert,
                 keep_undefined=keep_undefined,
             )
+            if simple_structure_type is _ClsSimplicity.nested
+            else updated_input
+        )
 
-        return cls.from_trusted_data(input_dict)
+        return cls.from_trusted_data(remapped_input)
 
     mapper = aggregate_deserialization_mappers(cls, mapper, camel_case_convert)
     if keep_undefined:
@@ -749,7 +778,7 @@ def deserialize_structure_internal(
             if isinstance(m, mappers) or isinstance(mapper, mappers):
                 keep_undefined = False
         if (camel_case_convert or isinstance(mapper, mappers)) and not getattr(
-                cls, ADDITIONAL_PROPERTIES, False
+            cls, ADDITIONAL_PROPERTIES, False
         ):
             keep_undefined = False
 
@@ -779,8 +808,8 @@ def deserialize_structure_internal(
         k: v
         for k, v in input_dict.items()
         if k not in field_by_name
-           and keep_undefined
-           and k not in getattr(cls, "_constants", [])
+        and keep_undefined
+        and k not in getattr(cls, "_constants", [])
     }
 
     kwargs.update(

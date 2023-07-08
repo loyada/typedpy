@@ -288,6 +288,10 @@ _valid_classes_for_trusted_deserialization = (
     Number,
 )
 
+def _is_optional_anyof(field: AnyOf) -> bool:
+    return len(field.get_fields()) == 2 and NoneField in [
+        x.__class__ for x in field.get_fields()
+    ]
 
 def assert_trusted_deserialization_mapper_is_safe(cls, wrapping_mapper=None):
         _assert_mapper_safe_for_trusted_deserialization(cls, wrapping_mapper=wrapping_mapper)
@@ -299,6 +303,8 @@ def assert_trusted_deserialization_mapper_is_safe(cls, wrapping_mapper=None):
             if isinstance(v, _valid_classes_for_trusted_deserialization):
                 continue
             if isinstance(v, AnyOf):
+                if _is_optional_anyof(v):
+                    continue
                 for f in v.get_fields():
                     if not isinstance(f, _valid_classes_for_trusted_deserialization):
                         raise AssertionError(f"{cls.__name__} as a field of type {f}, which is unsupported")

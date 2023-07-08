@@ -21,6 +21,7 @@ from typedpy import (
     mappers,
 )
 from typedpy.extfields import TimeField
+from typedpy.structures import TypedPyDefaults
 from typedpy.testing import assert_trusted_deserialization_mapper_is_safe
 
 
@@ -613,48 +614,50 @@ def test_trusted_deserialization_safe_check_corrected_4():
 
 
 def test_simple_enum():
+    TypedPyDefaults.automatic_enum_conversion = True
+
     class Color(enum.Enum):
         red = 1
         black = 2
         green = 3
 
-    class Foo(ImmutableStructure):
+    class Foo1234(ImmutableStructure):
         c: Color
 
-    deserialized = Deserializer(target_class=Foo).deserialize(
+    deserialized = Deserializer(target_class=Foo1234).deserialize(
         input_data={"c": "red"}, direct_trusted_mapping=True
     )
     assert deserialized.used_trusted_instantiation()
-    assert deserialized == Foo(c=Color.red)
+    assert deserialized == Foo1234(c=Color.red)
 
 
 def test_deserialize_optional():
     class Bar(ImmutableStructure):
         a: Optional[int]
 
-    class Foo(ImmutableStructure):
+    class Foo111(ImmutableStructure):
         i: Optional[int]
         b: Optional[Bar]
 
-    assert_trusted_deserialization_mapper_is_safe(Foo)
+    assert_trusted_deserialization_mapper_is_safe(Foo111)
 
-    deserialized = Deserializer(target_class=Foo).deserialize(
+    deserialized = Deserializer(target_class=Foo111).deserialize(
         input_data={}, direct_trusted_mapping=True
     )
     assert deserialized.used_trusted_instantiation()
-    assert deserialized == Foo()
+    assert deserialized == Foo111()
 
-    deserialized = Deserializer(target_class=Foo).deserialize(
+    deserialized = Deserializer(target_class=Foo111).deserialize(
         input_data={"b": {"a": 123}}, direct_trusted_mapping=True
     )
     assert deserialized.used_trusted_instantiation()
-    assert deserialized == Foo(b=Bar(a=123))
+    assert deserialized == Foo111(b=Bar(a=123))
 
-    deserialized = Deserializer(target_class=Foo).deserialize(
+    deserialized = Deserializer(target_class=Foo111).deserialize(
         input_data={"b": {}, "i": 1}, direct_trusted_mapping=True
     )
     assert deserialized.used_trusted_instantiation()
-    assert deserialized == Foo(b=Bar(), i=1)
+    assert deserialized == Foo111(b=Bar(), i=1)
 
 
 def test_serializablefield_with_simple_class():

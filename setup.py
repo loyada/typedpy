@@ -15,6 +15,7 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
 ]
 
 setup(
@@ -46,9 +47,9 @@ setup(
     license="MIT",
     long_description=long_description,
     url="http://github.com/loyada/typedpy",
-    download_url="https://github.com/loyada/typedpy/archive/v2.24.5.tar.gz",
+    download_url="https://github.com/loyada/typedpy/archive/v2.24.7.tar.gz",
     keywords=["testing", "type-safe", "strict", "schema", "validation"],
-    version="2.24.6",
+    version="2.24.7",
 )
 
 # coverage run --source=typedpy/ setup.py test

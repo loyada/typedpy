@@ -669,3 +669,14 @@ def test_serializablefield_with_simple_class():
     )
     assert deserialized.used_trusted_instantiation()
     assert deserialized == Foo(t=datetime.time(hour=12))
+
+
+def test_deserialize_none():
+    class Foo(ImmutableStructure):
+        t: int = 5
+        i: Optional[int]
+
+        _ignore_none = True
+
+    deserialized = Deserializer(target_class=Foo).deserialize(input_data={"i": 4, "t": None}, direct_trusted_mapping=True)
+    assert deserialized == Foo(t=5, i=4)

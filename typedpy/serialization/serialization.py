@@ -619,7 +619,8 @@ def _remap_input(
     for k, v in input_dict.items():
         field_def = cls.get_all_fields_by_name().get(k)
         if v is None:
-            corrected_input[k] = None
+            if not getattr(cls, IGNORE_NONE_VALUES):
+                corrected_input[k] = None
             continue      
         if isinstance(field_def, AnyOf) and _is_optional_anyof(field_def) and v is not None:
             field_def = _extract_non_nonefield_from_optional(field_def)

@@ -546,6 +546,8 @@ def test_serialize_optional_of_serializablefield():
     assert getattr(Container1, created_fast_serializer)
     assert not getattr(Container1, failed_to_create_fast_serializer, False)
 
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trivial_serializable():
     class Blah(Structure, FastSerializable):
         i: int

@@ -2,7 +2,7 @@ import enum
 
 import pytest
 
-from typedpy import AbstractStructure, Constant, Deserializer, Enum, Serializer, Structure
+from typedpy import AbstractStructure, Constant, Deserializer, DoNotSerialize, Enum, Serializer, Structure
 
 
 class EventSubject(enum.Enum):
@@ -130,3 +130,25 @@ def test_from_other_class():
         excinfo.value
     )
     assert   FooEvent.from_other_class(foo).subject is EventSubject.foo
+
+
+
+def test_mapper_can_be_empty():
+    class FooBase(Structure):
+        i: int
+
+
+    class Foo(FooBase):
+        const1 = Constant(1)
+        const2 = Constant(2)
+
+
+    _serialization_mapper = {
+        "const1": DoNotSerialize,
+        "const2": DoNotSerialize
+    }
+
+    foo = Deserializer(Foo).deserialize({"i": 5})
+    assert foo.i == 5
+    assert foo.const2 == 2
+

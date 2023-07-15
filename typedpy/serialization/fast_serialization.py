@@ -3,12 +3,14 @@ from typing import Type
 
 from typedpy.commons import Constant, first_in
 from typedpy.fields import Boolean, FunctionCall, Number, String, Array, AnyOf, OneOf
-from typedpy.structures import ClassReference, Field, NoneField
-from typedpy.serialization.mappers import (
-    aggregate_serialization_mappers,
+from typedpy.structures import ClassReference, Field, NoneField, Structure
+from typedpy.structures.structures import (
+    created_fast_serializer,
+    failed_to_create_fast_serializer,
 )
-from typedpy.structures import (
-    Structure,
+
+from .mappers import (
+    aggregate_serialization_mappers,
 )
 
 
@@ -38,13 +40,18 @@ def _verify_is_fast_serializable(field):
     obj = field._ty if isinstance(field, ClassReference) else field
     if isinstance(field, Array) and isinstance(field.items, (Field, ClassReference)):
         _verify_is_fast_serializable(field.items)
-    if isinstance(field, ClassReference) and (
-        getattr(obj, "serialize", None) is FastSerializable.serialize
-        or not issubclass(obj, FastSerializable)
-    ):
-        raise TypeError(
-            f"{obj.__name__} is not FastSerializable or does not implement 'serialize(self, value)'"
-        )
+
+    if isinstance(field, ClassReference):
+        if not issubclass(obj, FastSerializable):
+            raise TypeError(
+                f"{obj.__name__} is not FastSerializable or does not implement 'serialize(self, value)'"
+            )
+        if getattr(
+            obj, "serialize", None
+        ) is FastSerializable.serialize and not getattr(
+            obj, failed_to_create_fast_serializer, False
+        ):
+            create_serializer(obj)
 
 
 def _get_serialize(field, cls):
@@ -54,8 +61,10 @@ def _get_serialize(field, cls):
         raise TypeError(f"{obj} Field is not FastSerializable")
     if isinstance(obj, AnyOf):
         non_null = [f for f in getattr(obj, "_fields") if not isinstance(f, NoneField)]
-        if len(non_null)>1:
-            raise TypeError(f"AnyOf(i.e. Union) is not FastSerializable when it can be multiple types: {obj}")
+        if len(non_null) > 1:
+            raise TypeError(
+                f"AnyOf(i.e. Union) is not FastSerializable when it can be multiple types: {obj}"
+            )
     owner = cls
 
     def wrapped(self):
@@ -73,9 +82,12 @@ def _get_constant(constant: Constant):
 
 
 def create_serializer(
-    cls: Type[Structure], compact: bool = False, serialize_none: bool = False
+    cls: Type[Structure],
+    compact: bool = False,
+    serialize_none: bool = False,
+    mapper: dict = None,
 ):
-    mapper = aggregate_serialization_mappers(cls)
+    mapper = mapper or aggregate_serialization_mappers(cls)
     field_by_name = cls.get_all_fields_by_name()
     processed_mapper = {}
     for field_name, field in field_by_name.items():
@@ -104,6 +116,8 @@ def create_serializer(
 
     if compact:
         set_compact_wrapper(cls)
+
+    setattr(cls, created_fast_serializer, True)
 
 
 def set_compact_wrapper(cls):

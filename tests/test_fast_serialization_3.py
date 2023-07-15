@@ -1,4 +1,3 @@
-import datetime
 import enum
 import sys
 from decimal import Decimal
@@ -8,6 +7,7 @@ from typedpy.serialization.fast_serialization import (
     FastSerializable,
     create_serializer,
 )
+from typedpy.structures.structures import created_fast_serializer, failed_to_create_fast_serializer
 
 python_ver_atleast_than_37 = sys.version_info[0:2] > (3, 6)
 if python_ver_atleast_than_37:
@@ -20,7 +20,7 @@ from typedpy import (
     ImmutableStructure,
     NoneField,
     SerializableField,
-    Structure,
+    Serializer, Structure,
     Array,
     Number,
     String,
@@ -36,11 +36,9 @@ from typedpy import (
     DateField,
     Anything,
     Map,
-    Function,
     PositiveInt,
     DecimalNumber,
-    serialize_field,
-    FunctionCall,
+    serialize,
     Deserializer,
     DateTime,
 )
@@ -69,32 +67,6 @@ class Example(Structure, FastSerializable):
 
 
 create_serializer(SimpleStruct)
-
-
-def test_serialize_created_on_instantiation():
-    serialized = {"i": 5, "s": "test"}
-
-    class Foo(Structure, FastSerializable):
-        i = Integer(maximum=10)
-        s = String(maxLength=5)
-
-    assert Foo.serialize is FastSerializable.serialize
-    example = deserialize_structure(Foo, serialized)
-    assert example.serialize() == serialized
-
-
-def test_serialize_created_on_instantiation_only_once():
-    class Foo(Structure, FastSerializable):
-        i = Integer(maximum=10)
-        s = String(maxLength=5)
-
-    Foo(i=1, s="x")
-    serialize_method = getattr(Foo, "serialize")
-    assert serialize_method
-    Foo(i=1, s="x")
-    assert getattr(Foo, "serialize") is serialize_method
-
-
 create_serializer(Example)
 
 
@@ -117,7 +89,7 @@ def fixture_example(serialized_example):
 
 
 def test_successful_deserialization_with_many_types(serialized_example, example):
-    result = Example.serialize(example)
+    result = serialize(example)
     assert {k: v for k, v in result.items() if v is not None} == serialized_example
 
 
@@ -127,7 +99,7 @@ def test_fast_serialization_with_non_typedpy_wrapper_may_fail(
     serialized_example["points"] = [{"x": 1, "y": 2}]
     example = deserialize_structure(Example, serialized_example)
     with raises(TypeError) as excinfo:
-        result = Example.serialize(example)
+        result = serialize(example)
     assert "Object of type Point1 is not JSON serializable" in str(excinfo.value)
 
 
@@ -139,7 +111,7 @@ def test_some_empty_fields():
 
     foo = Foo(a=5)
     create_serializer(Foo, serialize_none=True)
-    assert Foo.serialize(foo) == {"a": 5, "b": None}
+    assert serialize(foo) == {"a": 5, "b": None}
 
 
 def test_null_fields():
@@ -151,17 +123,16 @@ def test_null_fields():
     create_serializer(Foo, serialize_none=True)
 
     foo = Foo(a=5, c=None)
-    assert Foo.serialize(foo) == {"a": 5, "b": None}
+    assert serialize(foo) == {"a": 5, "b": None}
 
 
 def test_serialize_set():
     class Foo(Structure, FastSerializable):
         a = Set()
 
-    create_serializer(Foo)
 
     foo = Foo(a={1, 2, 3})
-    assert Foo.serialize(foo) == {"a": [1, 2, 3]}
+    assert serialize(foo) == {"a": [1, 2, 3]}
 
 
 def test_string_field_wrapper_compact():
@@ -172,7 +143,7 @@ def test_string_field_wrapper_compact():
     create_serializer(Foo, compact=True)
 
     foo = Foo(st="abcde")
-    assert Foo.serialize(foo) == "abcde"
+    assert serialize(foo) == "abcde"
 
 
 def test_string_field_wrapper_not_compact():
@@ -183,7 +154,7 @@ def test_string_field_wrapper_not_compact():
     create_serializer(Foo)
 
     foo = Foo(st="abcde")
-    assert Foo.serialize(foo) == {"st": "abcde"}
+    assert serialize(foo) == {"st": "abcde"}
 
 
 def test_set_field_wrapper_compact2():
@@ -191,10 +162,12 @@ def test_set_field_wrapper_compact2():
         s = Array[AnyOf[String, Number]]
         _additionalProperties = False
 
-    create_serializer(Foo, compact=True)
-
     foo = Foo(s=["abcde", 234])
-    assert Foo.serialize(foo) == ["abcde", 234]
+    # remove serializer
+    setattr(Foo, created_fast_serializer, False)
+    Foo.serialize = FastSerializable.serialize
+
+    assert serialize(foo, compact=True) == ["abcde", 234]
 
 
 def test_serializable_serialize_and_deserialize():
@@ -207,7 +180,7 @@ def test_serializable_serialize_and_deserialize():
     create_serializer(Foo)
 
     foo = Foo(d=[date(2019, 12, 4), "191205"], i=3)
-    serialized = Foo.serialize(foo)
+    serialized = serialize(foo)
     assert serialized == {"d": ["191204", "191205"], "i": 3}
 
     deserialized = deserialize_structure(Foo, serialized)
@@ -223,7 +196,7 @@ def test_serialize_map_without_any_type_definition_may_not_know_how_to_serialize
 
     embedded = Bar(a=2, m={"x": "xx"})
     original = Bar(a=3, m={"abc": embedded, "bcd": 2})
-    serialized = Bar.serialize(original)
+    serialized = serialize(original)
     assert serialized["m"]["abc"] == embedded
 
 
@@ -255,12 +228,16 @@ def test_serialize_ignore_non_fields_values():
         d = DateTime
         i = Integer
 
-    create_serializer(Foo)
 
     atime = datetime(2020, 1, 30, 5, 35, 35)
     foo = Foo(d=atime, i=3, x=atime)
-    assert Foo.serialize(foo) == {"d": "01/30/20 05:35:35", "i": 3}
+    # remove serializer
+    setattr(Foo, created_fast_serializer, False)
+    Foo.serialize = FastSerializable.serialize
 
+    assert serialize(foo) == {"d": "01/30/20 05:35:35", "i": 3}
+    assert getattr(Foo, created_fast_serializer)
+    assert not getattr(Foo, failed_to_create_fast_serializer, False)
 
 def test_serialize_map():
     class Foo(Structure, FastSerializable):
@@ -268,15 +245,15 @@ def test_serialize_map():
         m2 = Map
         i = Integer
 
-    create_serializer(Foo)
-
     foo = Foo(m1={"a": [1, 2, 3], "b": 1}, m2={1: 2, "x": "b"}, i=5)
-    serialized = Foo.serialize(foo)
+    # remove serializer
+    setattr(Foo, created_fast_serializer, False)
+    Foo.serialize = FastSerializable.serialize
+
+    serialized = serialize(foo)
     assert serialized["m1"] == {"a": [1, 2, 3], "b": 1}
-
-
-def test_serialize_field_basic_field(serialized_example, example):
-    assert serialize_field(Example.array, example.array) == serialized_example["array"]
+    assert getattr(Foo, created_fast_serializer)
+    assert not getattr(Foo, failed_to_create_fast_serializer, False)
 
 
 def test_serialize_with_mapper_to_different_keys():
@@ -286,11 +263,16 @@ def test_serialize_with_mapper_to_different_keys():
 
         _serialization_mapper = {"a": "aaa", "i": "iii"}
 
-    create_serializer(Foo)
     foo = Foo(a="string", i=1)
 
-    assert Foo.serialize(foo) == {"aaa": "string", "iii": 1}
+    # remove serializer
+    setattr(Foo, created_fast_serializer, False)
+    Foo.serialize = FastSerializable.serialize
 
+    # when/Then
+    assert serialize(foo) == {"aaa": "string", "iii": 1}
+    assert getattr(Foo, created_fast_serializer)
+    assert not getattr(Foo, failed_to_create_fast_serializer, False)
 
 def test_serialize_with_deep_mapper_ignores_mappping():
     class Foo(Structure, FastSerializable):
@@ -305,52 +287,24 @@ def test_serialize_with_deep_mapper_ignores_mappping():
             "wrapped": "other",
         }
 
-    create_serializer(Foo)
-    create_serializer(Bar)
 
     bar = Bar(wrapped=[Foo(a="string1", i=1), Foo(a="string2", i=2)])
-    serialized = Bar.serialize(bar)
+    serialized = serialize(bar)
     assert serialized == {"other": [{"a": "string1", "i": 1}, {"a": "string2", "i": 2}]}
+    for cls in [Foo, Bar]:
+        assert getattr(cls, created_fast_serializer)
+        assert not getattr(cls, failed_to_create_fast_serializer, False)
 
 
-def test_raise_exception_if_nested_structure_is_not_fastserializable_0():
-    class Foo(Structure):
+def test_create_serializer_if_needed_nested_structure_is_does_not_implement_serialize():
+    class Foo(Structure, FastSerializable):
         a = String
         i = Integer
 
     class Bar(Structure, FastSerializable):
-        wrapped: Foo
+        wrapped = Array[Foo]
 
-    with pytest.raises(TypeError) as excinfo:
-        create_serializer(Bar)
-    assert "Foo is not FastSerializable or does not implement 'serialize(self, value)'" in str(excinfo.value)
-
-def test_raise_exception_if_nested_structure_is_not_fastserializable_1():
-    class Foo(Structure):
-        a = String
-        i = Integer
-
-    class Bar(Structure, FastSerializable):
-        wrapped: Array[Foo]
-
-    with pytest.raises(TypeError) as excinfo:
-        create_serializer(Bar)
-    assert "Foo is not FastSerializable or does not implement 'serialize(self, value)'" in str(excinfo.value)
-
-
-def test_raise_exception_if_nested_structure_is_not_fastserializable_2():
-
-    class Foo(Structure):
-        a = String
-        i: int
-
-    class Bar(Structure, FastSerializable):
-        wrapped: Array[Array[Foo]]
-
-    with pytest.raises(TypeError) as excinfo:
-        create_serializer(Bar)
-    assert "Foo is not FastSerializable or does not implement 'serialize(self, value)'" in str(excinfo.value)
-
+    create_serializer(Bar)
 
 
 def test_serialize_with_mappers_in_nested_structures():
@@ -375,16 +329,15 @@ def test_serialize_with_mappers_in_nested_structures():
 
         _serialization_mapper = {"bar": "bar_1"}
 
-    create_serializer(Foo)
-    create_serializer(Bar)
-    create_serializer(Example)
-
     example = Example(number=1, bar=Bar(foo=Foo(ab_a="string", ij_i=10), array=[1, 2]))
-    serialized = Example.serialize(example)
+    serialized = serialize(example)
     assert serialized == {
         "number": 1,
         "bar_1": {"foo_mapped": {"ABA": "string", "IJI": 10}, "array": [1, 2]},
     }
+    for cls in [Foo, Bar, Example]:
+        assert getattr(cls, created_fast_serializer)
+        assert not getattr(cls, failed_to_create_fast_serializer, False)
 
 
 def test_serialize_with_camel_case_setting():
@@ -401,33 +354,17 @@ def test_serialize_with_camel_case_setting():
 
         _serialization_mapper = mappers.TO_CAMELCASE
 
-    create_serializer(Bar)
-    create_serializer(Foo)
     foo = Foo(i_num=5, a="xyz", cba_def_xyz=4, bar=Bar(bar_bar="abc"))
-    assert Foo.serialize(foo) == {
+    assert serialize(foo) == {
         "a": "xyz",
         "iNum": 5,
         "cbaDefXyz": 4,
         "bar": {"BAR_BAR": "abc"},
     }
+    for cls in [Foo, Bar]:
+        assert getattr(cls, created_fast_serializer)
+        assert not getattr(cls, failed_to_create_fast_serializer, False)
 
-
-def test_serialize_with_mapper_with_functions_not_supported():
-    class Foo(Structure, FastSerializable):
-        function = Function
-        i = Integer
-
-        _serialization_mapper = {
-            "function": FunctionCall(func=lambda f: f.__name__),
-            "i": FunctionCall(func=lambda x: x + 5),
-        }
-
-    with raises(ValueError) as excinfo:
-        create_serializer(Foo)
-
-    assert "Function mappers are not supported in fast serialization" in str(
-        excinfo.value
-    )
 
 
 def test_enum_serialization_returns_string_name():
@@ -441,8 +378,9 @@ def test_enum_serialization_returns_string_name():
 
     create_serializer(Example)
     e = Example(arr=[Values.GHI, Values.DEF, "GHI"])
-    assert Example.serialize(e) == {"arr": ["GHI", "DEF", "GHI"]}
-
+    assert serialize(e) == {"arr": ["GHI", "DEF", "GHI"]}
+    assert getattr(Example, created_fast_serializer)
+    assert not getattr(Example, failed_to_create_fast_serializer, False)
 
 def test_serialization_of_classreference_should_work():
     class Bar(Structure, FastSerializable):
@@ -456,14 +394,38 @@ def test_serialization_of_classreference_should_work():
 
         _required = []
 
-    create_serializer(Bar)
-    create_serializer(Foo)
 
     input_dict = {"a": 3, "bar1": {"x": 3, "y": 4, "z": 5}}
     foo = deserialize_structure(Foo, input_dict)
     assert Foo.serialize(foo)["bar1"] == {"x": 3, "y": 4}
     assert Foo.bar1.serialize(foo.bar1) == {"x": 3, "y": 4}
+    for cls in [Foo, Bar]:
+        assert getattr(cls, created_fast_serializer)
+        assert not getattr(cls, failed_to_create_fast_serializer, False)
 
+
+def test_internal_field_fast_serializable():
+    class Bar(Structure, FastSerializable):
+        x = Integer
+        y = Integer
+
+    class Foo(Structure):
+        a = Integer
+        bar1 = Bar
+        bar2 = Bar
+
+        _required = []
+
+
+    input_dict = {"a": 3, "bar1": {"x": 3, "y": 4, "z": 5}}
+    foo = deserialize_structure(Foo, input_dict)
+    assert serialize(foo)["bar1"] == {"x": 3, "y": 4}
+    assert Foo.bar1.serialize(foo.bar1) == {"x": 3, "y": 4}
+
+    assert getattr(Bar, created_fast_serializer)
+    assert not getattr(Bar, failed_to_create_fast_serializer, False)
+    assert not hasattr(Foo, created_fast_serializer)
+    assert not hasattr(Foo, failed_to_create_fast_serializer)
 
 def test_serialize_array_field_directly():
     class Values(enum.Enum):
@@ -474,11 +436,10 @@ def test_serialize_array_field_directly():
     class Foo(Structure, FastSerializable):
         arr = Array[Enum[Values]]
 
-    create_serializer(Foo)
-
     foo = Foo(arr=[Values.ABC, Values.DEF])
     assert Foo.arr.serialize(foo.arr) == ["ABC", "DEF"]
-
+    assert getattr(Foo, created_fast_serializer)
+    assert not getattr(Foo, failed_to_create_fast_serializer, False)
 
 def test_convert_camel_case():
     class Foo(Structure, FastSerializable):
@@ -488,12 +449,12 @@ def test_convert_camel_case():
         _additionalProperties = False
         _serialization_mapper = mappers.TO_CAMELCASE
 
-    create_serializer(Foo)
 
     original = Foo(first_name="joe", last_name="smith", age_years=5)
-    res = Foo.serialize(original)
+    res = serialize(original)
     assert res == {"firstName": "joe", "lastName": "smith", "ageYears": 5}
-
+    assert getattr(Foo, created_fast_serializer)
+    assert not getattr(Foo, failed_to_create_fast_serializer, False)
 
 def test_serialization_decimal():
     def quantize(d):
@@ -503,32 +464,11 @@ def test_serialization_decimal():
         a = DecimalNumber
         s = String
 
-    create_serializer(Foo)
-
     foo = Foo(a=Decimal("1.11"), s="x")
-    result = Foo.serialize(foo)
+    result = serialize(foo)
     assert quantize(Decimal(result["a"])) == quantize(Decimal(1.11))
-
-
-def test_serialize_field_with_inheritance():
-    class Foo(Structure, FastSerializable):
-        s: str
-        i: int
-        d: DateTime
-        _required = []
-
-    class Bar(Foo):
-        a = Array[str]
-        _required = []
-
-    create_serializer(Foo)
-    create_serializer(Bar)
-
-    now = datetime.datetime.now()
-    bar = Bar(a=["x"], d=now, s="xyz")
-    assert Bar.s.serialize(bar.s) == "xyz"
-    assert Bar.d.serialize(bar.d) == now.strftime("%m/%d/%y %H:%M:%S")
-
+    assert getattr(Foo, created_fast_serializer)
+    assert not getattr(Foo, failed_to_create_fast_serializer, False)
 
 def test_serialize_mapper_to_lowercase():
     class Bar(Structure, FastSerializable):
@@ -543,19 +483,18 @@ def test_serialize_mapper_to_lowercase():
 
         _serialization_mapper = mappers.TO_LOWERCASE
 
-    create_serializer(Bar)
-    create_serializer(Foo)
-
     foo = Foo(abc=123, m={"my_key": Bar(field1="xxx", field2="yyy")})
-    serialized = foo.serialize()
+    serialized = serialize(foo)
     assert serialized == {
         "ABC": 123,
         "M": {"my_key": {"FIELD1": "xxx", "FIELD2": "yyy"}},
     }
     assert Deserializer(Foo).deserialize(serialized) == foo
+    for cls in [Foo, Bar]:
+        assert getattr(cls, created_fast_serializer)
+        assert not getattr(cls, failed_to_create_fast_serializer, False)
 
-
-def test_serialize_anyof():
+def test_serialize_anyof_optional():
     class TestSerializable(SerializableField):
         def serialize(self, value):
             return value.rstrip()
@@ -567,12 +506,13 @@ def test_serialize_anyof():
         field1: String
         field2: AnyOf[NoneField, TestSerializable]
 
-    create_serializer(Container)
 
     f = {"field1": "val1", "field2": "val2"}
     f2d = Deserializer(Container).deserialize(f)
-    f2s = f2d.serialize()
+    f2s = serialize(f2d)
     assert f2s == f
+    assert getattr(Container, created_fast_serializer)
+    assert not getattr(Container, failed_to_create_fast_serializer, False)
 
 
 def test_serialize_optional_of_serializablefield():
@@ -593,48 +533,54 @@ def test_serialize_optional_of_serializablefield():
 
     f = {"field1": "val1", "field2": "val2"}
 
-    create_serializer(Container1)
-    create_serializer(Container2)
 
     f2d = Deserializer(Container2).deserialize(f)
-    f2s = Container2.serialize(f2d)
+    f2s = serialize(f2d)
     assert f2s == f
+    assert getattr(Container2, created_fast_serializer)
+    assert not getattr(Container2, failed_to_create_fast_serializer, False)
 
     f1d = Deserializer(Container1).deserialize(f)
-    f1s = f1d.serialize()
+    f1s = serialize(f1d)
     assert f1s == f
-
+    assert getattr(Container1, created_fast_serializer)
+    assert not getattr(Container1, failed_to_create_fast_serializer, False)
 
 def test_trivial_serializable():
+    class Blah(Structure, FastSerializable):
+        i: int
+
     class Foo(SerializableField):
         pass
 
     class Bar(Structure, FastSerializable):
         foo: Foo
+        blahs: list[Blah] = list
 
-    create_serializer(Bar)
 
     deserialized = Bar(foo=123)
-    serialized = {"foo": 123}
+    serialized = {"foo": 123, "blahs": []}
     assert Deserializer(Bar).deserialize(serialized) == deserialized
-    assert deserialized.serialize() == serialized
+    assert serialize(deserialized) == serialized
+    for cls in [Blah, Bar]:
+        assert getattr(cls, created_fast_serializer)
+        assert not getattr(cls, failed_to_create_fast_serializer, False)
 
-
-def test_serialize_multified_with_any():
-    class MyPoint1:
+def test_serialize_multified_with_any1():
+    class MyPoint11:
         def __init__(self, x, y):
             self.x = x
             self.y = y
 
     class Foo(Structure, FastSerializable):
-        a: Array[AnyOf[Integer, MyPoint1]]
+        a: Array[AnyOf[Integer, MyPoint11]]
 
-    create_serializer(Foo)
-
+    foo = Foo(a=[1, MyPoint11(1, 2)])
     with raises(TypeError) as excinfo:
-        Foo.serialize(Foo(a=[1, MyPoint1(1, 2)]))
-    assert "Object of type MyPoint1 is not JSON serializable" in str(excinfo.value)
-
+        Serializer(foo).serialize()
+    assert "Object of type MyPoint11 is not JSON serializable" in str(excinfo.value)
+    assert getattr(Foo, created_fast_serializer)
+    assert not getattr(Foo, failed_to_create_fast_serializer, False)
 
 def test_optional_field_defect_234(serialized_example):
     class Number(enum.Enum):
@@ -648,9 +594,9 @@ def test_optional_field_defect_234(serialized_example):
     class Bar(ImmutableStructure, FastSerializable):
         foo: Foo
 
-    create_serializer(Foo)
-    create_serializer(Bar)
-
     foo = Foo(a=Number.One)
     bar = Bar(foo=foo)
-    bar.serialize()
+
+    Serializer(bar).serialize()
+    assert getattr(Foo, created_fast_serializer)
+    assert not getattr(Foo, failed_to_create_fast_serializer, False)

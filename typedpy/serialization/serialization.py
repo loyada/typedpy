@@ -67,6 +67,8 @@ from typedpy.fields import (
     _DictStruct,
     _ListStruct,
 )
+from .fast_serialization import FastSerializable, create_serializer
+from ..structures.structures import created_fast_serializer, failed_to_create_fast_serializer
 
 
 # pylint: disable=too-many-locals, too-many-arguments, too-many-branches
@@ -1102,6 +1104,15 @@ def serialize_internal(
     camel_case_convert=False,
 ):
     cls = structure.__class__
+    if issubclass(cls, FastSerializable) and not mapper:
+        if cls.serialize is FastSerializable.serialize and not getattr(cls, failed_to_create_fast_serializer, False):
+            try:
+                create_serializer(cls, compact=compact, mapper=resolved_mapper)
+            except Exception:
+                setattr(cls, failed_to_create_fast_serializer, True)
+        if getattr(cls, created_fast_serializer, False):
+            return structure.serialize()
+
     field_by_name = cls.get_all_fields_by_name() if issubclass(cls, Structure) else {}
     if isinstance(structure, (Structure, ClassReference)):
         mapper = (

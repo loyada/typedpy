@@ -2,7 +2,8 @@ from typing import Optional, Union
 
 from pytest import raises
 
-from typedpy import FastSerializable, ImmutableStructure, OneOf, Structure, create_serializer
+from typedpy import FastSerializable, ImmutableStructure, OneOf, Structure, create_serializer, serialize
+from typedpy.structures.structures import created_fast_serializer, failed_to_create_fast_serializer
 
 
 class Foo1(Structure, FastSerializable):
@@ -53,3 +54,22 @@ def test_fastserializable_optional():
     serialized = barwrapper.serialize()
     assert serialized == {'bar': {}}
 
+def test_fastserializable_optional_1():
+    class Bar(Structure, FastSerializable):
+        foo: Optional[Foo2]
+
+    class BarWrapper(ImmutableStructure, FastSerializable):
+        bar: Bar
+
+
+    foo = Foo2(foo2="foo2")
+    bar = Bar(foo=foo)
+    barwrapper = BarWrapper.from_other_class({}, bar = bar)
+    serialized = serialize(barwrapper)
+    assert serialized == {'bar': {'foo': {"foo2": "foo2"}}}
+
+    barwrapper = BarWrapper.from_other_class({}, bar=Bar())
+    serialized = serialize(barwrapper)
+    assert serialized == {'bar': {}}
+    assert getattr(BarWrapper, created_fast_serializer)
+    assert not getattr(BarWrapper, failed_to_create_fast_serializer, False)

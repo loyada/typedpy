@@ -51,7 +51,8 @@ T = typing.TypeVar("T")
 
 _immutable_types = (int, float, str, tuple, bool, enum.Enum)
 _internal_props = ["_instantiated", "_none_fields", "_trust_supplied_values"]
-
+created_fast_serializer = "_created_fast_serializer"
+failed_to_create_fast_serializer = "_failed_serializer_creation"
 
 class ImmutableMixin:
     """

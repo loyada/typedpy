@@ -52,7 +52,7 @@ def get_mapper(field_cls):
         StructureReference: StructureReferenceMapper,
         Integer: IntegerMapper,
         Number: NumberMapper,
-        Float: FloatMapper,
+        Float: NumberMapper,
         Array: ArrayMapper,
         Boolean: BooleanMapper,
         Enum: EnumMapper,
@@ -574,12 +574,6 @@ class IntegerMapper(NumberMapper):
         params.update({"type": "integer"})
         return params
 
-
-class FloatMapper(NumberMapper):
-    def to_schema(self, definitions, serialization_mapper):
-        params = super().to_schema(definitions, serialization_mapper)
-        params.update({"type": "float"})
-        return params
 
 
 class BooleanMapper(Mapper):

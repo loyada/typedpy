@@ -213,6 +213,8 @@ def _generate_schema_for_fields_internal(
             default_raw = getattr(field, "_default", None)
             if default_raw is not None:
                 default_val = default_raw() if callable(default_raw) else default_raw
+                if isinstance(default_val, enum.Enum):
+                    default_val = default_val.name
                 sub_schema["default"] = default_val
                 if mapped_key not in required:
                     required.append(mapped_key)

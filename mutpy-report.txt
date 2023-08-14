@@ -1,4 +1,5 @@
 [*] Start mutation process:
+
    - targets: typedpy
    - tests: tests
 <Structure: Person. Properties: aaa = <String>, foo = <Structure. Properties: a = <String>, b = <Structure. Properties: c = <Number. Properties: minimum = 10>, d = <Number. Properties: maximum = 10>>>, name = <String. Properties: maxLength = 8, pattern = '[A-Za-z]+$'>, num = <Integer. Properties: exclusiveMaximum = False, maximum = 30, minimum = 10, multiplesOf = 'dd'>, ssid = <String. Properties: minLength = 3, pattern = '[A-Za-z]+$'>>

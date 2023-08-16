@@ -92,7 +92,7 @@ def test_schema():
             "i": {"maximum": 10, "type": "integer"},
             "foo": {
                 "type": "object",
-                "properties": {"a2": {"type": "float"}, "a1": {"type": "integer"}},
+                "properties": {"a2": {"type": "number"}, "a1": {"type": "integer"}},
                 "additionalProperties": True,
             },
             "ss": {"$ref": "#/definitions/SimpleStruct"},

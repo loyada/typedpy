@@ -1,0 +1,12 @@
+{
+    "definitions": {
+    },
+    "example": {
+        "type": "object",
+        "properties": {
+            "s": {"enum": ["foo", "bar"], "default": "foo"}
+        },
+        "required": ["s"],
+        "additionalProperties": true
+    }
+}

@@ -25,7 +25,7 @@ schema = {
         "foo": {
             "type": "object",
             "properties": {
-                "a2": {"type": "float"},
+                "a2": {"type": "number"},
                 "a1": {"type": "integer"},
             },
             "required": ["a2", "a1"],

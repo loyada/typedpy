@@ -225,7 +225,6 @@ type_name_to_field = {
     "object": StructureReference,
     "integer": Integer,
     "number": Number,
-    "float": Float,
     "array": Array,
     "string": String,
     "boolean": Boolean,
@@ -289,6 +288,8 @@ def _handle_schema_default_to_code(params_list, schema):
         default_val = schema["default"]
         if isinstance(default_val, (list, dict)):
             default_val = f"lambda: {default_val}"
+        else:
+            default_val = wrap_val(default_val)
         params_list.append(("default", default_val))
 
 
@@ -345,7 +346,7 @@ def schema_to_struct_code(
             if "default" in sch and name in required:
                 required.remove(name)
             body += [
-                f"    {name} = {convert_to_field_code(sch, definitions_schema, additional_fields=additional_fields)}"
+                f"    {name}: {convert_to_field_code(sch, definitions_schema, additional_fields=additional_fields)}"
             ]
     else:
         body += [

@@ -2,8 +2,8 @@ from typedpy import *
 
 
 class Foo(Structure):
-    xyz = Array()
-    j = Integer()
+    xyz: Array()
+    j: Integer()
 
     _required = ['j', 'xyz']
 
@@ -11,10 +11,10 @@ class Foo(Structure):
 
 
 class Example1(Structure):
-    XYZ = Array()
-    J = Integer()
-    A = Array()
-    S = String()
-    FOO = Foo
+    XYZ: Array()
+    J: Integer()
+    A: Array()
+    S: String()
+    FOO: Foo
 
     _required = ['A', 'FOO', 'J', 'S', 'XYZ']

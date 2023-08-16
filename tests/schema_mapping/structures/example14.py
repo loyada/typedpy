@@ -11,7 +11,7 @@ class EventSubject(enum.Enum):
 
 class Event(AbstractStructure):
     i: int = 5
-    subject: Enum[EventSubject]
+    subject: EventSubject
 
     _required = ["subject"]
 

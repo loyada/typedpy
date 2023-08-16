@@ -6,7 +6,8 @@
         "properties": {
             "ip": {"type": "string", "format":  "ipv4"},
             "as_of": {"type": "string", "format":  "date"},
-            "i": {"type":  "integer", "minimum":  5}
+            "i": {"type":  "integer", "minimum":  5},
+            "f": {"type":  "number"}
         },
         "required": [],
         "additionalProperties": false

@@ -1105,7 +1105,7 @@ def serialize_internal(
 ):
     cls = structure.__class__
     if issubclass(cls, FastSerializable) and not mapper:
-        if cls.serialize is FastSerializable.serialize and not getattr(cls, failed_to_create_fast_serializer, False):
+        if "serialize" not in cls.__dict__ and not getattr(cls, failed_to_create_fast_serializer, False):
             try:
                 create_serializer(cls, compact=compact, mapper=resolved_mapper)
             except Exception:

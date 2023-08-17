@@ -104,8 +104,8 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __init__(self, fields):
         super().__init__(fields=fields)
-        if fields:
-            for f in fields:
+        if len(self.get_fields())==2:
+            for f in self.get_fields():
                 if isinstance(f, NoneField):
                     self._is_optional = True
                 else:

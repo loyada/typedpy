@@ -1,7 +1,6 @@
-import datetime
+import enum
 import enum
 import sys
-from decimal import Decimal
 from typing import Optional
 
 from typedpy.serialization.fast_serialization import (
@@ -14,11 +13,9 @@ python_ver_atleast_than_37 = sys.version_info[0:2] > (3, 6)
 if python_ver_atleast_than_37:
     pass
 
-import pytest
 from pytest import raises
 
 from typedpy import (
-    Constant,
     ImmutableStructure,
     NoneField,
     SerializableField,
@@ -29,22 +26,13 @@ from typedpy import (
     Integer,
     StructureReference,
     AllOf,
-    deserialize_structure,
     Enum,
     Float,
     mappers,
-    Set,
     AnyOf,
-    DateField,
-    Anything,
     Map,
-    Function,
-    PositiveInt,
-    DecimalNumber,
-    serialize, serialize_field,
-    FunctionCall,
-    Deserializer,
-    DateTime,
+    serialize, Deserializer,
+    Serializer,
 )
 
 
@@ -219,3 +207,32 @@ def test_serialize_none(no_defensive_copy_on_get, allow_none_for_optional):
 
     create_serializer(Foo, serialize_none=True)
     assert serialize(Foo(c="xxx", b=None)) == {"c": "xxx", "a": None, "b": None}
+
+
+def test_inheritance_fastserializable(no_defensive_copy_on_get, allow_none_for_optional):
+    class Base(Structure, FastSerializable):
+        i: int
+
+    class Foo(Base, FastSerializable):
+        s: str
+
+
+    Base(i=5)
+    serialized = Serializer(Foo(i=5, s="xxx")).serialize()
+    assert serialized == {"i": 5, "s": "xxx"}
+
+
+def test_optional_fastserializable(no_defensive_copy_on_get, allow_none_for_optional):
+
+    class Bar(Structure, FastSerializable):
+        i: int
+
+
+    class Foo(Structure, FastSerializable):
+        s: Optional[str]
+        s1: Optional[str]
+        arr: list[Optional[Bar]]
+
+
+    serialized = Serializer(Foo(s1=None, s="xxx", arr=[None, Bar(i=5), None])).serialize()
+    assert serialized == { "s": "xxx", "arr": [None, {"i": 5}, None]}

@@ -3,7 +3,15 @@ from json import dumps
 
 from pytest import raises
 
-from typedpy import Deserializer, ImmutableStructure, NonNegative, Structure, Positive, DecimalNumber, serialize
+from typedpy import (
+    Deserializer,
+    ImmutableStructure,
+    NonNegative,
+    Structure,
+    Positive,
+    DecimalNumber,
+    serialize,
+)
 
 
 class PositiveDecimal(DecimalNumber, Positive):

@@ -70,7 +70,6 @@ def fixture_all_errors():
 
 
 def test_invalid_numbers(all_errors):
-
     original = {
         "negative_int": 0,
         "negative_float": -0,

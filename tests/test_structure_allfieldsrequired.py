@@ -10,6 +10,7 @@ from typedpy import (
 )
 from typedpy.serialization.mappers import aggregated_mapper_by_class
 
+
 class Blah(Structure):
     i: int
     d: Map[str, int] = dict

@@ -189,7 +189,6 @@ def get_mapper(val: Structure):
     return getattr(val.__class__, SERIALIZATION_MAPPER, {})
 
 
-
 def get_flat_resolved_mapper(cls):
     mapper = getattr(
         cls, DESERIALIZATION_MAPPER, getattr(cls, SERIALIZATION_MAPPER, {})

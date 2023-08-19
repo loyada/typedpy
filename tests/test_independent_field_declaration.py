@@ -3,7 +3,7 @@ from typing import Type
 
 from pytest import raises
 
-from typedpy import (Array, Field, Integer, String, Structure)
+from typedpy import Array, Field, Integer, String, Structure
 
 
 def test_field_declaration():

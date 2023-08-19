@@ -187,7 +187,6 @@ def get_stubs_of_enums(
 ) -> list:
     out_src = []
     for cls_name, cls in enum_classes_by_name.items():
-
         method_info = get_methods_and_attributes_as_code(
             cls, locals_attrs=local_attrs, additional_classes=additional_classes
         )

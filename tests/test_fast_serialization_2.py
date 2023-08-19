@@ -105,13 +105,15 @@ def fixture_example(serialized_example):
     return deserialize_structure(Example, serialized_example)
 
 
-def test_successful_deserialization_with_many_types(serialized_example, example, no_defensive_copy_on_get):
+def test_successful_deserialization_with_many_types(
+    serialized_example, example, no_defensive_copy_on_get
+):
     result = Example.serialize(example)
     assert {k: v for k, v in result.items() if v is not None} == serialized_example
 
 
 def test_fast_serialization_with_non_typedpy_wrapper_may_fail(
-        serialized_example, example, no_defensive_copy_on_get
+    serialized_example, example, no_defensive_copy_on_get
 ):
     serialized_example["points"] = [{"x": 1, "y": 2}]
     example = deserialize_structure(Example, serialized_example)
@@ -131,7 +133,6 @@ def test_some_empty_fields(no_defensive_copy_on_get):
     assert foo.serialize() == {"a": 5, "b": None}
 
 
-
 def test_with_constant_field(no_defensive_copy_on_get):
     class Foo(ImmutableStructure, FastSerializable):
         a = Integer
@@ -142,7 +143,6 @@ def test_with_constant_field(no_defensive_copy_on_get):
     create_serializer(Foo)
     foo = Foo(a=5, b="bbb")
     assert foo.serialize() == {"a": 5, "b": "bbb", "const": "xyz"}
-
 
 
 def test_null_fields(no_defensive_copy_on_get):
@@ -612,14 +612,12 @@ def test_optional_field_defect_234(serialized_example, no_defensive_copy_on_get)
     class Bar(ImmutableStructure, FastSerializable):
         foo: Foo
 
-
     create_serializer(Foo)
     create_serializer(Bar)
 
     foo = Foo(a=Number.One)
     bar = Bar(foo=foo)
     bar.serialize()
-
 
 
 def test_do_not_serialize_none(no_defensive_copy_on_get, allow_none_for_optional):

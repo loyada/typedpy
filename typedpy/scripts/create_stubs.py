@@ -29,7 +29,7 @@ def main():
     stub_dir_abs_path = str(Path(src_root_abs_path) / Path(args.stubs_dir))
     exclude = args.exclude.split(":") if args.exclude else []
 
-    for (dirpath, _, filenames) in walk(input_dir):
+    for dirpath, _, filenames in walk(input_dir):
         if dirpath.startswith("__"):
             continue
         _process_dir(dirpath, exclude, filenames, src_root_abs_path, stub_dir_abs_path)

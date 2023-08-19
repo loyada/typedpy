@@ -109,6 +109,8 @@ def test_pick_immutable():
 
 def test_block_pick_with_wrong_field():
     with pytest.raises(TypeError) as excinfo:
-        class Bar(Pick[Foo, ("a", "x")]): pass
+
+        class Bar(Pick[Foo, ("a", "x")]):
+            pass
 
     assert "Pick: 'x' is not a field of Foo" in str(excinfo.value)

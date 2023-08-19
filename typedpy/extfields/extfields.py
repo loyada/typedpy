@@ -203,14 +203,13 @@ class DateField(SerializableField):
         return "DateField()" if schema == {"type": "string", "format": "date"} else None
 
 
-
 class TimeField(SerializableField):
     def __init__(self, format_str="%H:%M:%S", **kwargs):
         self._format = format_str
         super().__init__(**kwargs)
 
     def __set__(self, instance, value):
-        parsed_time = value  if isinstance(value, time) else self.deserialize(value)
+        parsed_time = value if isinstance(value, time) else self.deserialize(value)
         super().__set__(instance, parsed_time)
 
     def serialize(self, value: time):
@@ -221,6 +220,7 @@ class TimeField(SerializableField):
             return datetime.strptime(value, self._format).time()
         except ValueError as ex:
             raise ValueError(f"{self._name}: Got {wrap_val(value)}; {str(ex)}") from ex
+
     @property
     def get_type(self):
         return time

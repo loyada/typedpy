@@ -86,6 +86,7 @@ def _get_type_name(field):
         return clz._ty.__name__
     return clz.__name__
 
+
 class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     """
     Content must adhere to one or more of the requirements in the fields arguments.

@@ -16,7 +16,10 @@ from .mappers import (
 
 class FastSerializable:
     def __init__(self, *args, **kwargs):
-        if "serialize" not in self.__class__.__dict__ or self.__class__.serialize is FastSerializable.serialize:
+        if (
+            "serialize" not in self.__class__.__dict__
+            or self.__class__.serialize is FastSerializable.serialize
+        ):
             create_serializer(self.__class__)
         super().__init__(*args, **kwargs)
 

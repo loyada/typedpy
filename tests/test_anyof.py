@@ -16,8 +16,6 @@ def test_empty_definition_err():
     )
 
 
-
-
 def test_error_message_for_AnyOf():
     class Foo(ImmutableStructure):
         bar: Optional[int]
@@ -25,11 +23,10 @@ def test_error_message_for_AnyOf():
     with raises(ValueError) as excinfo:
         Foo(bar=Decimal(123))
 
-    assert ("Foo.bar: 123 of type Decimal did not match any field option. Valid types are: int, None"
-            in str(excinfo.value))
-
-
-
+    assert (
+        "Foo.bar: 123 of type Decimal did not match any field option. Valid types are: int, None"
+        in str(excinfo.value)
+    )
 
 
 def test_error_message_for_OneOf():
@@ -39,5 +36,7 @@ def test_error_message_for_OneOf():
     with raises(ValueError) as excinfo:
         Foo(bar=Decimal(123))
 
-    assert ("Foo.bar: 123 of type Decimal did not match any field option. Valid types are: int, list, str."
-            in str(excinfo.value))
+    assert (
+        "Foo.bar: 123 of type Decimal did not match any field option. Valid types are: int, list, str."
+        in str(excinfo.value)
+    )

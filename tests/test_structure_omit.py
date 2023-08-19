@@ -1,6 +1,14 @@
 import pytest
 
-from typedpy import (ImmutableStructure, Integer, Map, Omit, Serializer, Structure, mappers)
+from typedpy import (
+    ImmutableStructure,
+    Integer,
+    Map,
+    Omit,
+    Serializer,
+    Structure,
+    mappers,
+)
 from typedpy.serialization.mappers import aggregated_mapper_by_class
 
 
@@ -130,6 +138,8 @@ def test_omit_additional_props_default_false(additional_props_default_is_false):
 
 def test_block_omit_with_wrong_field():
     with pytest.raises(TypeError) as excinfo:
-        class Bar(Omit[Foo, ("a", "x")]): pass
+
+        class Bar(Omit[Foo, ("a", "x")]):
+            pass
 
     assert "Omit: 'x' is not a field of Foo" in str(excinfo.value)

@@ -68,7 +68,9 @@ class Number(Field):
         Number._validate_static(self, value)
 
     def __set__(self, instance, value):
-        if not getattr(instance, "_skip_validation", False) and not getattr(instance, "_trust_supplied_values", False):
+        if not getattr(instance, "_skip_validation", False) and not getattr(
+            instance, "_trust_supplied_values", False
+        ):
             self._validate(value)
         super().__set__(instance, value)
 

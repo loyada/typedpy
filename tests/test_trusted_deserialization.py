@@ -367,9 +367,7 @@ def test_trusted_deserialization_nested_mapper_of_nested_class3():
     }
     time_1 = time.time()
     for _ in range(1000):
-         Deserializer(target_class=Foo).deserialize(
-            input_data=serialized
-        )
+        Deserializer(target_class=Foo).deserialize(input_data=serialized)
     time_2 = time.time()
     for _ in range(1000):
         deserialized = Deserializer(target_class=Foo).deserialize(
@@ -479,7 +477,8 @@ def test_trusted_deserialization_nested_mapper_of_nested_class_timefield():
     )
     assert deserialized == Foo(
         bar1=Bar1(
-            a=datetime.time(hour=7, minute=1, second=15), d={datetime.time(hour=16, minute=0, second=0)}
+            a=datetime.time(hour=7, minute=1, second=15),
+            d={datetime.time(hour=16, minute=0, second=0)},
         )
     )
     # deserialized was created using "from_trusted_data"
@@ -509,13 +508,13 @@ def test_trusted_deserialization_safe_check_corrected_1():
 
         _serialization_mapper = mappers.TO_LOWERCASE
 
-
     class Foo(ImmutableStructure):
         bar1: Bar1
 
         _serialization_mapper = mappers.TO_LOWERCASE
 
     assert_trusted_deserialization_mapper_is_safe(Foo)
+
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_safe_check_false_2():
@@ -537,6 +536,7 @@ def test_trusted_deserialization_safe_check_false_2():
     with pytest.raises(AssertionError):
         assert_trusted_deserialization_mapper_is_safe(Foo)
 
+
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_safe_check_corrected_2():
     class Bar2(ImmutableStructure):
@@ -550,7 +550,6 @@ def test_trusted_deserialization_safe_check_corrected_2():
         bar2: set[Bar2]
 
         _serialization_mapper = mappers.TO_LOWERCASE
-
 
     class Foo(ImmutableStructure):
         bar1: Bar1
@@ -571,7 +570,6 @@ def test_trusted_deserialization_safe_check_false_3():
         assert_trusted_deserialization_mapper_is_safe(Bar)
 
 
-
 def test_trusted_deserialization_safe_check_false_3():
     class Bar(ImmutableStructure):
         b_1: int
@@ -583,9 +581,7 @@ def test_trusted_deserialization_safe_check_false_3():
         assert_trusted_deserialization_mapper_is_safe(Bar)
 
 
-
 def test_trusted_deserialization_safe_check_false_4():
-
     class Bar(ImmutableStructure):
         a: int
 
@@ -599,7 +595,6 @@ def test_trusted_deserialization_safe_check_false_4():
 
 
 def test_trusted_deserialization_safe_check_corrected_4():
-
     class Bar(ImmutableStructure):
         a: int
 
@@ -678,13 +673,18 @@ def test_deserialize_none1():
 
         _ignore_none = True
 
-    deserialized = Deserializer(target_class=Foo).deserialize(input_data={"i": 4, "t": None}, direct_trusted_mapping=True)
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data={"i": 4, "t": None}, direct_trusted_mapping=True
+    )
     assert deserialized == Foo(t=5, i=4)
+
 
 def test_deserialize_none2():
     class Foo(ImmutableStructure):
         t: int = 5
         i: Optional[int]
 
-    deserialized = Deserializer(target_class=Foo).deserialize(input_data={"i": None}, direct_trusted_mapping=True)
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data={"i": None}, direct_trusted_mapping=True
+    )
     assert deserialized == Foo(t=5)

@@ -4,6 +4,7 @@ import pytest
 from typedpy import Structure
 from typedpy.structures import TypedPyDefaults
 
+
 @pytest.fixture(name="additional_props_default_is_false")
 def fixture_additional_props_default_is_false():
     Structure.set_additional_properties_default(False)
@@ -60,5 +61,3 @@ def fixture_unblock_unknown_consts():
     TypedPyDefaults.block_unknown_consts = False
     yield
     TypedPyDefaults.block_unknown_consts = saved
-
-

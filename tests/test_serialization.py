@@ -41,7 +41,7 @@ from typedpy import (
     HasTypes,
     Serializer,
     Deserializer,
-    DateTime
+    DateTime,
 )
 
 
@@ -600,7 +600,10 @@ def test_serializer_with_invalid_mapper_value_type():
     mapper = {"f": 123, "i": FunctionCall(func=lambda x: str(x), args=["f"])}
     with raises(ValueError) as excinfo:
         Serializer(foo, mapper=mapper)
-    assert "Serializer.mapper_value: 123 of type int did not match any field option. Valid types are: str, FunctionCall, dict." in str(excinfo.value)
+    assert (
+        "Serializer.mapper_value: 123 of type int did not match any field option. Valid types are: str, FunctionCall, dict."
+        in str(excinfo.value)
+    )
 
 
 def test_serializer_with_invalid_mapper_key():

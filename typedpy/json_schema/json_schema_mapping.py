@@ -255,7 +255,7 @@ def convert_to_field_code(schema, definitions, additional_fields=list):
 
 def _convert_field_to_schema_code_internal(additional_fields, definitions, schema):
     if any(multival in schema for multival in multivals):
-        for (k, the_class) in multivals.items():
+        for k, the_class in multivals.items():
             if k in schema:
                 cls = the_class
         mapper = MultiFieldMapper
@@ -342,7 +342,7 @@ def schema_to_struct_code(
 
     if the_type == "object":
         properties = schema.get("properties", {})
-        for (name, sch) in properties.items():
+        for name, sch in properties.items():
             if "default" in sch and name in required:
                 required.remove(name)
             body += [
@@ -373,7 +373,7 @@ def schema_definitions_to_code(schema, additional_fields=list):
         If you write to a file, the higher level :func:`write_code_from_schema` is preferable.
     """
     code = []
-    for (name, sch) in schema.items():
+    for name, sch in schema.items():
         code.append(
             schema_to_struct_code(
                 name, sch, schema, additional_fields=additional_fields
@@ -574,7 +574,6 @@ class IntegerMapper(NumberMapper):
         params = super().to_schema(definitions, serialization_mapper)
         params.update({"type": "integer"})
         return params
-
 
 
 class BooleanMapper(Mapper):

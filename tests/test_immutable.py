@@ -415,7 +415,6 @@ def test_immutable_blocks_non_field_attribute_update():
 
 
 def test_final_immutablefield_violation():
-
     with raises(TypeError) as excinfo:
 
         class Foo(ImmutableSet):

@@ -355,7 +355,7 @@ def test_create_stub_using_script(test_case: PYI_TEST_CASE):
         "-s",
         "stubs_for_tests_scripts",
         src_root,
-        str(get_abs_path_from_here(test_case.source_path, __file__))
+        str(get_abs_path_from_here(test_case.source_path, __file__)),
     ]
     proc = subprocess.Popen(cmd_args, stdout=subprocess.PIPE)
     exit_code = proc.wait()
@@ -368,6 +368,7 @@ def test_create_stub_using_script(test_case: PYI_TEST_CASE):
     )
     _verify_file_are_same(actual_filename, str(test_case.reference_path))
 
+
 @mark.skip
 def test_create_stubs_using_script():
     src_root = str(get_abs_path_from_here("../", __file__))
@@ -378,7 +379,7 @@ def test_create_stubs_using_script():
         "-s",
         "stubs_for_tests_scripts_2",
         src_root,
-        str(get_abs_path_from_here("../examples", __file__))
+        str(get_abs_path_from_here("../examples", __file__)),
     ]
     proc = subprocess.Popen(cmd_args, stdout=subprocess.PIPE)
     exit_code = proc.wait()
@@ -391,6 +392,6 @@ def test_create_stubs_using_script():
         )
     )
     reference_path = get_abs_path_from_here(
-            "../.stubs/examples/api_example_1.pyi", __file__
-        )
+        "../.stubs/examples/api_example_1.pyi", __file__
+    )
     _verify_file_are_same(actual_filename, str(reference_path))

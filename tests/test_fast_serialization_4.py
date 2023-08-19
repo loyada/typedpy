@@ -8,7 +8,10 @@ from typedpy.serialization.fast_serialization import (
     FastSerializable,
     create_serializer,
 )
-from typedpy.structures.structures import created_fast_serializer, failed_to_create_fast_serializer
+from typedpy.structures.structures import (
+    created_fast_serializer,
+    failed_to_create_fast_serializer,
+)
 
 python_ver_atleast_than_37 = sys.version_info[0:2] > (3, 6)
 if python_ver_atleast_than_37:
@@ -32,7 +35,8 @@ from typedpy import (
     mappers,
     AnyOf,
     Map,
-    serialize, Deserializer,
+    serialize,
+    Deserializer,
     Serializer,
 )
 
@@ -60,7 +64,6 @@ class Example(Structure, FastSerializable):
 
 
 create_serializer(SimpleStruct)
-
 
 
 def test_serialize_mapper_to_lowercase(no_defensive_copy_on_get):
@@ -96,7 +99,6 @@ def test_serialize_anyof(no_defensive_copy_on_get):
     class Container(ImmutableStructure, FastSerializable):
         field1: String
         field2: AnyOf[NoneField, TestSerializable]
-
 
     f = {"field1": "val1", "field2": "val2"}
     f2d = Deserializer(Container).deserialize(f)
@@ -145,7 +147,6 @@ def test_trivial_serializable(no_defensive_copy_on_get):
     class Bar(Structure, FastSerializable):
         foo: Foo
 
-
     deserialized = Bar(foo=123)
     serialized = {"foo": 123}
     assert Deserializer(Bar).deserialize(serialized) == deserialized
@@ -160,7 +161,6 @@ def test_serialize_multified_with_any1(no_defensive_copy_on_get):
 
     class Foo(Structure, FastSerializable):
         a: Array[AnyOf[Integer, MyPoint22]]
-
 
     foo = Foo(a=[1, MyPoint22(1, 2)])
     with raises(TypeError) as excinfo:
@@ -180,11 +180,9 @@ def test_optional_field_defect_234(no_defensive_copy_on_get):
     class Bar(ImmutableStructure, FastSerializable):
         foo: Foo
 
-
     foo = Foo(a=Number.One)
     bar = Bar(foo=foo)
     serialize(bar)
-
 
 
 def test_do_not_serialize_none(no_defensive_copy_on_get, allow_none_for_optional):
@@ -210,13 +208,14 @@ def test_serialize_none(no_defensive_copy_on_get, allow_none_for_optional):
     assert serialize(Foo(c="xxx", b=None)) == {"c": "xxx", "a": None, "b": None}
 
 
-def test_inheritance_fastserializable(no_defensive_copy_on_get, allow_none_for_optional):
+def test_inheritance_fastserializable(
+    no_defensive_copy_on_get, allow_none_for_optional
+):
     class Base(Structure, FastSerializable):
         i: int
 
     class Foo(Base, FastSerializable):
         s: str
-
 
     Base(i=5)
     serialized = Serializer(Foo(i=5, s="xxx")).serialize()
@@ -225,16 +224,15 @@ def test_inheritance_fastserializable(no_defensive_copy_on_get, allow_none_for_o
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_optional_fastserializable(no_defensive_copy_on_get, allow_none_for_optional):
-
     class Bar(Structure, FastSerializable):
         i: int
-
 
     class Foo(Structure, FastSerializable):
         s: Optional[str]
         s1: Optional[str]
         arr: list[Optional[Bar]]
 
-
-    serialized = Serializer(Foo(s1=None, s="xxx", arr=[None, Bar(i=5), None])).serialize()
-    assert serialized == { "s": "xxx", "arr": [None, {"i": 5}, None]}
+    serialized = Serializer(
+        Foo(s1=None, s="xxx", arr=[None, Bar(i=5), None])
+    ).serialize()
+    assert serialized == {"s": "xxx", "arr": [None, {"i": 5}, None]}

@@ -122,7 +122,7 @@ def test_successful_deserialization_with_many_types(serialized_example, example)
 
 
 def test_fast_serialization_with_non_typedpy_wrapper_may_fail(
-        serialized_example, example
+    serialized_example, example
 ):
     serialized_example["points"] = [{"x": 1, "y": 2}]
     example = deserialize_structure(Example, serialized_example)
@@ -323,7 +323,11 @@ def test_raise_exception_if_nested_structure_is_not_fastserializable_0():
 
     with pytest.raises(TypeError) as excinfo:
         create_serializer(Bar)
-    assert "Foo is not FastSerializable or does not implement 'serialize(self, value)'" in str(excinfo.value)
+    assert (
+        "Foo is not FastSerializable or does not implement 'serialize(self, value)'"
+        in str(excinfo.value)
+    )
+
 
 def test_raise_exception_if_nested_structure_is_not_fastserializable_1():
     class Foo(Structure):
@@ -335,11 +339,13 @@ def test_raise_exception_if_nested_structure_is_not_fastserializable_1():
 
     with pytest.raises(TypeError) as excinfo:
         create_serializer(Bar)
-    assert "Foo is not FastSerializable or does not implement 'serialize(self, value)'" in str(excinfo.value)
+    assert (
+        "Foo is not FastSerializable or does not implement 'serialize(self, value)'"
+        in str(excinfo.value)
+    )
 
 
 def test_raise_exception_if_nested_structure_is_not_fastserializable_2():
-
     class Foo(Structure):
         a = String
         i: int
@@ -349,8 +355,10 @@ def test_raise_exception_if_nested_structure_is_not_fastserializable_2():
 
     with pytest.raises(TypeError) as excinfo:
         create_serializer(Bar)
-    assert "Foo is not FastSerializable or does not implement 'serialize(self, value)'" in str(excinfo.value)
-
+    assert (
+        "Foo is not FastSerializable or does not implement 'serialize(self, value)'"
+        in str(excinfo.value)
+    )
 
 
 def test_serialize_with_mappers_in_nested_structures():

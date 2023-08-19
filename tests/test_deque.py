@@ -4,8 +4,18 @@ from collections import deque
 import pytest
 from pytest import raises
 
-from typedpy import Structure, Deque, Number, String, Integer, Field, ImmutableStructure, ImmutableDeque
+from typedpy import (
+    Structure,
+    Deque,
+    Number,
+    String,
+    Integer,
+    Field,
+    ImmutableStructure,
+    ImmutableDeque,
+)
 from typedpy.fields import _DequeStruct
+
 
 class Foo(Structure):
     s = String

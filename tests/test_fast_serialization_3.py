@@ -7,7 +7,10 @@ from typedpy.serialization.fast_serialization import (
     FastSerializable,
     create_serializer,
 )
-from typedpy.structures.structures import created_fast_serializer, failed_to_create_fast_serializer
+from typedpy.structures.structures import (
+    created_fast_serializer,
+    failed_to_create_fast_serializer,
+)
 
 python_ver_atleast_than_37 = sys.version_info[0:2] > (3, 6)
 if python_ver_atleast_than_37:
@@ -20,7 +23,8 @@ from typedpy import (
     ImmutableStructure,
     NoneField,
     SerializableField,
-    Serializer, Structure,
+    Serializer,
+    Structure,
     Array,
     Number,
     String,
@@ -94,7 +98,7 @@ def test_successful_deserialization_with_many_types(serialized_example, example)
 
 
 def test_fast_serialization_with_non_typedpy_wrapper_may_fail(
-        serialized_example, example
+    serialized_example, example
 ):
     serialized_example["points"] = [{"x": 1, "y": 2}]
     example = deserialize_structure(Example, serialized_example)
@@ -129,7 +133,6 @@ def test_null_fields():
 def test_serialize_set():
     class Foo(Structure, FastSerializable):
         a = Set()
-
 
     foo = Foo(a={1, 2, 3})
     assert serialize(foo) == {"a": [1, 2, 3]}
@@ -228,7 +231,6 @@ def test_serialize_ignore_non_fields_values():
         d = DateTime
         i = Integer
 
-
     atime = datetime(2020, 1, 30, 5, 35, 35)
     foo = Foo(d=atime, i=3, x=atime)
     # remove serializer
@@ -238,6 +240,7 @@ def test_serialize_ignore_non_fields_values():
     assert serialize(foo) == {"d": "01/30/20 05:35:35", "i": 3}
     assert getattr(Foo, created_fast_serializer)
     assert not getattr(Foo, failed_to_create_fast_serializer, False)
+
 
 def test_serialize_map():
     class Foo(Structure, FastSerializable):
@@ -274,6 +277,7 @@ def test_serialize_with_mapper_to_different_keys():
     assert getattr(Foo, created_fast_serializer)
     assert not getattr(Foo, failed_to_create_fast_serializer, False)
 
+
 def test_serialize_with_deep_mapper_ignores_mappping():
     class Foo(Structure, FastSerializable):
         a = String
@@ -286,7 +290,6 @@ def test_serialize_with_deep_mapper_ignores_mappping():
             "wrapped._mapper": {"a": "aaa", "i": "iii"},
             "wrapped": "other",
         }
-
 
     bar = Bar(wrapped=[Foo(a="string1", i=1), Foo(a="string2", i=2)])
     serialized = serialize(bar)
@@ -366,7 +369,6 @@ def test_serialize_with_camel_case_setting():
         assert not getattr(cls, failed_to_create_fast_serializer, False)
 
 
-
 def test_enum_serialization_returns_string_name():
     class Values(enum.Enum):
         ABC = enum.auto()
@@ -382,6 +384,7 @@ def test_enum_serialization_returns_string_name():
     assert getattr(Example, created_fast_serializer)
     assert not getattr(Example, failed_to_create_fast_serializer, False)
 
+
 def test_serialization_of_classreference_should_work():
     class Bar(Structure, FastSerializable):
         x = Integer
@@ -393,7 +396,6 @@ def test_serialization_of_classreference_should_work():
         bar2 = Bar
 
         _required = []
-
 
     input_dict = {"a": 3, "bar1": {"x": 3, "y": 4, "z": 5}}
     foo = deserialize_structure(Foo, input_dict)
@@ -416,7 +418,6 @@ def test_internal_field_fast_serializable():
 
         _required = []
 
-
     input_dict = {"a": 3, "bar1": {"x": 3, "y": 4, "z": 5}}
     foo = deserialize_structure(Foo, input_dict)
     assert serialize(foo)["bar1"] == {"x": 3, "y": 4}
@@ -426,6 +427,7 @@ def test_internal_field_fast_serializable():
     assert not getattr(Bar, failed_to_create_fast_serializer, False)
     assert not hasattr(Foo, created_fast_serializer)
     assert not hasattr(Foo, failed_to_create_fast_serializer)
+
 
 def test_serialize_array_field_directly():
     class Values(enum.Enum):
@@ -441,6 +443,7 @@ def test_serialize_array_field_directly():
     assert getattr(Foo, created_fast_serializer)
     assert not getattr(Foo, failed_to_create_fast_serializer, False)
 
+
 def test_convert_camel_case():
     class Foo(Structure, FastSerializable):
         first_name: String
@@ -449,12 +452,12 @@ def test_convert_camel_case():
         _additionalProperties = False
         _serialization_mapper = mappers.TO_CAMELCASE
 
-
     original = Foo(first_name="joe", last_name="smith", age_years=5)
     res = serialize(original)
     assert res == {"firstName": "joe", "lastName": "smith", "ageYears": 5}
     assert getattr(Foo, created_fast_serializer)
     assert not getattr(Foo, failed_to_create_fast_serializer, False)
+
 
 def test_serialization_decimal():
     def quantize(d):
@@ -469,6 +472,7 @@ def test_serialization_decimal():
     assert quantize(Decimal(result["a"])) == quantize(Decimal(1.11))
     assert getattr(Foo, created_fast_serializer)
     assert not getattr(Foo, failed_to_create_fast_serializer, False)
+
 
 def test_serialize_mapper_to_lowercase():
     class Bar(Structure, FastSerializable):
@@ -494,6 +498,7 @@ def test_serialize_mapper_to_lowercase():
         assert getattr(cls, created_fast_serializer)
         assert not getattr(cls, failed_to_create_fast_serializer, False)
 
+
 def test_serialize_anyof_optional():
     class TestSerializable(SerializableField):
         def serialize(self, value):
@@ -505,7 +510,6 @@ def test_serialize_anyof_optional():
     class Container(ImmutableStructure, FastSerializable):
         field1: String
         field2: AnyOf[NoneField, TestSerializable]
-
 
     f = {"field1": "val1", "field2": "val2"}
     f2d = Deserializer(Container).deserialize(f)
@@ -533,7 +537,6 @@ def test_serialize_optional_of_serializablefield():
 
     f = {"field1": "val1", "field2": "val2"}
 
-
     f2d = Deserializer(Container2).deserialize(f)
     f2s = serialize(f2d)
     assert f2s == f
@@ -559,7 +562,6 @@ def test_trivial_serializable():
         foo: Foo
         blahs: list[Blah] = list
 
-
     deserialized = Bar(foo=123)
     serialized = {"foo": 123, "blahs": []}
     assert Deserializer(Bar).deserialize(serialized) == deserialized
@@ -567,6 +569,7 @@ def test_trivial_serializable():
     for cls in [Blah, Bar]:
         assert getattr(cls, created_fast_serializer)
         assert not getattr(cls, failed_to_create_fast_serializer, False)
+
 
 def test_serialize_multified_with_any1():
     class MyPoint11:
@@ -583,6 +586,7 @@ def test_serialize_multified_with_any1():
     assert "Object of type MyPoint11 is not JSON serializable" in str(excinfo.value)
     assert getattr(Foo, created_fast_serializer)
     assert not getattr(Foo, failed_to_create_fast_serializer, False)
+
 
 def test_optional_field_defect_234(serialized_example):
     class Number(enum.Enum):

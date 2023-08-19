@@ -68,7 +68,10 @@ from typedpy.fields import (
     _ListStruct,
 )
 from .fast_serialization import FastSerializable, create_serializer
-from ..structures.structures import created_fast_serializer, failed_to_create_fast_serializer
+from ..structures.structures import (
+    created_fast_serializer,
+    failed_to_create_fast_serializer,
+)
 
 
 # pylint: disable=too-many-locals, too-many-arguments, too-many-branches
@@ -621,10 +624,16 @@ def _remap_input(
     for k, v in input_dict.items():
         field_def = cls.get_all_fields_by_name().get(k)
         if v is None:
-            if getattr(cls, ENABLE_UNDEFINED, False) or not getattr(cls, IGNORE_NONE_VALUES, False):
+            if getattr(cls, ENABLE_UNDEFINED, False) or not getattr(
+                cls, IGNORE_NONE_VALUES, False
+            ):
                 corrected_input[k] = None
-            continue      
-        if isinstance(field_def, AnyOf) and _is_optional_anyof(field_def) and v is not None:
+            continue
+        if (
+            isinstance(field_def, AnyOf)
+            and _is_optional_anyof(field_def)
+            and v is not None
+        ):
             field_def = _extract_non_nonefield_from_optional(field_def)
 
         if isinstance(field_def, ClassReference):
@@ -737,7 +746,6 @@ def deserialize_structure_internal(
         and (simple_structure_verified or _structure_simplicity_level(cls))
         and not camel_case_convert
     ):
-
         deserialization_mapper = _get_class_deserialization_mapping_for_simple_class(
             cls
         )
@@ -1106,9 +1114,9 @@ def serialize_internal(
     cls = structure.__class__
     if issubclass(cls, FastSerializable) and not mapper:
         if (
-            ("serialize" not in cls.__dict__ or structure.__class__.serialize is FastSerializable.serialize) and
-                not getattr(cls, failed_to_create_fast_serializer, False)
-        ):
+            "serialize" not in cls.__dict__
+            or structure.__class__.serialize is FastSerializable.serialize
+        ) and not getattr(cls, failed_to_create_fast_serializer, False):
             try:
                 create_serializer(cls, compact=compact, mapper=resolved_mapper)
             except Exception:

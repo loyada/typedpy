@@ -55,7 +55,6 @@ def _get_param_by_name(*, sig, local_attrs, additional_classes):
 
 
 def get_stubs_of_functions(func_by_name, local_attrs, additional_classes) -> list:
-
     out_src = []
     for name, func in func_by_name.items():
         sig = inspect.signature(func)

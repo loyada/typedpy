@@ -6,11 +6,14 @@ from typing import Optional
 import pytest
 
 from typedpy import (
-    Array, Extend,
+    Array,
+    Extend,
     FastSerializable,
     ImmutableStructure,
     PositiveInt,
-    Set, Structure, create_serializer,
+    Set,
+    Structure,
+    create_serializer,
 )
 from typedpy.testing import find_diff
 
@@ -111,11 +114,7 @@ def create_employee() -> Employee:
             week=50,
             month=200,
         ),
-        policies={
-            Policy(
-                soft_limit=10, hard_limit=20, codes=[1, 2, 3]
-            )
-        },
+        policies={Policy(soft_limit=10, hard_limit=20, codes=[1, 2, 3])},
     )
 
 
@@ -213,4 +212,3 @@ def test_trusted_with_list():
     trusted = Foo.from_trusted_data({"arr": ["xx", "yy"]})
 
     assert not find_diff(trusted, Foo(arr=["xx", "yy"]))
-

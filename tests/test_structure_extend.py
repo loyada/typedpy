@@ -31,7 +31,7 @@ def test_extend_structure():
     class Bar(Extend[Foo]):
         x: str
 
-        _serialization_mapper=Foo.get_aggregated_serialization_mapper()
+        _serialization_mapper = Foo.get_aggregated_serialization_mapper()
 
     assert set(Bar._required) == {"x", "i", "a"}
     assert not issubclass(Bar, Foo)

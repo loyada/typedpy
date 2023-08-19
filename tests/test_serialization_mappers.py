@@ -14,7 +14,7 @@ from typedpy import (
     String,
     Structure,
     mappers,
-    DoNotSerialize
+    DoNotSerialize,
 )
 from typedpy.serialization.mappers import (
     aggregate_deserialization_mappers,
@@ -380,23 +380,27 @@ def test_serialization_mapper_inheritance1():
         current_level=1,
         number_of_transactions=2,
         sub_categories=[
-            Bar(current_level=2, number_of_transactions=2,
-                sub_categories=[Bar(current_level=3, number_of_transactions=1)])
+            Bar(
+                current_level=2,
+                number_of_transactions=2,
+                sub_categories=[Bar(current_level=3, number_of_transactions=1)],
+            )
         ],
     )
     serialized = Serializer(a).serialize()
 
     assert serialized == {
-        'currentLevel': 1,
-        'numberOfTransactions': 2,
-        'subCategories': [{
-            'currentLevel': 2,
-            'numberOfTransactions': 2,
-            'subCategories': [{
-                'currentLevel': 3,
-                'numberOfTransactions': 1}]
-        }]
+        "currentLevel": 1,
+        "numberOfTransactions": 2,
+        "subCategories": [
+            {
+                "currentLevel": 2,
+                "numberOfTransactions": 2,
+                "subCategories": [{"currentLevel": 3, "numberOfTransactions": 1}],
+            }
+        ],
     }
+
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_serialization_mapper_inheritance2():
@@ -413,21 +417,23 @@ def test_serialization_mapper_inheritance2():
         current_level=1,
         number_of_transactions=2,
         sub_categories=[
-            Bar(current_level=2, number_of_transactions=2,
-                sub_categories=[Bar(current_level=3, number_of_transactions=1)])
+            Bar(
+                current_level=2,
+                number_of_transactions=2,
+                sub_categories=[Bar(current_level=3, number_of_transactions=1)],
+            )
         ],
     )
     serialized = Serializer(a).serialize()
 
     assert serialized == {
-        'currentLevel': 1,
-        'numberOfTransactions': 2,
-        'subCategories': [{
-            'currentLevel': 2,
-            'numberOfTransactions': 2,
-            'subCategories': [{
-                'currentLevel': 3,
-                'numberOfTransactions': 1}]
-        }]
+        "currentLevel": 1,
+        "numberOfTransactions": 2,
+        "subCategories": [
+            {
+                "currentLevel": 2,
+                "numberOfTransactions": 2,
+                "subCategories": [{"currentLevel": 3, "numberOfTransactions": 1}],
+            }
+        ],
     }
-

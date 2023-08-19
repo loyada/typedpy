@@ -19,9 +19,7 @@ def test_block_unknown_consts_default_config():
 
             _asdasd = True
 
-    assert "attribute _asdasd is not a valid TypedPy attribute." in str(
-        excinfo.value
-    )
+    assert "attribute _asdasd is not a valid TypedPy attribute." in str(excinfo.value)
 
 
 def test_block_unknown_consts(block_unknown_consts):

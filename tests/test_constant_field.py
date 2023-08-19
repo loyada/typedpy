@@ -2,7 +2,15 @@ import enum
 
 import pytest
 
-from typedpy import AbstractStructure, Constant, Deserializer, DoNotSerialize, Enum, Serializer, Structure
+from typedpy import (
+    AbstractStructure,
+    Constant,
+    Deserializer,
+    DoNotSerialize,
+    Enum,
+    Serializer,
+    Structure,
+)
 
 
 class EventSubject(enum.Enum):
@@ -31,12 +39,15 @@ class BarEvent(Event):
 
 def test_block_invalid_constant():
     with pytest.raises(TypeError) as excinfo:
+
         class Example(Structure):
             foo = Constant([1, 2, 3])
 
-    assert "Constant foo is of an invalid type. Supported types are : None, int, str, bool, enum.Enum, float" in str(
-            excinfo.value
+    assert (
+        "Constant foo is of an invalid type. Supported types are : None, int, str, bool, enum.Enum, float"
+        in str(excinfo.value)
     )
+
 
 def test_happy_constant():
     foo_event = FooEvent(name="name")
@@ -85,7 +96,13 @@ def test_not_allowed_to_inheritance():
 
 def test_serialization():
     foo = FooEvent(name="name", i=3)
-    assert Serializer(foo).serialize() == {"name": "name", "subject": "foo", "i": 3, "other_subject": "bar", "foo": "fooooo"}
+    assert Serializer(foo).serialize() == {
+        "name": "name",
+        "subject": "foo",
+        "i": 3,
+        "other_subject": "bar",
+        "foo": "fooooo",
+    }
 
 
 def test_deserialization():
@@ -93,7 +110,13 @@ def test_deserialization():
         {"name": "name", "subject": "foo", "i": 3}
     ) == FooEvent(name="name", i=3)
     assert Deserializer(FooEvent).deserialize(
-        {"name": "name", "subject": "foo", "i": 3, "other_subject": "bar", "foo": "fooooo"}
+        {
+            "name": "name",
+            "subject": "foo",
+            "i": 3,
+            "other_subject": "bar",
+            "foo": "fooooo",
+        }
     ) == FooEvent(name="name", i=3)
     # it actually ignores the values in constant fields:
     assert Deserializer(FooEvent).deserialize(
@@ -109,7 +132,6 @@ def test_shallow_clone():
         excinfo.value
     )
     assert foo.shallow_clone_with_overrides().subject is EventSubject.foo
-
 
 
 def test_from_other_class():
@@ -129,26 +151,19 @@ def test_from_other_class():
     assert "FooEvent:  subject is defined as a constant. It cannot be set." in str(
         excinfo.value
     )
-    assert   FooEvent.from_other_class(foo).subject is EventSubject.foo
-
+    assert FooEvent.from_other_class(foo).subject is EventSubject.foo
 
 
 def test_mapper_can_be_empty():
     class FooBase(Structure):
         i: int
 
-
     class Foo(FooBase):
         const1 = Constant(1)
         const2 = Constant(2)
 
-
-    _serialization_mapper = {
-        "const1": DoNotSerialize,
-        "const2": DoNotSerialize
-    }
+    _serialization_mapper = {"const1": DoNotSerialize, "const2": DoNotSerialize}
 
     foo = Deserializer(Foo).deserialize({"i": 5})
     assert foo.i == 5
     assert foo.const2 == 2
-

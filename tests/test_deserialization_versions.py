@@ -73,11 +73,12 @@ in_version_2 = {
 
 
 def test_deserialize_non_versioned_raises_clear_err():
-    payload_with_no_version = {k:v for (k,v) in in_version_2.items() if k!="version"}
+    payload_with_no_version = {
+        k: v for (k, v) in in_version_2.items() if k != "version"
+    }
     with raises(TypeError) as excinfo:
         Deserializer(Foo).deserialize(payload_with_no_version)
     assert "Expected a dictionary with a 'version' value" in str(excinfo.value)
-
 
 
 def test_version_conversion_deserializer():
@@ -208,7 +209,10 @@ def test_optional_field_mapping():
     assert Deserializer(Example).deserialize(
         {"version": 1, "i": {"abc": "xyz", "def": 1}}, keep_undefined=False
     ) == Example(foo="xyz", bar=1)
-    assert Deserializer(Example).deserialize({"version": 1}, keep_undefined=False) == Example()
+    assert (
+        Deserializer(Example).deserialize({"version": 1}, keep_undefined=False)
+        == Example()
+    )
 
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")

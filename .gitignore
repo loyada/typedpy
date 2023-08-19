@@ -4,6 +4,7 @@ TODO
 .idea/
 tests/.cache/
 venv/
+.venv/
 .tox/
 
 # Byte-compiled / optimized / DLL files

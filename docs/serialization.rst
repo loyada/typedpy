@@ -1014,7 +1014,7 @@ support the following:
 Requirements/Limitations:
 
 #. All Structures in the hierarchy implement FastSerializable. Typically this is done by calling create_serializer, or
-   or automatically, during first instantiation.
+   or automatically, during first instantiation/serialization.
 #. No field of type AnyOf(i.e. Union) with the exception of Optional.
 #  No field of type OneOf.
 #. Any custom Field classes should implement the serialize() method.

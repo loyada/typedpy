@@ -1,5 +1,6 @@
 from typing import Optional
 
+import pytest
 from pytest import raises
 
 from typedpy import (
@@ -11,7 +12,7 @@ from typedpy import (
     AnyOf,
     Map,
     PositiveInt,
-    ImmutableSet,
+    ImmutableSet, serialize,
 )
 
 
@@ -215,3 +216,20 @@ def test_optional_of_set():
 
     with raises(ValueError):
         Foo(s=[1, 2])
+
+
+@pytest.mark.parametrize(
+    "cls", [Set, ImmutableSet]
+)
+def test_frozenset_is_supported(cls):
+    class Foo(Structure):
+        s: cls[str]
+
+    with raises(TypeError):
+        Foo(s=frozenset({"x", 1}))
+
+    foo = Foo(s=frozenset({"x", "y"}))
+    assert foo.s == {"x", "y"}
+    assert isinstance(foo.s, frozenset)
+    assert set(serialize(foo)["s"]) == {"x", "y"}
+

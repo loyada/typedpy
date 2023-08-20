@@ -53,6 +53,14 @@ class Set(
         super().__init__(*args, **kwargs)
         self._set_immutable(getattr(self, "_immutable", False))
 
+    def _validate(self, value):
+        if isinstance(value, frozenset):
+            return
+
+        super()._validate(value)
+
+
+
     @property
     def get_type(self):
         if has_multiple_items(self.items):
@@ -63,7 +71,7 @@ class Set(
         if getattr(instance, "_trust_supplied_values", False):
             super().__set__(instance, value)
             return
-        cls = self.__class__._ty
+        cls = frozenset if isinstance(value, frozenset) else set
         if not isinstance(value, cls):
             raise TypeError(f"{self._name}: Got {wrap_val(value)}; Expected {cls}")
         self.validate_size(value, self._name)

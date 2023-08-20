@@ -81,7 +81,9 @@ def test_example_code_to_schema_and_back(
 
     schema, definitions = structure_to_schema(OriginalClass, {})
     assert definitions == expected_schema.get("definitions", {})
-    assert set(schema.get("required", [])) == set(expected_schema["example"].get("required", []))
+    assert set(schema.get("required", [])) == set(
+        expected_schema["example"].get("required", [])
+    )
     unordered_schema = dict(schema)
     unordered_schema.pop("required")
     expected_schema["example"].pop("required")

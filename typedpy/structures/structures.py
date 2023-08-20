@@ -1511,16 +1511,28 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         Returns:
             The new instance of the current structure type, with the fields set.
         """
+
+        is_mapping = isinstance(source_object, Mapping)
+        def extract_attr(k):
+            return  source_object.get(k) if is_mapping else  getattr(source_object, k, None)
+
         ignore_props = ignore_props if ignore_props else []
         args_from_model = {
-            k: getattr(source_object, k, None)
+            k: extract_attr(k)
             for k in cls.get_all_fields_by_name()
             if k not in ignore_props
             and k not in getattr(cls, "_constants", {})
-            and hasattr(source_object, k)
+            and (hasattr(source_object, k) or is_mapping)
         }
         kwargs = {**args_from_model, **kw}
-        return cls(**kwargs)
+        try:
+            return cls(**kwargs)
+        except TypeError as e:
+            if f"{cls.__name__}: missing a required argument" in str(e):
+                raise TypeError(f"You provided an instance of {source_object.__class__}, "
+                                f"that does not have all the required fields of {cls.__name__}") from e
+            else:
+                raise e
 
     @classmethod
     def from_trusted_data(cls, source_object=None, *, ignore_props=None, **kw):

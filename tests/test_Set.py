@@ -12,7 +12,8 @@ from typedpy import (
     AnyOf,
     Map,
     PositiveInt,
-    ImmutableSet, serialize,
+    ImmutableSet,
+    serialize,
 )
 
 
@@ -218,9 +219,7 @@ def test_optional_of_set():
         Foo(s=[1, 2])
 
 
-@pytest.mark.parametrize(
-    "cls", [Set, ImmutableSet]
-)
+@pytest.mark.parametrize("cls", [Set, ImmutableSet])
 def test_frozenset_is_supported(cls):
     class Foo(Structure):
         s: cls[str]
@@ -232,4 +231,3 @@ def test_frozenset_is_supported(cls):
     assert foo.s == {"x", "y"}
     assert isinstance(foo.s, frozenset)
     assert set(serialize(foo)["s"]) == {"x", "y"}
-

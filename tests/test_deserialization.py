@@ -1509,10 +1509,7 @@ def test_keep_undefined_default_behavior_issue_271_false():
 
     with raises(TypeError) as excinfo:
         Deserializer(Foo).deserialize({"i": 1, "a": 2})
-    assert (
-            "Foo: got an unexpected keyword argument 'a'"
-            in str(excinfo.value)
-    )
+    assert "Foo: got an unexpected keyword argument 'a'" in str(excinfo.value)
 
 
 def test_keep_undefined_default_behavior_issue_271_True():

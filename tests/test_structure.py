@@ -2,6 +2,7 @@ import enum
 import sys
 import typing
 from dataclasses import dataclass
+from datetime import datetime
 
 import pytest
 from pytest import raises
@@ -859,3 +860,25 @@ def test_eq_optional():
         _ignore_none = True
 
     assert Foo(a=5, b=None) == Foo()
+
+
+def test_from_other_class_dict_is_suppoted():
+    class Foo(Structure):
+        i: int
+        s: typing.Optional[str]
+        dt: DateTime
+
+    now = datetime.now()
+    assert Foo.from_other_class({"i": 5,  "dt": now}) == Foo(i=5, dt=now)
+
+
+def test_from_other_class_err():
+    class Foo(Structure):
+        i: int
+
+    with pytest.raises(TypeError) as excinfo:
+        Foo.from_other_class(({"i": 5},))
+    assert (
+        "You provided an instance of <class 'tuple'>, that does not have all the required fields of Foo"
+        in str(excinfo.value)
+    )

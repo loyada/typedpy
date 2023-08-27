@@ -14,6 +14,8 @@ the structure, to match the latest Structure definition.
 For example, suppose you saved a JSON object that adheres to some strict schema, and occasionally that schema had to evolve \
 to include new fields, or update existing ones. When you read it again, you always want to map to the latest schema, which \
 is what you are currently using.
+Importantly, this is not meant to be used to manage evolving schema changes in a performant production system. In such a \
+case, use a proper schema management framework, such as Alembic.
 
 
 The requirement: Typedpy expects the dictionary to have a "version" field, that has increasing consecutive integer values, \

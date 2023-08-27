@@ -1015,14 +1015,14 @@ Requirements/Limitations:
 
 #. All Structures in the hierarchy implement FastSerializable. Typically this is done by calling create_serializer, or
    or automatically, during first instantiation/serialization.
-#. No field of type AnyOf(i.e. Union) with the exception of Optional.
+#. No field of type AnyOf(i.e. Union) with the exception of typing.Optional.
 #  No field of type OneOf.
 #. Any custom Field classes should implement the serialize() method.
 #. All mappers must be in the definition of the Structures.
 #. No mapper to Typedpy Constant in custom serialization mapper of the class
 
 
-Instead of support of the "compact" (see above) flag in the serialize() call, you provide it to create_serializer().
+Instead of support of the "compact" flag in the serialize() call, you provide it to create_serializer().
 For example:
 
 .. code-block:: python
@@ -1044,6 +1044,23 @@ the serializer, as such:
 .. code-block:: python
 
     create_serializer(Foo, serialize_none = True)
+
+
+
+A few additional details:
+In case a FastSerializable class is serialized and no call to create_serializer() was made before, Typedpy attempts
+to create the serializer automatically on the first serialization for an instance of this class. If the class is a valid \
+FastSerializable, it will use fast serialization. Otherwise it uses the standard (i.e. slow) serialization.
+
+
+Roadmap
+-------
+In Typedpy 2.3 fast serialization will be the default mode of operation, without the need to declare it. This means that
+by default, Typedpy will attempt to create a custom serializer for any Structure as needed and use it in all consecutive
+calls to serialize instances of this Structure. Only in case this Structure is incompatible with Fast Serialization, Typedpy
+will use the dynamically-resolved serialization, which is slow.
+FastSerializable class will still exist for a while for backward compatibility, but will be unnecessary, since all Structures
+will be serialized fast by default.
 
 
 

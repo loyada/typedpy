@@ -268,8 +268,8 @@ It is also possible to define an immutable Structure. See Under the **Structures
 
 Immutable Field/Structure classes cannot be inherited, to avoid a developer accidentally making the subclass a mutable one .
 
-Uniqueness
-==========
+Uniqueness (Deprecated)
+=======================
 Typedpy allows you to ensure that all instances of a certain :class:`Structure` have unique values of a
 certain field (for example, a unique ID or a primary key).
 This is done either by decorating the :class:`Field` class defintion with @unique, or by setting

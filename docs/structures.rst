@@ -331,8 +331,8 @@ As the name suggests, it performs a shallow copy.
 .. _uniqueness:
 
 
-Uniqueness
-==========
+Uniqueness (Deprecated)
+========================
 Typedpy allows you to ensure that all the instances of a certain :class:`Structure` are unique, by
 decorating it with "@unique". The uniqueness is ensured even if you updated an existing instance to match
 another instance.

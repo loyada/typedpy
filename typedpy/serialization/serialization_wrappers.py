@@ -1,5 +1,5 @@
 from typedpy.commons import wrap_val
-from typedpy.structures import Structure, TypedPyDefaults, ADDITIONAL_PROPERTIES
+from typedpy.structures import Structure, TypedPyDefaults
 from typedpy.fields import StructureClass, Map, String, OneOf, Boolean, FunctionCall
 from .serialization import deserialize_structure, serialize
 
@@ -74,16 +74,6 @@ class Deserializer(Structure):
 
     _required = ["target_class"]
 
-    def __init__(self, target_class, *args, **kw):
-        super().__init__(target_class,*args, **kw)
-        additional_props = getattr(self.target_class,
-            ADDITIONAL_PROPERTIES, TypedPyDefaults.additional_properties_default
-        )
-        self._keep_undefined_default = {
-             None: None,
-             False: True,
-             True: False
-        }[additional_props]
     def __validate__(self):
         valid_keys = set(getattr(self.target_class, "get_all_fields_by_name")().keys())
         if self.mapper:
@@ -97,8 +87,6 @@ class Deserializer(Structure):
     def deserialize(
         self, input_data, *, keep_undefined=None, direct_trusted_mapping=False
     ):
-        if keep_undefined is None:
-            keep_undefined = self._keep_undefined_default
         return deserialize_structure(
             self.target_class,
             input_data,

@@ -1500,22 +1500,3 @@ def test_mapping_key_should_replace_original_mapping():
     assert deserialize({"b": 5}) == Foo(a=5)
     with raises(TypeError):
         deserialize({"a": 5})
-
-
-def test_keep_undefined_default_behavior_issue_271_false():
-    class Foo(Structure):
-        i: int
-        _additional_properties = False
-
-    with raises(TypeError) as excinfo:
-        Deserializer(Foo).deserialize({"i": 1, "a": 2})
-    assert "Foo: got an unexpected keyword argument 'a'" in str(excinfo.value)
-
-
-def test_keep_undefined_default_behavior_issue_271_True():
-    class Foo(Structure):
-        i: int
-        _additional_properties = True
-
-    deserialized = Deserializer(Foo).deserialize({"i": 1, "a": 2})
-    assert not hasattr(deserialized, "a")

@@ -294,6 +294,16 @@ def test_find_diff_list_liststruct():
     assert not find_diff(Foo(a=[1, 2, 3]), Foo.from_trusted_data({"a": [1, 2, 3]}))
 
 
+def test_find_diff_list_different_length():
+    diff = find_diff({"a": [1, 2]}, {"a": [1, 2, 3]})
+    assert diff == {'a': 'length of 3 vs 2'}
+
+    diff = find_diff({"a": [1, 2, 3]}, {"a": [1, 2]})
+    assert diff == {'a': 'length of 2 vs 3'}
+
+    diff = find_diff({"a": [1, 2]}, {"a": (1, 2, 3)})
+    assert diff == {'a': {'class': "<class 'tuple'> vs. <class 'list'>"}}
+
 #
 # def test_assertion_err_example():
 #     bar1 = Bar(

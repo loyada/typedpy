@@ -93,7 +93,7 @@ def _diff_list(val, otherval, outer_result: dict, outer_key: str) -> dict:
 
     result = {}
     for i, v in enumerate(val):
-        if v == otherval[i]:
+        if len(otherval)>i and  v == otherval[i]:
             continue
         try:
             index = otherval.index(v)
@@ -152,6 +152,8 @@ def find_diff(first, second) -> Union[dict, str]:
 
 def _find_diff_collection(struct, other, outer_result, out_key):
     if isinstance(struct, (list, tuple)):
+        if len(struct) != len(other):
+            return f"length of {len(struct)} vs {len(other)}"
         res_val = _diff_list(
             struct, other, outer_result=outer_result, outer_key=out_key
         )

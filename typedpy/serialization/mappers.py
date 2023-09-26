@@ -79,6 +79,17 @@ def _convert_to_snakecase(key):
     ).lstrip("_")
 
 
+def _try_int(x):
+    if not isinstance(x, str) or not x:
+        return x
+    try:
+        return int(x)
+    except ValueError:
+        return x
+
+
+
+
 def _apply_mapper(
     latest_mapper, key, previous_mapper, for_serialization, is_self=False
 ):
@@ -87,6 +98,8 @@ def _apply_mapper(
         return _convert_to_camelcase(val)
     if latest_mapper == mappers.TO_LOWERCASE:
         return val.upper()
+    if latest_mapper == mappers.CONFIGURATION:
+        return FunctionCall(func= _try_int)
     latest_mapper_val = latest_mapper.get(val, val)
     if isinstance(latest_mapper_val, (FunctionCall,)):
         args = (
@@ -182,6 +195,7 @@ class mappers(Enum):
 
     TO_LOWERCASE = auto()
     TO_CAMELCASE = auto()
+    CONFIGURATION = auto()
     NO_MAPPER = auto()
 
 

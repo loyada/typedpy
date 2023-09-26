@@ -721,10 +721,11 @@ the content to be serialized.
 
 Predefined Mappers
 ==================
-There are two predefined mappers:
+There are three predefined mappers:
 * TO_CAMELCASE - convert between python snake-case and the more common naming in JSON, of camel-case
 * TO_LOWERCASE - convert between field names in lower case, and the serialized representation in upper case (common in configuration)
-
+* CONFIGURATION - automatically converts string value to integers if applicable. The use case for this is getting configuration\
+  objects from environment variable, which are always strings.
 An example:
 
 .. code-block:: python
@@ -744,6 +745,23 @@ An example:
 
     foo = deserialize_structure(Foo, {'ABC': 'aaa', 'XXX_YYY': 'bbb', 'BAR': {'I': 1, 'F': 1.5}})
     assert foo == Foo(abc='aaa', xxx_yyy='bbb', bar=Bar(i=1, f=1.5))
+
+
+Example for configuration mapper:
+
+.. code-block:: python
+
+    class Foo(ImmutableStructure):
+        a: int
+        s: str
+
+        _serialization_mapper = [mappers.CONFIGURATION, mappers.TO_LOWERCASE ]
+
+    deserialized = Deserializer(Foo).deserialize({"A": "123", "S": "xxx"})
+    assert deserialized == Foo(a=123, s="xxx")
+
+
+Note: The order of the mappers in the above example matters.
 
 
 

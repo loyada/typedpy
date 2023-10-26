@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Type
 
-from typedpy.commons import Constant, first_in
+from typedpy.commons import Constant, first_in, Undefined, UndefinedMeta
 from typedpy.fields import Boolean, FunctionCall, Number, String, Array, AnyOf, OneOf
 from typedpy.structures import ClassReference, Field, NoneField, Structure
 from typedpy.structures.structures import (
@@ -12,6 +12,7 @@ from typedpy.structures.structures import (
 from .mappers import (
     aggregate_serialization_mappers,
 )
+from ..structures.consts import ENABLE_UNDEFINED
 
 
 class FastSerializable:
@@ -109,10 +110,18 @@ def create_serializer(
 
     items = processed_mapper.items()
 
+    with_undefined = getattr(cls, ENABLE_UNDEFINED, False)
+
     def serializer(self):
         res = {name: value(self) for name, value in items}
+        filtered_res = (
+            {name: value for name, value in res.items() if value is not Undefined}
+            if with_undefined
+            else res
+        )
+
         return (
-            res if serialize_none else {k: v for (k, v) in res.items() if v is not None}
+            filtered_res if serialize_none else {k: v for (k, v) in filtered_res.items() if v is not None}
         )
 
     cls.serialize = serializer

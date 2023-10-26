@@ -11,7 +11,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -47,9 +46,9 @@ setup(
     license="MIT",
     long_description=long_description,
     url="http://github.com/loyada/typedpy",
-    download_url="https://github.com/loyada/typedpy/archive/v2.26.2.tar.gz",
+    download_url="https://github.com/loyada/typedpy/archive/v2.27.1.tar.gz",
     keywords=["testing", "type-safe", "strict", "schema", "validation"],
-    version="2.26.2",
+    version="2.27.1",
 )
 
 # coverage run --source=typedpy/ setup.py test

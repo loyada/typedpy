@@ -20,6 +20,7 @@ def test_undefined():
     assert foo == Foo(a=1, b=None)
     assert not foo.c
     assert foo.to_other_class(dict) == {"a": 1, "b": None, "d": 5}
+    assert foo.to_other_class(dict, c=Undefined) == {"a": 1, "b": None, "d": 5}
     assert foo != Foo(a=1)
     assert foo.shallow_clone_with_overrides(a=2) == Foo(a=2, b=None)
     assert foo != Foo(a=1, b=None, c=None)

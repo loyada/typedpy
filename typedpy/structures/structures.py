@@ -1467,7 +1467,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
         kwargs = {
             **{k: v for k, v in args_from_structure.items() if v is not Undefined},
-            **kw,
+            **{k: v for k, v in kw.items() if v is not Undefined},
         }
         return target_class(**kwargs)
 
@@ -1527,7 +1527,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         }
         kwargs = {
             **{k: v for k, v in args_from_model.items() if v is not Undefined},
-            **kw,
+            **{k: v for k, v in kw.items() if v is not Undefined},
         }
         try:
             return cls(**kwargs)

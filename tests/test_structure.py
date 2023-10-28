@@ -584,8 +584,8 @@ def test_from_other_class_with_undefined():
         _enable_undefined_value = True
 
     person_model = PersonModel(age=40)
-    person = Person.from_other_class(person_model, id=123)
-    assert person == Person(id=123, age=40)
+    assert Person.from_other_class(person_model, id=123) == Person(id=123, age=40)
+    assert Person.from_other_class(person_model, id=Undefined) == Person(age=40)
 
 
 def test_from_trusted_class():

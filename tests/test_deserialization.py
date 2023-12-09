@@ -1,10 +1,11 @@
 import enum
 import operator
+import sys
 from collections import OrderedDict, deque
 from decimal import Decimal
 from typing import Optional
 
-from pytest import raises
+from pytest import raises, mark
 
 from typedpy import (
     Boolean,
@@ -199,8 +200,8 @@ def test_anyof_field_failure():
     with raises(ValueError) as excinfo:
         deserialize_structure(Example, data)
     assert (
-        "any: Got [{'name': 'john', 'ssid': '123'}, {'name': 'paul'}]; Does not match any field option"
-        in str(excinfo.value)
+            "any: Got [{'name': 'john', 'ssid': '123'}, {'name': 'paul'}]; Does not match any field option"
+            in str(excinfo.value)
     )
 
 
@@ -300,8 +301,8 @@ def test_unsupported_field_err():
     with raises(NotImplementedError) as excinfo:
         deserialize_structure(UnsupportedStruct, {"unsupported": 1})
     assert (
-        "unsupported: Got 1; Cannot deserialize value of type UnsupportedField"
-        in str(excinfo.value)
+            "unsupported: Got 1; Cannot deserialize value of type UnsupportedField"
+            in str(excinfo.value)
     )
 
 
@@ -312,8 +313,8 @@ def test_allof_wrong_value_err():
     with raises(ValueError) as excinfo:
         deserialize_structure(Foo, {"bar": 1})
     assert (
-        "bar: Got 1; Does not match <Array>. reason: bar: Got 1; Expected a list, set, or tuple"
-        in str(excinfo.value)
+            "bar: Got 1; Does not match <Array>. reason: bar: Got 1; Expected a list, set, or tuple"
+            in str(excinfo.value)
     )
 
 
@@ -330,8 +331,8 @@ def test_invalid_type_err():
     with raises(ValueError) as excinfo:
         deserialize_structure(Example, data)
     assert (
-        "all: Got ''; Does not match <Number>. reason: all: Got ''; Expected a number"
-        in str(excinfo.value)
+            "all: Got ''; Does not match <Number>. reason: all: Got ''; Expected a number"
+            in str(excinfo.value)
     )
 
 
@@ -386,8 +387,8 @@ def test_invalid_value_err():
     with raises(ValueError) as excinfo:
         deserialize_structure(Example, data)
     assert (
-        """name: Got '123'; Does not match regular expression: '[A-Za-z]+$'"""
-        in str(excinfo.value)
+            """name: Got '123'; Does not match regular expression: '[A-Za-z]+$'"""
+            in str(excinfo.value)
     )
 
 
@@ -1210,8 +1211,8 @@ def test_invalid_deserializer():
     with raises(ValueError) as excinfo:
         Deserializer(target_class=Foo, mapper=mapper)
     assert (
-        "Invalid key in mapper for class Foo: xyz. Keys must be one of the class fields"
-        in str(excinfo.value)
+            "Invalid key in mapper for class Foo: xyz. Keys must be one of the class fields"
+            in str(excinfo.value)
     )
 
 
@@ -1317,8 +1318,8 @@ def test_ignore_none_should_not_work_on_required_fields():
         Deserializer(target_class=Foo).deserialize({"s": None, "a": None, "i": 1})
     assert "missing a required argument: 's'" in str(excinfo.value)
     assert (
-        Deserializer(target_class=Foo).deserialize({"s": "x", "a": None, "i": 1}).a
-        is None
+            Deserializer(target_class=Foo).deserialize({"s": "x", "a": None, "i": 1}).a
+            is None
     )
 
 
@@ -1516,7 +1517,7 @@ def test_additional_properties_turned_off_err(additional_props_default_is_false)
             in str(excinfo.value)
     )
 
-
+@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_smart_compact_deserialization_is_turned_off_by_default():
     class Foo(Structure):
         a: list[int]
@@ -1529,9 +1530,10 @@ def test_smart_compact_deserialization_is_turned_off_by_default():
             in str(excinfo.value)
     )
 
+@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_smart_compact_deserialization_is_turned_on(compact_serialization):
     class Foo(Structure):
         a: list[int]
         _additional_properties = False
 
-    assert Deserializer(Foo).deserialize([2, 3]) == Foo(a=[2,3])
+    assert Deserializer(Foo).deserialize([2, 3]) == Foo(a=[2, 3])

@@ -88,8 +88,6 @@ def _try_int(x):
         return x
 
 
-
-
 def _apply_mapper(
     latest_mapper, key, previous_mapper, for_serialization, is_self=False
 ):
@@ -99,7 +97,7 @@ def _apply_mapper(
     if latest_mapper == mappers.TO_LOWERCASE:
         return val.upper()
     if latest_mapper == mappers.CONFIGURATION:
-        return FunctionCall(func= _try_int)
+        return FunctionCall(func=_try_int)
     latest_mapper_val = latest_mapper.get(val, val)
     if isinstance(latest_mapper_val, (FunctionCall,)):
         args = (

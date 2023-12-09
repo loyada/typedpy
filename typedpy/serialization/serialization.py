@@ -806,7 +806,12 @@ def deserialize_structure_internal(
         additional_props = props.get(
             ADDITIONAL_PROPERTIES, TypedPyDefaults.additional_properties_default
         )
-        if len(fields) == 1 and required == fields and additional_props is False:
+        if (
+            len(fields) == 1
+            and required == fields
+            and additional_props is False
+            and TypedPyDefaults.compact_serialization_default
+        ):
             field_name = fields[0]
             return cls(
                 deserialize_single_field(

@@ -448,7 +448,7 @@ def test_unsupported_type_err():
     )
 
 
-def test_single_int_deserialization():
+def test_single_int_deserialization(compact_serialization):
     class Foo(Structure):
         i = Integer
         _additionalProperties = False
@@ -459,7 +459,7 @@ def test_single_int_deserialization():
     assert example.i == 5
 
 
-def test_single_int_deserialization1():
+def test_single_int_deserialization1(compact_serialization):
     class Foo(Structure):
         i = Integer
         _additional_properties = False
@@ -470,7 +470,7 @@ def test_single_int_deserialization1():
     assert example.i == 5
 
 
-def test_single_array_deserialization():
+def test_single_array_deserialization(compact_serialization):
     class Foo(Structure):
         arr = Array[String]
         _additionalProperties = False
@@ -1500,3 +1500,38 @@ def test_mapping_key_should_replace_original_mapping():
     assert deserialize({"b": 5}) == Foo(a=5)
     with raises(TypeError):
         deserialize({"a": 5})
+
+
+def test_additional_properties_turned_off_err(additional_props_default_is_false):
+    class Foo(Structure):
+        a: int
+        b: int
+        _required = []
+
+    with raises(TypeError) as excinfo:
+        Deserializer(Foo).deserialize({"c": 1, "a": 2})
+
+    assert (
+            "Foo: got an unexpected keyword argument 'c'"
+            in str(excinfo.value)
+    )
+
+
+def test_smart_compact_deserialization_is_turned_off_by_default():
+    class Foo(Structure):
+        a: list[int]
+        _additional_properties = False
+
+    with raises(TypeError) as excinfo:
+        Deserializer(Foo).deserialize([2, 3])
+    assert (
+            "Expected a dictionary; Got [2, 3]"
+            in str(excinfo.value)
+    )
+
+def test_smart_compact_deserialization_is_turned_on(compact_serialization):
+    class Foo(Structure):
+        a: list[int]
+        _additional_properties = False
+
+    assert Deserializer(Foo).deserialize([2, 3]) == Foo(a=[2,3])

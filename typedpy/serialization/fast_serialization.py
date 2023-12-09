@@ -121,7 +121,9 @@ def create_serializer(
         )
 
         return (
-            filtered_res if serialize_none else {k: v for (k, v) in filtered_res.items() if v is not None}
+            filtered_res
+            if serialize_none
+            else {k: v for (k, v) in filtered_res.items() if v is not None}
         )
 
     cls.serialize = serializer

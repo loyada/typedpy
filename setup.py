@@ -48,7 +48,7 @@ setup(
     url="http://github.com/loyada/typedpy",
     download_url="https://github.com/loyada/typedpy/archive/v2.27.1.tar.gz",
     keywords=["testing", "type-safe", "strict", "schema", "validation"],
-    version="2.27.1",
+    version="2.27.2",
 )
 
 # coverage run --source=typedpy/ setup.py test

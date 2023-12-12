@@ -642,3 +642,21 @@ def test_serialize_none(no_defensive_copy_on_get, allow_none_for_optional):
 
     create_serializer(Foo, serialize_none=True)
     assert Foo(c="xxx", b=None).serialize() == {"c": "xxx", "a": None, "b": None}
+
+
+def test_additional_serialization(no_defensive_copy_on_get):
+    class Foo(Structure, FastSerializable):
+        first_name: String
+        last_name: String
+        age_years: PositiveInt
+
+        def _additional_serialization(self) -> dict:
+            return {"full_name": f"{self.first_name} {self.last_name}"}
+
+        _serialization_mapper = mappers.TO_CAMELCASE
+
+    create_serializer(Foo)
+
+    original = Foo(first_name="joe", last_name="smith", age_years=5)
+    res = Foo.serialize(original)
+    assert res == {"firstName": "joe", "lastName": "smith", "ageYears": 5, "full_name": "joe smith"}

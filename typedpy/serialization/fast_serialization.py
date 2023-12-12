@@ -111,6 +111,7 @@ def create_serializer(
     items = processed_mapper.items()
 
     with_undefined = getattr(cls, ENABLE_UNDEFINED, False)
+    has_additional_properties = hasattr(cls, "_additional_serialization")
 
     def serializer(self):
         res = {name: value(self) for name, value in items}
@@ -119,12 +120,12 @@ def create_serializer(
             if with_undefined
             else res
         )
-
+        additional = self._additional_serialization() if has_additional_properties else {}
         return (
             filtered_res
             if serialize_none
             else {k: v for (k, v) in filtered_res.items() if v is not None}
-        )
+        ) | additional
 
     cls.serialize = serializer
 

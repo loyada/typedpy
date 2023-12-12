@@ -120,12 +120,15 @@ def create_serializer(
             if with_undefined
             else res
         )
-        additional = self._additional_serialization() if has_additional_properties else {}
-        return (
+        res = (
             filtered_res
             if serialize_none
             else {k: v for (k, v) in filtered_res.items() if v is not None}
-        ) | additional
+        )
+        if has_additional_properties:
+            res.update(self._additional_serialization())
+
+        return res
 
     cls.serialize = serializer
 

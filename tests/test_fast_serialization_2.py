@@ -646,8 +646,8 @@ def test_serialize_none(no_defensive_copy_on_get, allow_none_for_optional):
 
 def test_additional_serialization(no_defensive_copy_on_get):
     class Foo(Structure, FastSerializable):
-        first_name: String
-        last_name: String
+        first_name: str
+        last_name: str
         age_years: PositiveInt
 
         def _additional_serialization(self) -> dict:

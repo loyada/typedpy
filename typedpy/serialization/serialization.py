@@ -592,11 +592,17 @@ def _structure_simplicity_level(cls):
 
 @lru_cache(maxsize=128)
 def _get_enum_mapping(cls):
-    return {
+    without_optionals = {
         k: getattr(v, "_enum_class")
         for k, v in cls.get_all_fields_by_name().items()
         if isinstance(v, Enum) and getattr(v, "_is_enum", False)
     }
+    optionals =  {
+        k: getattr(getattr(v, "_fields")[0], "_enum_class")
+        for k, v in cls.get_all_fields_by_name().items()
+        if isinstance(v, AnyOf) and getattr(v, "_is_optional") and isinstance(getattr(v, "_fields")[0], Enum)
+    }
+    return {**without_optionals, **optionals}
 
 
 @lru_cache(maxsize=128)

@@ -18,8 +18,13 @@ class Float(TypedField, Number):
         super().__set__(instance, converted)
 
     def _validate(self, value):
-        super()._validate(value)
-        Number._validate_static(self, value)
+        converted = (
+            float(value)
+            if isinstance(value, int) and value is not True and value is not False
+            else value
+        )
+        super()._validate(converted)
+        Number._validate_static(self, converted)
 
 
 class PositiveFloat(Float, Positive):

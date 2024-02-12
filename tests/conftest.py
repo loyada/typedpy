@@ -12,6 +12,14 @@ def fixture_additional_props_default_is_false():
     Structure.set_additional_properties_default(True)
 
 
+@pytest.fixture(name="fail_on_additional_props_in_deserialization")
+def fixture_fail_on_additional_props_in_deserialization():
+    TypedPyDefaults.ignore_invalid_additional_properties_in_deserialization = False
+    yield
+    TypedPyDefaults.ignore_invalid_additional_properties_in_deserialization = True
+
+
+
 @pytest.fixture(name="compact_serialization")
 def fixture_compact_serialization():
     Structure.set_compact_serialization_default(True)

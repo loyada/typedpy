@@ -1503,7 +1503,18 @@ def test_mapping_key_should_replace_original_mapping():
         deserialize({"a": 5})
 
 
-def test_additional_properties_turned_off_err(additional_props_default_is_false):
+def test_additional_properties_turned_off_err_silent_ignore(additional_props_default_is_false):
+    class Foo(Structure):
+        a: int
+        b: int
+        _required = []
+
+    Deserializer(Foo).deserialize({"c": 1, "a": 2})
+
+
+def test_additional_properties_turned_off_err_throw(
+        additional_props_default_is_false, fail_on_additional_props_in_deserialization
+):
     class Foo(Structure):
         a: int
         b: int
@@ -1516,6 +1527,7 @@ def test_additional_properties_turned_off_err(additional_props_default_is_false)
             "Foo: got an unexpected keyword argument 'c'"
             in str(excinfo.value)
     )
+
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_smart_compact_deserialization_is_turned_off_by_default():
@@ -1530,6 +1542,7 @@ def test_smart_compact_deserialization_is_turned_off_by_default():
             in str(excinfo.value)
     )
 
+
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_smart_compact_deserialization_is_turned_on(compact_serialization):
     class Foo(Structure):
@@ -1537,3 +1550,10 @@ def test_smart_compact_deserialization_is_turned_on(compact_serialization):
         _additional_properties = False
 
     assert Deserializer(Foo).deserialize([2, 3]) == Foo(a=[2, 3])
+
+
+def test_float_deserialization():
+    class Foo(Structure):
+        f: float
+
+    assert Deserializer(Foo).deserialize({"f": 5}) == Foo(f=5.0)

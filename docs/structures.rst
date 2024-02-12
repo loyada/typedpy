@@ -993,7 +993,9 @@ Typedpy exposes several global defaults. These can be views as the Typedpy confi
    case you use ImmutableStructure, as it protects from mutating nested elements. However, it has a significant cost
    in terms of performance. That's why by default, it is set to False. The assumption is that if you are using trusted
    instantiation, you prioritize performance over immutability safety.
-
+10. TypedPyDefaults.ignore_invalid_additional_properties_in_deserialization - in case additional_properties is set to False
+    and the payload to deserialization contains additional properties, this setting determines whether they will be silently
+    ignored, and cause an exception. Default is True.
 
 Planned Deprecations
 ====================

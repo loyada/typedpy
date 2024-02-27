@@ -17,7 +17,7 @@
 
 ## Typedpy - Strict Type System for Python
 
-``typedpy`` is a library for type-safe, strict, Python structures. It supports Python 3.6+.
+``typedpy`` is a library for type-safe, strict, Python structures. It supports Python 3.9+.
 
 ### Features
 

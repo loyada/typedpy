@@ -95,7 +95,7 @@ class Deserializer(Structure):
         adjusted_keep_undefined = (
             keep_undefined
             if keep_undefined is not None or additional_props_allowed
-            else not TypedPyDefaults.ignore_invalid_additional_properties_in_deserialization
+            else True
         )
         return deserialize_structure(
             self.target_class,

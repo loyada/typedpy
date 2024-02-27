@@ -1509,7 +1509,14 @@ def test_additional_properties_turned_off_err_silent_ignore(additional_props_def
         b: int
         _required = []
 
-    Deserializer(Foo).deserialize({"c": 1, "a": 2})
+    assert Deserializer(Foo).deserialize({"c": 1, "a": 2}) == Foo(a=2)
+
+
+def test_additional_properties_turned_off_input_is_not_dict(additional_props_default_is_false, compact_serialization):
+    class Foo(Structure):
+        a: list[int]
+
+    assert Deserializer(Foo).deserialize([1,2]) == Foo(a=[1,2])
 
 
 def test_additional_properties_turned_off_err_throw(

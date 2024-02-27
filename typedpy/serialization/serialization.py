@@ -804,14 +804,14 @@ def deserialize_structure_internal(
 
     ignore_none = getattr(cls, IGNORE_NONE_VALUES, False)
     field_by_name = cls.get_all_fields_by_name()
-
+    props = cls.__dict__
+    additional_props = props.get(
+        ADDITIONAL_PROPERTIES, TypedPyDefaults.additional_properties_default
+    )
     if not isinstance(input_dict, dict):
-        props = cls.__dict__
         fields = list(field_by_name.keys())
         required = props.get(REQUIRED_FIELDS, fields)
-        additional_props = props.get(
-            ADDITIONAL_PROPERTIES, TypedPyDefaults.additional_properties_default
-        )
+
         if (
             len(fields) == 1
             and required == fields
@@ -833,7 +833,8 @@ def deserialize_structure_internal(
         k: v
         for k, v in input_dict.items()
         if k not in field_by_name
-        and keep_undefined
+        and keep_undefined and
+        (additional_props is True or not TypedPyDefaults.ignore_invalid_additional_properties_in_deserialization)
         and k not in getattr(cls, "_constants", [])
     }
 

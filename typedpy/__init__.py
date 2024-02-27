@@ -21,6 +21,7 @@ from typedpy.structures import (
     Extend,
     keys_of,
 )
+from typedpy.structures.defaults import TypedPyDefaults
 
 from .json_schema import (
     structure_to_schema,

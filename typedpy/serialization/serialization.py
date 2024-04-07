@@ -816,7 +816,7 @@ def deserialize_structure_internal(
             len(fields) == 1
             and required == fields
             and additional_props is False
-            and TypedPyDefaults.compact_serialization_default
+            and TypedPyDefaults.compact_deserialization_default
         ):
             field_name = fields[0]
             return cls(

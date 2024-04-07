@@ -1615,6 +1615,10 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         TypedPyDefaults.compact_serialization_default = compact_serialization_default
 
     @staticmethod
+    def set_compact_deserialization_default(compact_deserialization_default: bool = False):
+        TypedPyDefaults.compact_deserialization_default = compact_deserialization_default
+
+    @staticmethod
     def set_auto_enum_conversion(flag: bool = True):
         TypedPyDefaults.automatic_enum_conversion = flag
 

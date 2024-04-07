@@ -449,7 +449,7 @@ def test_unsupported_type_err():
     )
 
 
-def test_single_int_deserialization(compact_serialization):
+def test_single_int_deserialization(compact_deserialization):
     class Foo(Structure):
         i = Integer
         _additionalProperties = False
@@ -460,7 +460,7 @@ def test_single_int_deserialization(compact_serialization):
     assert example.i == 5
 
 
-def test_single_int_deserialization1(compact_serialization):
+def test_single_int_deserialization1(compact_deserialization):
     class Foo(Structure):
         i = Integer
         _additional_properties = False
@@ -471,7 +471,7 @@ def test_single_int_deserialization1(compact_serialization):
     assert example.i == 5
 
 
-def test_single_array_deserialization(compact_serialization):
+def test_single_array_deserialization(compact_deserialization):
     class Foo(Structure):
         arr = Array[String]
         _additionalProperties = False
@@ -1512,7 +1512,7 @@ def test_additional_properties_turned_off_err_silent_ignore(additional_props_def
     assert Deserializer(Foo).deserialize({"c": 1, "a": 2}) == Foo(a=2)
 
 
-def test_additional_properties_turned_off_input_is_not_dict(additional_props_default_is_false, compact_serialization):
+def test_additional_properties_turned_off_input_is_not_dict(additional_props_default_is_false, compact_deserialization):
     class Foo(Structure):
         a: list[int]
 
@@ -1551,7 +1551,7 @@ def test_smart_compact_deserialization_is_turned_off_by_default():
 
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
-def test_smart_compact_deserialization_is_turned_on(compact_serialization):
+def test_smart_compact_deserialization_is_turned_on(compact_deserialization):
     class Foo(Structure):
         a: list[int]
         _additional_properties = False

@@ -670,6 +670,24 @@ Just like Partial, Omit can also be used directly:
     Bar = Omit[Foo, ("a", "b"), "Bar"]
 
 
+Note that if the original class (Foo in the example above) has additional custom methods, Omit will not copy them.
+The reason is that it can easily introduce errors. Consider:
+
+.. code-block:: python
+
+    class Foo(Structure):
+         a: int
+         b: int
+
+    def getSum(self):
+        return self.a + self.b
+
+    class Bar(Omit[Foo, ["b"]]):
+         pass
+
+    # Error!
+    Bar(a=4).getSum()
+
 Pick
 ----
 (from v2.7.2)

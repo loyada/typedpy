@@ -44,3 +44,8 @@ def test_undefined_serialization():
     assert Serializer(Foo(a=None)).serialize() == {"a": None, "d": 5}
     assert Serializer(Foo()).serialize() == {"d": 5}
     assert Serializer(Bar()).serialize() == {}
+
+
+def test_deserialize_empty_with_undefined():
+    foo = Deserializer(Foo).deserialize({})
+    assert foo.a is Undefined

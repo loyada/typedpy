@@ -1,19 +1,17 @@
-import sys
 from typing import List
 
-import pytest
 
 from typedpy import Integer, String, Structure, StructureReference
-from typedpy.commons import deep_get, nested
+from typedpy.commons import deep_get, nested, Undefined
 
 
 def test_deep_get():
     assert deep_get({"a1": {"b": {"c": 5}}, "a2": 2}, "a1.b.c") == 5
     assert deep_get({"a1": {"b": {"c": 5}}, "a2": 2}, "a2") == 2
     assert deep_get({"a1": {"b": {"c": 5}}, "a2": 2}, "a1.x") is None
+    assert deep_get({}, "x.y") is None
+    assert deep_get({}, "x.y", enable_undefined=True) is Undefined
 
-
-@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_nested_list():
     class Bar(Structure):
         x = StructureReference(i=Integer(), s=String())

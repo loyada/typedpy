@@ -198,9 +198,9 @@ def deep_get(
             return res
         return default
 
+    if default is None and enable_undefined:
+        default = Undefined
     keys = deep_key.split(".")
-    if not dictionary:
-        return Undefined if enable_undefined else None
     result = reduce(
         lambda d, key: _get_next_level(
             d, key, default, enable_undefined=enable_undefined

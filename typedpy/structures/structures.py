@@ -1463,6 +1463,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             for k in self.get_all_fields_by_name()
             if k not in ignore_props
                and k not in getattr(self.__class__, "_constants", {})
+               and k not in kw
         }
 
         kwargs = {
@@ -1524,6 +1525,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             if k not in ignore_props
                and k not in getattr(cls, "_constants", {})
                and (hasattr(source_object, k) or is_mapping)
+               and k not in kw
         }
         kwargs = {
             **{k: v for k, v in args_from_model.items() if v is not Undefined},
@@ -1571,6 +1573,7 @@ class Structure(UniqueMixin, metaclass=StructMeta):
                 if k not in ignore_props
                    and k not in getattr(cls, "_constants", {})
                    and (not is_mapping or k in source_object)
+                   and k not in kw
             }
             kwargs = {
                 **{k: v for k, v in args_from_model.items() if v is not Undefined},

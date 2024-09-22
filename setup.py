@@ -46,9 +46,9 @@ setup(
     license="MIT",
     long_description=long_description,
     url="http://github.com/loyada/typedpy",
-    download_url="https://github.com/loyada/typedpy/archive/v2.28.1.tar.gz",
+    download_url="https://github.com/loyada/typedpy/archive/v2.28.2.tar.gz",
     keywords=["testing", "type-safe", "strict", "schema", "validation"],
-    version="2.28.1",
+    version="2.28.2",
 )
 
 # coverage run --source=typedpy/ setup.py test

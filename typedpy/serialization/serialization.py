@@ -585,6 +585,7 @@ def _structure_simplicity_level(cls):
             if isinstance(v, SerializableField):
                 simplicity = _ClsSimplicity.nested
             if isinstance(v.items, _valid_classes_for_trusted_deserialization):
+                simplicity = _ClsSimplicity.nested
                 continue
             if isinstance(v.items, ClassReference) and _structure_simplicity_level(
                 v.items.get_type
@@ -693,7 +694,7 @@ def _remap_input(
                     for x in v
                 ]
             elif isinstance(field_def.items, SerializableField):
-                corrected_input[k] = field_def.items.deserialize(v)
+                corrected_input[k] = [field_def.items.deserialize(x) for x in v]
             else:
                 corrected_input[k] = v
 

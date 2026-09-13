@@ -1,5 +1,5 @@
 from typedpy.structures import Field, Structure, TypedField, ClassReference
-from typedpy.commons import python_ver_atleast_39, wrap_val
+from typedpy.commons import private_copy_of_field, python_ver_atleast_39, wrap_val
 from .collections_impl import ContainNestedFieldMixin, _CollectionMeta
 from .fields import verify_type_and_uniqueness
 from .function_call import Callable
@@ -102,9 +102,13 @@ class Tuple(ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
         res = []
         items = self.items if len(self.items) > 1 else self.items * len(value)
         for ind, item in enumerate(items):
-            setattr(item, "_name", self._name + f"_{str(ind)}")
-            item.__set__(temp_st, value[ind])
-            res.append(getattr(temp_st, getattr(item, "_name")))
+            # item is shared class-level state (see array.py's
+            # extract_field_value); rename a private copy instead of it.
+            item_field = private_copy_of_field(item)
+            item_name = f"{self._name}_{ind}"
+            setattr(item_field, "_name", item_name)
+            item_field.__set__(temp_st, value[ind])
+            res.append(getattr(temp_st, item_name))
             res += value[len(items) :]
         value = tuple(res)
 

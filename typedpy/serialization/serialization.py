@@ -209,7 +209,12 @@ def deserialize_multifield_wrapper(
     found_previous_match = False
     failures = 0
     err_messages = []
-    for field_option in field.get_fields():
+    for original_field_option in field.get_fields():
+        # original_field_option is shared class-level state (see array.py's
+        # extract_field_value); rename a private copy so the validation error
+        # (if any) is attributed to the right field name.
+        field_option = private_copy_of_field(original_field_option)
+        setattr(field_option, "_name", name)
         try:
             ignore_none = getattr(field_option, IGNORE_NONE_VALUES, False)
 
@@ -253,7 +258,16 @@ def deserialize_map(map_field, source_val, name, camel_case_convert=False):
     if not isinstance(source_val, dict):
         raise TypeError(f"{name}: Got {wrap_val(source_val)}; Expected a dictionary")
     if map_field.items:
-        key_field, value_field = map_field.items
+        # map_field.items are shared class-level state (see array.py's
+        # extract_field_value); rename private copies instead of them. Only
+        # the copies' own _name is changed (for accurate direct-validation
+        # error messages) -- the "name" parameter passed down is left as-is,
+        # so naming of anything nested inside the key/value field (e.g. an
+        # Array value type) is unaffected.
+        key_field = private_copy_of_field(map_field.items[0])
+        value_field = private_copy_of_field(map_field.items[1])
+        setattr(key_field, "_name", f"{name}_key")
+        setattr(value_field, "_name", f"{name}_value")
     else:
         key_field, value_field = None, None
     res = {}

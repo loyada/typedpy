@@ -1,4 +1,4 @@
-from typedpy.commons import wrap_val
+from typedpy.commons import private_copy_of_field, wrap_val
 from typedpy.structures import Field, FieldMeta, NoneField, ClassReference, TypedField
 from .fields import _map_to_field
 
@@ -64,8 +64,11 @@ class AllOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __set__(self, instance, value):
         for field in self.get_fields():
-            setattr(field, "_name", self._name)
-            field.__set__(instance, value)
+            # field is shared class-level state (see array.py's
+            # extract_field_value); rename a private copy instead of it.
+            field_copy = private_copy_of_field(field)
+            setattr(field_copy, "_name", self._name)
+            field_copy.__set__(instance, value)
         super().__set__(instance, value)
 
     def __str__(self):
@@ -120,9 +123,11 @@ class AnyOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
             return
         matched = False
         for field in self.get_fields():
-            setattr(field, "_name", self._name)
+            # same shared-state concern as in AllOf.__set__ above
+            field_copy = private_copy_of_field(field)
+            setattr(field_copy, "_name", self._name)
             try:
-                field.__set__(instance, value)
+                field_copy.__set__(instance, value)
                 matched = True
                 break
             except TypeError:
@@ -167,9 +172,11 @@ class OneOf(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
     def __set__(self, instance, value):
         matched = 0
         for field in self.get_fields():
-            setattr(field, "_name", self._name)
+            # same shared-state concern as in AllOf.__set__ above
+            field_copy = private_copy_of_field(field)
+            setattr(field_copy, "_name", self._name)
             try:
-                field.__set__(instance, value)
+                field_copy.__set__(instance, value)
                 matched += 1
             except TypeError:
                 pass
@@ -218,9 +225,11 @@ class NotField(MultiFieldWrapper, Field, metaclass=_JSONSchemaDraft4ReuseMeta):
 
     def __set__(self, instance, value):
         for field in self.get_fields():
-            setattr(field, "_name", self._name)
+            # same shared-state concern as in AllOf.__set__ above
+            field_copy = private_copy_of_field(field)
+            setattr(field_copy, "_name", self._name)
             try:
-                field.__set__(instance, value)
+                field_copy.__set__(instance, value)
             except TypeError:
                 pass
             except ValueError:

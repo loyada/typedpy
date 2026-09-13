@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from typedpy.commons import private_copy_of_field
 from typedpy.structures import TypedField, Structure, ImmutableField
 
 from .collections_impl import (
@@ -68,18 +69,21 @@ class Map(
         self.validate_size(value, self._name)
 
         if self.items is not None:
-            key_field, value_field = self.items[0], self.items[1]
-            setattr(key_field, "_name", self._name + "_key")
-            setattr(value_field, "_name", self._name + "_value")
+            # self.items[0]/[1] are shared class-level state (see array.py's
+            # extract_field_value); rename private copies instead of them.
+            key_field = private_copy_of_field(self.items[0])
+            value_field = private_copy_of_field(self.items[1])
+            key_name = f"{self._name}_key"
+            value_name = f"{self._name}_value"
+            setattr(key_field, "_name", key_name)
+            setattr(value_field, "_name", value_name)
             res = OrderedDict()
             for key, val in value.items():
                 temp_st = Structure()
                 key_field.__set__(temp_st, key)
                 value_field.__set__(temp_st, val)
 
-                res[getattr(temp_st, getattr(key_field, "_name"))] = getattr(
-                    temp_st, getattr(value_field, "_name")
-                )
+                res[getattr(temp_st, key_name)] = getattr(temp_st, value_name)
                 value = res
 
         super().__set__(instance, _DictStruct(self, instance, value, self._name))

@@ -292,7 +292,7 @@ def test_dict_to_map_invalid():
 
     with raises(ValueError) as excinfo:
         Deserializer(Foo).deserialize({"i": 5, "a": {"abc": ["xxx", "yyy", 2]}})
-    assert "a_2: Expected a string" in str(excinfo.value)
+    assert "a_2: Got 2; Expected a string" in str(excinfo.value)
 
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")

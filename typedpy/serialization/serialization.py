@@ -8,6 +8,7 @@ from decimal import Decimal
 
 from typedpy.commons import (
     Constant,
+    private_copy_of_field,
     Undefined,
     deep_get,
     raise_errs_if_needed,
@@ -92,11 +93,16 @@ def deserialize_list_like(
     items = field.items
     if isinstance(items, Field):
         ignore_none = getattr(items, IGNORE_NONE_VALUES, False)
+        # items is shared class-level state (see array.py's extract_field_value);
+        # rename a private copy so per-index validation errors are accurate
+        # without mutating state visible to concurrent deserialization calls.
+        items_copy = private_copy_of_field(items)
         for i, v in enumerate(value):
             item_name = f"{name}_{i}"
+            setattr(items_copy, "_name", item_name)
             try:
                 list_item = deserialize_single_field(
-                    items,
+                    items_copy,
                     v,
                     item_name,
                     keep_undefined=keep_undefined,

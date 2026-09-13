@@ -261,6 +261,18 @@ def default_factories(func):
     return decorated
 
 
+def private_copy_of_field(field):
+    """
+    Shallow copy of a field definition, bypassing the pickle protocol, since
+    implicit wrappers of non-Typedpy classes deliberately refuse to be pickled.
+    Used to rename a field definition locally without mutating shared class-level
+    state, which is not safe when structures are built concurrently.
+    """
+    clone = object.__new__(field.__class__)
+    clone.__dict__.update(field.__dict__)
+    return clone
+
+
 class Constant:
     """
     Mark a value as constant in a mapper.

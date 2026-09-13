@@ -690,6 +690,17 @@ def test_deserialize_none2():
     assert deserialized == Foo(t=5)
 
 
+def test_trusted_deserialization_list_of_enum():
+    class Foo(ImmutableStructure):
+        roles: list[Role]
+
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data={"roles": ["admin", "driver"]}, direct_trusted_mapping=True
+    )
+    assert deserialized.used_trusted_instantiation()
+    assert deserialized == Foo(roles=[Role.admin, Role.driver])
+
+
 def test_trusted_optional_enum():
     class Foo(ImmutableStructure):
         role: Optional[Role]

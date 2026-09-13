@@ -7,7 +7,7 @@ from typedpy.structures import (
     ImmutableField,
     ClassReference,
 )
-from typedpy.commons import python_ver_atleast_39
+from typedpy.commons import private_copy_of_field, python_ver_atleast_39
 from .collections_impl import (
     _ListStruct,
     SizedCollection,
@@ -20,13 +20,18 @@ from .strings import String
 
 
 def extract_field_value(*, self, value, cls):
-    setattr(self.items, "_name", self._name)
+    # self.items is a Field instance shared by every instance of the owning
+    # Structure class. Mutating its _name in place (as opposed to a private
+    # copy) would race with concurrent assignments to the same field on other
+    # instances, so validate against a private copy instead.
+    items = private_copy_of_field(self.items)
     res = cls()
     temp_st = Structure()
     for i, val in enumerate(value):
-        setattr(self.items, "_name", self._name + f"_{str(i)}")
-        self.items.__set__(temp_st, val)  # pylint: disable=unnecessary-dunder-call
-        res.append(getattr(temp_st, getattr(self.items, "_name")))
+        item_name = f"{self._name}_{i}"
+        setattr(items, "_name", item_name)
+        items.__set__(temp_st, val)  # pylint: disable=unnecessary-dunder-call
+        res.append(getattr(temp_st, item_name))
     return res
 
 
@@ -155,9 +160,12 @@ class Array(
                 for ind, item in enumerate(self.items):
                     if ind >= len(value):
                         continue
-                    setattr(item, "_name", self._name + f"_{str(ind)}")
-                    item.__set__(temp_st, value[ind])
-                    res.append(getattr(temp_st, getattr(item, "_name")))
+                    # same shared-state concern as in extract_field_value() above
+                    item_field = private_copy_of_field(item)
+                    item_name = f"{self._name}_{ind}"
+                    setattr(item_field, "_name", item_name)
+                    item_field.__set__(temp_st, value[ind])
+                    res.append(getattr(temp_st, item_name))
                 res += value[len(self.items) :]
                 value = res
 

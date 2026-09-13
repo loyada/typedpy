@@ -1,7 +1,7 @@
 from typing import Callable
 
 from typedpy.structures import Structure, ImmutableField, Field, ClassReference
-from typedpy.commons import wrap_val
+from typedpy.commons import private_copy_of_field, wrap_val
 from .array import has_multiple_items
 
 from .collections_impl import SizedCollection, ContainNestedFieldMixin, _CollectionMeta
@@ -76,12 +76,15 @@ class Set(
             raise TypeError(f"{self._name}: Got {wrap_val(value)}; Expected {cls}")
         self.validate_size(value, self._name)
         if self.items is not None:
-            setattr(self.items, "_name", self._name)
+            # self.items is shared class-level state (see array.py's
+            # extract_field_value); rename a private copy instead of mutating it.
+            item_field = private_copy_of_field(self.items)
+            setattr(item_field, "_name", self._name)
             res = []
             for val in value:
                 temp_st = Structure()
-                self.items.__set__(temp_st, val)
-                res.append(getattr(temp_st, getattr(self.items, "_name")))
+                item_field.__set__(temp_st, val)
+                res.append(getattr(temp_st, self._name))
             value = cls(res)
         super().__set__(instance, value)
 
@@ -120,13 +123,15 @@ class ImmutableSet(Set, ImmutableField):
         self.validate_size(value, self._name)
         if self.items is not None:
             temp_st = Structure()
-            setattr(self.items, "_name", self._name)
+            # same shared-state concern as in Set.__set__ above
+            item_field = private_copy_of_field(self.items)
+            setattr(item_field, "_name", self._name)
             res = set()
             for val in value:
                 if getattr(self, "_immutable", False):
                     temp_st = Structure()
-                self.items.__set__(temp_st, val)
-                res.add(getattr(temp_st, getattr(self.items, "_name")))
+                item_field.__set__(temp_st, val)
+                res.add(getattr(temp_st, self._name))
                 value = res
         corrected_value = value if isinstance(value, frozenset) else frozenset(value)
         super().__set__(instance, corrected_value)

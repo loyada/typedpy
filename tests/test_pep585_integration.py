@@ -158,7 +158,7 @@ def test_array_of_dict_1():
 
     with raises(ValueError) as excinfo:
         deserializer.deserialize({"a": [{"abc": "xxx"}], "i": 5})
-    assert "a_0: a_1_value: Expected <class 'int'>; Got 'xxx'" in str(excinfo.value)
+    assert "a_0_value: Expected <class 'int'>; Got 'xxx'" in str(excinfo.value)
 
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
@@ -178,11 +178,11 @@ def test_array_of_dict_2():
 
     with raises(ValueError) as excinfo:
         deserializer.deserialize({"a": [{"abc": "xxx"}], "i": 5})
-    assert "a_0: a_1_value: Expected <class 'int'>; Got 'xxx'" in str(excinfo.value)
+    assert "a_0_value: Expected <class 'int'>; Got 'xxx'" in str(excinfo.value)
 
     with raises(ValueError) as excinfo:
         deserializer.deserialize({"a": [{1: 123}], "i": 5})
-    assert "a_0: a_1_key: Got 1; Expected a string" in str(excinfo.value)
+    assert "a_0_key: Got 1; Expected a string" in str(excinfo.value)
 
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
@@ -292,7 +292,7 @@ def test_dict_to_map_invalid():
 
     with raises(ValueError) as excinfo:
         Deserializer(Foo).deserialize({"i": 5, "a": {"abc": ["xxx", "yyy", 2]}})
-    assert "a_2: Expected a string" in str(excinfo.value)
+    assert "a_2: Got 2; Expected a string" in str(excinfo.value)
 
 
 @mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")

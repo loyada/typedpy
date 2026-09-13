@@ -1,5 +1,6 @@
 from collections import deque
 
+from typedpy.commons import private_copy_of_field
 from typedpy.structures import Field, Structure, TypedField, ImmutableField
 from .array import _get_items, extract_field_value
 from .collections_impl import (
@@ -95,9 +96,13 @@ class Deque(
                 for ind, item in enumerate(self.items):
                     if ind >= len(value):
                         continue
-                    setattr(item, "_name", self._name + f"_{str(ind)}")
-                    item.__set__(temp_st, value[ind])
-                    res.append(getattr(temp_st, getattr(item, "_name")))
+                    # same shared-state concern as in array.py's
+                    # extract_field_value()
+                    item_field = private_copy_of_field(item)
+                    item_name = f"{self._name}_{ind}"
+                    setattr(item_field, "_name", item_name)
+                    item_field.__set__(temp_st, value[ind])
+                    res.append(getattr(temp_st, item_name))
                 for i in range(len(self.items), len(value)):
                     res.append(value[i])
                 value = res

@@ -8,7 +8,12 @@ import typing
 from os.path import relpath
 from pathlib import Path
 
-from typedpy.commons import INDENT, doublewrap_val
+from typedpy.commons import (
+    ANNOTATE_FUNCTION_KEYS,
+    INDENT,
+    doublewrap_val,
+    get_own_annotations,
+)
 from typedpy.fields import FunctionCall
 from typedpy.serialization.serialization_wrappers import Deserializer, Serializer
 from typedpy.structures import (
@@ -271,7 +276,12 @@ def _get_functions(attrs):
     return {
         k: v
         for k, v in attrs.items()
-        if (inspect.isfunction(v) and (v.__module__ == attrs["__name__"]))
+        if (
+            inspect.isfunction(v)
+            and v.__module__ == attrs["__name__"]
+            # Python 3.14+ stores the module's lazy annotate function in its namespace
+            and k not in ANNOTATE_FUNCTION_KEYS
+        )
     }
 
 
@@ -455,7 +465,7 @@ def _get_consts(attrs, additional_classes, additional_imports):
         return v if isinstance(v, (int, float, complex, bool)) else v.__class__()
 
     res = []
-    annotations = attrs.get("__annotations__", None) or {}
+    annotations = get_own_annotations(attrs)
     constants = {
         k: v
         for (k, v) in attrs.items()

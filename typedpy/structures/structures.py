@@ -21,6 +21,7 @@ from typing import get_type_hints, Iterable
 from typedpy.commons import (
     Constant,
     Undefined,
+    ensure_annotations_in_class_namespace,
     raise_errs_if_needed,
     wrap_val,
     _is_sunder,
@@ -690,6 +691,7 @@ class StructMeta(type):
             cls, name, bases, cls_dict
     ):  # pylint: disable=too-many-locals, too-many-branches
         bases_params, bases_required = get_base_info(bases)
+        ensure_annotations_in_class_namespace(cls_dict)
         add_annotations_to_class_dict(cls_dict, previous_frame=currentframe().f_back)
         defaults = cls_dict[DEFAULTS]
         _instantiate_fields_if_needed(cls_dict=cls_dict, defaults=defaults)

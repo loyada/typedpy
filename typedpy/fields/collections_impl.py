@@ -51,6 +51,9 @@ class _IteratorProxyMixin:
             self.the_list = the_list
             self.index = 0
 
+        def __iter__(self):
+            return self
+
         def __next__(self):
             if len(self.the_list) > self.index:
                 self.index += 1

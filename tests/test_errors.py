@@ -291,5 +291,5 @@ def test_string_err_wrapper(all_errors):
         Bar(foos=[Foo(a="a")])
     simple_form = get_simplified_error(str(ex.value))
     assert simple_form == [
-        """Foo.a: Got 'a'; Does not match regular expression: '[\d]{3}'"""
+        r"""Foo.a: Got 'a'; Does not match regular expression: '[\d]{3}'"""
     ]

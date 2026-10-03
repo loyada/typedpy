@@ -4,7 +4,7 @@ import inspect
 import logging
 from typing import Callable
 
-from typedpy.commons import INDENT, default_factories
+from typedpy.commons import INDENT, default_factories, get_own_annotations
 from typedpy.utility import type_is_generic
 from typedpy.structures import (
     ADDITIONAL_PROPERTIES,
@@ -93,7 +93,7 @@ def _get_method_and_attr_list(cls, members):
     ):
         method_list = ["__init__"] + method_list
 
-    for name in cls_dict.get("__annotations__", {}):
+    for name in get_own_annotations(cls):
         if name not in attrs:
             attrs.append(name)
     return method_list, attrs
@@ -102,7 +102,7 @@ def _get_method_and_attr_list(cls, members):
 def _get_cls_members_and_annotations(cls):
     members = {}
     members.update(dict(cls.__dict__))
-    annotations = cls.__dict__.get("__annotations__", {})
+    annotations = get_own_annotations(cls)
     for a in annotations:
         members[a] = annotations[a]
     members.update(annotations)

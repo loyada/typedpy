@@ -12,6 +12,67 @@ python_ver_36 = py_version == (3, 6)
 python_ver_atleast_than_37 = py_version > (3, 6)
 python_ver_atleast_39 = py_version >= (3, 9)
 python_ver_atleast_310 = py_version >= (3, 10)
+python_ver_atleast_314 = py_version >= (3, 14)
+
+# Keys under which Python 3.14+ stores the lazy annotate function in a class or module namespace
+ANNOTATE_FUNCTION_KEYS = ("__annotate__", "__annotate_func__")
+
+
+def _evaluate_lazy_annotations(namespace, fallback_to_strings: bool) -> Optional[dict]:
+    """
+    From Python 3.14 (PEP 649/749), annotations are evaluated lazily: a class or module
+    namespace contains an annotate function instead of "__annotations__".
+    Returns the evaluated annotations, or None if the namespace has none.
+    """
+    import annotationlib  # pylint: disable=import-outside-toplevel
+
+    annotate = annotationlib.get_annotate_from_class_namespace(namespace)
+    if annotate is None:
+        return None
+    try:
+        return annotationlib.call_annotate_function(annotate, annotationlib.Format.VALUE)
+    except NameError:
+        if not fallback_to_strings:
+            raise
+        # as with "from __future__ import annotations"
+        return annotationlib.call_annotate_function(
+            annotate, annotationlib.Format.STRING
+        )
+
+
+def ensure_annotations_in_class_namespace(cls_dict):
+    """
+    Typedpy converts annotations to fields while the class is created. From Python 3.14
+    the class namespace no longer contains "__annotations__", so evaluate them eagerly and
+    store them in the namespace, as in earlier Python versions (including raising
+    NameError for an undefined name).
+    """
+    if not python_ver_atleast_314 or "__annotations__" in cls_dict:
+        return
+    annotations = _evaluate_lazy_annotations(cls_dict, fallback_to_strings=False)
+    if annotations is None:
+        return
+    cls_dict["__annotations__"] = annotations
+    # keep a single source of truth, since typedpy may update __annotations__
+    for key in ANNOTATE_FUNCTION_KEYS:
+        cls_dict.pop(key, None)
+
+
+def get_own_annotations(obj_or_namespace) -> dict:
+    """
+    The annotations defined directly on a class or module (not inherited), given the
+    class, the module, or its __dict__.
+    Equivalent to __dict__.get("__annotations__", {}) before Python 3.14.
+    """
+    namespace = (
+        obj_or_namespace
+        if isinstance(obj_or_namespace, Mapping)
+        else obj_or_namespace.__dict__
+    )
+    own = namespace.get("__annotations__")
+    if own is not None or not python_ver_atleast_314:
+        return own or {}
+    return _evaluate_lazy_annotations(namespace, fallback_to_strings=True) or {}
 
 INDENT = " " * 4
 

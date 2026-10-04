@@ -149,6 +149,60 @@ def test_variants_discovered_lazily_after_definition():
     assert variants == {EventSubject.foo: LateVariant}
 
 
+def test_variant_defined_after_the_table_is_first_cached_is_still_found_on_miss():
+    class Base(AbstractStructure):
+        subject: Enum[EventSubject]
+
+    class FooVariant(Base):
+        subject = Constant(EventSubject.foo)
+
+    class Holder2(Structure):
+        event = DiscriminatedUnion(Base, by=Base.subject)
+
+    # force the table to be built and cached now, before BarVariant exists
+    holder = Holder2(event=FooVariant())
+    field = Holder2.event
+    assert field._ensure_variants() == {EventSubject.foo: FooVariant}
+
+    class BarVariant(Base):
+        subject = Constant(EventSubject.bar)
+
+    # a stale read of the cache doesn't see BarVariant yet
+    assert BarVariant not in field._ensure_variants().values()
+
+    # but deserializing a "bar" value triggers a refresh and succeeds
+    holder2 = deserialize_structure(Holder2, {"event": {"subject": "bar"}})
+    assert isinstance(holder2.event, BarVariant)
+
+    # and so does direct assignment of an instance of the new variant
+    holder.event = BarVariant()
+    assert isinstance(holder.event, BarVariant)
+
+
+def test_subclass_of_a_tagged_variant_inherits_its_tag():
+    class Base(AbstractStructure):
+        subject: Enum[EventSubject]
+
+    class FooVariant(Base):
+        subject = Constant(EventSubject.foo)
+
+    class SpecialFooVariant(FooVariant):
+        extra: int
+
+    field = DiscriminatedUnion(Base, by=Base.subject)
+    variants = field._ensure_variants()
+    # SpecialFooVariant isn't registered as its own variant -- it shares
+    # FooVariant's tag, so a "foo"-tagged value deserializes as FooVariant
+    assert variants == {EventSubject.foo: FooVariant}
+
+    class Holder2(Structure):
+        event = DiscriminatedUnion(Base, by=Base.subject)
+
+    # a SpecialFooVariant instance is still accepted (it IS a FooVariant)
+    holder = Holder2(event=SpecialFooVariant(extra=1))
+    assert isinstance(holder.event, SpecialFooVariant)
+
+
 def test_serialize_slow_path():
     holder = Holder(event=FooEvent(name="x", extra=5))
     assert serialize(holder) == {"event": {"subject": "foo", "name": "x", "extra": 5}}

@@ -564,6 +564,8 @@ Re-use
 
 .. autoclass:: NotField
 
+.. autoclass:: DiscriminatedUnion
+
 **All the field types under this category support reference to another** :class:`Structure` . For example, this code is valid and will work the
 way you'd expect:
 

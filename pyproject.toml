@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "typedpy"
+version = "2.30.0"
+description = "Type-safe Python"
+readme = { file = "README.md", content-type = "text/markdown" }
+license = { text = "MIT" }
+authors = [
+    { name = "Danny Loya", email = "dan.loya@gmail.com" },
+]
+keywords = ["testing", "type-safe", "strict", "schema", "validation"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+requires-python = ">=3.9"
+dependencies = []
+
+[project.urls]
+Homepage = "http://github.com/loyada/typedpy"
+Download = "https://github.com/loyada/typedpy/archive/v2.30.0.tar.gz"
+
+[project.scripts]
+create-stub = "typedpy.scripts.create_stub:main"
+create-stubs-for-dir = "typedpy.scripts.create_stubs:main"
+
+[tool.setuptools.packages.find]
+include = [
+    "typedpy",
+    "typedpy.scripts",
+    "typedpy.structures",
+    "typedpy.fields",
+    "typedpy.extfields",
+    "typedpy.json_schema",
+    "typedpy.serialization",
+    "typedpy.stubs",
+]

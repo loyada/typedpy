@@ -1,8 +1,18 @@
+import enum
 from functools import wraps
 from typing import Type
 
 from typedpy.commons import Constant, first_in, Undefined, UndefinedMeta
-from typedpy.fields import Boolean, FunctionCall, Number, String, Array, AnyOf, OneOf
+from typedpy.fields import (
+    Boolean,
+    FunctionCall,
+    Number,
+    String,
+    Array,
+    AnyOf,
+    OneOf,
+    DiscriminatedUnion,
+)
 from typedpy.structures import ClassReference, Field, NoneField, Structure
 from typedpy.structures.structures import (
     created_fast_serializer,
@@ -71,6 +81,27 @@ def _get_serialize(field, cls):
             )
     owner = cls
 
+    if isinstance(obj, DiscriminatedUnion):
+        for variant in obj._ensure_variants().values():
+            if not issubclass(variant, FastSerializable):
+                raise TypeError(
+                    f"{obj} is not FastSerializable, since variant {variant.__name__} "
+                    "is not FastSerializable"
+                )
+            if getattr(
+                variant, "serialize", None
+            ) is FastSerializable.serialize and not getattr(
+                variant, failed_to_create_fast_serializer, False
+            ):
+                create_serializer(variant)
+
+        def wrapped_discriminated_union(self):
+            val = field.__get__(self, owner)  # pylint: disable=unnecessary-dunder-call
+            # dispatch by the value's own (runtime) class
+            return val.serialize() if val is not None else None
+
+        return wrapped_discriminated_union
+
     def wrapped(self):
         val = field.__get__(self, owner)  # pylint: disable=unnecessary-dunder-call
         return obj.serialize(val) if val is not None else None
@@ -80,7 +111,8 @@ def _get_serialize(field, cls):
 
 def _get_constant(constant: Constant):
     def wrapped(_self):
-        return constant()
+        val = constant()
+        return val.name if isinstance(val, enum.Enum) else val
 
     return wrapped
 

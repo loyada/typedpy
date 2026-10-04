@@ -35,6 +35,7 @@ from .function_call import FunctionCall, Function
 from .subclass import SubClass
 from .multified_wrappers import AllOf, OneOf, NotField, AnyOf, MultiFieldWrapper
 from .enum import Enum, EnumString
+from .discriminated_union import DiscriminatedUnion
 from .decimal_number import DecimalNumber
 from .fields import Generator, StructureClass
 from .sized import Sized

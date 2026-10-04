@@ -169,7 +169,7 @@ class DiscriminatedUnion(Field):
     def _discover_inherited_variants(self):
         variant_by_tag = {}
 
-        def visit(cls):
+        def collect_variants_from_subclasses(cls):
             for sub in cls.__subclasses__():
                 tag_field = sub.__dict__.get(self._by_name)
                 if isinstance(tag_field, Constant):
@@ -181,9 +181,9 @@ class DiscriminatedUnion(Field):
                             f"and {sub.__name__}"
                         )
                     variant_by_tag[tag] = sub
-                    visit(sub)
+                    collect_variants_from_subclasses(sub)
                 elif sub.__subclasses__():
-                    visit(sub)
+                    collect_variants_from_subclasses(sub)
                 else:
                     raise TypeError(
                         f"{self._description()}: {sub.__name__} is a subclass of "
@@ -191,7 +191,7 @@ class DiscriminatedUnion(Field):
                         f"{self._by_name} as a Constant"
                     )
 
-        visit(self._base_cls)
+        collect_variants_from_subclasses(self._base_cls)
         if not variant_by_tag:
             raise TypeError(
                 f"{self._description()}: no variants found. A variant must be a "

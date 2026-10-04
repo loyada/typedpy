@@ -853,6 +853,60 @@ This means that it is not allowed to set the "subject" field of an instance.Tryi
 It is also reflected in the generated stub files, so that the IDE knows this field is not part of the signature.
 
 
+.. _discriminated-union:
+
+Discriminated Union
+====================
+Building on the previous example: a :class:`DiscriminatedUnion` field holds exactly one of several ``Structure``
+variants, where the correct variant is picked automatically from the data itself, by looking at the value of a
+discriminator field such as ``subject`` above -- instead of trying each possible variant in turn until one validates
+(which is what an untagged union field, such as :class:`AnyOf`, has to do).
+
+Continuing the ``Event``/``FooEvent``/``BarEvent`` example from above:
+
+.. code-block:: python
+
+    class Holder(Structure):
+        event = DiscriminatedUnion(Event, by=Event.subject)
+
+    holder = Holder(event=FooEvent(name="name"))
+    assert isinstance(holder.event, FooEvent)
+
+    # deserialization picks the variant by reading "subject" from the input
+    holder2 = deserialize_structure(Holder, {"event": {"subject": "bar", "val": 5}})
+    assert isinstance(holder2.event, BarEvent)
+
+``by`` is a field object (``Event.subject``, not the string ``"subject"``), so renaming the field stays refactor-safe.
+Variants are discovered automatically as subclasses of ``Event`` that set ``subject`` to a ``Constant`` -- discovery
+is lazy, happening the first time it's needed and again whenever a later lookup doesn't recognize a value, so
+variants defined or imported later are still picked up. A subclass of a variant that doesn't redefine ``subject``
+(e.g. a further subclass of ``FooEvent``) simply inherits that tag and deserializes as ``FooEvent``, rather than
+being treated as its own variant. A misconfigured setup -- a variant missing the ``Constant``, two variants sharing
+one discriminator value, or a ``by`` that doesn't actually belong to the hierarchy -- raises a clear ``TypeError``.
+
+A ``DiscriminatedUnion`` can also be declared without any shared base class at all, as an explicit ``Union`` of
+otherwise-unrelated classes, as long as each one independently defines the same-named discriminator as a ``Constant``:
+
+.. code-block:: python
+
+    class Circle(Structure):
+        shape_type = Constant("circle")
+        radius: int
+
+    class Square(Structure):
+        shape_type = Constant("square")
+        side: int
+
+    class Canvas(Structure):
+        shape = DiscriminatedUnion(Union[Circle, Square], by=Circle.shape_type)
+
+Serialization always reflects the value's actual variant (including when using :class:`FastSerializable` -- unlike
+:class:`AnyOf`/:class:`OneOf`, a ``DiscriminatedUnion`` field *can* be fast-serializable as long as every variant is).
+JSON Schema generation produces a ``oneOf`` of the variants, with each variant's schema restricting its discriminator
+property to its own value. Stub (``.pyi``) generation renders the field as a ``Union`` of the variant classes.
+
+See :class:`DiscriminatedUnion` for the full reference.
+
 
 Differentiating Between Undefined values and None Values
 ========================================================

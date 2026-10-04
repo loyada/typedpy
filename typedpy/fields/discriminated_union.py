@@ -28,7 +28,8 @@ class DiscriminatedUnion(Field):
     There are two ways to declare the variants:
 
     1. As subclasses of a common base class (discovered automatically, lazily, on
-       first use -- so variants defined or imported after this field is still found):
+       first use, and re-discovered if a later lookup doesn't recognize a value --
+       so variants defined or imported after this field is still found):
 
     .. code-block:: python
 
@@ -169,7 +170,7 @@ class DiscriminatedUnion(Field):
     def _discover_inherited_variants(self):
         variant_by_tag = {}
 
-        def collect_variants_from_subclasses(cls):
+        def collect_variants_from_subclasses(cls, inherited_tag=None):
             for sub in cls.__subclasses__():
                 tag_field = sub.__dict__.get(self._by_name)
                 if isinstance(tag_field, Constant):
@@ -181,7 +182,13 @@ class DiscriminatedUnion(Field):
                             f"and {sub.__name__}"
                         )
                     variant_by_tag[tag] = sub
-                    collect_variants_from_subclasses(sub)
+                    collect_variants_from_subclasses(sub, inherited_tag=tag)
+                elif inherited_tag is not None:
+                    # sub doesn't redefine the discriminator, so it inherits its tag
+                    # from an already-registered ancestor and deserializes as that
+                    # ancestor (registering it separately would make the tag
+                    # ambiguous between two different classes).
+                    collect_variants_from_subclasses(sub, inherited_tag=inherited_tag)
                 elif sub.__subclasses__():
                     collect_variants_from_subclasses(sub)
                 else:
@@ -205,8 +212,20 @@ class DiscriminatedUnion(Field):
             self._variants_by_tag = self._discover_variants()
         return self._variants_by_tag
 
+    def _refresh_variants(self):
+        """
+        Re-run discovery. The variant table is cached after first use (see
+        _ensure_variants); call this instead when a lookup against the cached
+        table misses, in case a variant was defined or imported after that
+        first use.
+        """
+        self._variants_by_tag = self._discover_variants()
+        return self._variants_by_tag
+
     def __set__(self, instance, value):
         variants = self._ensure_variants()
+        if not isinstance(value, tuple(variants.values())):
+            variants = self._refresh_variants()
         if not isinstance(value, tuple(variants.values())):
             valid = ", ".join(v.__name__ for v in variants.values())
             raise TypeError(

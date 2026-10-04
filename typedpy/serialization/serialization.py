@@ -318,6 +318,10 @@ def deserialize_discriminated_union(
     )
     variants = field._ensure_variants()
     if tag not in variants:
+        # the variant may have been defined/imported after the table was last
+        # built (it's cached after first use), so refresh once before giving up
+        variants = field._refresh_variants()
+    if tag not in variants:
         raise ValueError(
             f"{by_name}: got {wrap_val(tag)}; Expected one of {list(variants.keys())}"
         )

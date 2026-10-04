@@ -1,6 +1,7 @@
 """
 Definitions of various types of fields. Supports JSON draft4 types.
 """
+
 import typing
 from functools import reduce
 
@@ -37,9 +38,11 @@ def verify_type_and_uniqueness(the_type, value, name, has_unique_items):
         raise TypeError(f"{name}: Got {wrap_val(value)}; Expected {str(the_type)}")
     if has_unique_items:
         unique = reduce(
-            lambda unique_vals, x: unique_vals.append(x) or unique_vals
-            if x not in unique_vals
-            else unique_vals,
+            lambda unique_vals, x: (
+                unique_vals.append(x) or unique_vals
+                if x not in unique_vals
+                else unique_vals
+            ),
             value,
             [],
         )

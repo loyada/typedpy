@@ -2,6 +2,7 @@
 Additional types of fields: datefield, datetime, timestring, DateString,
 Hostname, etc.
 """
+
 import json
 from datetime import datetime, date, time
 import re

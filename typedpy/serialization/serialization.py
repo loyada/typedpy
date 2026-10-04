@@ -670,10 +670,12 @@ def _get_enum_mapping(cls):
         for k, v in cls.get_all_fields_by_name().items()
         if isinstance(v, Enum) and getattr(v, "_is_enum", False)
     }
-    optionals =  {
+    optionals = {
         k: getattr(getattr(v, "_fields")[0], "_enum_class")
         for k, v in cls.get_all_fields_by_name().items()
-        if isinstance(v, AnyOf) and getattr(v, "_is_optional") and isinstance(getattr(v, "_fields")[0], Enum)
+        if isinstance(v, AnyOf)
+        and getattr(v, "_is_optional")
+        and isinstance(getattr(v, "_fields")[0], Enum)
     }
     return {**without_optionals, **optionals}
 
@@ -906,8 +908,11 @@ def deserialize_structure_internal(
         k: v
         for k, v in input_dict.items()
         if k not in field_by_name
-        and keep_undefined and
-        (additional_props is True or not TypedPyDefaults.ignore_invalid_additional_properties_in_deserialization)
+        and keep_undefined
+        and (
+            additional_props is True
+            or not TypedPyDefaults.ignore_invalid_additional_properties_in_deserialization
+        )
         and k not in getattr(cls, "_constants", [])
     }
 

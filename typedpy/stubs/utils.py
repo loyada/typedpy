@@ -70,7 +70,5 @@ def get_optional_globe(param):
     return (
         "**"
         if param.kind == inspect.Parameter.VAR_KEYWORD
-        else "*"
-        if param.kind == inspect.Parameter.VAR_POSITIONAL
-        else ""
+        else "*" if param.kind == inspect.Parameter.VAR_POSITIONAL else ""
     )

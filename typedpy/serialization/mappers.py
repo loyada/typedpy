@@ -1,6 +1,7 @@
 """
 Module for custom deserialization mappers aggregation
 """
+
 import json
 from collections.abc import Mapping
 from enum import Enum, auto
@@ -33,9 +34,7 @@ def _set_base_mapper_no_op(cls, for_serialization):
             items = (
                 [field_def.items]
                 if isinstance(field_def.items, Field)
-                else field_def.items
-                if isinstance(field_def.items, list)
-                else []
+                else field_def.items if isinstance(field_def.items, list) else []
             )
             values = {}
             for i in items:
@@ -225,9 +224,7 @@ def aggregate_deserialization_mappers(
     override_mapper = (
         override_mapper
         if isinstance(override_mapper, list)
-        else [override_mapper]
-        if override_mapper
-        else None
+        else [override_mapper] if override_mapper else None
     )
     mappers_list = (
         override_mapper
@@ -268,9 +265,7 @@ def aggregate_serialization_mappers(
     override_mapper = (
         override_mapper
         if isinstance(override_mapper, list)
-        else [override_mapper]
-        if override_mapper
-        else None
+        else [override_mapper] if override_mapper else None
     )
     mappers_list = (
         override_mapper
@@ -284,7 +279,7 @@ def aggregate_serialization_mappers(
             mappers.TO_CAMELCASE, aggregate_mapper, True
         )
     if cachable:
-        aggregated_mapper_by_class[
-            (cls, override_mapper_param, camel_case_convert)
-        ] = aggregate_mapper
+        aggregated_mapper_by_class[(cls, override_mapper_param, camel_case_convert)] = (
+            aggregate_mapper
+        )
     return aggregate_mapper

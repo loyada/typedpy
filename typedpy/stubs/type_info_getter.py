@@ -53,9 +53,11 @@ def _get_type_info_for_typing_generic(
         args_st = (
             ""
             if not mapped_args
-            else f"[{mapped_args[0]}]"
-            if len(mapped_args) == 1
-            else f"[[{','.join(mapped_args[:-1])}], {mapped_args[-1]}]"
+            else (
+                f"[{mapped_args[0]}]"
+                if len(mapped_args) == 1
+                else f"[[{','.join(mapped_args[:-1])}], {mapped_args[-1]}]"
+            )
         )
         additional_classes.add(typing.Callable)
         return f"Callable{args_st}"

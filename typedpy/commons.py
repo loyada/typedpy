@@ -30,7 +30,9 @@ def _evaluate_lazy_annotations(namespace, fallback_to_strings: bool) -> Optional
     if annotate is None:
         return None
     try:
-        return annotationlib.call_annotate_function(annotate, annotationlib.Format.VALUE)
+        return annotationlib.call_annotate_function(
+            annotate, annotationlib.Format.VALUE
+        )
     except NameError:
         if not fallback_to_strings:
             raise
@@ -73,6 +75,7 @@ def get_own_annotations(obj_or_namespace) -> dict:
     if own is not None or not python_ver_atleast_314:
         return own or {}
     return _evaluate_lazy_annotations(namespace, fallback_to_strings=True) or {}
+
 
 INDENT = " " * 4
 
@@ -263,11 +266,11 @@ def deep_get(
         default = Undefined
     keys = deep_key.split(".")
     result = reduce(
-        lambda d, key: _get_next_level(
-            d, key, default, enable_undefined=enable_undefined
-        )
-        if d
-        else default,
+        lambda d, key: (
+            _get_next_level(d, key, default, enable_undefined=enable_undefined)
+            if d
+            else default
+        ),
         keys,
         dictionary,
     )

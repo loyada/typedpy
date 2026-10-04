@@ -34,11 +34,11 @@ def _get_method_and_attr_list(cls, members):
     ignored_methods = (
         dir(Structure)
         if issubclass(cls, Structure)
-        else dir(Field)
-        if issubclass(cls, Structure)
-        else dir(enum)
-        if issubclass(cls, enum.Enum)
-        else {}
+        else (
+            dir(Field)
+            if issubclass(cls, Structure)
+            else dir(enum) if issubclass(cls, enum.Enum) else {}
+        )
     )
     private_prefix = "_" if issubclass(cls, enum.Enum) else "__"
     method_list = []
@@ -179,9 +179,7 @@ def _get_list_of_params_with_type(
         default = (
             ""
             if v.default == inspect._empty
-            else f" = {v.default.__name__}"
-            if inspect.isclass(v.default)
-            else " = None"
+            else f" = {v.default.__name__}" if inspect.isclass(v.default) else " = None"
         )
         type_annotation = (
             ""
@@ -273,9 +271,11 @@ def _get_return_annotations(*, func, additional_classes, locals_attrs):
     return (
         ""
         if sig.return_annotation == inspect._empty
-        else " -> None"
-        if sig.return_annotation is None
-        else f" -> {get_type_info(sig.return_annotation, locals_attrs, additional_classes)}"
+        else (
+            " -> None"
+            if sig.return_annotation is None
+            else f" -> {get_type_info(sig.return_annotation, locals_attrs, additional_classes)}"
+        )
     )
 
 

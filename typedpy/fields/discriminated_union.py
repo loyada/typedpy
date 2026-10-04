@@ -148,7 +148,7 @@ class DiscriminatedUnion(Field):
         return self._discover_inherited_variants()
 
     def _discover_explicit_variants(self):
-        table = {}
+        variant_by_tag = {}
         for variant in self._explicit_variants:
             tag_field = variant.get_all_fields_by_name().get(self._by_name)
             if not isinstance(tag_field, Constant):
@@ -157,30 +157,30 @@ class DiscriminatedUnion(Field):
                     f"{self._by_name} as a Constant"
                 )
             tag = tag_field()
-            if tag in table:
+            if tag in variant_by_tag:
                 raise TypeError(
                     f"{self._description()}: duplicate discriminator value "
-                    f"{wrap_val(tag)} used by both {table[tag].__name__} and "
+                    f"{wrap_val(tag)} used by both {variant_by_tag[tag].__name__} and "
                     f"{variant.__name__}"
                 )
-            table[tag] = variant
-        return table
+            variant_by_tag[tag] = variant
+        return variant_by_tag
 
     def _discover_inherited_variants(self):
-        table = {}
+        variant_by_tag = {}
 
         def visit(cls):
             for sub in cls.__subclasses__():
                 tag_field = sub.__dict__.get(self._by_name)
                 if isinstance(tag_field, Constant):
                     tag = tag_field()
-                    if tag in table:
+                    if tag in variant_by_tag:
                         raise TypeError(
                             f"{self._description()}: duplicate discriminator value "
-                            f"{wrap_val(tag)} used by both {table[tag].__name__} "
+                            f"{wrap_val(tag)} used by both {variant_by_tag[tag].__name__} "
                             f"and {sub.__name__}"
                         )
-                    table[tag] = sub
+                    variant_by_tag[tag] = sub
                     visit(sub)
                 elif sub.__subclasses__():
                     visit(sub)
@@ -192,13 +192,13 @@ class DiscriminatedUnion(Field):
                     )
 
         visit(self._base_cls)
-        if not table:
+        if not variant_by_tag:
             raise TypeError(
                 f"{self._description()}: no variants found. A variant must be a "
                 f"subclass of {self._base_cls.__name__} that sets "
                 f"{self._by_name} = Constant(...)"
             )
-        return table
+        return variant_by_tag
 
     def _ensure_variants(self):
         if self._variants_by_tag is None:

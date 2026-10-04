@@ -65,6 +65,7 @@ from typedpy.fields import (
     SerializableField,
     Deque,
     Generator,
+    DiscriminatedUnion,
     _DictStruct,
     _ListStruct,
 )
@@ -288,6 +289,48 @@ def deserialize_map(map_field, source_val, name, camel_case_convert=False):
     return res
 
 
+def deserialize_discriminated_union(
+    field,
+    source_val,
+    name,
+    *,
+    mapper=None,
+    keep_undefined=True,
+    camel_case_convert=False,
+):
+    if not isinstance(source_val, dict):
+        raise TypeError(f"{name}: Got {wrap_val(source_val)}; Expected a dictionary")
+    by_name = field._by_name
+    base_mapper = aggregate_deserialization_mappers(
+        field._by_owner, mapper, camel_case_convert
+    )
+    raw_tag = get_processed_input(
+        by_name,
+        base_mapper,
+        source_val,
+        enable_undefined=False,
+        use_strict_mapping=False,
+    )
+    tag = (
+        raw_tag
+        if isinstance(field._by, Constant)
+        else deserialize_single_field(field._by, raw_tag, by_name)
+    )
+    variants = field._ensure_variants()
+    if tag not in variants:
+        raise ValueError(
+            f"{by_name}: got {wrap_val(tag)}; Expected one of {list(variants.keys())}"
+        )
+    return deserialize_structure_internal(
+        variants[tag],
+        source_val,
+        name,
+        keep_undefined=keep_undefined,
+        mapper=mapper,
+        camel_case_convert=camel_case_convert,
+    )
+
+
 def deserialize_single_field(  # pylint: disable=too-many-branches
     field,
     source_val,
@@ -402,6 +445,15 @@ def deserialize_single_field(  # pylint: disable=too-many-branches
     elif isinstance(field, Map):
         value = deserialize_map(
             field, source_val, name, camel_case_convert=camel_case_convert
+        )
+    elif isinstance(field, DiscriminatedUnion):
+        value = deserialize_discriminated_union(
+            field,
+            source_val,
+            name,
+            mapper=mapper,
+            keep_undefined=keep_undefined,
+            camel_case_convert=camel_case_convert,
         )
     elif isinstance(field, SerializableField):
         value = field.deserialize(source_val)
@@ -968,6 +1020,12 @@ def serialize_val(
         cache = {}
     if field_definition in cache:
         return cache[field_definition](val)
+    if isinstance(field_definition, DiscriminatedUnion):
+        return (
+            None
+            if val is None
+            else serialize_internal(val, camel_case_convert=camel_case_convert)
+        )
     if isinstance(field_definition, SerializableField):
         cache[field_definition] = field_definition.serialize
         return field_definition.serialize(val)

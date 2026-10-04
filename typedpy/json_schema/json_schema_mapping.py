@@ -25,6 +25,7 @@ from typedpy.fields import (
     Tuple,
     Set,
     Enum,
+    DiscriminatedUnion,
 )
 
 from typedpy.extfields import DateString
@@ -65,6 +66,7 @@ def get_mapper(field_cls):
         Tuple: ArrayMapper,
         Set: ArrayMapper,
         Map: MapMapper,
+        DiscriminatedUnion: DiscriminatedUnionMapper,
     }
     for cls in field_cls.__mro__:
         if issubclass(cls, Field) and cls in field_type_to_mapper:
@@ -728,6 +730,17 @@ class AnyOfMapper(Mapper):
             "anyOf": convert_to_schema(
                 self.value._fields, definitions, serialization_mapper
             )
+        }
+
+
+class DiscriminatedUnionMapper(Mapper):
+    def to_schema(self, definitions, serialization_mapper):
+        variants = self.value._ensure_variants().values()
+        return {
+            "oneOf": [
+                _map_class_reference(ClassReference(variant), definitions)
+                for variant in variants
+            ]
         }
 
 

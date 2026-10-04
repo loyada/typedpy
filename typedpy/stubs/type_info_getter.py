@@ -3,8 +3,8 @@ import logging
 import typing
 
 from typedpy.commons import builtins_types
-from typedpy.fields import AllOf, AnyOf, Map, OneOf, Enum
-from typedpy.structures import Field, NoneField
+from typedpy.fields import AllOf, AnyOf, DiscriminatedUnion, Map, OneOf, Enum
+from typedpy.structures import ClassReference, Field, NoneField
 from typedpy.structures.structures import get_typing_lib_info
 from typedpy.utility import type_is_generic
 
@@ -17,6 +17,15 @@ def _get_anyof_typing(field, locals_attrs, additional_classes):
 
     fields = ",".join(
         [get_type_info(f, locals_attrs, additional_classes) for f in union_fields]
+    )
+    return f"Union[{fields}]"
+
+
+def _get_discriminated_union_typing(field, locals_attrs, additional_classes):
+    variants = field._ensure_variants().values()
+    fields = ",".join(
+        get_type_info(ClassReference(variant), locals_attrs, additional_classes)
+        for variant in variants
     )
     return f"Union[{fields}]"
 
@@ -158,6 +167,11 @@ def get_type_info(field, locals_attrs, additional_classes):
             return "None"
         if isinstance(field, (AnyOf, OneOf, AllOf)):
             return _get_anyof_typing(field, locals_attrs, additional_classes)
+
+        if isinstance(field, DiscriminatedUnion):
+            return _get_discriminated_union_typing(
+                field, locals_attrs, additional_classes
+            )
 
         if isinstance(field, Map):
             if not field.items:

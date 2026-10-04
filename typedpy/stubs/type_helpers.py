@@ -131,9 +131,7 @@ def _get_mapped_extra_imports(additional_imports) -> dict:
                 module_name = (
                     c.get_type.__module__
                     if isinstance(c, Field)
-                    else c.__module__
-                    if name != "Any"
-                    else None
+                    else c.__module__ if name != "Any" else None
                 )
             if module_name:
                 mapped[name] = module_name
@@ -486,17 +484,17 @@ def _get_consts(attrs, additional_classes, additional_imports):
         the_type = (
             get_type_info(annotations[c], attrs, additional_classes)
             if c in annotations
-            else get_type_info(attrs[c].__class__, attrs, additional_classes)
-            if not inspect.isclass(attrs[c]) and attrs[c] is not None
-            else None
+            else (
+                get_type_info(attrs[c].__class__, attrs, additional_classes)
+                if not inspect.isclass(attrs[c]) and attrs[c] is not None
+                else None
+            )
         )
         type_str = f": {the_type}" if the_type else ""
         val = (
             str(doublewrap_val(_as_builtin(attrs[c])))
             if _is_of_builtin(attrs[c])
-            else "None"
-            if attrs[c] is None
-            else ""
+            else "None" if attrs[c] is None else ""
         )
         val_st = f" = {val}" if val else ""
         res.append(f"{c}{type_str}{val_st}")

@@ -59,8 +59,6 @@ class Set(
 
         super()._validate(value)
 
-
-
     @property
     def get_type(self):
         if has_multiple_items(self.items):

@@ -2,6 +2,7 @@
 A type-safe strictly defined structures, compatible with JSON draft 4
 but offers significantly more functionality.
 """
+
 from typedpy.structures import (
     Structure,
     Field,

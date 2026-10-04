@@ -1,14 +1,61 @@
-Name                                Stmts   Miss Branch BrPart  Cover
----------------------------------------------------------------------
-typedpy/__init__.py                     8      0      0      0   100%
-typedpy/commons.py                     11      0      0      0   100%
-typedpy/errors.py                      52      0     16      0   100%
-typedpy/extfields.py                   84      2     19      0    98%
-typedpy/fields.py                     744      5    250     12    98%
-typedpy/json_schema_mapping.py        183      1     63      0    99%
-typedpy/serialization.py              277      2    174      2    99%
-typedpy/serialization_wrappers.py      38      0     20      2    97%
-typedpy/structures.py                 512      5    254     10    98%
-typedpy/utility.py                     19      0      6      2    92%
----------------------------------------------------------------------
-TOTAL                                1928     15    802     28    98%
+Name                                              Stmts   Miss Branch BrPart  Cover   Missing
+---------------------------------------------------------------------------------------------
+typedpy/__init__.py                                  10      0      0      0   100%
+typedpy/commons.py                                  114     18     34      4    80%   27-40, 54-60, 77, 263, 321->314
+typedpy/errors.py                                    70      3     18      2    94%   86, 92->106, 100-101
+typedpy/extfields/__init__.py                         1      0      0      0   100%
+typedpy/extfields/extfields.py                      141     13     20      2    91%   73, 77, 112, 134, 138, 143, 197, 227, 230, 234, 270, 273, 282
+typedpy/fields/__init__.py                           23      0      0      0   100%
+typedpy/fields/anything.py                            3      0      0      0   100%
+typedpy/fields/array.py                             102     14     42      4    83%   41-48, 136, 140-141, 162, 175-177, 196->201
+typedpy/fields/boolean.py                            15      1      2      0    94%   25
+typedpy/fields/collections_impl.py                  259      2     34      4    98%   45, 55, 209->213, 219->223, 238->exit, 414->413
+typedpy/fields/decimal_number.py                     19      1      0      0    95%   32
+typedpy/fields/deque_field.py                        49      7     22      2    79%   86->93, 98, 113-118
+typedpy/fields/discriminated_union.py                93      4     42      1    96%   186, 220-221, 224
+typedpy/fields/enum.py                               73      3     40      4    94%   102, 146, 158->164, 178
+typedpy/fields/exception_field.py                     6      0      0      0   100%
+typedpy/fields/fields.py                             24      0     12      0   100%
+typedpy/fields/floats.py                             21      0      0      0   100%
+typedpy/fields/function_call.py                      25      2      4      1    90%   38, 41
+typedpy/fields/integers.py                           17      0      0      0   100%
+typedpy/fields/map_field.py                          49      0     16      0   100%
+typedpy/fields/multified_wrappers.py                129      3     36      1    98%   122-123, 203
+typedpy/fields/numbers.py                            54      0     22      0   100%
+typedpy/fields/serializable_field.py                  4      0      0      0   100%
+typedpy/fields/set_field.py                          78      9     32      6    85%   65, 70-71, 92, 101-105, 129->131
+typedpy/fields/sized.py                              10      0      2      0   100%
+typedpy/fields/strings.py                            36      2     12      1    94%   56-57
+typedpy/fields/structure_reference.py                26      0      6      0   100%
+typedpy/fields/subclass.py                           20      1      6      1    92%   48->50, 53
+typedpy/fields/tuple_field.py                        67     25     32      0    57%   81-92, 118-136
+typedpy/json_schema/__init__.py                       1      0      0      0   100%
+typedpy/json_schema/json_schema_mapping.py          319     13    110     15    93%   117->130, 128, 153, 206->200, 221->223, 482, 491, 493, 518, 553->569, 556, 560, 566, 567->569, 584, 616-620, 686
+typedpy/scripts/__init__.py                           0      0      0      0   100%
+typedpy/scripts/create_stub.py                       31     31      6      0     0%   1-76
+typedpy/scripts/create_stubs.py                      41     41     14      0     0%   1-66
+typedpy/serialization/__init__.py                     5      0      0      0   100%
+typedpy/serialization/fast_serialization.py          94      3     38      4    95%   38, 87, 140->129, 160->163, 181
+typedpy/serialization/mappers.py                    133      5     62      2    96%   49-54, 76, 130, 200
+typedpy/serialization/serialization.py              475     18    268     20    94%   302, 466->475, 593, 596, 597->594, 600, 633-634, 638, 647, 657, 661, 689-691, 762->705, 820->824, 833->838, 1018, 1024->1026, 1027, 1189->1192, 1218-1219, 1220->1223, 1292
+typedpy/serialization/serialization_wrappers.py      49      0     22      2    97%   175->exit, 177->exit
+typedpy/serialization/versioned_mapping.py           42      0     22      0   100%
+typedpy/structures/__init__.py                        6      0      0      0   100%
+typedpy/structures/abstract_structure.py             11      0      6      0   100%
+typedpy/structures/consts.py                         17      0      0      0   100%
+typedpy/structures/defaults.py                       12      0      0      0   100%
+typedpy/structures/keysof.py                         16      0      8      0   100%
+typedpy/structures/structures.py                    827     16    366     19    97%   328->exit, 387->389, 465-466, 547, 599->598, 610->609, 729->734, 807, 821, 870->888, 918-922, 936, 1041, 1077->1075, 1114-1115, 1209, 1246, 1333->1332, 1549, 1766->1769, 1822
+typedpy/structures/structures_reuse.py               66      5     24      5    89%   21, 88, 162, 229, 284
+typedpy/structures/type_mapping.py                    8      0      0      0   100%
+typedpy/stubs/__init__.py                             1      0      0      0   100%
+typedpy/stubs/function_info_getter.py                44      4     12      1    91%   28-30, 47
+typedpy/stubs/methods_info_getter.py                158     10     56      4    93%   59-62, 94, 120, 239, 262-264
+typedpy/stubs/type_helpers.py                       307     40    106     15    83%   73-114, 136->125, 138-139, 224->228, 291->288, 298->288, 307, 311->305, 324, 370, 372-373, 514, 538, 566-572, 574->580, 590
+typedpy/stubs/type_info_getter.py                   139     17     72      8    88%   25-30, 79-80, 92, 100, 122, 146, 174, 180, 201, 207-209, 228-229
+typedpy/stubs/types_ast.py                          206      2     76      3    98%   236->230, 261->280, 270->280, 277-278
+typedpy/stubs/utils.py                               41     13      8      0    65%   20-21, 25, 29-32, 42-47
+typedpy/testing.py                                  204     38    154     17    77%   52->47, 55-57, 60->47, 67->62, 70-72, 85-92, 161, 166-170, 175, 202->205, 230, 240->exit, 246-249, 253-259, 340-345, 347-355, 357-365, 371
+typedpy/utility.py                                   29      4      6      2    83%   49->53, 51->53, 57-60
+---------------------------------------------------------------------------------------------
+TOTAL                                              4820    368   1870    150    91%

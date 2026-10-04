@@ -93,7 +93,7 @@ def _diff_list(val, otherval, outer_result: dict, outer_key: str) -> dict:
 
     result = {}
     for i, v in enumerate(val):
-        if len(otherval)>i and  v == otherval[i]:
+        if len(otherval) > i and v == otherval[i]:
             continue
         try:
             index = otherval.index(v)

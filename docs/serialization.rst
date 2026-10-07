@@ -547,7 +547,7 @@ Here is a valid usage example, referring to the same Bar class defined in the pr
         }, keep_undefined=False)
 
     assert bar == Bar(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')
-f
+
 
 Deserialization From Trusted Data
 ============================================
@@ -556,12 +556,14 @@ instantiation, and directly create an instance of the wanted class.
 This is useful when you are confident the data passed is valid, and performance is paramount.
 
 The definition of a "simple" Structure, in this context, is:
+
 * Serialization mapper, if exists, has the following limitations:
-#. does not include function transformations or direct nested transformation (no key._mapper in the dictionary).
-#. mappings only change key name to another name. No functions.
-#. has a single transformation per class - ie. no lists of chained mappers.
-#. In case of nested structure, does not rely on mappers to be automatically applied from  high-level classes
-   to low level nested classes. Instead, Each class is required to have its own mapper, if it requires one.
+
+  #. does not include function transformations or direct nested transformation (no key._mapper in the dictionary).
+  #. mappings only change key name to another name. No functions.
+  #. has a single transformation per class - ie. no lists of chained mappers.
+  #. In case of nested structure, does not rely on mappers to be automatically applied from  high-level classes
+     to low level nested classes. Instead, Each class is required to have its own mapper, if it requires one.
 
 * Fields can mapped directly to Json: None, str, int, float, bool, and lists/sets of one of those, OR
 * Field of type DateField, DateTime, TimeField and any type that implements SerializableField.
@@ -722,10 +724,12 @@ the content to be serialized.
 Predefined Mappers
 ==================
 There are three predefined mappers:
+
 * TO_CAMELCASE - convert between python snake-case and the more common naming in JSON, of camel-case
 * TO_LOWERCASE - convert between field names in lower case, and the serialized representation in upper case (common in configuration)
-* CONFIGURATION - automatically converts string value to integers if applicable. The use case for this is getting configuration\
+* CONFIGURATION - automatically converts string value to integers if applicable. The use case for this is getting configuration
   objects from environment variable, which are always strings.
+
 An example:
 
 .. code-block:: python
@@ -1034,7 +1038,7 @@ Requirements/Limitations:
 #. All Structures in the hierarchy implement FastSerializable. Typically this is done by calling create_serializer, or
    or automatically, during first instantiation/serialization.
 #. No field of type AnyOf(i.e. Union) with the exception of typing.Optional.
-#  No field of type OneOf.
+#. No field of type OneOf.
 #. Any custom Field classes should implement the serialize() method.
 #. All mappers must be in the definition of the Structures.
 #. No mapper to Typedpy Constant in custom serialization mapper of the class

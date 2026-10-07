@@ -364,8 +364,8 @@ def schema_to_struct_code(
 def schema_definitions_to_code(schema, additional_fields=list):
     """
     Generate code for the classes in the definitions that maps to the given JSON schema.
-    `See working example in test_schema_to_code.py.
-      <https://github.com/loyada/typedpy/tree/master/tests/test_schema_to_code.py>`_
+    `See working example in test_schema_to_code.py
+    <https://github.com/loyada/typedpy/tree/master/tests/test_schema_to_code.py>`_
 
     Arguments:
         schema(dict):

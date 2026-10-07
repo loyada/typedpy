@@ -308,7 +308,7 @@ class Pick(metaclass=PickMeta):
             x: int
 
     "Bar" has the fields: a, b, x. Note that Bar does not extend Foo, but it is a Structure class.
-     It does not copy the serialization mappers. It does copy other attributes, such as _ignore_none,
+    It does not copy the serialization mappers. It does copy other attributes, such as _ignore_none,
     but Bar can override any of them.
 
     Another valid usage:

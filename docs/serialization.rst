@@ -575,7 +575,8 @@ The definition of a "simple" Structure, in this context, is:
 * Enum fields are supported
 
 
-The gain in performance is typically ~x13.
+Trusted deserialization is typically about 5-9 times faster than regular deserialization, depending on the
+structure (measured on Python 3.14). Flat structures gain the most.
 
 .. code-block:: python
 
@@ -595,11 +596,16 @@ The gain in performance is typically ~x13.
     }
 
     # This will be executed much faster than a typical Typedpy deserialization
-    policy = deserializer.deserialize(input_data=serialized, direct_trusted_mapping=True)
+    policy = Deserializer(Policy).deserialize(input_data=serialized, direct_trusted_mapping=True)
 
 
-Note that deserializing this way bypasses any serialization mapper of the Structure. Also,
-if the Structure is not "Simple" (as described above), the flat "direct_trusted_mapping" has no effect.
+The class's own serialization mapper is applied, as long as it is "simple" (as described above). In the example
+above, the camelCase keys are mapped to the fields.
+
+* If the mapper is not simple (for example, a list of chained mappers, a function mapper, or a nested
+  "key._mapper"), trusted deserialization raises a ValueError.
+* If a field is not supported for trusted deserialization (for example, a Map or Tuple), the
+  "direct_trusted_mapping" flag has no effect, and Typedpy silently uses regular deserialization.
 
 To check if your deserialization used trusted deserialization, do the following:
 
@@ -615,6 +621,8 @@ Or, if you want to assert in advance, before doing any deserialization:
 
 
 .. code-block:: python
+
+    from typedpy.testing import assert_trusted_deserialization_mapper_is_safe
 
     assert_trusted_deserialization_mapper_is_safe(MyClass)
 
@@ -1079,14 +1087,8 @@ to create the serializer automatically on the first serialization for an instanc
 FastSerializable, it will use fast serialization. Otherwise it uses the standard (i.e. slow) serialization.
 
 
-Roadmap
--------
-In Typedpy 2.3 fast serialization will be the default mode of operation, without the need to declare it. This means that
-by default, Typedpy will attempt to create a custom serializer for any Structure as needed and use it in all consecutive
-calls to serialize instances of this Structure. Only in case this Structure is incompatible with Fast Serialization, Typedpy
-will use the dynamically-resolved serialization, which is slow.
-FastSerializable class will still exist for a while for backward compatibility, but will be unnecessary, since all Structures
-will be serialized fast by default.
+Fast serialization is opt-in: a Structure uses it only if it is marked as FastSerializable. All other Structures use the
+regular, dynamically-resolved serialization.
 
 
 

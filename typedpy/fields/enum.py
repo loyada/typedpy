@@ -42,7 +42,7 @@ class Enum(SerializableField, metaclass=_EnumMeta):
              by the name of the enum, serialize by its value, and similarly, when deserializing,
              expect the enum value instead of the name. Default is False.
              This is especially useful when you are interfacing with another system and the values
-              are strings that you don't control, like the example below.
+             are strings that you don't control, like the example below.
 
 
 

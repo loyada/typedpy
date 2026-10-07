@@ -6,31 +6,156 @@
 Welcome to Typedpy's documentation!
 ===================================
 
-``typedpy`` is a library for type-safe, strict, Python structures. It supports Python 3.6+.
+``typedpy`` is a library for type-safe, strict, validated Python data structures, with serialization,
+JSON Schema and IDE stub generation built in. A structure can never hold an invalid value: validation runs
+when it is created **and on every change afterwards**, including changes inside nested lists and dicts.
+
+It is pure Python with **zero dependencies**, supports Python 3.9-3.14, and has run in production,
+including financial systems, since 2017.
+
+Installation
+------------
+
+.. code-block:: bash
+
+    pip install typedpy
+
+or ``conda install -c conda-forge typedpy``.
+
+
+Quick Start
+-----------
+
+.. code-block:: python
+
+    import enum
+    from typing import Optional
+
+    from typedpy import (
+        ImmutableStructure, String, PositiveInt, Float, Enum,
+        Serializer, Deserializer, mappers,
+    )
+
+
+    class Currency(enum.Enum):
+        USD = 1
+        EUR = 2
+
+
+    class Trader(ImmutableStructure):
+        lei: String(pattern="[0-9A-Z]{18}[0-9]{2}$")
+        alias: String(maxLength=32)
+
+        _serialization_mapper = mappers.TO_CAMELCASE
+
+
+    class Trade(ImmutableStructure):
+        order_id: String
+        symbol: String(pattern="[A-Z]+$", maxLength=6)
+        quantity: PositiveInt(multiplesOf=5)
+        price: Float(minimum=0)
+        currency: Enum[Currency]
+        buyer: Trader
+        tags: list[str]
+        comment: Optional[str]
+
+        _serialization_mapper = mappers.TO_CAMELCASE
+
+
+    # deserialize (and validate) JSON-like input; keys are camelCase on the wire
+    trade = Deserializer(Trade).deserialize({
+        "orderId": "T-1001",
+        "symbol": "AAPL",
+        "quantity": 100,
+        "price": 231.5,
+        "currency": "USD",
+        "buyer": {"lei": "5493001KJTIIGC8Y1R12", "alias": "desk-7"},
+        "tags": ["equity"],
+    })
+    assert trade.currency is Currency.USD
+
+    Trade(order_id="T-1", symbol="AAPL", quantity=-5, price=1.0,
+          currency=Currency.USD, buyer=trade.buyer, tags=[])
+    # ValueError: Trade.quantity: Got -5; Expected a positive number
+
+    trade.quantity = 200        # ValueError: Trade: Structure is immutable
+    trade.tags.append("bond")   # ValueError: tags: Field is immutable  (deep immutability)
+
+    Serializer(trade).serialize()
+    # {'orderId': 'T-1001', 'symbol': 'AAPL', 'quantity': 100, ..., 'buyer': {'lei': ..., 'alias': 'desk-7'}}
+
+Fields can be typedpy field types with constraints (``String(maxLength=32)``), plain Python types
+(``int``, ``str``), standard ``typing``/PEP 585 annotations (``list[str]``, ``Optional[...]``), other
+structures, or any mix of them at any depth, e.g. ``Array[dict[String(minLength=5), int]]``.
+
+A mutable :class:`Structure` is still validated on every change:
+
+.. code-block:: python
+
+    from typedpy import Structure
+
+    class Order(Structure):
+        quantity: PositiveInt
+        tags: list[str]
+
+    order = Order(quantity=5, tags=["a"])
+    order.quantity = -1     # ValueError: quantity: Got -1; Expected a positive number
+    order.tags.append(3)    # TypeError: ... Expected a string
+
+The :doc:`tutorial_basics` walks through a fuller example step by step.
 
 
 Features
 --------
 
-* Full-featured object-oriented type system including inheritance, nested types, immutables, final classes etc.
+* **Deep immutability** - ``ImmutableStructure`` blocks reassignment *and* changes to nested lists, dicts
+  and sets, and reads return defensive copies (:ref:`immutability`).
 
-* Supports JSON schema draft4 features, including mapping schema-to-code and code-to-schema
+* **A field system that is plain object-oriented Python** - constraints are mixins that combine through
+  inheritance (:ref:`extension-of-classes`), and any class can be used as a field
+  (:ref:`arbitrary-classes`). Optional hooks plug a custom field into serialization, JSON Schema and stubs.
 
-* Serialization, deserialization between JSON-like dict and class instance, including custom mapping.
+* **Discriminated unions** - :ref:`discriminated-union` picks the variant from a tag, using a real field
+  reference rather than a string, and discovers variants automatically from subclasses.
 
-* Easily extensible. `Wrapper of any class as a Field <https://github.com/loyada/typedpy/tree/master/tests/test_typed_field_creator.py>`_
+* **Deriving models from existing ones** - ``Partial``, ``AllFieldsRequired``, ``Omit``, ``Pick`` and
+  ``Extend``, like TypeScript's utility types (:ref:`structure-reuse`).
 
-* `Inheritance/mixins of field <https://github.com/loyada/typedpy/tree/master/tests/test_inheritance.py>`_
+* **Enum-keyed structures** - ``@keys_of`` guarantees at import time that a structure has a field for every
+  member of an enum (:ref:`keys-of`).
 
-* Embedded structures within structures/fields and fields within fields
+* **Undefined vs None** - an opt-in ``Undefined`` value distinct from ``None``, e.g. for PATCH-style APIs
+  (:ref:`undefined-values`).
 
-* Supports collections: `Map <https://github.com/loyada/typedpy/tree/master/tests/test_Map.py>`_, `Set <https://github.com/loyada/typedpy/tree/master/tests/test_Set.py>`_, `Array <https://github.com/loyada/typedpy/tree/master/tests/test_array.py>`_, `Tuple <https://github.com/loyada/typedpy/tree/master/tests/test_tuple.py>`_
+* **Serialization** - key mappers (camelCase, lowercase, renames, functions) that can be chained and compose
+  through inheritance (:ref:`custom-mapping`), custom serialization (:ref:`custom-serialization`), and
+  schema versioning (:doc:`versioning`).
 
-* Clean Java-generics-like definitions, but more flexible. e.g.: Set[Integer], Map[String(maxLength=8), Number]
+* **Performance where it counts** - :ref:`trusted-deserialization` and :ref:`trusted-instantiation` skip
+  validation for data you already trust, and :ref:`fast-serialization` is several times faster, still in
+  pure Python.
 
-* No dependencies on third-party libs
+* **JSON Schema in both directions** - generate a schema from structures, or structure code from a schema
+  (:doc:`json_schema`).
 
-* Dataclass-like syntax
+* **IDE and type-checker support** - generated ``.pyi`` stubs turn typedpy fields back into ordinary type
+  hints, so any IDE or type checker understands your structures (:doc:`stubs`).
+
+* **Structured errors** - errors can be collected and returned as structured objects (:doc:`errors`).
+
+
+Why Pure Python?
+----------------
+
+Typedpy is deliberately pure Python with no dependencies: you get full stack traces, it can be debugged and
+audited end to end, there are no compiled builds, and the supply-chain surface is just this package. That
+suits regulated and correctness-critical settings.
+
+The trade-off is speed (see :doc:`limitations`). If validation dominates your workload, or you need
+Pydantic's ecosystem, Pydantic is the better fit. Typedpy's strengths are elsewhere: deep immutability,
+validation on every change, a simple extension model, and the features above. It also offers trusted
+deserialization and fast serialization for the hot paths.
+
 
 Contents:
 =========
@@ -49,103 +174,6 @@ Contents:
    common_utilities
    stubs
    faq
-
-
-
-Examples
-----------
-Basic Structure definition:
-
-.. code-block:: python
-
-    from typedpy import Structure, Integer, Array, Map, Number, String, PositiveFloat
-
-    class Example(Structure):
-        name: String
-        val_by_alias: Map[String, Number]
-        num: Integer(maximum=30)
-        foo: Array[PositiveFloat]
-
-
-Basic Example:
-
-.. code-block:: python
-
-    from typedpy import StructureReference, Structure, String, Integer, StructureReference, Number
-
-    class Person(Structure):
-        name = String(pattern='[A-Za-z]+$', maxLength=8)
-        ssid = String
-        num = Integer(maximum=30, minimum=10, multiplesOf=5, exclusiveMaximum=False)
-        foo = StructureReference(a=String, b = StructureReference(c = Number(minimum=10), d = Number(maximum=10)))
-
-    Person(name="fo d", ssid="123", num=25, foo = {'a': 'aaa', 'b': {'c': 10, 'd': 1}})
-    # ValueError: name: Got 'fo d'; Does not match regular expression: "[A-Za-z]+$"
-
-    Person(name="fo", ssid=4, num=25, foo = {'a': 'aaa', 'b': {'c': 10, 'd': 1}})
-    # TypeError: ssid: Got 4; Expected a string
-
-    Person(name="fo", ssid="123", num=33,
-        foo = {'a': 'aaa', 'b': {'c': 10, 'd': 1}})
-    #ValueError: num: Got 33; Expected a a multiple of 5
-
-    Person(name="fo", ssid="123", num=10, foo = {'a': 'aaa', 'b': {'c': 0, 'd': 1}})
-    #ValueError: c: Got 0; Expected a minimum of 10
-
-    Person(name="fo", ssid="123", num=10, foo = {'a': 'aaa', 'b': {'c': "", 'd': 1}})
-    #TypeError: c: Got ''; Expected a number
-
-    Person(ssid="123", num=10, foo = {'a': 'aaa', 'b': {'c': "", 'd': 1}})
-    #TypeError: missing a required argument: 'name'
-
-    person = Person(name ="aaa", ssid="123", num=10, foo = {'a': 'aaa', 'b': {'c': 10, 'd': 1}})
-
-    person.num-=1
-    #ValueError: num: Got 9; Expected a a multiple of 5
-
-    person.foo.b = {'d': 1}
-    #TypeError: missing a required argument: 'c'
-
-    person.foo.b.d = 99
-    #ValueError: d: Got 99; Expected a maximum of 10
-
-
-More advanced example with Array, class reference, Enum, json-schema-style re-use:
-
-.. code-block:: python
-
-    class Example(Structure):
-        _additionalProperties = True
-        _required = ['quantity', 'price']
-
-        quantity = AnyOf([PositiveInt, Enum['few', 'many', 'several']])
-        price = PositiveFloat
-        category = EnumString['cat1','cat2']
-        person = Person
-        children = Array(uniqueItems=True, minItems= 3, items = [String, Number(maximum=10)])
-
-    >>> Example(quantity='many', price=10.0, category= 'cat1', children = [3, 2])
-    ValueError: children: Expected length of at least 3
-
-    >>> Example(quantity='many', price=10.0, category= 'cat1', children = [1, 3, 2])
-    TypeError: children_0: Got 1; Expected a string
-
-    >>> exmpl = Example(quantity='many', price=10.0, category= 'cat1', children = [ "a",3, 2])
-
-    >>> exmpl.children[1] = None
-    TypeError: children_1: Got None; Expected a number
-
-    >>> exmpl.children[1] = 5
-    >>> exmpl.children
-    ['a', 5, 2]
-
-    >>> exmpl.person = person
-    >>> exmpl.person.name = None
-    TypeError: name: Got None; Expected a string
-
-
-
-
 
 
 Indices and tables

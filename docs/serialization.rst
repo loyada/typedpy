@@ -549,6 +549,8 @@ Here is a valid usage example, referring to the same Bar class defined in the pr
     assert bar == Bar(i=7, m={'x': 1, 'y': 2}, s='the string is Joe')
 
 
+.. _trusted-deserialization:
+
 Deserialization From Trusted Data
 ============================================
 If we are serializing to a "simple" Structure, you can bypass Typedpy's sophisticated dynamic serialization and
@@ -993,6 +995,8 @@ Serialization by the *value* of the enum is achieved by setting the serializatio
 
 The same is true for deserialization.
 
+
+.. _fast-serialization:
 
 Fast Serialization
 ==================

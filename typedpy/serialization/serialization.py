@@ -611,8 +611,7 @@ def _is_optional_anyof(field: AnyOf) -> bool:
 
 
 def _extract_non_nonefield_from_optional(field: AnyOf) -> Field:
-    fields = field.get_fields()
-    return fields[0] if fields[1].__class__ is NoneField else fields[0]
+    return next((f for f in field.get_fields() if f.__class__ is not NoneField), None)
 
 
 @lru_cache(maxsize=128)
@@ -675,11 +674,11 @@ def _get_enum_mapping(cls):
         if isinstance(v, Enum) and getattr(v, "_is_enum", False)
     }
     optionals = {
-        k: getattr(getattr(v, "_fields")[0], "_enum_class")
+        k: getattr(_extract_non_nonefield_from_optional(v), "_enum_class")
         for k, v in cls.get_all_fields_by_name().items()
         if isinstance(v, AnyOf)
         and getattr(v, "_is_optional")
-        and isinstance(getattr(v, "_fields")[0], Enum)
+        and isinstance(_extract_non_nonefield_from_optional(v), Enum)
     }
     return {**without_optionals, **optionals}
 

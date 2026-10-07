@@ -3,11 +3,12 @@ import sys
 import time
 import datetime
 from datetime import date
-from typing import Optional
+from typing import Optional, Union
 
 import pytest
 
 from typedpy import (
+    AnyOf,
     Array,
     DateField,
     Deserializer,
@@ -15,6 +16,7 @@ from typedpy import (
     FastSerializable,
     FunctionCall,
     ImmutableStructure,
+    NoneField,
     PositiveInt,
     Set,
     create_serializer,
@@ -570,15 +572,14 @@ def test_trusted_deserialization_safe_check_false_3():
         assert_trusted_deserialization_mapper_is_safe(Bar)
 
 
-def test_trusted_deserialization_safe_check_false_3():
+def test_trusted_deserialization_safe_check_corrected_3():
     class Bar(ImmutableStructure):
         b_1: int
         c_1: str
 
-        _serialization_mapper = [mappers.TO_CAMELCASE, mappers.TO_LOWERCASE]
+        _serialization_mapper = mappers.TO_CAMELCASE
 
-    with pytest.raises(AssertionError):
-        assert_trusted_deserialization_mapper_is_safe(Bar)
+    assert_trusted_deserialization_mapper_is_safe(Bar)
 
 
 def test_trusted_deserialization_safe_check_false_4():
@@ -598,7 +599,7 @@ def test_trusted_deserialization_safe_check_corrected_4():
     class Bar(ImmutableStructure):
         a: int
 
-    _serialization_mapper = {"a": "A"}
+        _serialization_mapper = {"a": "A"}
 
     class Foo(ImmutableStructure):
         bar1: Bar
@@ -707,11 +708,54 @@ def test_trusted_optional_enum():
         name: str
 
     deserialized = Deserializer(target_class=Foo).deserialize(
-        input_data={"name": "john", "role": Role.admin.name}, direct_trusted_mapping=True
+        input_data={"name": "john", "role": Role.admin.name},
+        direct_trusted_mapping=True,
     )
     assert deserialized.used_trusted_instantiation()
     assert deserialized == Foo(name="john", role=Role.admin)
-    deserialized=Deserializer(target_class=Foo).deserialize(
+    deserialized = Deserializer(target_class=Foo).deserialize(
         input_data={"name": "john", "role": None}, direct_trusted_mapping=True
     )
     assert deserialized == Foo(name="john")
+
+
+@pytest.mark.parametrize(
+    "optional_address",
+    [Optional[Address], Union[None, Address], AnyOf[NoneField, Address]],
+    ids=["optional", "union-none-first", "anyof-none-first"],
+)
+def test_trusted_deserialization_optional_nested_structure_none_first(
+    optional_address,
+):
+    class Foo(ImmutableStructure):
+        address: optional_address
+
+    assert_trusted_deserialization_mapper_is_safe(Foo)
+
+    input_data = {
+        "address": {"street_addr": "1 Main St", "city": "Paris", "zip": "75001"}
+    }
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data=input_data, direct_trusted_mapping=True
+    )
+    assert deserialized.used_trusted_instantiation()
+    assert isinstance(deserialized.address, Address)
+    assert deserialized == Deserializer(target_class=Foo).deserialize(input_data)
+
+
+@pytest.mark.parametrize(
+    "optional_role",
+    [Optional[Role], Union[None, Role], AnyOf[NoneField, Role]],
+    ids=["optional", "union-none-first", "anyof-none-first"],
+)
+def test_trusted_deserialization_optional_enum_none_first(optional_role):
+    class Foo(ImmutableStructure):
+        role: optional_role
+        name: str
+
+    deserialized = Deserializer(target_class=Foo).deserialize(
+        input_data={"name": "john", "role": "admin"}, direct_trusted_mapping=True
+    )
+    assert deserialized.used_trusted_instantiation()
+    assert deserialized.role is Role.admin
+    assert deserialized == Foo(name="john", role=Role.admin)

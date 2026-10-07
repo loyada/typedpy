@@ -189,6 +189,8 @@ Defaults
     class Example(Structure):
         i: Array[Integer] = default_factory
 
+.. _immutability:
+
 Immutability
 ============
 | Typepy supports immutable structures. Such structures are protected from any update after instantiation. In most
@@ -552,6 +554,8 @@ For example, the following is valid:
 
 
 
+.. _structure-reuse:
+
 Alternative Methods for Structure reuse
 =======================================
 
@@ -744,6 +748,8 @@ Just like Partial, Extend can also be used directly:
 
 
 
+.. _keys-of:
+
 Ensuring Field Names Include All Possible Enum Values
 =====================================================
 (from v2.10)
@@ -908,6 +914,8 @@ property to its own value. Stub (``.pyi``) generation renders the field as a ``U
 See :class:`DiscriminatedUnion` for the full reference.
 
 
+.. _undefined-values:
+
 Differentiating Between Undefined values and None Values
 ========================================================
 The default behavior of Typedpy is that there is no "undefined" value, as it exists in Javascript.
@@ -959,6 +967,8 @@ Contrast the example above with this one:
 
 Note that "Undefined" should never be assigned explicitly as a value to field.
 
+
+.. _trusted-instantiation:
 
 Trusted Instantiation
 =====================

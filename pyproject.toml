@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "typedpy"
-version = "2.30.1"
+version = "2.30.2"
 description = "Type-safe Python"
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { text = "MIT" }
@@ -30,7 +30,7 @@ dependencies = []
 
 [project.urls]
 Homepage = "http://github.com/loyada/typedpy"
-Download = "https://github.com/loyada/typedpy/archive/v2.30.1.tar.gz"
+Download = "https://github.com/loyada/typedpy/archive/v2.30.2.tar.gz"
 
 [project.scripts]
 create-stub = "typedpy.scripts.create_stub:main"

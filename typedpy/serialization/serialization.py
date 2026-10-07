@@ -611,9 +611,7 @@ def _is_optional_anyof(field: AnyOf) -> bool:
 
 
 def _extract_non_nonefield_from_optional(field: AnyOf) -> Field:
-    return next(
-        (f for f in field.get_fields() if f.__class__ is not NoneField), None
-    )
+    return next((f for f in field.get_fields() if f.__class__ is not NoneField), None)
 
 
 @lru_cache(maxsize=128)

@@ -79,7 +79,7 @@ def test_allof_misses_one_err1():
 def test_allof_misses_one_err2():
     with raises(ValueError) as excinfo:
         Example(a=3)
-    assert "a: Got 3; Expected a a multiple of 5" in str(excinfo.value)
+    assert "a: Got 3; Expected a multiple of 5" in str(excinfo.value)
 
 
 def test_allof_valid():

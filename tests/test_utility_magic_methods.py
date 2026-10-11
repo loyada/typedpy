@@ -124,7 +124,7 @@ def test_deepcopy_maintains_field_definiton_validations(rich_object_example):
     assert "array_0: Expected <class 'int'>" in str(ex.value)
     with raises(ValueError) as ex:
         target.array.insert(0, 3)
-    assert "array_0: Got 3; Expected a a multiple of 5" in str(ex.value)
+    assert "array_0: Got 3; Expected a multiple of 5" in str(ex.value)
 
 
 def test_deepcopy_creates_new_instances_changing_embedded_values_in_map(

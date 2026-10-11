@@ -51,9 +51,7 @@ class Number(Field):
             or isinstance(self.multiplesOf, int)
             and value % self.multiplesOf
         ):
-            raise ValueError(
-                f"{err_prefix()}Expected a a multiple of {self.multiplesOf}"
-            )
+            raise ValueError(f"{err_prefix()}Expected a multiple of {self.multiplesOf}")
         if (is_number(self.minimum)) and self.minimum > value:
             raise ValueError(f"{err_prefix()}Expected a minimum of {self.minimum}")
         if is_number(self.maximum):

@@ -1,11 +1,10 @@
 import enum
 import operator
-import sys
 from collections import OrderedDict, deque
 from decimal import Decimal
 from typing import Optional
 
-from pytest import raises, mark
+from pytest import raises
 
 from typedpy import (
     Boolean,
@@ -1536,7 +1535,6 @@ def test_additional_properties_turned_off_err_throw(
     )
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_smart_compact_deserialization_is_turned_off_by_default():
     class Foo(Structure):
         a: list[int]
@@ -1550,7 +1548,6 @@ def test_smart_compact_deserialization_is_turned_off_by_default():
     )
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_smart_compact_deserialization_is_turned_on(compact_deserialization):
     class Foo(Structure):
         a: list[int]

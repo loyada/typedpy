@@ -1,8 +1,6 @@
 import enum
-import sys
 from typing import Optional
 
-from pytest import mark
 
 from typedpy.serialization.fast_serialization import (
     FastSerializable,
@@ -13,9 +11,6 @@ from typedpy.structures.structures import (
     failed_to_create_fast_serializer,
 )
 
-python_ver_atleast_than_37 = sys.version_info[0:2] > (3, 6)
-if python_ver_atleast_than_37:
-    pass
 
 from pytest import raises
 
@@ -222,7 +217,6 @@ def test_inheritance_fastserializable(
     assert serialized == {"i": 5, "s": "xxx"}
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_optional_fastserializable(no_defensive_copy_on_get, allow_none_for_optional):
     class Bar(Structure, FastSerializable):
         i: int

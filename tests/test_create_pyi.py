@@ -1,7 +1,6 @@
 import dataclasses
 import os
 import subprocess
-import sys
 from pathlib import Path
 import importlib.util
 from typing import Optional
@@ -152,7 +151,6 @@ test_cases = [
 ]
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 @pytest.mark.parametrize(
     "test_case", test_cases[1:], ids=[str(s.source_path) for s in test_cases[1:]]
 )
@@ -183,7 +181,6 @@ def test_create_pyi_low_level(test_case: PYI_TEST_CASE):
     _verify_file_are_same(actual_filename, str(test_case.reference_path))
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_create_stub_for_file():
     module_name = str(get_abs_path_from_here("../examples/api_example.py", __file__))
     src_root = str(get_abs_path_from_here("../", __file__))
@@ -195,7 +192,6 @@ def test_create_stub_for_file():
     _verify_file_are_same(actual_filename, expected_filename)
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_create_stub_for_sqlalchemy_model():
     module_name = str(get_abs_path_from_here("../examples/models.py", __file__))
     src_root = str(get_abs_path_from_here("../", __file__))
@@ -207,7 +203,6 @@ def test_create_stub_for_sqlalchemy_model():
     _verify_file_are_same(actual_filename, expected_filename)
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_create_stub_for_dataclass():
     module_name = str(get_abs_path_from_here("../examples/some_data.py", __file__))
     src_root = str(get_abs_path_from_here("../", __file__))
@@ -219,7 +214,6 @@ def test_create_stub_for_dataclass():
     _verify_file_are_same(actual_filename, expected_filename)
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 @pytest.mark.parametrize(
     "test_case", test_cases, ids=[str(s.source_path) for s in test_cases]
 )
@@ -258,7 +252,6 @@ test_cases_for_subpackage = [
 ]
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 @pytest.mark.parametrize(
     "test_case",
     test_cases_for_subpackage,
@@ -317,7 +310,6 @@ test_cases_for_regular_classes = [
 ]
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 @pytest.mark.parametrize(
     "test_case",
     test_cases_for_regular_classes,
@@ -340,7 +332,6 @@ def test_create_stub_for_file_regular_classes(test_case: PYI_TEST_CASE):
     _verify_file_are_same(actual_filename, str(test_case.reference_path))
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 @pytest.mark.parametrize(
     "test_case",
     test_cases_for_regular_classes,

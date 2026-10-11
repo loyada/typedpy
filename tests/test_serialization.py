@@ -1,13 +1,10 @@
 import datetime
 import enum
 import pickle
-import sys
 from decimal import Decimal
 from typing import Optional
 
-python_ver_atleast_than_37 = sys.version_info[0:2] > (3, 6)
-if python_ver_atleast_than_37:
-    from dataclasses import dataclass
+from dataclasses import dataclass
 
 import pytest
 from pytest import raises
@@ -684,7 +681,6 @@ def test_serialize_enum_field_directly():
     assert serialize(foo.arr[0]) == "ABC"
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_serialization_with_implicit_wrappers_best_effort_can_work():
     @dataclass
     class SimplePoint:

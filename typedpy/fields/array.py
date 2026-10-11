@@ -7,7 +7,7 @@ from typedpy.structures import (
     ImmutableField,
     ClassReference,
 )
-from typedpy.commons import private_copy_of_field, python_ver_atleast_39
+from typedpy.commons import private_copy_of_field
 from .collections_impl import (
     _ListStruct,
     SizedCollection,
@@ -59,7 +59,7 @@ def _get_items(items):
 
 
 def has_multiple_items(items):
-    return not isinstance(items, (list, tuple)) and items and python_ver_atleast_39
+    return not isinstance(items, (list, tuple)) and bool(items)
 
 
 class Array(

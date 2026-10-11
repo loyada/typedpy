@@ -497,8 +497,7 @@ class TypedField(Field):
 
 # noinspection PyBroadException
 def is_function_returning_field(field_definition_candidate):
-    python_ver_higher_than_36 = sys.version_info[0:2] != (3, 6)
-    if callable(field_definition_candidate) and python_ver_higher_than_36:
+    if callable(field_definition_candidate):
         try:
             if len(signature(field_definition_candidate).parameters) > 0:
                 raise TypeError("function not allowed to accept any parameters")

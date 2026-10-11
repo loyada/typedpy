@@ -1,5 +1,5 @@
 from typedpy.structures import Field, Structure, TypedField, ClassReference
-from typedpy.commons import private_copy_of_field, python_ver_atleast_39, wrap_val
+from typedpy.commons import private_copy_of_field, wrap_val
 from .collections_impl import ContainNestedFieldMixin, _CollectionMeta
 from .fields import verify_type_and_uniqueness
 from .function_call import Callable
@@ -78,7 +78,7 @@ class Tuple(ContainNestedFieldMixin, TypedField, metaclass=_CollectionMeta):
 
     @property
     def get_type(self):
-        if self.items and python_ver_atleast_39:
+        if self.items:
             if not isinstance(self.items, (list, tuple)):
                 return tuple[self.items.get_type]
             if len(self.items) == 2:

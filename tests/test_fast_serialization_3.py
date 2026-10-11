@@ -1,5 +1,4 @@
 import enum
-import sys
 from decimal import Decimal
 from typing import Optional
 
@@ -12,9 +11,6 @@ from typedpy.structures.structures import (
     failed_to_create_fast_serializer,
 )
 
-python_ver_atleast_than_37 = sys.version_info[0:2] > (3, 6)
-if python_ver_atleast_than_37:
-    pass
 
 import pytest
 from pytest import raises
@@ -550,7 +546,6 @@ def test_serialize_optional_of_serializablefield():
     assert not getattr(Container1, failed_to_create_fast_serializer, False)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trivial_serializable():
     class Blah(Structure, FastSerializable):
         i: int

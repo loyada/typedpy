@@ -3,7 +3,6 @@ import typing
 
 from typedpy.fields import Array, Map
 from typedpy.structures import Structure
-from typedpy.commons import python_ver_atleast_39
 from .type_info_getter import get_type_info
 from .utils import as_optional
 
@@ -274,7 +273,7 @@ def _try_extract_field_and_type(
         attribute_name = node.targets[0].attr
         if isinstance(node.value, ast.Name) and node.value.id in type_by_param:
             res[attribute_name] = type_by_param[node.value.id]
-        elif python_ver_atleast_39:
+        else:
             try:
                 value = eval(ast.unparse(node.value), locals_attrs)
                 the_type = get_type_info(
@@ -315,7 +314,7 @@ def extract_attributes_from_init(source, locals_attrs, additional_classes):
                 )
             )
 
-        elif isinstance(node, ast.AnnAssign) and python_ver_atleast_39:
+        elif isinstance(node, ast.AnnAssign):
             res[node.target.attr] = ast.unparse(node.annotation)
 
     return res

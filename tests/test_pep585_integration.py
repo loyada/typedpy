@@ -1,8 +1,7 @@
 import typing
-import sys
 from typing import List
 
-from pytest import raises, mark
+from pytest import raises
 from typedpy import (
     Array,
     Deserializer,
@@ -14,7 +13,6 @@ from typedpy import (
 )
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_list_of_string_var_1():
     class Foo(Structure):
         a: list[String]
@@ -31,7 +29,6 @@ def test_list_of_string_var_1():
     assert Serializer(deserialized).serialize() == serialized
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_list_of_string_var_2():
     class Foo(Structure):
         a: list[set[String]]
@@ -50,7 +47,6 @@ def test_list_of_string_var_2():
         assert s in result["a"][0]
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_list_of_string_var_3():
     class Foo(Structure):
         a: List[String]
@@ -67,7 +63,6 @@ def test_list_of_string_var_3():
     assert Serializer(deserialized).serialize() == serialized
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_list_of_string_var_4():
     class Foo(Structure):
         a: list[typing.Set[String]]
@@ -85,7 +80,6 @@ def test_list_of_string_var_4():
     assert result["i"] == 5
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_list_of_string_var_5():
     class Foo(Structure):
         a: typing.List[typing.Set[String]]
@@ -103,7 +97,6 @@ def test_list_of_string_var_5():
     assert result["i"] == 5
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_list_of_string_var_6():
     class Foo(Structure):
         a: typing.List[typing.Set[String]]
@@ -121,7 +114,6 @@ def test_list_of_string_var_6():
     assert result["i"] == 5
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_array_of_str():
     class Foo(Structure):
         a: Array[str]
@@ -141,7 +133,6 @@ def test_array_of_str():
     assert "a_1: Got 123; Expected a string" in str(excinfo.value)
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_array_of_dict_1():
     class Foo(Structure):
         a: Array[dict[str, Integer]]
@@ -161,7 +152,6 @@ def test_array_of_dict_1():
     assert "a_0_value: Expected <class 'int'>; Got 'xxx'" in str(excinfo.value)
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_array_of_dict_2():
     class Foo(Structure):
         a: Array[dict[String, int]]
@@ -185,7 +175,6 @@ def test_array_of_dict_2():
     assert "a_0_key: Got 1; Expected a string" in str(excinfo.value)
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_array_of_dict_3():
     class Foo(Structure):
         a: Array[dict[String(minLength=5), int]]
@@ -206,7 +195,6 @@ def test_array_of_dict_3():
     assert result == serialized
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_list_of_string_var_2_invalid():
     class Foo(Structure):
         a: list[set[String]]
@@ -223,7 +211,6 @@ def test_list_of_string_var_2_invalid():
     assert "a_1: Got 123; Expected a list, set, or tuple" in str(excinfo.value)
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_optional_simple():
     class Foo(Structure):
         a: typing.Optional[set[String]]
@@ -238,7 +225,6 @@ def test_optional_simple():
     assert Serializer(foo).serialize() == {"i": 5, "a": ["abc"]}
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_default_factory_invalid_default():
     with raises(TypeError) as excinfo:
 
@@ -252,7 +238,6 @@ def test_default_factory_invalid_default():
     )
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_default_factory_valid():
     class Foo(Structure):
         a: list[str] = lambda: ["abc", "def"]
@@ -265,7 +250,6 @@ def test_default_factory_valid():
     assert foo2.a == ["abc", "def"]
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_dict_to_map():
     class TestSerializable(SerializableField):
         def serialize(self, value):
@@ -284,7 +268,6 @@ def test_dict_to_map():
     assert Serializer(foo).serialize() == {"i": 5, "a": {"abc": "xxx"}}
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_dict_to_map_invalid():
     class Foo(Structure):
         a: dict[str, Array[String]]
@@ -295,7 +278,6 @@ def test_dict_to_map_invalid():
     assert "a_2: Got 2; Expected a string" in str(excinfo.value)
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_list_of_class_reference():
     class Bar(Structure):
         a: int

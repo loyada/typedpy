@@ -8,9 +8,6 @@ from inspect import signature
 from typing import Optional, Union
 
 py_version = sys.version_info[0:2]
-python_ver_36 = py_version == (3, 6)
-python_ver_atleast_than_37 = py_version > (3, 6)
-python_ver_atleast_39 = py_version >= (3, 9)
 python_ver_atleast_310 = py_version >= (3, 10)
 python_ver_atleast_314 = py_version >= (3, 14)
 

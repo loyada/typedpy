@@ -1,5 +1,4 @@
 import json
-import sys
 from pathlib import Path
 from traceback import extract_stack
 from unittest.mock import patch
@@ -64,7 +63,6 @@ def fixture_code_load():
         ("Example15", "example15_schema.json", "generated_example15.py"),
     ],
 )
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_example_code_to_schema_and_back(
     schema_load,
     code_load,

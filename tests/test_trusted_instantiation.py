@@ -1,4 +1,3 @@
-import sys
 import enum
 import time
 from typing import Optional
@@ -204,7 +203,6 @@ def test_trusted_invalid():
     assert "missing a required argument: 'last_name'" in str(excinfo.value)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_with_list():
     class Foo(Structure):
         arr: list[str]

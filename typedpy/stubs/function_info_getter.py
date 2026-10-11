@@ -32,7 +32,7 @@ def _get_type_annotation(
 
 def _get_param_by_name(*, sig, local_attrs, additional_classes):
     def _convert_default(d):
-        return d.__name__ if inspect.isclass(d) else None
+        return None if d is None else "..."
 
     params_by_name = []
     found_last_positional = False

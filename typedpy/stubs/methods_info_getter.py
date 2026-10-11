@@ -179,7 +179,7 @@ def _get_list_of_params_with_type(
         default = (
             ""
             if v.default == inspect._empty
-            else f" = {v.default.__name__}" if inspect.isclass(v.default) else " = None"
+            else " = None" if v.default is None else " = ..."
         )
         type_annotation = (
             ""
@@ -315,7 +315,7 @@ def get_additional_structure_methods(
 ) -> str:
     ordered_args_with_none = {}
     for k, v in ordered_args.items():
-        ordered_args_with_none[k] = v if v.endswith("= None") else f"{v} = None"
+        ordered_args_with_none[k] = v if v.endswith("= None") else f"{v} = ..."
     params = [f"{k}: {v}" for k, v in ordered_args_with_none.items()]
     params_with_self = f",\n{INDENT * 2}".join([f"{INDENT * 2}self"] + params)
     kw_opt = (
@@ -327,7 +327,7 @@ def get_additional_structure_methods(
 
     params_with_cls = f",\n{INDENT * 2}".join(
         [f"{INDENT}cls", "source_object: Any", "*"]
-        + ["ignore_props: Iterable[str] = None"]
+        + ["ignore_props: Optional[Iterable[str]] = None"]
         + params
     )
 
@@ -341,7 +341,7 @@ def get_additional_structure_methods(
     )
     params_with_cls_none_default = f",\n{INDENT * 2}".join(
         [f"{INDENT}cls", "source_object: Any = None", "*"]
-        + ["ignore_props: Iterable[str] = None"]
+        + ["ignore_props: Optional[Iterable[str]] = None"]
         + params
     )
     from_trusted_data = f"\n{INDENT}".join(

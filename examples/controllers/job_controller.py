@@ -20,7 +20,7 @@ class JobController(Base):
     def execute(self, job_id: str):
         pass
 
-    def aaa(self, a: list[datetime] = list, o: Optional[str] = None):
+    def aaa(self, a: Optional[list[datetime]] = None, o: Optional[str] = None):
         pass
 
 

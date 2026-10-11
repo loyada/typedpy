@@ -68,6 +68,7 @@ class FooFooWrapper(Structure):
 
     def shallow_clone_with_overrides(
         self,
+        *,
         foofoo: FooFoo = ...,
         **kw
     ): ...
@@ -100,6 +101,7 @@ class WithCustomInit(Structure):
 
     def shallow_clone_with_overrides(
         self,
+        *,
         i: int = ...,
         s: str = ...,
         **kw
@@ -147,6 +149,7 @@ class Employee(Structure):
 
     def shallow_clone_with_overrides(
         self,
+        *,
         name: str = ...,
         age: int = ...,
         address: Address = ...,
@@ -208,6 +211,7 @@ class Blah(Structure):
 
     def shallow_clone_with_overrides(
         self,
+        *,
         i: int = ...,
         s: str = ...,
         person: Person = ...,
@@ -274,6 +278,7 @@ class Foo(Blah, Structure):
 
     def shallow_clone_with_overrides(
         self,
+        *,
         i: int = ...,
         s: str = ...,
         person: Person = ...,
@@ -364,6 +369,7 @@ class FooPartial(Structure):
 
     def shallow_clone_with_overrides(
         self,
+        *,
         x: str = ...,
         i: Optional[int] = None,
         d: Optional[dict[str, int]] = None,
@@ -449,6 +455,7 @@ class FooOmit(Structure):
 
     def shallow_clone_with_overrides(
         self,
+        *,
         i: int = ...,
         s: str = ...,
         person: Person = ...,
@@ -520,6 +527,7 @@ class FooPick(Structure):
 
     def shallow_clone_with_overrides(
         self,
+        *,
         a: set = ...,
         xyz: float = ...,
         d: Optional[dict[str, int]] = None,
@@ -574,8 +582,9 @@ class Bar(Structure):
         opt: Optional[float] = None
     ): ...
 
-    def shallow_clone_with_overrides(
+    def shallow_clone_with_overrides(  # type: ignore[override]
         self,
+        *,
         i: int = ...,
         s: str = ...,
         person: Person = ...,
@@ -592,7 +601,7 @@ class Bar(Structure):
     ): ...
 
     @classmethod
-    def from_other_class(
+    def from_other_class(  # type: ignore[override]
         cls,
         source_object: Any,
         *,
@@ -613,7 +622,7 @@ class Bar(Structure):
     ): ...
 
     @classmethod
-    def from_trusted_data(
+    def from_trusted_data(  # type: ignore[override]
         cls,
         source_object: Any = None,
         *,
@@ -661,7 +670,7 @@ def bbb() -> Callable[[Bar,str], Iterable[Foo]]: ...
 def ccc() -> Callable[[T], None]: ...
 
 
-def ddd() -> list[int, str, ...]: ...
+def ddd() -> list[int]: ...
 
 
 def eee(x: Optional[int] = ..., arr: list[str] = ...) -> Optional[int]: ...

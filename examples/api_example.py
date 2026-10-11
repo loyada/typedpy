@@ -137,8 +137,8 @@ def ccc() -> Callable[[T], None]:
     pass
 
 
-def ddd() -> [int, str, ...]:
-    return [1, "xx"]
+def ddd() -> list[int]:
+    return [1, 2]
 
 
 def eee(x: Optional[int] = 4, arr: list[str] = list) -> Optional[int]:

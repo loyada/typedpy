@@ -49,6 +49,7 @@ class Address(Structure):
 
     def shallow_clone_with_overrides(
         self,
+        *,
         city: str = ...,
         zip: str = ...,
         **kw
@@ -93,6 +94,7 @@ class Person(Structure):
 
     def shallow_clone_with_overrides(
         self,
+        *,
         name: str = ...,
         age: int = ...,
         address: Address = ...,
@@ -135,8 +137,8 @@ class Person(Structure):
     not_struct: NotStructure
 
 
-def aaa(*, a: dict[str, list[datetime]]) -> Optional: ...
+def aaa(*, a: dict[str, list[datetime]]) -> Optional[datetime]: ...
 
 
-def bbb(p: path, d: dict): ...
+def bbb(p: str, d: dict): ...
 

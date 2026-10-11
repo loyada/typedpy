@@ -195,7 +195,8 @@ def get_stubs_of_enums(
         )
         bases = _get_bases(cls, local_attrs, additional_classes)
         bases_str = f"({', '.join(bases)})" if bases else ""
-        out_src.append(f"class {cls_name}{bases_str}:")
+        ignore_no_members = "" if list(cls) else "  # type: ignore[misc]"
+        out_src.append(f"class {cls_name}{bases_str}:{ignore_no_members}")
 
         enum_values = [f"{INDENT}{v.name} = enum.auto()" for v in cls] or [
             f"{INDENT}pass"

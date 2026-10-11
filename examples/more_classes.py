@@ -35,11 +35,11 @@ class Person(Structure):
     some_const = 1111
 
 
-def aaa(*, a: dict[str, list[datetime]]) -> typing.Optional:
+def aaa(*, a: dict[str, list[datetime]]) -> typing.Optional[datetime]:
     pass
 
 
-def bbb(p: path, d: typing.Dict):
+def bbb(p: str, d: typing.Dict):
     print(p)
     print(d)
 
@@ -52,7 +52,7 @@ class FooException(MyException):
     pass
 
 
-BBB = partial(bbb, 123)
+BBB = partial(bbb, "123")
 
 
 if __name__ == "__main__":

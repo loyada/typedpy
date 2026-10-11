@@ -320,13 +320,16 @@ def get_additional_structure_methods(
     for k, v in ordered_args.items():
         ordered_args_with_none[k] = v if v.endswith("= None") else f"{v} = ..."
     params = [f"{k}: {v}" for k, v in ordered_args_with_none.items()]
-    params_with_self = f",\n{INDENT * 2}".join([f"{INDENT * 2}self"] + params)
+    params_with_self = f",\n{INDENT * 2}".join(
+        [f"{INDENT * 2}self"] + (["*"] + params if params else [])
+    )
     kw_opt = (
         f",\n{INDENT * 2}**kw"
         if getattr(cls, ADDITIONAL_PROPERTIES, additional_properties_default)
         else ""
     )
-    shallow_clone = f"    def shallow_clone_with_overrides(\n{params_with_self}{kw_opt}\n{INDENT}): ..."
+    ignore_override = "" if kw_opt else "  # type: ignore[override]"
+    shallow_clone = f"    def shallow_clone_with_overrides({ignore_override}\n{params_with_self}{kw_opt}\n{INDENT}): ..."
 
     params_with_cls = f",\n{INDENT * 2}".join(
         [f"{INDENT}cls", "source_object: Any", "*"]
@@ -338,7 +341,7 @@ def get_additional_structure_methods(
         [
             "",
             "@classmethod",
-            "def from_other_class(",
+            f"def from_other_class({ignore_override}",
             f"{params_with_cls}{kw_opt}\n{INDENT}): ...",
         ]
     )
@@ -351,7 +354,7 @@ def get_additional_structure_methods(
         [
             "",
             "@classmethod",
-            "def from_trusted_data(",
+            f"def from_trusted_data({ignore_override}",
             f"{params_with_cls_none_default}{kw_opt}\n{INDENT}): ...",
         ]
     )

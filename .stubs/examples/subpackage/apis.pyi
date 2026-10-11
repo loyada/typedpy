@@ -30,6 +30,7 @@ class Vehicle(Structure):
 
     def shallow_clone_with_overrides(
         self,
+        *,
         license_plate_state: State = ...,
         odometer: int = ...,
         alias: str = ...,
@@ -89,6 +90,7 @@ class AnotherFoo(Structure):
 
     def shallow_clone_with_overrides(
         self,
+        *,
         i: int = ...,
         s: str = ...,
         person: Person = ...,
@@ -169,6 +171,7 @@ class Vehicle2(Structure):
 
     def shallow_clone_with_overrides(
         self,
+        *,
         license_plate_state: Optional[State] = None,
         odometer: Optional[int] = None,
         alias: Optional[str] = None,

@@ -1,4 +1,3 @@
-import sys
 from typing import Type
 
 from pytest import raises
@@ -107,9 +106,6 @@ def test_field_declaration_bad_usage():
 
 
 def test_field_declaration_simplified_syntax_v051():
-    if sys.version_info[0:2] == (3, 6):
-        return
-
     # we declare type hint of the return value:
     def Names() -> Type[Field]:
         return Array[String]

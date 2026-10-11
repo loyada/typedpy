@@ -1,6 +1,5 @@
 import datetime
 import enum
-import sys
 from decimal import Decimal
 from typing import Optional
 
@@ -9,9 +8,6 @@ from typedpy.serialization.fast_serialization import (
     create_serializer,
 )
 
-python_ver_atleast_than_37 = sys.version_info[0:2] > (3, 6)
-if python_ver_atleast_than_37:
-    pass
 
 import pytest
 from pytest import raises

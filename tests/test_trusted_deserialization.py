@@ -1,5 +1,4 @@
 import enum
-import sys
 import time
 import datetime
 from datetime import date
@@ -236,7 +235,6 @@ def test_trusted_deserialization_with_invalid_mapper():
     assert "unsupported for trusted deserialization" in str(excinfo.value)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_nested_1():
     class Bar2(ImmutableStructure):
         b: int
@@ -261,7 +259,6 @@ def test_trusted_deserialization_nested_1():
     )
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_nested_2():
     class Bar2(ImmutableStructure):
         b: int
@@ -287,7 +284,6 @@ def test_trusted_deserialization_nested_2():
     assert deserialized == Foo(bar1=Bar1(a=5, bar2=Bar2(b=1, c="xyz")))
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_nested_mapper_of_nested_class1():
     class Bar2(ImmutableStructure):
         b: int
@@ -319,7 +315,6 @@ def test_trusted_deserialization_nested_mapper_of_nested_class1():
     assert deserialized == Foo(bar1=Bar1(a=5, bar2=Bar2(b=1, c="xyz")))
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_nested_mapper_of_nested_class2():
     class Bar2(ImmutableStructure):
         b: int
@@ -347,7 +342,6 @@ def test_trusted_deserialization_nested_mapper_of_nested_class2():
     assert deserialized == Foo(bar1=Bar1(a=5, bar2=Bar2(b=1, c="xyz")))
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_nested_mapper_of_nested_class3():
     class Bar2(ImmutableStructure):
         b_1: int
@@ -384,7 +378,6 @@ def test_trusted_deserialization_nested_mapper_of_nested_class3():
     )
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_nested_mapper_of_nested_class4():
     class Bar2(ImmutableStructure):
         b_1: int
@@ -415,7 +408,6 @@ def test_trusted_deserialization_nested_mapper_of_nested_class4():
     assert deserialized.used_trusted_instantiation()
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_nested_mapper_of_nested_class5():
     class Bar1(ImmutableStructure):
         a: int
@@ -436,7 +428,6 @@ def test_trusted_deserialization_nested_mapper_of_nested_class5():
     assert deserialized.used_trusted_instantiation()
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_nested_mapper_of_nested_class_datefield():
     class Bar1(ImmutableStructure):
         a: DateField
@@ -461,7 +452,6 @@ def test_trusted_deserialization_nested_mapper_of_nested_class_datefield():
     assert deserialized.used_trusted_instantiation()
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_nested_mapper_of_nested_class_timefield():
     class Bar1(ImmutableStructure):
         a: datetime.time
@@ -487,7 +477,6 @@ def test_trusted_deserialization_nested_mapper_of_nested_class_timefield():
     assert deserialized.used_trusted_instantiation()
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_safe_check_false_1():
     class Bar1(ImmutableStructure):
         a: datetime.time
@@ -502,7 +491,6 @@ def test_trusted_deserialization_safe_check_false_1():
         assert_trusted_deserialization_mapper_is_safe(Foo)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_safe_check_corrected_1():
     class Bar1(ImmutableStructure):
         a: datetime.time
@@ -518,7 +506,6 @@ def test_trusted_deserialization_safe_check_corrected_1():
     assert_trusted_deserialization_mapper_is_safe(Foo)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_safe_check_false_2():
     class Bar2(ImmutableStructure):
         b_1: int
@@ -539,7 +526,6 @@ def test_trusted_deserialization_safe_check_false_2():
         assert_trusted_deserialization_mapper_is_safe(Foo)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_trusted_deserialization_safe_check_corrected_2():
     class Bar2(ImmutableStructure):
         b_1: int

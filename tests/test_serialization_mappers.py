@@ -1,8 +1,6 @@
-import sys
 from decimal import Decimal
 
 import pytest
-from pytest import mark
 
 from typedpy import (
     Array,
@@ -279,7 +277,6 @@ def test_additional_serialization_props():
     }
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_defect_in_complex_mapper1():
     class Blah(Structure):
         amount: DecimalNumber
@@ -304,7 +301,6 @@ def test_defect_in_complex_mapper1():
     ) == FooList(foos=[Foo(i=5)])
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_defect_in_complex_mapper2():
     class Blah(Structure):
         amount: DecimalNumber
@@ -342,7 +338,6 @@ def test_defect_in_complex_mapper2():
     )
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_defect_in_complex_mapper3():
     class Blah(Structure):
         amount: DecimalNumber
@@ -364,7 +359,6 @@ def test_defect_in_complex_mapper3():
     )
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_serialization_mapper_inheritance1():
     class Foo(Structure):
         current_level: int
@@ -402,7 +396,6 @@ def test_serialization_mapper_inheritance1():
     }
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_serialization_mapper_inheritance2():
     class Foo(Structure):
         current_level: int

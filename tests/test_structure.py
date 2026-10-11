@@ -1,5 +1,4 @@
 import enum
-import sys
 import typing
 from dataclasses import dataclass
 from datetime import datetime
@@ -103,7 +102,6 @@ def test_optional_fields_required_overrides():
     Trade()
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_field_by_name_fins_annotated_fields():
     class Trade(Structure):
         notional: DecimalNumber(maximum=10000, minimum=0)
@@ -122,7 +120,6 @@ def test_field_by_name_fins_annotated_fields():
         assert f in field_names
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_iterating_over_wrapped_structure():
     class Foo(Structure):
         wrapped: list[str]
@@ -132,7 +129,6 @@ def test_iterating_over_wrapped_structure():
     assert list(foo) == foo.wrapped
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_iterating_over_wrapped_structure_map():
     class Foo(Structure):
         wrapped: Map[str, int]
@@ -220,7 +216,6 @@ def test_field_of_class(Point):
     assert foo.point.size() == 5
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_optional_ignore_none(Point):
     class Foo(Structure):
         i: list[int]
@@ -235,7 +230,6 @@ def test_optional_ignore_none(Point):
         assert Foo(i=[5], maybe_date="2020-01-31a")
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_optional_global_config_ignore_none(Point, allow_none_for_optional):
     class Foo(Structure):
         i: list[int]
@@ -727,7 +721,6 @@ def test_dont_allow_assignment_to_non_typedpy_types():
         b = typing.List[str]
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_dont_allow_assignment_to_non_typedpy_types_pep585():
     Structure.set_block_non_typedpy_field_assignment()
     with raises(TypeError) as excinfo:
@@ -741,7 +734,6 @@ def test_dont_allow_assignment_to_non_typedpy_types_pep585():
         b = list[str]
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_dont_allow_assignment_to_non_typedpy_types_valid():
     Structure.set_block_non_typedpy_field_assignment()
 
@@ -773,7 +765,6 @@ def test_additional_properties_blocks_additional_properties_even_after_instantia
     assert "Foo: trying to set a non-field 'x' is not allowed" in str(excinfo.value)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_find_fields_with_function_returning_field():
     def Name() -> Field:
         return String(minLength=10)

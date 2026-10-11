@@ -1,13 +1,9 @@
-import sys
 from collections import deque
 
-python_ver_atleast_than_37 = sys.version_info[0:2] > (3, 6)
-if python_ver_atleast_than_37:
-    from dataclasses import dataclass, FrozenInstanceError
-    from typing import T
+from dataclasses import dataclass, FrozenInstanceError
+from typing import T
 from typing import List, FrozenSet, Dict, Union, Iterable
 
-import pytest
 from pytest import raises
 
 from typedpy import AllOf, Enum, Number, Float, Structure, ImmutableStructure
@@ -196,7 +192,6 @@ def test_some_default_values_predefined_required():
     assert ExampleOfImmutable(map={"x": "y"}).f == 0.5
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_valid_typing_valid1():
     class ExampleWithTyping(Structure):
         mylist: List[List[int]]
@@ -207,7 +202,6 @@ def test_valid_typing_valid1():
     assert e.mylist[0] == [1, 2, 3]
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_valid_typing_valid2():
     class ExampleWithTyping(Structure):
         mymap: Dict[str, List]
@@ -222,7 +216,6 @@ def test_valid_typing_valid2():
     assert e.mymap["x"] == [1, 2, 3]
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_typing_error():
     class ExampleWithTyping(Structure):
         mymap: Dict[str, List]
@@ -232,7 +225,6 @@ def test_typing_error():
     assert "mymap_value: Got 5; Expected <class 'list'>" in str(exc_info.value)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_typing_error_in_generic():
     class ExampleWithTyping(Structure):
         i: Integer
@@ -243,7 +235,6 @@ def test_typing_error_in_generic():
     assert "a_3: Expected <class 'int'>; Got 'x'" in str(exc_info.value)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_typing_error_unsupported():
     with raises(TypeError) as exc_info:
 
@@ -271,7 +262,6 @@ def test_typing_error_in_generic_union_mapps_to_anyof():
     )
 
 
-@pytest.mark.skipif(sys.version_info < (3, 9), reason="requires python3.7 or higher")
 def test_typing_error_in_generic_pep585_err():
     class ExampleWithTyping(Structure):
         i: Integer
@@ -293,7 +283,6 @@ def test_typing_error_in_generic_pep585_err():
     assert "d_2: Expected <class 'int'>; Got 'x'" in str(exc_info.value)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_valid_typing_and_dataclass():
     @dataclass(frozen=True)
     class ExampleWithTyping(Structure):
@@ -316,7 +305,6 @@ def test_invalid_type():
             a: list[Bar]
 
 
-@pytest.mark.skipif(sys.version_info < (3, 7), reason="requires python3.7 or higher")
 def test_generic_typevar_is_ignored():
     class Foo(Structure):
         a: List[T]

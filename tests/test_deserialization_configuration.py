@@ -1,10 +1,8 @@
-import sys
-from pytest import mark, raises
+from pytest import raises
 
 from typedpy import Deserializer, ImmutableStructure, mappers
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_configuration_automatic_conversion():
     class Foo(ImmutableStructure):
         a: int
@@ -16,7 +14,6 @@ def test_configuration_automatic_conversion():
     deserialized = Deserializer(Foo).deserialize({"A": "123", "ARR": [1, 2], "S": "xxx"})
     assert deserialized == Foo(a=123, arr=[1,2], s="xxx")
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_configuration_automatic_conversion_deserialization_mapper():
     class Foo(ImmutableStructure):
         a: int
@@ -29,7 +26,6 @@ def test_configuration_automatic_conversion_deserialization_mapper():
     assert deserialized == Foo(a=123, arr=[1,2], s="xxx")
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_configuration_automatic_conversion_err_missing_mapper():
     class Foo(ImmutableStructure):
         a: int
@@ -42,7 +38,6 @@ def test_configuration_automatic_conversion_err_missing_mapper():
         Deserializer(Foo).deserialize({"A": "123", "ARR": [1, 2], "S": "xxx"})
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_configuration_automatic_conversion_err_bad_val():
     class Foo(ImmutableStructure):
         a: int

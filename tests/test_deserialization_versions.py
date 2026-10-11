@@ -1,8 +1,7 @@
-import sys
 from typing import Optional
 
 import pytest
-from pytest import mark, raises
+from pytest import raises
 from typedpy import (
     Array,
     Constant,
@@ -179,7 +178,6 @@ def test_version_populated_automatically_when_no_mapping():
     assert Example(i=5).version == 1
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_mapping_list_of_objects():
     class Example(Versioned):
         i: list[Bar]
@@ -193,7 +191,6 @@ def test_mapping_list_of_objects():
     )
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_optional_field_mapping():
     class Example(Versioned):
         foo: Optional[str]
@@ -215,7 +212,6 @@ def test_optional_field_mapping():
     )
 
 
-@mark.skipif(sys.version_info < (3, 9), reason="requires python3.9 or higher")
 def test_deleted_and_missing_field():
     class Example(Versioned):
         foo: str

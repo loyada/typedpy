@@ -12,7 +12,17 @@ from typedpy.structures import TypedField
 from typedpy.fields import SerializableField, String
 
 
-EmailAddress = String(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]+$)")
+class EmailAddress(String):
+    """
+    A string field of a valid email address
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            *args,
+            pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]+$)",
+            **kwargs,
+        )
 
 
 class JSONString(String):

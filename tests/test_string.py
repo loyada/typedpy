@@ -135,7 +135,29 @@ def test_email_valid():
     class Example(Structure):
         email = EmailAddress
 
-    Example(email="abc@com.ddd").email == "abc@com.ddd"
+    assert Example(email="abc@com.ddd").email == "abc@com.ddd"
+
+
+def test_email_error_reports_its_own_field_when_reused():
+    class Example(Structure):
+        email = EmailAddress
+
+    class Other(Structure):
+        contact = EmailAddress
+
+    with raises(ValueError) as excinfo:
+        Example(email="not-an-email")
+    assert "email: Got 'not-an-email'" in str(excinfo.value)
+    assert "contact" not in str(excinfo.value)
+
+
+def test_email_as_annotation():
+    class Example(Structure):
+        email: EmailAddress
+
+    assert Example(email="abc@com.ddd").email == "abc@com.ddd"
+    with raises(ValueError):
+        Example(email="not-an-email")
 
 
 def test_hostname_err():

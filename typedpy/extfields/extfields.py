@@ -4,14 +4,25 @@ Hostname, etc.
 """
 
 import json
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timedelta
 import re
 
 from typedpy.commons import wrap_val
 from typedpy.structures import TypedField
 from typedpy.fields import SerializableField, String
 
-EmailAddress = String(pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]+$)")
+
+class EmailAddress(String):
+    """
+    A string field of a valid email address
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            *args,
+            pattern=r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]+$)",
+            **kwargs,
+        )
 
 
 class JSONString(String):
@@ -234,10 +245,17 @@ class TimeField(SerializableField):
         return "TimeField()" if schema == {"type": "string", "format": "time"} else None
 
 
+_MIN_EPOCH_SECONDS = 1_000_000_000
+_MIN_EPOCH_MILLISECONDS = 100_000_000_000
+
+
 class DateTime(SerializableField):
     """
-    A datetime.datetime field. Can accept either a datetime object, or a string
-    that can be converted to a date, using the date_format in the constructor.
+    A datetime.datetime field. Can accept either a datetime object, a string
+    that can be converted to a date, using the date_format in the constructor,
+    or an int Unix timestamp, in seconds or milliseconds.
+    An int of at least 100,000,000,000 is treated as milliseconds, otherwise as
+    seconds. Ints below 1,000,000,000 (September 2001) are rejected.
 
     Arguments:
         datetime_format(str): optional
@@ -252,6 +270,8 @@ class DateTime(SerializableField):
 
            foo(timestamp = datetime.now())
            foo(timestamp = "01/31/20 07:15:45")
+           foo(timestamp = 1700000000)
+           foo(timestamp = 1700000000123)
 
     This is a SerializableField, thus can be serialized/deserialized.
 
@@ -265,11 +285,25 @@ class DateTime(SerializableField):
         return value.strftime(self._datetime_format)
 
     def deserialize(self, value):
+        if isinstance(value, int):
+            return self._from_timestamp(value)
         try:
-            if isinstance(value, int) and 2000000000 > value > 1000000000:
-                return datetime.fromtimestamp(value)
             return datetime.strptime(value, self._datetime_format)
         except ValueError as ex:
+            raise ValueError(f"{self._name}: Got {wrap_val(value)}; {str(ex)}") from ex
+
+    def _from_timestamp(self, value: int):
+        if value < _MIN_EPOCH_SECONDS:
+            raise TypeError(
+                f"{self._name}: Got {wrap_val(value)}; Expected datetime, str, or a Unix"
+                " timestamp in seconds or milliseconds"
+            )
+        try:
+            if value >= _MIN_EPOCH_MILLISECONDS:
+                seconds, millis = divmod(value, 1000)
+                return datetime.fromtimestamp(seconds) + timedelta(milliseconds=millis)
+            return datetime.fromtimestamp(value)
+        except (OverflowError, OSError, ValueError) as ex:
             raise ValueError(f"{self._name}: Got {wrap_val(value)}; {str(ex)}") from ex
 
     def __set__(self, instance, value):

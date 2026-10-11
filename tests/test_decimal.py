@@ -58,7 +58,7 @@ def test_too_large2():
 def test_not_multiple():
     with raises(ValueError) as excinfo:
         Foo(b=93)
-    assert "b: Got 93; Expected a a multiple of 5" in str(excinfo.value)
+    assert "b: Got 93; Expected a multiple of 5" in str(excinfo.value)
 
 
 def test_positivedecimal_err():

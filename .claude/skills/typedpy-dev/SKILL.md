@@ -8,7 +8,7 @@ description: How to develop, test, document, and release typedpy (github.com/loy
 typedpy is a pure-Python, dependency-free (`install_requires=[]`) library for type-safe,
 validated data structures, broadly comparable to Pydantic/dataclasses but with deep
 immutability, versioned serialization, JSON Schema generation, and `.pyi` stub generation.
-Supports Python 3.9-3.14.
+Supports Python 3.9-3.15.
 
 ## Packaging
 

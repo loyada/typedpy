@@ -19,6 +19,7 @@ from typedpy.stubs.types_ast import (
     extract_attributes_from_init,
 )
 from typedpy.stubs.utils import (
+    as_optional,
     get_optional_globe,
     get_sqlalchemy_init,
     is_not_generic_and_private_class_or_module,
@@ -192,6 +193,8 @@ def _get_list_of_params_with_type(
             if (type_annotation.endswith("= None") and default)
             else type_annotation
         )
+        if v.default is None and type_annotation:
+            type_annotation = f": {as_optional(type_annotation[len(': '):])}"
         params_by_name.append((p_name, f"{type_annotation}{default}"))
 
     return params_by_name

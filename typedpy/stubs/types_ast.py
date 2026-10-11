@@ -5,6 +5,7 @@ from typedpy.fields import Array, Map
 from typedpy.structures import Structure
 from typedpy.commons import python_ver_atleast_39
 from .type_info_getter import get_type_info
+from .utils import as_optional
 
 INDENT = " " * 4
 
@@ -88,6 +89,8 @@ def _extract_kwonly_arg(arg, default) -> str:
         default_s = ""
     elif isinstance(default, ast.Constant) and default.value is None:
         default_s = " = None"
+        if arg.annotation:
+            the_type = f": {as_optional(_get_param_type(arg.annotation))}"
     else:
         default_s = " = ..."
     return f"{arg.arg}{the_type}{default_s}"

@@ -32,6 +32,12 @@ def try_extract_column_type(attr):
     return typing.Any
 
 
+def as_optional(type_str: str) -> str:
+    if not type_str or type_str == "Any" or type_str.startswith("Optional["):
+        return type_str
+    return f"Optional[{type_str}]"
+
+
 def is_sqlalchemy_orm_model(cls):
     return nested(lambda: str(cls.__class__.__module__), "").startswith(
         "sqlalchemy.orm"

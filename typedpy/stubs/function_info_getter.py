@@ -4,7 +4,7 @@ import logging
 from typedpy.stubs.type_info_getter import (
     get_type_info,
 )
-from typedpy.stubs.utils import get_optional_globe
+from typedpy.stubs.utils import as_optional, get_optional_globe
 
 
 def _get_type_annotation(
@@ -15,6 +15,8 @@ def _get_type_annotation(
             return res[:-7] if res.endswith("= None") else res
         if default:
             cleaned_res = res[: -len(" = None")] if res.endswith("= None") else res
+            if default == " = None" and cleaned_res:
+                cleaned_res = f"{prefix}{as_optional(cleaned_res[len(prefix):])}"
             return f"{cleaned_res}{default}"
         return res
 

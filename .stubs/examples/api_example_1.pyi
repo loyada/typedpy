@@ -55,6 +55,8 @@ class State1(Enum):
 
 class FooFoo:
 
+    _camel_case_convert:  bool
+    _mapper:  dict[str, typing.Any]
 
     def __init__(self, *, mapper: dict[str, Any] = ..., camel_case_convert: bool = ...): ...
 

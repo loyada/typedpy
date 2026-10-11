@@ -63,17 +63,8 @@ class ModelClass(Structure):
         }.get(the_type, "Any")
 
 
-def _get_param_type(ast_type) -> typing.Optional[str]:
-    if isinstance(ast_type, ast.Name):
-        return ast_type.id
-    elif isinstance(ast_type, ast.Subscript):
-        value = ast_type.value.id
-        if isinstance(ast_type.slice, ast.Tuple):
-            args = [_get_param_type(x) for x in ast_type.slice.dims]
-        else:
-            args = [ast_type.slice.id]
-        return f"{value}[{', '.join(args)}]"
-    return None
+def _get_param_type(ast_type) -> str:
+    return ast.unparse(ast_type)
 
 
 def _extract_kw_args(args_info) -> str:

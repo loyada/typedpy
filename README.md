@@ -11,7 +11,7 @@ serialization, JSON Schema and IDE stub generation built in. A structure can nev
 invalid value: validation runs when it is created **and on every change afterwards**,
 including changes inside nested lists and dicts.
 
-It is pure Python with **zero dependencies**, supports Python 3.9-3.14, and has run in
+It is pure Python with **zero dependencies**, supports Python 3.9-3.15, and has run in
 production, including financial systems, since 2017.
 
 ```

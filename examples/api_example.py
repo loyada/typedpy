@@ -56,16 +56,16 @@ class Employee(Extend[Person]):
         return ["john"]
 
 
-def func(x=5, *, e: Employee = None, **kw) -> Mapping[str, str]:
+def func(x=5, *, e: Optional[Employee] = None, **kw) -> Mapping[str, str]:
     print(f"{x}, {e}")
-    return State.FL
+    return {"state": State.FL.name}
 
 
 T = TypeVar("T", int, str)
 
 
 def func2(t: T) -> list[T]:
-    pass
+    raise NotImplementedError
 
 
 IMPORTED_CONST: str = CONSTANT1
@@ -89,7 +89,7 @@ class Foo(Blah, ImmutableStructure):
 
     _serialization_mapper = mappers.TO_LOWERCASE
 
-    def get_double_aa(self, x: Optional[int], p: Person = None) -> str:
+    def get_double_aa(self, x: Optional[int], p: Optional[Person] = None) -> str:
         return f"{self.a}{x}"
 
     def doit(self):
@@ -130,23 +130,23 @@ class State1(enum.Enum):
 
 
 def bbb() -> Callable[[Bar, str], Iterable[Foo]]:
-    return None  # noqa
+    raise NotImplementedError
 
 
 def ccc() -> Callable[[T], None]:
-    pass
+    raise NotImplementedError
 
 
 def ddd() -> list[int]:
     return [1, 2]
 
 
-def eee(x: Optional[int] = 4, arr: list[str] = list) -> Optional[int]:
+def eee(x: Optional[int] = 4, arr: Optional[list[str]] = None) -> Optional[int]:
     return 3
 
 
 def fff(c: Optional[Callable]) -> Iterator[str]:
-    pass
+    raise NotImplementedError
 
 
 def ggg() -> typing.Tuple:

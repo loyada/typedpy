@@ -1,4 +1,5 @@
 from datetime import datetime, date
+from typing import Optional
 from .job_controller import JobController
 
 
@@ -12,7 +13,7 @@ class AController:
         other,
         name: str = "default",
         *,
-        urls: dict[str, dict] = None,
+        urls: Optional[dict[str, dict]] = None,
         job_controller: JobController
     ):
         self._urls = urls

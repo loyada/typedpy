@@ -475,9 +475,7 @@ String, Enums etc.
 
 .. autoclass:: HostName
 
-
-
-EmailAddress - A String field that has the pattern of an email address.
+.. autoclass:: EmailAddress
 
 
 Collections

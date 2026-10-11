@@ -16,7 +16,7 @@ from typedpy import (
     mappers,
 )
 from typedpy.commons import wrap_val
-from typedpy.structures import Structure
+from typedpy.structures import Structure, TypedPyDefaults
 from typedpy.structures.consts import DESERIALIZATION_MAPPER, SERIALIZATION_MAPPER
 
 MISSING_VALUES = "missing values"
@@ -140,8 +140,10 @@ def find_diff(first, second) -> Union[dict, str]:
         assert actual == {
             "f": {
                 "m['aaa']": {"age": "123 vs 12"},
-                "missing values": ["bbb"],
-                "additional values": ["ccc"],
+                "m": {
+                    "missing values": ["bbb"],
+                    "additional values": ["ccc"],
+                },
             },
             "missing values": ["x"],
         }
@@ -242,7 +244,7 @@ def _diff_collecation_val_internal(k, otherval, res, val):
                     if i not in {MISSING_VALUES, ADDITIONAL_VALUES}:
                         res[f"{k}[{wrap_val(i)}]"] = vv
                     else:
-                        res[i] = vv
+                        res.setdefault(k, {})[i] = vv
         elif isinstance(val, set):
             res_val = _diff_set(val, otherval)
             if res_val:
@@ -251,11 +253,12 @@ def _diff_collecation_val_internal(k, otherval, res, val):
 
 def pytest_assertrepr_compare(op, left, right):
     if isinstance(left, Structure) and isinstance(right, Structure) and op == "==":
-        res = [
+        indent = 2 if TypedPyDefaults.pretty_print_pytest_diff else None
+        diff = json.dumps(_find_diff(left, right), indent=indent, default=str)
+        return [
             "found the following differences between the structures:",
-            json.dumps(_find_diff(left, right)),
+            *diff.splitlines(),
         ]
-        return res
     return None
 
 

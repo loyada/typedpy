@@ -1078,6 +1078,10 @@ Typedpy exposes several global defaults. These can be views as the Typedpy confi
 10. TypedPyDefaults.ignore_invalid_additional_properties_in_deserialization - in case additional_properties is set to False
     and the payload to deserialization contains additional properties, this setting determines whether they will be silently
     ignored, and cause an exception. Default is True.
+11. TypedPyDefaults.pretty_print_pytest_diff - the format of the differences that the pytest hook in typedpy.testing
+    shows when an assertion that two Structures are equal fails. If False, the diff is printed on a single line, which fits
+    better within pytest's default truncation of assertion messages (8 lines, unless running with -vv). If True, it is
+    printed as indented JSON, one entry per line. Default is False.
 
 Planned Deprecations
 ====================

@@ -10,3 +10,4 @@ class TypedPyDefaults:
     allow_none_for_optionals: bool = False
     block_unknown_consts: bool = True
     safe_trusted_instantiation: bool = False
+    pretty_print_pytest_diff: bool = False

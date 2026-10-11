@@ -37,7 +37,7 @@ class Sex(Enum):
 
 
 
-class NamedEnum(Enum):
+class NamedEnum(Enum):  # type: ignore[misc]
     pass
 
 

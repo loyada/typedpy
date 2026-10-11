@@ -38,3 +38,11 @@ pip-delete-this-directory.txt
 nosetests.xml
 coverage.xml
 tests/schema_mapping/generated/*.py
+
+# Output of the stub generation tests (tests/test_create_pyi.py)
+examples/*.pyi
+examples/**/*.pyi
+stubs_for_tests/
+stubs_for_tests_scripts/
+tests/stubs_tests_results/
+tests/stubs_tests_results_1/

@@ -330,31 +330,6 @@ Here is an example of how it works:
 
 As the name suggests, it performs a shallow copy.
 
-.. _uniqueness:
-
-
-Uniqueness (Deprecated)
-========================
-Typedpy allows you to ensure that all the instances of a certain :class:`Structure` are unique, by
-decorating it with "@unique". The uniqueness is ensured even if you updated an existing instance to match
-another instance.
-
-To illustrate:
-
-
-.. code-block:: python
-
-    @unique
-    class Foo(Structure):
-        s: str
-        i: int
-
-    Foo(s="xxx", i=1)
-    Foo(s="xxx", i=1)   # -> raises a ValueError: Instance copy in Foo, which is defined as unique....
-
-    Foo(s="xxx", i=2).i = 1   # raises the same ValueError as above
-
-Beyond a threshold of 100,000 different values, this is not enforced anymore, to avoid the overhead.
 
 Combining with "Regular" Classes
 ================================
@@ -1058,34 +1033,28 @@ Typedpy exposes several global defaults. These can be views as the Typedpy confi
 4. Structure.set_block_non_typedpy_field_assignment - block assignments of class attributes to a
    non-typedpy value in the class definition. This can be used to protect the programmer from silly
    mistakes, The default is False.
-5. TypedPyDefaults.uniqueness_features_enabled - Determines whether the uniqueness features for field/structure
-   are enabled or ignored. The reason for this setting is that for most use cases, these features where found
-   as unneeded and by disabling them, performance gains can be made. The default is False.
-6. TypedPyDefaults.defensive_copy_on_get - by default this is enabled, for immutable structures. By turning it off
+5. TypedPyDefaults.defensive_copy_on_get - by default this is enabled, for immutable structures. By turning it off
    you trade of a level of immutability safety with significant performance benefits.
-7. TypedPyDefaults.allow_none_for_optionals - by default, if a field is defined of a specific type, then a None value
+6. TypedPyDefaults.allow_none_for_optionals - by default, if a field is defined of a specific type, then a None value
    is considered invalid. This flag allows to provide None for any optional field.
-8. TypedPyDefaults.block_unknown_consts - if set to True, will raise an exception if a Structure class definition contains
+7. TypedPyDefaults.block_unknown_consts - if set to True, will raise an exception if a Structure class definition contains
    attributes that are not fields, and not Typedpy attributes. It is meant to avoid silly mistakes, like 
    setting "_ignore_nonnes".
    In case you still want to use your own custom (non-typedpy) attribute in a Structure while block_unknown_consts is on
    you can either use a method, a property or a class variable with a name that starts with "_custom_attribute_".
-9. TypedPyDefaults.safe_trusted_instantiation - if set, ensures that in case of "trusted" instantiation/deserialization
+8. TypedPyDefaults.safe_trusted_instantiation - if set, ensures that in case of "trusted" instantiation/deserialization
    of a structure with list fields, it converts the list to Typedpy's internal representation, which is important in
    case you use ImmutableStructure, as it protects from mutating nested elements. However, it has a significant cost
    in terms of performance. That's why by default, it is set to False. The assumption is that if you are using trusted
    instantiation, you prioritize performance over immutability safety.
-10. TypedPyDefaults.ignore_invalid_additional_properties_in_deserialization - in case additional_properties is set to False
-    and the payload to deserialization contains additional properties, this setting determines whether they will be silently
-    ignored, and cause an exception. Default is True.
-11. TypedPyDefaults.pretty_print_pytest_diff - the format of the differences that the pytest hook in typedpy.testing
+9. TypedPyDefaults.ignore_invalid_additional_properties_in_deserialization - in case additional_properties is set to False
+   and the payload to deserialization contains additional properties, this setting determines whether they will be silently
+   ignored, and cause an exception. Default is True.
+10. TypedPyDefaults.pretty_print_pytest_diff - the format of the differences that the pytest hook in typedpy.testing
     shows when an assertion that two Structures are equal fails. If False, the diff is printed on a single line, which fits
     better within pytest's default truncation of assertion messages (8 lines, unless running with -vv). If True, it is
     printed as indented JSON, one entry per line. Default is False.
 
-Planned Deprecations
-====================
-1. Uniqueness features were found to be generally useless, and will be removed in version 2.26. See here: :ref:`uniqueness`
 
 
 

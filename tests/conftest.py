@@ -40,13 +40,6 @@ def fixture_auto_conversion_of_enums():
     Structure.set_auto_enum_conversion(False)
 
 
-@pytest.fixture(name="uniqueness_enabled")
-def fixture_uniqueness_enabled():
-    TypedPyDefaults.uniqueness_features_enabled = True
-    yield
-    TypedPyDefaults.uniqueness_features_enabled = False
-
-
 @pytest.fixture(name="allow_none_for_optional")
 def fixture_allow_none_for_optional():
     TypedPyDefaults.allow_none_for_optionals = True

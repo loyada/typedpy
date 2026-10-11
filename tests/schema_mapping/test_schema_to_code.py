@@ -82,13 +82,17 @@ def test_schema():
 
 def test_write_code_to_file():
     write_code_from_schema(schema, definitions, "generated_sample.py", "Poo")
-    from importlib.machinery import SourceFileLoader
+    import importlib.util
     import os
+    import sys
 
     cwd = os.getcwd()
-    generated_sample = SourceFileLoader(
+    spec = importlib.util.spec_from_file_location(
         "generated_sample", cwd + "/" + "generated_sample.py"
-    ).load_module()
+    )
+    generated_sample = importlib.util.module_from_spec(spec)
+    sys.modules["generated_sample"] = generated_sample
+    spec.loader.exec_module(generated_sample)
     # from generated_sample import Poo, ComplexStruct
     poo = generated_sample.Poo(
         foo={"a1": 5, "a2": 1.5},

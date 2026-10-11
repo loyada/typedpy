@@ -46,14 +46,15 @@ class Address(Structure):
         zip: str
     ): ...
 
-    def shallow_clone_with_overrides(
+    def shallow_clone_with_overrides(  # type: ignore[override]
         self,
+        *,
         city: str = ...,
         zip: str = ...
     ): ...
 
     @classmethod
-    def from_other_class(
+    def from_other_class(  # type: ignore[override]
         cls,
         source_object: Any,
         *,
@@ -63,7 +64,7 @@ class Address(Structure):
     ): ...
 
     @classmethod
-    def from_trusted_data(
+    def from_trusted_data(  # type: ignore[override]
         cls,
         source_object: Any = None,
         *,
@@ -86,8 +87,9 @@ class Person(Structure):
         sex: Sex
     ): ...
 
-    def shallow_clone_with_overrides(
+    def shallow_clone_with_overrides(  # type: ignore[override]
         self,
+        *,
         name: str = ...,
         age: int = ...,
         address: Address = ...,
@@ -95,7 +97,7 @@ class Person(Structure):
     ): ...
 
     @classmethod
-    def from_other_class(
+    def from_other_class(  # type: ignore[override]
         cls,
         source_object: Any,
         *,
@@ -107,7 +109,7 @@ class Person(Structure):
     ): ...
 
     @classmethod
-    def from_trusted_data(
+    def from_trusted_data(  # type: ignore[override]
         cls,
         source_object: Any = None,
         *,

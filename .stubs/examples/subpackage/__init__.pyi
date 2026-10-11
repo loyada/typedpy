@@ -30,6 +30,7 @@ class FooOmitSubPackage(Structure):
 
     def shallow_clone_with_overrides(
         self,
+        *,
         i: int = ...,
         s: str = ...,
         person: Person = ...,

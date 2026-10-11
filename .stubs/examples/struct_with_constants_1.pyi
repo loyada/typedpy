@@ -27,14 +27,15 @@ class Event(Structure):
         i: Optional[int] = None
     ): ...
 
-    def shallow_clone_with_overrides(
+    def shallow_clone_with_overrides(  # type: ignore[override]
         self,
+        *,
         subject: EventSubject = ...,
         i: Optional[int] = None
     ): ...
 
     @classmethod
-    def from_other_class(
+    def from_other_class(  # type: ignore[override]
         cls,
         source_object: Any,
         *,
@@ -44,7 +45,7 @@ class Event(Structure):
     ): ...
 
     @classmethod
-    def from_trusted_data(
+    def from_trusted_data(  # type: ignore[override]
         cls,
         source_object: Any = None,
         *,
@@ -65,14 +66,15 @@ class FooEvent(Event, Structure):
         i: Optional[int] = None
     ): ...
 
-    def shallow_clone_with_overrides(
+    def shallow_clone_with_overrides(  # type: ignore[override]
         self,
+        *,
         name: str = ...,
         i: Optional[int] = None
     ): ...
 
     @classmethod
-    def from_other_class(
+    def from_other_class(  # type: ignore[override]
         cls,
         source_object: Any,
         *,
@@ -82,7 +84,7 @@ class FooEvent(Event, Structure):
     ): ...
 
     @classmethod
-    def from_trusted_data(
+    def from_trusted_data(  # type: ignore[override]
         cls,
         source_object: Any = None,
         *,
@@ -103,14 +105,15 @@ class BarEvent(Event, Structure):
         i: Optional[int] = None
     ): ...
 
-    def shallow_clone_with_overrides(
+    def shallow_clone_with_overrides(  # type: ignore[override]
         self,
+        *,
         val: int = ...,
         i: Optional[int] = None
     ): ...
 
     @classmethod
-    def from_other_class(
+    def from_other_class(  # type: ignore[override]
         cls,
         source_object: Any,
         *,
@@ -120,7 +123,7 @@ class BarEvent(Event, Structure):
     ): ...
 
     @classmethod
-    def from_trusted_data(
+    def from_trusted_data(  # type: ignore[override]
         cls,
         source_object: Any = None,
         *,

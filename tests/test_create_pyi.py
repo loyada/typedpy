@@ -1,3 +1,4 @@
+import ast
 import dataclasses
 import os
 import subprocess
@@ -9,7 +10,13 @@ from typing import Optional
 import pytest
 from pytest import mark
 
-from typedpy import create_stub_for_file, create_stub_for_file_using_ast, create_pyi
+from typedpy import (
+    Structure,
+    create_stub_for_file,
+    create_stub_for_file_using_ast,
+    create_pyi,
+)
+from typedpy.stubs.methods_info_getter import get_additional_structure_methods
 from typedpy.utility import get_abs_path_from_here
 
 
@@ -395,3 +402,50 @@ def test_create_stubs_using_script():
         "../.stubs/examples/api_example_1.pyi", __file__
     )
     _verify_file_are_same(actual_filename, str(reference_path))
+
+
+def _parse_class_with_methods(code: str) -> ast.Module:
+    return ast.parse(f"class Foo:\n{code}")
+
+
+def test_shallow_clone_with_overrides_is_keyword_only():
+    class Foo(Structure):
+        i: int
+
+    code = get_additional_structure_methods(
+        Foo, {"i": "int"}, additional_properties_default=True
+    )
+    shallow_clone = _parse_class_with_methods(code).body[0].body[0]
+    assert shallow_clone.name == "shallow_clone_with_overrides"
+    assert [a.arg for a in shallow_clone.args.args] == ["self"]
+    assert [a.arg for a in shallow_clone.args.kwonlyargs] == ["i"]
+
+
+@mark.parametrize("additional_properties_default", [True, False])
+def test_shallow_clone_with_overrides_without_fields(additional_properties_default):
+    class Foo(Structure):
+        pass
+
+    code = get_additional_structure_methods(
+        Foo, {}, additional_properties_default=additional_properties_default
+    )
+    shallow_clone = _parse_class_with_methods(code).body[0].body[0]
+    assert shallow_clone.args.kwonlyargs == []
+
+
+@mark.parametrize(
+    "additional_properties_default, ignore_expected", [(True, False), (False, True)]
+)
+def test_override_ignored_only_without_kw(
+    additional_properties_default, ignore_expected
+):
+    class Foo(Structure):
+        i: int
+
+    code = get_additional_structure_methods(
+        Foo, {"i": "int"}, additional_properties_default=additional_properties_default
+    )
+    def_lines = [line for line in code.splitlines() if line.strip().startswith("def ")]
+    assert len(def_lines) == 3
+    for line in def_lines:
+        assert line.endswith("# type: ignore[override]") == ignore_expected

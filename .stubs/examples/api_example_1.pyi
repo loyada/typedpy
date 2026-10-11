@@ -65,13 +65,14 @@ class FooFooWrapper(Structure):
         foofoo: FooFoo
     ): ...
 
-    def shallow_clone_with_overrides(
+    def shallow_clone_with_overrides(  # type: ignore[override]
         self,
+        *,
         foofoo: FooFoo = ...
     ): ...
 
     @classmethod
-    def from_other_class(
+    def from_other_class(  # type: ignore[override]
         cls,
         source_object: Any,
         *,
@@ -80,7 +81,7 @@ class FooFooWrapper(Structure):
     ): ...
 
     @classmethod
-    def from_trusted_data(
+    def from_trusted_data(  # type: ignore[override]
         cls,
         source_object: Any = None,
         *,
@@ -94,14 +95,15 @@ class FooFooWrapper(Structure):
 
 class WithCustomInit(Structure):
 
-    def shallow_clone_with_overrides(
+    def shallow_clone_with_overrides(  # type: ignore[override]
         self,
+        *,
         i: int = ...,
         s: str = ...
     ): ...
 
     @classmethod
-    def from_other_class(
+    def from_other_class(  # type: ignore[override]
         cls,
         source_object: Any,
         *,
@@ -111,7 +113,7 @@ class WithCustomInit(Structure):
     ): ...
 
     @classmethod
-    def from_trusted_data(
+    def from_trusted_data(  # type: ignore[override]
         cls,
         source_object: Any = None,
         *,
@@ -137,8 +139,9 @@ class Employee(Structure):
         ssid: str
     ): ...
 
-    def shallow_clone_with_overrides(
+    def shallow_clone_with_overrides(  # type: ignore[override]
         self,
+        *,
         name: str = ...,
         age: int = ...,
         address: Address = ...,
@@ -147,7 +150,7 @@ class Employee(Structure):
     ): ...
 
     @classmethod
-    def from_other_class(
+    def from_other_class(  # type: ignore[override]
         cls,
         source_object: Any,
         *,
@@ -160,7 +163,7 @@ class Employee(Structure):
     ): ...
 
     @classmethod
-    def from_trusted_data(
+    def from_trusted_data(  # type: ignore[override]
         cls,
         source_object: Any = None,
         *,
@@ -194,8 +197,9 @@ class Blah(Structure):
         d: Optional[dict[str, int]] = None
     ): ...
 
-    def shallow_clone_with_overrides(
+    def shallow_clone_with_overrides(  # type: ignore[override]
         self,
+        *,
         i: int = ...,
         s: str = ...,
         person: Person = ...,
@@ -205,7 +209,7 @@ class Blah(Structure):
     ): ...
 
     @classmethod
-    def from_other_class(
+    def from_other_class(  # type: ignore[override]
         cls,
         source_object: Any,
         *,
@@ -219,7 +223,7 @@ class Blah(Structure):
     ): ...
 
     @classmethod
-    def from_trusted_data(
+    def from_trusted_data(  # type: ignore[override]
         cls,
         source_object: Any = None,
         *,
@@ -256,8 +260,9 @@ class Foo(Blah, Structure):
         d: Optional[dict[str, int]] = None
     ): ...
 
-    def shallow_clone_with_overrides(
+    def shallow_clone_with_overrides(  # type: ignore[override]
         self,
+        *,
         i: int = ...,
         s: str = ...,
         person: Person = ...,
@@ -271,7 +276,7 @@ class Foo(Blah, Structure):
     ): ...
 
     @classmethod
-    def from_other_class(
+    def from_other_class(  # type: ignore[override]
         cls,
         source_object: Any,
         *,
@@ -289,7 +294,7 @@ class Foo(Blah, Structure):
     ): ...
 
     @classmethod
-    def from_trusted_data(
+    def from_trusted_data(  # type: ignore[override]
         cls,
         source_object: Any = None,
         *,
@@ -342,8 +347,9 @@ class FooPartial(Structure):
         b: Optional[set] = None
     ): ...
 
-    def shallow_clone_with_overrides(
+    def shallow_clone_with_overrides(  # type: ignore[override]
         self,
+        *,
         x: str = ...,
         i: Optional[int] = None,
         d: Optional[dict[str, int]] = None,
@@ -358,7 +364,7 @@ class FooPartial(Structure):
     ): ...
 
     @classmethod
-    def from_other_class(
+    def from_other_class(  # type: ignore[override]
         cls,
         source_object: Any,
         *,
@@ -377,7 +383,7 @@ class FooPartial(Structure):
     ): ...
 
     @classmethod
-    def from_trusted_data(
+    def from_trusted_data(  # type: ignore[override]
         cls,
         source_object: Any = None,
         *,
@@ -423,8 +429,9 @@ class FooOmit(Structure):
         d: Optional[dict[str, int]] = None
     ): ...
 
-    def shallow_clone_with_overrides(
+    def shallow_clone_with_overrides(  # type: ignore[override]
         self,
+        *,
         i: int = ...,
         s: str = ...,
         person: Person = ...,
@@ -437,7 +444,7 @@ class FooOmit(Structure):
     ): ...
 
     @classmethod
-    def from_other_class(
+    def from_other_class(  # type: ignore[override]
         cls,
         source_object: Any,
         *,
@@ -454,7 +461,7 @@ class FooOmit(Structure):
     ): ...
 
     @classmethod
-    def from_trusted_data(
+    def from_trusted_data(  # type: ignore[override]
         cls,
         source_object: Any = None,
         *,
@@ -490,15 +497,16 @@ class FooPick(Structure):
         d: Optional[dict[str, int]] = None
     ): ...
 
-    def shallow_clone_with_overrides(
+    def shallow_clone_with_overrides(  # type: ignore[override]
         self,
+        *,
         a: set = ...,
         xyz: float = ...,
         d: Optional[dict[str, int]] = None
     ): ...
 
     @classmethod
-    def from_other_class(
+    def from_other_class(  # type: ignore[override]
         cls,
         source_object: Any,
         *,
@@ -509,7 +517,7 @@ class FooPick(Structure):
     ): ...
 
     @classmethod
-    def from_trusted_data(
+    def from_trusted_data(  # type: ignore[override]
         cls,
         source_object: Any = None,
         *,
@@ -543,8 +551,9 @@ class Bar(Structure):
         opt: Optional[float] = None
     ): ...
 
-    def shallow_clone_with_overrides(
+    def shallow_clone_with_overrides(  # type: ignore[override]
         self,
+        *,
         i: int = ...,
         s: str = ...,
         person: Person = ...,
@@ -561,7 +570,7 @@ class Bar(Structure):
     ): ...
 
     @classmethod
-    def from_other_class(
+    def from_other_class(  # type: ignore[override]
         cls,
         source_object: Any,
         *,
@@ -582,7 +591,7 @@ class Bar(Structure):
     ): ...
 
     @classmethod
-    def from_trusted_data(
+    def from_trusted_data(  # type: ignore[override]
         cls,
         source_object: Any = None,
         *,

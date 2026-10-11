@@ -516,13 +516,19 @@ def create_stub_for_file(
     dir_name = str(Path(abs_module_path).parent)
     relative_dir = relpath(dir_name, src_root)
     package_name = ".".join(Path(relative_dir).parts)
-    module_name = stem if stem != "__init__" else package_name
+    is_package = stem == "__init__"
+    if is_package:
+        module_name = package_name
+    else:
+        module_name = f"{package_name}.{stem}" if package_name else stem
     sys.path.append(str(Path(dir_name).parent))
     sys.path.append(src_root)
-    spec = importlib.util.spec_from_file_location(module_name, abs_module_path)
+    spec = importlib.util.spec_from_file_location(
+        module_name,
+        abs_module_path,
+        submodule_search_locations=[dir_name] if is_package else None,
+    )
     the_module = importlib.util.module_from_spec(spec)
-    if not the_module.__package__:
-        the_module.__package__ = package_name
     spec.loader.exec_module(the_module)
 
     pyi_dir = (

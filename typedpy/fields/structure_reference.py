@@ -29,7 +29,7 @@ class StructureReference(Field):
         StructureReference.counter += 1
 
         self._newclass = type(classname, (Structure,), kwargs)
-        super().__init__(kwargs)
+        super().__init__()
 
     def __set__(self, instance, value):
         if not isinstance(value, (dict, Structure)):

@@ -1,7 +1,9 @@
+import json
 import sys
 from pytest import mark
 from typedpy import Array, Map, Set, Structure
-from typedpy.testing import find_diff
+from typedpy.structures import TypedPyDefaults
+from typedpy.testing import find_diff, pytest_assertrepr_compare
 
 
 class Person(Structure):
@@ -212,23 +214,21 @@ def test_find_diff_dicts():
 
 def test_find_diff_dict1():
     bar1 = Bar(f=foo3)
-    bar2 = Bar(f=foo4, x="extra struff")
+    bar2 = Bar(f=foo4, x="extra stuff")
 
     actual = find_diff(bar1, bar2)
     assert actual == {
         "additional values": ["x"],
         "f": {
-            "additional values": ["bbb"],
             "m['aaa']": {"age": "12 vs 123"},
-            "missing values": ["ccc"],
+            "m": {"additional values": ["bbb"], "missing values": ["ccc"]},
         },
     }
     actual = find_diff(bar2, bar1)
     assert actual == {
         "f": {
             "m['aaa']": {"age": "123 vs 12"},
-            "missing values": ["bbb"],
-            "additional values": ["ccc"],
+            "m": {"missing values": ["bbb"], "additional values": ["ccc"]},
         },
         "missing values": ["x"],
     }
@@ -243,16 +243,15 @@ def test_find_diff_dict2():
     )
 
     bar1 = Bar(f=foo1)
-    bar2 = Bar(f=foo2, x="extra struff")
+    bar2 = Bar(f=foo2, x="extra stuff")
 
     actual = find_diff({"bar": bar1}, {"bar": bar2})
     assert actual == {
         "bar": {
             "additional values": ["x"],
             "f": {
-                "additional values": ["bbb"],
                 "m['aaa']": {"age": "12 vs 123"},
-                "missing values": ["ccc"],
+                "m": {"additional values": ["bbb"], "missing values": ["ccc"]},
             },
         }
     }
@@ -260,9 +259,8 @@ def test_find_diff_dict2():
     actual = find_diff(bar2, bar1)
     assert actual == {
         "f": {
-            "additional values": ["ccc"],
             "m['aaa']": {"age": "123 vs 12"},
-            "missing values": ["bbb"],
+            "m": {"additional values": ["ccc"], "missing values": ["bbb"]},
         },
         "missing values": ["x"],
     }
@@ -296,13 +294,53 @@ def test_find_diff_list_liststruct():
 
 def test_find_diff_list_different_length():
     diff = find_diff({"a": [1, 2]}, {"a": [1, 2, 3]})
-    assert diff == {'a': 'length of 3 vs 2'}
+    assert diff == {"a": "length of 3 vs 2"}
 
     diff = find_diff({"a": [1, 2, 3]}, {"a": [1, 2]})
-    assert diff == {'a': 'length of 2 vs 3'}
+    assert diff == {"a": "length of 2 vs 3"}
 
     diff = find_diff({"a": [1, 2]}, {"a": (1, 2, 3)})
-    assert diff == {'a': {'class': "<class 'tuple'> vs. <class 'list'>"}}
+    assert diff == {"a": {"class": "<class 'tuple'> vs. <class 'list'>"}}
+
+
+def test_pytest_assertrepr_compare_is_pretty_printed():
+    bar1 = Bar(f=foo3)
+    bar2 = Bar(f=foo4, x="extra stuff")
+    TypedPyDefaults.pretty_print_pytest_diff = True
+    try:
+        lines = pytest_assertrepr_compare("==", bar1, bar2)
+    finally:
+        TypedPyDefaults.pretty_print_pytest_diff = False
+
+    assert lines[0] == "found the following differences between the structures:"
+    assert len(lines) > 2
+    assert json.loads("\n".join(lines[1:])) == find_diff(bar1, bar2)
+
+
+def test_pytest_assertrepr_compare_single_line():
+    bar1 = Bar(f=foo3)
+    bar2 = Bar(f=foo4, x="extra stuff")
+
+    lines = pytest_assertrepr_compare("==", bar1, bar2)
+
+    assert len(lines) == 2
+    assert json.loads(lines[1]) == find_diff(bar1, bar2)
+
+
+def test_pytest_assertrepr_compare_with_values_that_are_not_json_serializable():
+    bar1 = Bar(s=[{foo3}])
+    bar2 = Bar(s=[{foo4}])
+
+    lines = pytest_assertrepr_compare("==", bar1, bar2)
+
+    output = "\n".join(lines)
+    assert "missing values" in output and "additional values" in output
+
+
+def test_pytest_assertrepr_compare_ignores_other_comparisons():
+    assert pytest_assertrepr_compare("!=", Bar(f=foo3), Bar(f=foo4)) is None
+    assert pytest_assertrepr_compare("==", {"a": 1}, {"a": 2}) is None
+
 
 #
 # def test_assertion_err_example():

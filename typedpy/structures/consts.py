@@ -4,7 +4,6 @@ ADDITIONAL_PROPERTIES = "_additional_properties"
 OLD_ADDITIONAL_PROPERTIES = "_additionalProperties"
 IS_IMMUTABLE = "_immutable"
 OPTIONAL_FIELDS = "_optional"
-MUST_BE_UNIQUE = "_must_be_unique"
 IGNORE_NONE_VALUES = "_ignore_none"
 SERIALIZATION_MAPPER = "_serialization_mapper"
 DESERIALIZATION_MAPPER = "_deserialization_mapper"
@@ -26,5 +25,4 @@ SPECIAL_ATTRIBUTES = {
     VERSIONS_MAPPING,
 }
 CUSTOM_ATTRIBUTE_MARKER = "_custom_attribute_"
-MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS = 100000
 INDEX = "    "

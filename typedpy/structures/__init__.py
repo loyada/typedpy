@@ -8,11 +8,9 @@ from .structures import (
     NoneField,
     FinalStructure,
     ImmutableField,
-    unique,
     StructMeta,
     FieldMeta,
     ImmutableMixin,
-    MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS,
 )
 
 from .structures_reuse import (

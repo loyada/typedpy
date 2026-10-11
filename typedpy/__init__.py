@@ -13,7 +13,6 @@ from typedpy.structures import (
     NoneField,
     FinalStructure,
     ImmutableField,
-    unique,
     AbstractStructure,
     Partial,
     AllFieldsRequired,

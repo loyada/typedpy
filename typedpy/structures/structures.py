@@ -9,7 +9,7 @@ import inspect
 import json
 from builtins import enumerate, issubclass
 from copy import deepcopy
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict
 from collections.abc import Mapping
 from inspect import Signature, Parameter, signature, currentframe
 import sys
@@ -37,8 +37,6 @@ from .consts import (
     DISABLE_PROTECTION,
     IGNORE_NONE_VALUES,
     IS_IMMUTABLE,
-    MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS,
-    MUST_BE_UNIQUE,
     OLD_ADDITIONAL_PROPERTIES,
     OPTIONAL_FIELDS,
     REQUIRED_FIELDS,
@@ -293,57 +291,7 @@ class FieldMeta(type):
                 return class_as_field()
 
 
-class UniqueMixin:
-    def defined_as_unique(self):
-        return getattr(self, MUST_BE_UNIQUE, False)
-
-    def __manage_uniqueness__(self):
-        myclass = self.__class__
-        if (
-            getattr(myclass, MUST_BE_UNIQUE, False)
-            and len(getattr(myclass, "_ALL_INSTANCES", set()))
-            < MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
-        ):
-            hash_of_instance = self.__hash__()
-            if hash_of_instance in getattr(myclass, "_ALL_INSTANCES", set()):
-                classname = self.__class__.__name__
-                raise ValueError(
-                    f"Instance copy in {classname}, which is defined as unique. Instance is {self}"
-                )
-            getattr(myclass, "_ALL_INSTANCES", set()).add(hash_of_instance)
-
-    def __manage_uniqueness_for_field__(self, instance, value):
-        if not getattr(instance, "_instantiated", False) or not getattr(
-            self, MUST_BE_UNIQUE, False
-        ):
-            return
-        field_name = getattr(self, "_name")
-        structure_class_name = instance.__class__.__name__
-        all_instances_by_struct_name = getattr(
-            self, "_ALL_INSTANCES", defaultdict(dict)
-        )
-        instance_by_value_for_current_struct = all_instances_by_struct_name[
-            structure_class_name
-        ]
-        if (
-            getattr(self, MUST_BE_UNIQUE, False)
-            and len(instance_by_value_for_current_struct)
-            < MAX_NUMBER_OF_INSTANCES_TO_VERIFY_UNIQUENESS
-        ):
-            hash_of_field_val = value.__hash__()
-            if (
-                instance_by_value_for_current_struct.get(hash_of_field_val, instance)
-                != instance
-            ):
-                raise ValueError(
-                    f"Instance copy of field {field_name} in {structure_class_name}, which is defined as unique. "
-                    f"Instance is {wrap_val(value)}"
-                )
-            if hash_of_field_val not in instance_by_value_for_current_struct:
-                instance_by_value_for_current_struct[hash_of_field_val] = instance
-
-
-class Field(UniqueMixin, metaclass=FieldMeta):
+class Field(metaclass=FieldMeta):
     """
     Base class for a field(i.e. property) in a structure.
     Should not be used directly by developers.
@@ -353,25 +301,6 @@ class Field(UniqueMixin, metaclass=FieldMeta):
             Marks the field as immutable. Typically the developer does not need to use it,
             as there is a high level API for making a field immutable
 
-        is_unique: optional
-            Marks a field as unique within this its Structure.
-            as there is a high level API for making a field immutable
-
-            .. code-block:: python
-
-                    class SSID(String): pass
-
-                    class Person(Structure):
-                            ssid: SSID(is_unique=True)
-                            name: String
-
-                    Person(ssid="1234", name="john")
-                    # the next line will raise an exception "Instance copy of field ssid in Person"
-                    Person(ssid="1234", name="jeff")
-
-            Alternatively, you can use the "@unique" decorator on the class definition of the Field.
-            Refer to "Uniqueness" section for more detail.
-
         default: optional
             default value in case no value was assigned. Setting it makes
             the field implicitly optional.
@@ -379,13 +308,9 @@ class Field(UniqueMixin, metaclass=FieldMeta):
             assignment.
     """
 
-    def __init__(self, name=None, immutable=None, is_unique=None, default=None):
+    def __init__(self, name=None, immutable=None, default=None):
         self._name = name
         self._default = default
-        if is_unique in [True, False]:
-            setattr(self, MUST_BE_UNIQUE, is_unique)
-            if is_unique:
-                self._ALL_INSTANCES = defaultdict(dict)
         if immutable is not None:
             self._immutable = immutable
         if default:
@@ -492,11 +417,7 @@ class Field(UniqueMixin, metaclass=FieldMeta):
                     f"{self._name} cannot be immutable, as its type does not support pickle."
                 )
         else:
-            if TypedPyDefaults.uniqueness_features_enabled:
-                self.__manage_uniqueness_for_field__(instance, value)
             instance.__dict__[self._name] = value
-            if TypedPyDefaults.uniqueness_features_enabled:
-                instance.__manage__uniqueness_of_all_fields__()
         if getattr(instance, "_instantiated", False) and not getattr(
             instance, "_skip_validation", False
         ):
@@ -938,7 +859,7 @@ def convert_field_type_if_possible(the_field):
         return get_typing_lib_info(the_field)
 
 
-class Structure(UniqueMixin, metaclass=StructMeta):
+class Structure(metaclass=StructMeta):
     """
     The base class to support strictly defined structures. When creating a new instance of
     a Structure, fields must be provided by name.
@@ -1021,9 +942,6 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         _deserializatin_mapper(dict or mapper): optional
             mapper specifically for deserialization, in case you need to differentiate between
             serialization and deserialization mappers.
-
-    Decorating it with @unique ensures that no all instances of this structure will be unique. It
-    will raise an exception otherwise (see "Uniqueness" section).
     """
 
     _fields = []
@@ -1092,9 +1010,6 @@ class Structure(UniqueMixin, metaclass=StructMeta):
 
         self.__validate__()
         self._instantiated = True
-        if TypedPyDefaults.uniqueness_features_enabled:
-            self.__manage_uniqueness__()
-            self.__manage__uniqueness_of_all_fields__()
         super().__init__()
 
     def _set_defaults(self, defaults_fields, field_by_name):
@@ -1102,12 +1017,6 @@ class Structure(UniqueMixin, metaclass=StructMeta):
             default = getattr(field_by_name[field_name], "_default")
             default_value = default() if callable(default) else default
             setattr(self, field_name, default_value)
-
-    def __manage__uniqueness_of_all_fields__(self):
-        fields_by_name = self.__class__.get_all_fields_by_name()
-        for name, field in fields_by_name.items():
-            if not isinstance(field, Constant) and field.defined_as_unique():
-                field.__manage_uniqueness_for_field__(self, getattr(self, name, None))
 
     def __setattr__(self, key, value):
         if getattr(self, "_trust_supplied_values", False):
@@ -1176,14 +1085,6 @@ class Structure(UniqueMixin, metaclass=StructMeta):
         ):
             getattr(self, "_none_fields").discard(key)
         super().__setattr__(key, value)
-
-        if (
-            TypedPyDefaults.uniqueness_features_enabled
-            and getattr(self, "_instantiated", False)
-            and not _is_dunder(key)
-            and not _is_sunder(key)
-        ):
-            self.__manage_uniqueness__()
 
     def __getstate__(self):
         fields_by_name = _get_all_fields_by_name(self.__class__)
@@ -1757,16 +1658,6 @@ def _init_class_dict(cls):
 
 class FinalStructure(Structure):
     pass
-
-
-def unique(cls):
-    if issubclass(cls, Structure):
-        setattr(cls, MUST_BE_UNIQUE, True)
-        cls._ALL_INSTANCES = set()
-    elif issubclass(cls, Field):
-        setattr(cls, MUST_BE_UNIQUE, True)
-        cls._ALL_INSTANCES = defaultdict(dict)
-    return cls
 
 
 class ImmutableStructure(Structure):

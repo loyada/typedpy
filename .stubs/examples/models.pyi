@@ -82,7 +82,7 @@ def func(
     session: Session,
     abc,
     *,
-    ids: list[int] = None,
+    ids: Optional[list[int]] = None,
     foo: str,
     bar = ...,
 ) -> dict[int, list[str]]: ...

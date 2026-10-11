@@ -19,9 +19,9 @@ class AController:
     now: datetime
     _job_controller:  JobController
     value:  int
-    _urls:  dict[str, dict]
+    _urls:  Optional[dict[str, dict]]
     
-    def __init__(self, val: int, other, name: str = ..., *, urls: dict[str, dict] = None, job_controller: JobController): ...
+    def __init__(self, val: int, other, name: str = ..., *, urls: Optional[dict[str, dict]] = None, job_controller: JobController): ...
 
     def __call__(self, i: int, s: str = ...): ...
 

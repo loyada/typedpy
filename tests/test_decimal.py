@@ -28,7 +28,7 @@ class Foo(Structure):
 def test_not_decimal_value():
     with raises(ValueError) as excinfo:
         Foo(a="1 1 ")
-    assert "a: [<class 'decimal.ConversionSyntax'>]" in str(excinfo.value)
+    assert "a: Got '1 1 '; Expected a valid Decimal" in str(excinfo.value)
 
 
 def test_not_decimal_type():

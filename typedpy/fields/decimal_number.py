@@ -1,5 +1,6 @@
 from decimal import Decimal, InvalidOperation
 
+from typedpy.commons import wrap_val
 from .serializable_field import SerializableField
 from .numbers import Number
 
@@ -17,7 +18,9 @@ class DecimalNumber(Number, SerializableField):
         except TypeError as ex:
             raise TypeError(f"{self._name}: {ex.args[0]}") from ex
         except InvalidOperation as ex:
-            raise ValueError(f"{self._name}: {ex.args[0]}") from ex
+            raise ValueError(
+                f"{self._name}: Got {wrap_val(value)}; Expected a valid Decimal"
+            ) from ex
 
         super().__set__(instance, value)
 

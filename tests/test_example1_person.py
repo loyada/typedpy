@@ -187,3 +187,15 @@ def test_invalid_field_name():
         class Foo(Structure):
             _abc = Integer
             s = String
+
+
+def test_structure_reference_is_named_only_by_its_structure():
+    standalone = StructureReference(a=String())
+    assert standalone._name is None
+
+    class Foo(Structure):
+        ref = StructureReference(a=String())
+        refs = Array[StructureReference(a=String())]
+
+    assert Foo.get_all_fields_by_name()["ref"]._name == "ref"
+    assert Foo.get_all_fields_by_name()["refs"].items._name is None

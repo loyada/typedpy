@@ -24,25 +24,25 @@ class Customer(Mappable):
     invoices: Any
     foos: Any
     def __init__(self,
-            id: int = None,
-            name: str = None,
-            address: str = None,
-            email: str = None,
-            invoices = None,
-            foos = None,
+            id: int = ...,
+            name: str = ...,
+            address: str = ...,
+            email: str = ...,
+            invoices = ...,
+            foos = ...,
     ): ...
 
     @classmethod
     def from_structure(cls,
             structure: Structure,
             *,
-            ignore_props: list[str] = None,
-            id: int = None,
-            name: str = None,
-            address: str = None,
-            email: str = None,
-            invoices = None,
-            foos = None,
+            ignore_props: Optional[list[str]] = None,
+            id: int = ...,
+            name: str = ...,
+            address: str = ...,
+            email: str = ...,
+            invoices = ...,
+            foos = ...,
     ) -> Customer: ...
 
     @staticmethod
@@ -50,7 +50,7 @@ class Customer(Mappable):
         session: Session,
         abc,
         *,
-        ids: list[int] = None,
+        ids: list[int] = ...,
         foo: str,
         **kw,
     ) -> dict[int, list[str]]: ...
@@ -70,11 +70,11 @@ class Invoice:
     amount: Union[Column, int]
     customer: Any
     def __init__(self,
-            id: int = None,
-            custid: int = None,
-            invno: int = None,
-            amount: int = None,
-            customer = None,
+            id: int = ...,
+            custid: int = ...,
+            invno: int = ...,
+            amount: int = ...,
+            customer = ...,
     ): ...
 
 
@@ -84,7 +84,7 @@ def func(
     *,
     ids: list[int] = None,
     foo: str,
-    bar = None,
+    bar = ...,
 ) -> dict[int, list[str]]: ...
 
 

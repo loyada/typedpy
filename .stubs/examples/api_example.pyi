@@ -56,7 +56,7 @@ class State1(Enum):
 class FooFoo:
 
     
-    def __init__(self, *, mapper: dict[str, Any] = dict, camel_case_convert: bool = None): ...
+    def __init__(self, *, mapper: dict[str, Any] = ..., camel_case_convert: bool = ...): ...
 
 
 class FooFooWrapper(Structure):
@@ -68,7 +68,7 @@ class FooFooWrapper(Structure):
 
     def shallow_clone_with_overrides(
         self,
-        foofoo: FooFoo = None,
+        foofoo: FooFoo = ...,
         **kw
     ): ...
 
@@ -77,8 +77,8 @@ class FooFooWrapper(Structure):
         cls,
         source_object: Any,
         *,
-        ignore_props: Iterable[str] = None,
-        foofoo: FooFoo = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        foofoo: FooFoo = ...,
         **kw
     ): ...
 
@@ -87,8 +87,8 @@ class FooFooWrapper(Structure):
         cls,
         source_object: Any = None,
         *,
-        ignore_props: Iterable[str] = None,
-        foofoo: FooFoo = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        foofoo: FooFoo = ...,
         **kw
     ): ...
 
@@ -100,8 +100,8 @@ class WithCustomInit(Structure):
 
     def shallow_clone_with_overrides(
         self,
-        i: int = None,
-        s: str = None,
+        i: int = ...,
+        s: str = ...,
         **kw
     ): ...
 
@@ -110,9 +110,9 @@ class WithCustomInit(Structure):
         cls,
         source_object: Any,
         *,
-        ignore_props: Iterable[str] = None,
-        i: int = None,
-        s: str = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        i: int = ...,
+        s: str = ...,
         **kw
     ): ...
 
@@ -121,9 +121,9 @@ class WithCustomInit(Structure):
         cls,
         source_object: Any = None,
         *,
-        ignore_props: Iterable[str] = None,
-        i: int = None,
-        s: str = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        i: int = ...,
+        s: str = ...,
         **kw
     ): ...
 
@@ -147,11 +147,11 @@ class Employee(Structure):
 
     def shallow_clone_with_overrides(
         self,
-        name: str = None,
-        age: int = None,
-        address: Address = None,
-        sex: Sex = None,
-        ssid: str = None,
+        name: str = ...,
+        age: int = ...,
+        address: Address = ...,
+        sex: Sex = ...,
+        ssid: str = ...,
         **kw
     ): ...
 
@@ -160,12 +160,12 @@ class Employee(Structure):
         cls,
         source_object: Any,
         *,
-        ignore_props: Iterable[str] = None,
-        name: str = None,
-        age: int = None,
-        address: Address = None,
-        sex: Sex = None,
-        ssid: str = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        name: str = ...,
+        age: int = ...,
+        address: Address = ...,
+        sex: Sex = ...,
+        ssid: str = ...,
         **kw
     ): ...
 
@@ -174,12 +174,12 @@ class Employee(Structure):
         cls,
         source_object: Any = None,
         *,
-        ignore_props: Iterable[str] = None,
-        name: str = None,
-        age: int = None,
-        address: Address = None,
-        sex: Sex = None,
-        ssid: str = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        name: str = ...,
+        age: int = ...,
+        address: Address = ...,
+        sex: Sex = ...,
+        ssid: str = ...,
         **kw
     ): ...
 
@@ -208,11 +208,11 @@ class Blah(Structure):
 
     def shallow_clone_with_overrides(
         self,
-        i: int = None,
-        s: str = None,
-        person: Person = None,
-        dob: datetime = None,
-        arr: list[str] = None,
+        i: int = ...,
+        s: str = ...,
+        person: Person = ...,
+        dob: datetime = ...,
+        arr: list[str] = ...,
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
@@ -222,12 +222,12 @@ class Blah(Structure):
         cls,
         source_object: Any,
         *,
-        ignore_props: Iterable[str] = None,
-        i: int = None,
-        s: str = None,
-        person: Person = None,
-        dob: datetime = None,
-        arr: list[str] = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        i: int = ...,
+        s: str = ...,
+        person: Person = ...,
+        dob: datetime = ...,
+        arr: list[str] = ...,
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
@@ -237,12 +237,12 @@ class Blah(Structure):
         cls,
         source_object: Any = None,
         *,
-        ignore_props: Iterable[str] = None,
-        i: int = None,
-        s: str = None,
-        person: Person = None,
-        dob: datetime = None,
-        arr: list[str] = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        i: int = ...,
+        s: str = ...,
+        person: Person = ...,
+        dob: datetime = ...,
+        arr: list[str] = ...,
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
@@ -274,15 +274,15 @@ class Foo(Blah, Structure):
 
     def shallow_clone_with_overrides(
         self,
-        i: int = None,
-        s: str = None,
-        person: Person = None,
-        dob: datetime = None,
-        arr: list[str] = None,
-        union: Union[int,str] = None,
-        any: Any = None,
-        a: set = None,
-        b: set = None,
+        i: int = ...,
+        s: str = ...,
+        person: Person = ...,
+        dob: datetime = ...,
+        arr: list[str] = ...,
+        union: Union[int,str] = ...,
+        any: Any = ...,
+        a: set = ...,
+        b: set = ...,
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
@@ -292,16 +292,16 @@ class Foo(Blah, Structure):
         cls,
         source_object: Any,
         *,
-        ignore_props: Iterable[str] = None,
-        i: int = None,
-        s: str = None,
-        person: Person = None,
-        dob: datetime = None,
-        arr: list[str] = None,
-        union: Union[int,str] = None,
-        any: Any = None,
-        a: set = None,
-        b: set = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        i: int = ...,
+        s: str = ...,
+        person: Person = ...,
+        dob: datetime = ...,
+        arr: list[str] = ...,
+        union: Union[int,str] = ...,
+        any: Any = ...,
+        a: set = ...,
+        b: set = ...,
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
@@ -311,16 +311,16 @@ class Foo(Blah, Structure):
         cls,
         source_object: Any = None,
         *,
-        ignore_props: Iterable[str] = None,
-        i: int = None,
-        s: str = None,
-        person: Person = None,
-        dob: datetime = None,
-        arr: list[str] = None,
-        union: Union[int,str] = None,
-        any: Any = None,
-        a: set = None,
-        b: set = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        i: int = ...,
+        s: str = ...,
+        person: Person = ...,
+        dob: datetime = ...,
+        arr: list[str] = ...,
+        union: Union[int,str] = ...,
+        any: Any = ...,
+        a: set = ...,
+        b: set = ...,
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
@@ -364,7 +364,7 @@ class FooPartial(Structure):
 
     def shallow_clone_with_overrides(
         self,
-        x: str = None,
+        x: str = ...,
         i: Optional[int] = None,
         d: Optional[dict[str, int]] = None,
         s: Optional[str] = None,
@@ -383,8 +383,8 @@ class FooPartial(Structure):
         cls,
         source_object: Any,
         *,
-        ignore_props: Iterable[str] = None,
-        x: str = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        x: str = ...,
         i: Optional[int] = None,
         d: Optional[dict[str, int]] = None,
         s: Optional[str] = None,
@@ -403,8 +403,8 @@ class FooPartial(Structure):
         cls,
         source_object: Any = None,
         *,
-        ignore_props: Iterable[str] = None,
-        x: str = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        x: str = ...,
         i: Optional[int] = None,
         d: Optional[dict[str, int]] = None,
         s: Optional[str] = None,
@@ -449,14 +449,14 @@ class FooOmit(Structure):
 
     def shallow_clone_with_overrides(
         self,
-        i: int = None,
-        s: str = None,
-        person: Person = None,
-        dob: datetime = None,
-        arr: list[str] = None,
-        union: Union[int,str] = None,
-        any: Any = None,
-        x: int = None,
+        i: int = ...,
+        s: str = ...,
+        person: Person = ...,
+        dob: datetime = ...,
+        arr: list[str] = ...,
+        union: Union[int,str] = ...,
+        any: Any = ...,
+        x: int = ...,
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
@@ -466,15 +466,15 @@ class FooOmit(Structure):
         cls,
         source_object: Any,
         *,
-        ignore_props: Iterable[str] = None,
-        i: int = None,
-        s: str = None,
-        person: Person = None,
-        dob: datetime = None,
-        arr: list[str] = None,
-        union: Union[int,str] = None,
-        any: Any = None,
-        x: int = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        i: int = ...,
+        s: str = ...,
+        person: Person = ...,
+        dob: datetime = ...,
+        arr: list[str] = ...,
+        union: Union[int,str] = ...,
+        any: Any = ...,
+        x: int = ...,
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
@@ -484,15 +484,15 @@ class FooOmit(Structure):
         cls,
         source_object: Any = None,
         *,
-        ignore_props: Iterable[str] = None,
-        i: int = None,
-        s: str = None,
-        person: Person = None,
-        dob: datetime = None,
-        arr: list[str] = None,
-        union: Union[int,str] = None,
-        any: Any = None,
-        x: int = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        i: int = ...,
+        s: str = ...,
+        person: Person = ...,
+        dob: datetime = ...,
+        arr: list[str] = ...,
+        union: Union[int,str] = ...,
+        any: Any = ...,
+        x: int = ...,
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
@@ -520,8 +520,8 @@ class FooPick(Structure):
 
     def shallow_clone_with_overrides(
         self,
-        a: set = None,
-        xyz: float = None,
+        a: set = ...,
+        xyz: float = ...,
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
@@ -531,9 +531,9 @@ class FooPick(Structure):
         cls,
         source_object: Any,
         *,
-        ignore_props: Iterable[str] = None,
-        a: set = None,
-        xyz: float = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        a: set = ...,
+        xyz: float = ...,
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
@@ -543,9 +543,9 @@ class FooPick(Structure):
         cls,
         source_object: Any = None,
         *,
-        ignore_props: Iterable[str] = None,
-        a: set = None,
-        xyz: float = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        a: set = ...,
+        xyz: float = ...,
         d: Optional[dict[str, int]] = None,
         **kw
     ): ...
@@ -576,17 +576,17 @@ class Bar(Structure):
 
     def shallow_clone_with_overrides(
         self,
-        i: int = None,
-        s: str = None,
-        person: Person = None,
-        dob: datetime = None,
-        arr: list[str] = None,
-        union: Union[int,str] = None,
-        any: Any = None,
-        x: int = None,
-        state: State = None,
-        stats: list[int] = None,
-        states: list[State] = None,
+        i: int = ...,
+        s: str = ...,
+        person: Person = ...,
+        dob: datetime = ...,
+        arr: list[str] = ...,
+        union: Union[int,str] = ...,
+        any: Any = ...,
+        x: int = ...,
+        state: State = ...,
+        stats: list[int] = ...,
+        states: list[State] = ...,
         d: Optional[dict[str, int]] = None,
         opt: Optional[float] = None
     ): ...
@@ -596,18 +596,18 @@ class Bar(Structure):
         cls,
         source_object: Any,
         *,
-        ignore_props: Iterable[str] = None,
-        i: int = None,
-        s: str = None,
-        person: Person = None,
-        dob: datetime = None,
-        arr: list[str] = None,
-        union: Union[int,str] = None,
-        any: Any = None,
-        x: int = None,
-        state: State = None,
-        stats: list[int] = None,
-        states: list[State] = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        i: int = ...,
+        s: str = ...,
+        person: Person = ...,
+        dob: datetime = ...,
+        arr: list[str] = ...,
+        union: Union[int,str] = ...,
+        any: Any = ...,
+        x: int = ...,
+        state: State = ...,
+        stats: list[int] = ...,
+        states: list[State] = ...,
         d: Optional[dict[str, int]] = None,
         opt: Optional[float] = None
     ): ...
@@ -617,18 +617,18 @@ class Bar(Structure):
         cls,
         source_object: Any = None,
         *,
-        ignore_props: Iterable[str] = None,
-        i: int = None,
-        s: str = None,
-        person: Person = None,
-        dob: datetime = None,
-        arr: list[str] = None,
-        union: Union[int,str] = None,
-        any: Any = None,
-        x: int = None,
-        state: State = None,
-        stats: list[int] = None,
-        states: list[State] = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        i: int = ...,
+        s: str = ...,
+        person: Person = ...,
+        dob: datetime = ...,
+        arr: list[str] = ...,
+        union: Union[int,str] = ...,
+        any: Any = ...,
+        x: int = ...,
+        state: State = ...,
+        stats: list[int] = ...,
+        states: list[State] = ...,
         d: Optional[dict[str, int]] = None,
         opt: Optional[float] = None
     ): ...
@@ -649,7 +649,7 @@ class Bar(Structure):
     opt: Optional[float] = None
 
 
-def func(x = None, *, e: Employee = None, **kw) -> Mapping[str, str]: ...
+def func(x = ..., *, e: Employee = None, **kw) -> Mapping[str, str]: ...
 
 
 def func2(t: T) -> list[T]: ...
@@ -664,7 +664,7 @@ def ccc() -> Callable[[T], None]: ...
 def ddd() -> list[int, str, ...]: ...
 
 
-def eee(x: Optional[int] = None, arr: list[str] = list) -> Optional[int]: ...
+def eee(x: Optional[int] = ..., arr: list[str] = ...) -> Optional[int]: ...
 
 
 def fff(c: Optional[Callable]) -> Iterator[str]: ...

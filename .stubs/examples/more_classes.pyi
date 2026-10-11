@@ -49,8 +49,8 @@ class Address(Structure):
 
     def shallow_clone_with_overrides(
         self,
-        city: str = None,
-        zip: str = None,
+        city: str = ...,
+        zip: str = ...,
         **kw
     ): ...
 
@@ -59,9 +59,9 @@ class Address(Structure):
         cls,
         source_object: Any,
         *,
-        ignore_props: Iterable[str] = None,
-        city: str = None,
-        zip: str = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        city: str = ...,
+        zip: str = ...,
         **kw
     ): ...
 
@@ -70,9 +70,9 @@ class Address(Structure):
         cls,
         source_object: Any = None,
         *,
-        ignore_props: Iterable[str] = None,
-        city: str = None,
-        zip: str = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        city: str = ...,
+        zip: str = ...,
         **kw
     ): ...
 
@@ -93,10 +93,10 @@ class Person(Structure):
 
     def shallow_clone_with_overrides(
         self,
-        name: str = None,
-        age: int = None,
-        address: Address = None,
-        sex: Sex = None,
+        name: str = ...,
+        age: int = ...,
+        address: Address = ...,
+        sex: Sex = ...,
         **kw
     ): ...
 
@@ -105,11 +105,11 @@ class Person(Structure):
         cls,
         source_object: Any,
         *,
-        ignore_props: Iterable[str] = None,
-        name: str = None,
-        age: int = None,
-        address: Address = None,
-        sex: Sex = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        name: str = ...,
+        age: int = ...,
+        address: Address = ...,
+        sex: Sex = ...,
         **kw
     ): ...
 
@@ -118,11 +118,11 @@ class Person(Structure):
         cls,
         source_object: Any = None,
         *,
-        ignore_props: Iterable[str] = None,
-        name: str = None,
-        age: int = None,
-        address: Address = None,
-        sex: Sex = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        name: str = ...,
+        age: int = ...,
+        address: Address = ...,
+        sex: Sex = ...,
         **kw
     ): ...
 

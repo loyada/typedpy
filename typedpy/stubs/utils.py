@@ -41,7 +41,7 @@ def is_sqlalchemy_orm_model(cls):
 def get_sqlalchemy_init(attributes_with_type):
     res = ["def __init__(self, *,"]
     for p, p_type in attributes_with_type:
-        res.append(f"{INDENT}{p}: {p_type} = None,")
+        res.append(f"{INDENT}{p}: {p_type} = ...,")
     res.append(f"{INDENT}**kw")
     res.append("): ...")
     return res

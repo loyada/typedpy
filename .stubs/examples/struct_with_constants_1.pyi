@@ -29,7 +29,7 @@ class Event(Structure):
 
     def shallow_clone_with_overrides(
         self,
-        subject: EventSubject = None,
+        subject: EventSubject = ...,
         i: Optional[int] = None
     ): ...
 
@@ -38,8 +38,8 @@ class Event(Structure):
         cls,
         source_object: Any,
         *,
-        ignore_props: Iterable[str] = None,
-        subject: EventSubject = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        subject: EventSubject = ...,
         i: Optional[int] = None
     ): ...
 
@@ -48,8 +48,8 @@ class Event(Structure):
         cls,
         source_object: Any = None,
         *,
-        ignore_props: Iterable[str] = None,
-        subject: EventSubject = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        subject: EventSubject = ...,
         i: Optional[int] = None
     ): ...
 
@@ -67,7 +67,7 @@ class FooEvent(Event, Structure):
 
     def shallow_clone_with_overrides(
         self,
-        name: str = None,
+        name: str = ...,
         i: Optional[int] = None
     ): ...
 
@@ -76,8 +76,8 @@ class FooEvent(Event, Structure):
         cls,
         source_object: Any,
         *,
-        ignore_props: Iterable[str] = None,
-        name: str = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        name: str = ...,
         i: Optional[int] = None
     ): ...
 
@@ -86,8 +86,8 @@ class FooEvent(Event, Structure):
         cls,
         source_object: Any = None,
         *,
-        ignore_props: Iterable[str] = None,
-        name: str = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        name: str = ...,
         i: Optional[int] = None
     ): ...
 
@@ -105,7 +105,7 @@ class BarEvent(Event, Structure):
 
     def shallow_clone_with_overrides(
         self,
-        val: int = None,
+        val: int = ...,
         i: Optional[int] = None
     ): ...
 
@@ -114,8 +114,8 @@ class BarEvent(Event, Structure):
         cls,
         source_object: Any,
         *,
-        ignore_props: Iterable[str] = None,
-        val: int = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        val: int = ...,
         i: Optional[int] = None
     ): ...
 
@@ -124,8 +124,8 @@ class BarEvent(Event, Structure):
         cls,
         source_object: Any = None,
         *,
-        ignore_props: Iterable[str] = None,
-        val: int = None,
+        ignore_props: Optional[Iterable[str]] = None,
+        val: int = ...,
         i: Optional[int] = None
     ): ...
 

@@ -84,8 +84,12 @@ def _extract_kw_args(args_info) -> str:
 
 def _extract_kwonly_arg(arg, default) -> str:
     the_type = f": {_get_param_type(arg.annotation)}" if arg.annotation else ""
-    default_s = " = None" if default is not None else ""
-    the_type = f": {_get_param_type(arg.annotation)}" if arg.annotation else ""
+    if default is None:
+        default_s = ""
+    elif isinstance(default, ast.Constant) and default.value is None:
+        default_s = " = None"
+    else:
+        default_s = " = ..."
     return f"{arg.arg}{the_type}{default_s}"
 
 
@@ -141,9 +145,9 @@ def models_to_src(models: typing.Iterable[ModelClass]) -> typing.Iterable[str]:
             res.append(field)
         for rel in model.relationships:
             res.append(f"{INDENT}{rel}: Any")
-        fields_arg_list = [f"{INDENT * 2}{f} = None," for f in fields_with_type]
+        fields_arg_list = [f"{INDENT * 2}{f} = ...," for f in fields_with_type]
         relationships_arg_list = [
-            f"{INDENT * 3}{f} = None," for f in model.relationships
+            f"{INDENT * 3}{f} = ...," for f in model.relationships
         ]
         res.append(f"{INDENT}def __init__(self,")
         res.extend(fields_arg_list)
@@ -155,7 +159,7 @@ def models_to_src(models: typing.Iterable[ModelClass]) -> typing.Iterable[str]:
             res.append(f"{INDENT}def from_structure(cls,")
             res.append(f"{INDENT*3}structure: Structure,")
             res.append(f"{INDENT*3}*,")
-            res.append(f"{INDENT*3}ignore_props: list[str] = None,")
+            res.append(f"{INDENT*3}ignore_props: Optional[list[str]] = None,")
             res.extend(fields_arg_list)
             res.extend(relationships_arg_list)
             res.append(f"{INDENT}) -> {model.name}: ...")

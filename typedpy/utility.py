@@ -2,12 +2,6 @@ import typing
 from collections import deque
 from pathlib import Path
 
-from typedpy.commons import (
-    python_ver_36,
-    python_ver_atleast_39,
-    python_ver_atleast_than_37,
-)
-
 
 def type_is_generic(v):
     """
@@ -21,19 +15,11 @@ def type_is_generic(v):
         pass
 
     origin = getattr(v, "__origin__", None)
-    typing_base = getattr(typing, "_TypingBase", Foo)
     generic_alias = getattr(typing, "_GenericAlias", Foo)
     special_generic_alias = getattr(typing, "_SpecialGenericAlias", Foo)
-    return (
-        (python_ver_36 and isinstance(v, typing_base))
-        or (
-            python_ver_atleast_than_37
-            and isinstance(v, (generic_alias, special_generic_alias))
-        )
-        or (
-            python_ver_atleast_39
-            and origin in {list, dict, tuple, set, frozenset, deque, typing.Union}
-        )
+    generic_origins = {list, dict, tuple, set, frozenset, deque, typing.Union}
+    return isinstance(v, (generic_alias, special_generic_alias)) or (
+        origin in generic_origins
     )
 
 
